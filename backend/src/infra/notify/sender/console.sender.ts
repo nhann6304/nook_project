@@ -11,9 +11,9 @@ import type { CodeSender } from './code-sender.interface.js';
 @Injectable()
 export class ConsoleSender implements CodeSender {
   readonly kind = 'console';
-  private readonly log = new Logger('Mã đăng nhập');
+  private readonly log = new Logger('AuthCode');
 
   async send(method: SignInMethod, target: string, code: string): Promise<void> {
-    this.log.warn(`[CHỈ DÙNG KHI DEV] ${method} → ${target} — mã: ${code}`);
+    this.log.warn(`[DEV ONLY] ${method} ${target} - code: ${code}`);
   }
 }

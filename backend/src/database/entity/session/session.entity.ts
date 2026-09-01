@@ -1,6 +1,5 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../base/index.js';
-import { User } from '../user/index.js';
+import { Column, Entity, Index } from 'typeorm';
+import { AuditEntity } from '../base/index.js';
 
 /**
  * Một phiên = một máy đã đăng nhập.
@@ -12,14 +11,10 @@ import { User } from '../user/index.js';
  * bảng này cũng không đăng nhập thay ai được — argon2 không quay ngược.
  */
 @Entity('sessions')
-export class Session extends BaseEntity {
+export class Session extends AuditEntity {
   @Index('idx_session_user')
   @Column({ name: 'user_id', type: 'uuid' })
   userId!: string;
-
-  @ManyToOne(() => User, (user) => user.sessions, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user!: User;
 
   /** argon2 của thẻ dài hạn. Đổi mỗi lần làm mới thẻ. */
   @Column({ name: 'refresh_hash', type: 'varchar', length: 255 })

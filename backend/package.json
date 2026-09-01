@@ -13,7 +13,7 @@
     "lint": "eslint \"src/**/*.ts\" --max-warnings=0",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "check": "npm run typecheck && npm run lint",
+    "check": "npm run typecheck && npm run lint && npm run test",
     "test": "vitest run",
     "test:watch": "vitest",
     "typeorm": "typeorm -d dist/database/data-source/data-source.js",

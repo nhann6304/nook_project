@@ -1,6 +1,14 @@
 @echo off
+REM UTF-8 cho cua so nay. KHONG CO DONG NAY thi chu tieng Viet cua server ra
+REM thanh rac (vi du: "Redis connected" ra thanh cac ky tu la).
+REM
+REM cmd doc file .bat theo bang ma DANG dung, va no doc lai tung dong khi chay.
+REM Doi bang ma o giua file roi de chu co dau phia duoi la mot cach lam hong
+REM chinh file nay tren vai ban Windows - nen chu trong file nay co tinh de
+REM KHONG DAU. Chu co dau la cua server, va no ra dung sau khi da chcp.
+chcp 65001 >nul
 REM ---------------------------------------------------------------------------
-REM  Day ma len GitHub — co kiem truoc.
+REM  Day ma len GitHub - co kiem truoc.
 REM
 REM    setup\win\push.bat "sua man dang nhap"
 REM
@@ -29,7 +37,7 @@ for /f "delims=" %%f in ('git status --porcelain --untracked-files^=all') do (
   echo !LINE! | findstr /r /c:"\.env$" /c:"\.env\." | findstr /v ".env.example" >nul && set "LEAK=!LINE!"
 )
 if defined LEAK (
-  echo [x] Co file .env dang cho commit: !LEAK! — mo .gitignore ra xem lai.
+  echo [x] Co file .env dang cho commit: !LEAK! - mo .gitignore ra xem lai.
   goto :fail
 )
 
@@ -45,7 +53,7 @@ call npm run check --silent            || (echo [x] Server chua qua duoc vong ki
 if exist "frontend\node_modules" (
   call npm run check:fe --silent || (echo [x] App chua qua duoc vong kiem. & goto :fail)
 ) else (
-  echo   . bo qua app — chua cai thu vien
+  echo   . bo qua app - chua cai thu vien
 )
 echo   [v] sach
 

@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Env } from '../config/env/index.js';
 import { ENTITIES } from './entity/index.js';
 import { TransactionService } from './transaction/index.js';
+import { RepositoryManager } from './repository/index.js';
 
 /**
  * Kết nối cơ sở dữ liệu.
@@ -39,10 +40,10 @@ import { TransactionService } from './transaction/index.js';
       }),
     }),
   ],
-  // `@Global` vì mọi kho đều cần `TransactionService` để nhập vào giao dịch
-  // đang chạy. Bắt từng module import lại chỉ để lấy một thứ ai cũng cần là
-  // thêm nghi thức mà không thêm an toàn.
-  providers: [TransactionService],
-  exports: [TransactionService],
+  // `@Global` vì hai thứ dưới đây thì module nào cũng cần: giao dịch để nhập
+  // vào, và chỗ phát kho để khỏi phải viết tệp kho rỗng. Bắt từng module import
+  // lại chỉ để lấy chúng là thêm nghi thức mà không thêm an toàn.
+  providers: [TransactionService, RepositoryManager],
+  exports: [TransactionService, RepositoryManager],
 })
 export class DatabaseModule {}

@@ -72,4 +72,16 @@ export interface TokenClaims {
   sid: string;
   /** loại thẻ, để thẻ dài hạn không dùng thay thẻ ngắn hạn được */
   typ: 'access' | 'refresh';
+  /**
+   * id của CHÍNH cái thẻ này. Ngẫu nhiên, mỗi lần ký một khác.
+   *
+   * Không có nó thì ruột thẻ chỉ còn `{sub, sid, typ, iat, exp}` — mà `iat` và
+   * `exp` tính bằng GIÂY. Ký hai lần trong cùng một giây là ra hai thẻ **giống
+   * hệt nhau từng byte**, và khi đó việc xoay thẻ dài hạn không xảy ra: thẻ
+   * "mới" chính là thẻ cũ, dấu vân trong bảng vẫn khớp, nên cả cái bẫy
+   * "thẻ bị chép" cũng im luôn.
+   *
+   * Chuyện này xảy ra thật: app vừa đăng nhập xong đã gọi làm mới thẻ.
+   */
+  jti: string;
 }

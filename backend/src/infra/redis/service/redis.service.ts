@@ -34,8 +34,8 @@ export class RedisService implements OnModuleDestroy {
       lazyConnect: false,
     });
 
-    this.client.on('error', (err) => this.log.error({ err }, 'Redis lỗi'));
-    this.client.on('connect', () => this.log.log('Redis đã nối'));
+    this.client.on('error', (err) => this.log.error({ err }, 'connection error'));
+    this.client.on('connect', () => this.log.log('connected'));
   }
 
   /** Kết nối RIÊNG. Bên đăng/nhận tin của socket cần connection của nó. */

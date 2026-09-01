@@ -1,10 +1,5 @@
-import { Column, Entity, Index, OneToMany, OneToOne, type Relation } from 'typeorm';
-import { BaseEntity } from '../base/index.js';
-// `import type` chứ không phải `import`. Xem ghi chú "Vòng tròn nhập khẩu" bên dưới.
-import type { UserIdentity } from './user-identity.entity.js';
-import type { Session } from '../session/index.js';
-import type { UserStat } from './user-stat.entity.js';
-import type { UserAchievement } from '../achievement/index.js';
+import { Column, Entity } from 'typeorm';
+import { SoftDeleteEntity } from '../base/index.js';
 
 /**
  * Người dùng.
@@ -17,20 +12,16 @@ import type { UserAchievement } from '../achievement/index.js';
  * Cũng KHÔNG có email hay số điện thoại — chúng nằm ở `user_identities`, vì một
  * người có thể có cả hai, và sau này còn đổi được.
  *
- * ── Vòng tròn nhập khẩu ─────────────────────────────────────────────────────
+ * Kế thừa `SoftDeleteEntity`: người tự xoá tài khoản thì đánh dấu chứ không
+ * mất. TypeORM tự thêm `WHERE deleted_at IS NULL` vào mọi câu `find`, nên
+ * không tầng nào phải nhớ mà lọc.
  *
- * Bảng này là TRỤC: bốn bảng kia trỏ về nó, nó trỏ ngược lại cả bốn. Ở
- * CommonJS thì vòng tròn đó chạy được; ở ESM thì không — Node ném
- * `Cannot access 'User' before initialization` ngay lúc nạp, trước khi có một
- * dòng nào chạy.
- *
- * Cách gỡ: phía trục dùng `import type` (biến mất lúc dịch, nên không tạo vòng)
- * cộng với TÊN BẢNG dạng chuỗi trong decorator, và bọc kiểu bằng `Relation<>`
- * để `emitDecoratorMetadata` đừng nhắc tới lớp kia. Bốn bảng con vẫn nhập
- * `User` bình thường — một chiều thì không thành vòng.
+ * Không có `@OneToMany` trỏ ngược về bốn bảng con — xem ghi chú "Không dùng
+ * quan hệ ORM" ở `user-identity.entity.ts`. Cần danh sách phiên của một người
+ * thì hỏi kho phiên bằng `userId`, và câu hỏi đó nhìn là thấy.
  */
 @Entity('users')
-export class User extends BaseEntity {
+export class User extends SoftDeleteEntity {
   @Column({ name: 'display_name', type: 'varchar', length: 24, nullable: true })
   displayName!: string | null;
 
@@ -62,20 +53,4 @@ export class User extends BaseEntity {
   @Column({ name: 'last_seen_at', type: 'timestamptz', nullable: true })
   lastSeenAt!: Date | null;
 
-  /** Người dùng tự xoá tài khoản. Cửa đăng nhập phải từ chối dòng có cột này. */
-  @Index('idx_users_deleted_at')
-  @Column({ name: 'deleted_at', type: 'timestamptz', nullable: true })
-  deletedAt!: Date | null;
-
-  @OneToMany('UserIdentity', 'user')
-  identities!: Relation<UserIdentity[]>;
-
-  @OneToMany('Session', 'user')
-  sessions!: Relation<Session[]>;
-
-  @OneToOne('UserStat', 'user')
-  stat!: Relation<UserStat> | null;
-
-  @OneToMany('UserAchievement', 'user')
-  achievements!: Relation<UserAchievement[]>;
 }

@@ -13,7 +13,7 @@ const SLOW_MS = 500;
  */
 @Injectable()
 export class TimingInterceptor implements NestInterceptor {
-  private readonly log = new Logger('Chậm');
+  private readonly log = new Logger('Slow');
 
   intercept(ctx: ExecutionContext, next: CallHandler): Observable<unknown> {
     const started = Date.now();
@@ -23,7 +23,7 @@ export class TimingInterceptor implements NestInterceptor {
       tap(() => {
         const ms = Date.now() - started;
         if (ms >= SLOW_MS) {
-          this.log.warn({ ms, path: req?.url }, `${req?.method ?? '?'} ${req?.url ?? '?'} — ${ms}ms`);
+          this.log.warn({ ms, path: req?.url }, `${req?.method ?? '?'} ${req?.url ?? '?'} took ${ms}ms`);
         }
       }),
     );

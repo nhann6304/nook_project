@@ -42,6 +42,10 @@ Xong thì:
 - Server: <http://localhost:4000> — Swagger ở `/docs`
 - App: quét mã QR bằng Expo Go
 
+Server ghi log **ra màn hình và ra `backend/.logs/server.log`**. Tệp đó là chỗ
+`backend/scripts/smoke-auth.sh` đọc mã 6 số — khi dev thì mã chỉ đi ra log, không
+gửi đi đâu cả.
+
 ## `push` — kiểm trước, đẩy sau
 
 ```bash
@@ -54,6 +58,25 @@ dịch và lint server → dịch và lint app → hỏi lại nếu đang đứ
 
 Hỏng ở bất kỳ bước nào là **dừng, không đẩy**. Đẩy một bản hỏng lên nhánh chung
 là làm mất buổi sáng của người kéo về sau.
+
+## Chạy thử luồng đăng nhập
+
+```bash
+./setup/mac/run.sh be            # cửa sổ 1
+./backend/scripts/smoke-auth.sh  # cửa sổ 2
+```
+
+15 bước, kết bằng một dòng ĐẠT/HỎNG. Chạy sau mỗi lần đụng vào phần đăng nhập.
+
+## Windows: chữ tiếng Việt ra thành rác
+
+Mấy tệp `.bat` mở đầu bằng `chcp 65001` để cửa sổ chạy bảng mã UTF-8. Không có
+dòng đó thì chữ có dấu của server hiện thành ký tự lạ.
+
+Vì `cmd` đọc chính tệp `.bat` theo bảng mã đang dùng, chữ **trong** mấy tệp đó
+cố ý để không dấu — đổi bảng mã giữa chừng rồi để chữ có dấu phía dưới là một
+cách làm hỏng chính tệp đó trên vài bản Windows. Log của server thì đã là tiếng
+Anh nên không dính chuyện này.
 
 ## `_lib.sh`
 

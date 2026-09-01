@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ERR, type TokenClaims } from '@nook/shared';
 import { Env } from '../../../../config/env/index.js';
+import { RequestContext } from '../../../../database/context/index.js';
 import { AppException } from '../../error/index.js';
 import { SessionService } from '../service/index.js';
 import type { AuthUser } from '../type/index.js';
@@ -39,6 +40,10 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt-access') 
     if (!(await this.sessions.isLive(claims.sid))) {
       throw new AppException(ERR.SESSION_REVOKED, HttpStatus.UNAUTHORIZED);
     }
+
+    // Từ đây trở đi, mọi kho dữ liệu biết ai đang thao tác — `created_by` và
+    // `updated_by` tự điền, không tầng nào phải chuyền tay id người gọi.
+    RequestContext.setActor(claims.sub);
 
     return { id: claims.sub, sessionId: claims.sid };
   }

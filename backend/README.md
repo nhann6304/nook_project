@@ -4,10 +4,15 @@ NestJS trên Fastify · PostgreSQL · Redis · TypeORM · Socket.IO · BullMQ.
 **Đăng nhập bằng email đã chạy được đầu-tới-cuối.**
 
 ```bash
-./setup/mac/run.sh be     # từ gốc kho — tự cài, tự dựng .env, tự migrate
+./setup/mac/run.sh be            # cửa sổ 1 — server
+./backend/scripts/smoke-auth.sh  # cửa sổ 2 — chạy thử toàn bộ luồng đăng nhập
 ```
 
 Cần: **Postgres trên máy** (Homebrew, cổng 5432) và **Docker** cho Redis.
+
+`smoke-auth.sh` đi hết 15 bước — xin mã, chặn xin dồn, mã sai, mã đúng, mã dùng
+một lần, xoay thẻ, thẻ bị chép, cổng thẻ — rồi kết bằng một dòng ĐẠT/HỎNG. Nó
+đọc mã 6 số từ `backend/.logs/server.log`, tệp mà `run.sh` ghi ra.
 
 - API — <http://localhost:4000>
 - Swagger — <http://localhost:4000/docs>
@@ -73,9 +78,10 @@ backend/
     │
     ├── config/                env/ · swagger/
     ├── database/
-    │   ├── entity/            base/ · user/ · session/ · achievement/
+    │   ├── entity/            base/ (thang uuid → audit → soft-delete) · user/ · session/ · achievement/
+    │   ├── context/           RequestContext — ai đang thao tác
     │   ├── migration/         SQL viết TAY (không có index — nạp bằng glob)
-    │   ├── repository/        BaseRepository — tự bám giao dịch
+    │   ├── repository/        BaseRepository · GenericRepository · RepositoryManager
     │   ├── transaction/       TransactionContext · TransactionService · @Transactional
     │   └── data-source/       cho bộ lệnh TypeORM
     │
@@ -90,6 +96,8 @@ backend/
     │   │   ├── filter/        gom mọi thứ hỏng về một hình dạng
     │   │   ├── interceptor/   bọc vỏ · đo chậm
     │   │   ├── mapper/        BaseMapper
+    │   │   ├── middleware/    mở RequestContext, chạy trước cổng thẻ
+    │   │   ├── service/       BaseCrudService (+ bài kiểm)
     │   │   └── pipe/          bộ kiểm đầu vào
     │   └── model/             một thư mục cho một thứ có thật trong sản phẩm
     │       ├── user/          user.module.ts + controller/ service/ repository/ mapper/ dto/
@@ -113,70 +121,128 @@ import { SessionRepository } from './repository/index.js';
 Chặng sau thêm vào `api/model/`: `circle` · `moment` · `thread` · `media` ·
 `memory` · `push`. Mỗi cái một thư mục đủ bộ, dựng theo đúng khuôn trên.
 
-## 3. Bốn khuôn mẫu — đọc trước khi viết cửa thứ chín
+## 3. Tầng dùng chung — đọc trước khi viết module thứ ba
 
-Mục này là phần đáng đọc nhất của file. Bốn thứ dưới đây khiến **cửa mới không
-phải viết lại thứ cửa cũ đã viết**.
+Mục này là phần đáng đọc nhất. Nó tồn tại để **module mới không phải viết lại
+thứ module cũ đã viết**.
 
-### Kho dữ liệu (`BaseRepository`)
-
-Dịch vụ **không** chạm vào `Repository<T>` của TypeORM, và **không** dùng
-`@InjectRepository`. Nó gọi kho, kho tự chọn `Repository` theo giao dịch đang
-chạy.
+### Module mới, phiên bản ngắn nhất
 
 ```ts
 @Injectable()
-export class UserRepository extends BaseRepository<User> {
-  constructor(@InjectDataSource() ds: DataSource) { super(ds, User); }
-  findAlive(id: string) { return this.findOne({ id, deletedAt: IsNull() }); }
+export class MomentService extends BaseCrudService<Moment, MomentDto> {
+  constructor(repos: RepositoryManager, mapper: MomentMapper) {
+    super(repos.for(Moment), mapper);   // xong. Đã có đủ create/read/update/delete/page
+  }
 }
 ```
 
-Vì sao không `@InjectRepository`: nó trả về một `Repository` **neo cứng vào kết
-nối gốc**. Gọi nó trong `tx.run()` thì câu lệnh chạy NGOÀI giao dịch — ghi được,
-không báo lỗi, và ở lại kể cả khi giao dịch bị huỷ.
+**Không phải viết tệp kho nào.** `RepositoryManager.for(Entity)` phát ra một
+kho đã biết bám giao dịch và tự đóng dấu sổ ghi việc. Có câu truy vấn riêng thì
+mới viết lớp kế thừa `BaseRepository` — hai cách dùng chung một lớp gốc nên
+hành vi giống hệt nhau.
 
-Câu SQL thô thì đi qua `this.manager.query(...)` — cũng bám giao dịch.
-
-### Giao dịch (`TransactionService` · `@Transactional()`)
+Cần khác thì **đè đúng phương thức đó**, mấy cái còn lại giữ nguyên:
 
 ```ts
-@Transactional()
-async attachOrCreate(...) {
-  const user = await this.users.create({});
-  await this.stats.create({ userId: user.id });
-  // ba câu vào hết, hoặc không câu nào vào
+override async create(input: DeepPartial<Moment>) {
+  await this.assertUnderDailyCap();      // luật riêng
+  return super.create(input);            // phần chung vẫn dùng lại
 }
+protected override notFoundCode() { return ERR.MOMENT_NOT_FOUND; }
 ```
 
-`AsyncLocalStorage` giữ `EntityManager` theo nhánh gọi, nên **không phải chuyền
-tay `manager` qua từng tầng**. Quên chuyền ở một chỗ là câu đó rơi ra ngoài
-giao dịch — loại bug nhìn bằng mắt không ra.
+### Không dùng quan hệ ORM
 
-**Lồng nhau thì NHẬP vào, không mở giao dịch mới.** Cần tách rời thật thì gọi
-`runIsolated()`, và phải cố ý.
+**Cấu trúc vẫn là nhiều-về-một.** Cột khoá ngoại vẫn còn, ràng buộc vẫn nằm
+trong cơ sở dữ liệu:
 
-### Bộ nắn (`BaseMapper`)
+```
+sessions.user_id          -> users.id           ON DELETE CASCADE
+user_identities.user_id   -> users.id           ON DELETE CASCADE
+user_stats.user_id        -> users.id           ON DELETE CASCADE
+user_achievements.user_id -> users.id           ON DELETE CASCADE
+user_achievements.achievement_key -> achievements.key  ON DELETE RESTRICT
+```
 
-Chỗ **duy nhất** quyết định người ngoài được thấy cột nào. Để việc này nằm rải
-trong dịch vụ thì sớm muộn có một cửa trả nguyên entity ra ngoài. Với Nook thì
-còn nặng hơn: luật sản phẩm cấm trả cấp thân của người khác cho người thứ ba, và
-chỗ chặn được là đây.
+Thứ **không** dùng là `@ManyToOne` / `@OneToMany` / `@OneToOne` / `@JoinColumn`.
+Tham chiếu là một cột `uuid` bình thường, và ai cần bên kia thì tự đi hỏi:
+
+```ts
+const identity = await this.identities.findByTarget(kind, value);
+const user = await this.users.findById(identity.userId, { withDeleted: true });
+```
+
+Hai câu hỏi thay vì một cú nối bảng — và cả hai đều nhìn thấy được.
+
+Bốn thứ decorator quan hệ mang theo mà không nói ra:
+
+- **nạp thừa hay thiếu** tuỳ chỗ gọi có nhớ khai `relations` hay không
+- **sinh câu JOIN** mà không ai đọc được nó ra sao cho tới lúc bật log SQL
+- **buộc hai tệp entity nhập khẩu lẫn nhau** — ở ESM thì vòng tròn đó làm server
+  chết ngay lúc nạp, và đã làm thật một lần
+- **đổi hành vi ngầm**: từ khi `User` xoá mềm, phần nối bảng tự lọc bỏ người đã
+  xoá, và một nhánh kiểm đang đúng bỗng ngã 500 — cũng đã xảy ra thật
+
+Ràng buộc trong cơ sở dữ liệu thì giữ, vì nó là chuyện khác hẳn: nó nằm trong
+SQL viết tay, đọc là thấy, và nó còn hiệu lực cả khi có người gõ `psql` xoá tay.
+
+### Thang bảng dữ liệu
+
+| Kế thừa | Được gì | Dùng khi |
+|---|---|---|
+| `UuidEntity` | `id` uuid | bảng tra, bảng nối |
+| `AuditEntity` | + `createdAt` `updatedAt` `createdBy` `updatedBy` | gần như mọi bảng có người thật đứng sau |
+| `SoftDeleteEntity` | + `deletedAt` `deletedBy` | chỉ khi xoá thật là sai |
+
+`createdBy` / `updatedBy` **tự điền**, không tầng nào chuyền tay id người gọi:
+
+```
+lớp giữa mở RequestContext  →  cổng thẻ gọi setActor(userId)  →  kho đọc ra lúc ghi
+```
+
+Bảng không có mấy cột đó thì kho bỏ qua, im lặng và đúng. Rỗng cũng là một câu
+trả lời đúng: lúc mở tài khoản thì chưa có ai để ghi.
+
+UUID chứ không phải số tự tăng — `/users/1` và `/users/2` nói ra app có bao
+nhiêu người và họ vào lúc nào. Với một app về chuyện riêng tư giữa vài người
+thì đó là chỗ rò không cần thiết.
+
+### Bốn lớp gốc
+
+**`BaseRepository`** — dịch vụ **không** chạm `Repository<T>` của TypeORM và
+**không** dùng `@InjectRepository`. Lý do thật: `@InjectRepository` trả về thứ
+**neo cứng vào kết nối gốc**; gọi trong `tx.run()` thì câu lệnh chạy NGOÀI giao
+dịch — ghi được, không báo lỗi, và ở lại kể cả khi giao dịch bị huỷ. Kho ở đây
+hỏi `TransactionContext` lúc dùng nên luôn ở đúng chỗ. Kèm `pageByCursor`.
+
+**`TransactionService` · `@Transactional()`** — `AsyncLocalStorage` giữ
+`EntityManager` theo nhánh gọi, nên không phải chuyền tay `manager` qua từng
+tầng. Lồng nhau thì **nhập vào**, không mở giao dịch con. Cần tách rời thật thì
+`runIsolated()` — và trong cả dự án chỉ có **đúng một chỗ** cần nó (xem mục 7).
+
+**`BaseMapper`** — chỗ **duy nhất** quyết định người ngoài thấy cột nào. Để việc
+này rải trong dịch vụ thì sớm muộn có cửa trả nguyên entity ra ngoài. Với Nook
+còn nặng hơn: luật cấm trả cấp thân của người khác cho người thứ ba, và chỗ chặn
+được là đây.
+
+**`BaseCrudService`** — sáu cửa cơ bản. Cố ý **không** có `@Transactional()`
+(mỗi phương thức chỉ chạy một câu lệnh, Postgres đã bọc sẵn) và **không** có
+hook `beforeCreate`/`afterCreate` (hook làm luồng chạy biến mất khỏi chỗ đọc —
+nhìn `create()` không còn biết thật ra có bao nhiêu thứ chạy). Có bài kiểm ở
+`base-crud.service.spec.ts`.
 
 ### Vỏ câu trả lời
 
 Tay viết controller chỉ trả về **dữ liệu**. `ResponseInterceptor` bọc, tự động:
 
 ```jsonc
-{ "ok": true,  "code": "auth.code_sent", "data": { }, "requestId": "req-9f2c" }
+{ "ok": true,  "code": "auth.code_sent",    "data": { }, "requestId": "req-9f2c" }
 { "ok": false, "code": "auth.code_expired", "status": 410, "requestId": "req-9f2c" }
 ```
 
 `ok` là chỗ rẽ nhánh duy nhất. `code` LUÔN là khoá tra chữ, **không bao giờ** là
-câu tiếng Việt — app tra bảng chữ của nó, server không biết máy người dùng đang
-để tiếng gì.
-
-Khai ở controller bằng ba decorator, không tả tay:
+câu tiếng Việt. Khai ở controller bằng ba decorator, không tả tay:
 
 ```ts
 @Message(MSG.CODE_SENT)        // đổi `code`; không dán thì mặc định 'ok'
@@ -263,9 +329,11 @@ tương đối phải có đuôi `.js`** (kể cả khi file nguồn là `.ts`).
 Nói cho đúng thì nó cũng đúng về nguyên tắc: entity không bao giờ được là mẫu
 Swagger, vì như vậy là để lộ cột ra ngoài.
 
-**Bảng `users` là trục của bốn quan hệ.** Phía trục dùng `import type` + tên
-bảng dạng chuỗi + `Relation<>`; bốn bảng con nhập `User` bình thường. Một chiều
-thì không thành vòng. Xem ghi chú trong `user.entity.ts`.
+**Vòng tròn nhập khẩu giữa các entity — nay không còn.** Trước đây `users` là
+trục của bốn quan hệ và phải lách bằng `import type` + tên bảng dạng chuỗi +
+`Relation<>`. Từ khi bỏ hẳn decorator quan hệ thì entity không nhập khẩu lẫn
+nhau nữa, nên vòng tròn không dựng lên được. Đừng thêm `@ManyToOne` vào — nó
+kéo ngay chuyện cũ trở lại.
 
 **Tệp data-source chỉ được xuất ra ĐÚNG MỘT thứ.** Thấy hai thứ là bộ lệnh
 TypeORM không đoán, nó từ chối. Và vì nó nằm ở `database/data-source/`, đường
@@ -289,6 +357,19 @@ vai `nook`. Đỡ một tầng: `psql` gõ thẳng được, dữ liệu không 
 `down -v`. Máy khác không có Postgres thì
 `docker compose -f backend/docker/compose.dev.yml --profile db up -d` rồi đổi
 `DB_PORT=5433`. **Redis vẫn ở Docker, cổng 6380** — 6379 đã có Redis của dự án khác.
+
+**Thẻ ký hai lần trong cùng một giây ra hai thẻ GIỐNG HỆT NHAU.** Ruột thẻ chỉ
+có `{sub, sid, typ, iat, exp}` mà `iat`/`exp` tính bằng giây — nên app vừa đăng
+nhập xong đã gọi làm mới thẻ là ra đúng thẻ cũ, việc xoay thẻ không xảy ra, và
+cái bẫy "thẻ bị chép" cũng im luôn. Nay mỗi thẻ mang một `jti` ngẫu nhiên. Bài
+kiểm `scripts/smoke-auth.sh` gọi làm mới **không có `sleep`** để luôn đi qua
+đúng ca này — đừng thêm `sleep` vào đó.
+
+**Log viết bằng TIẾNG ANH và chỉ ASCII.** Không phải chuyện thẩm mỹ: `cmd` trên
+Windows mặc định chạy bảng mã cũ, chữ tiếng Việt ra thành rác. Mấy tệp `.bat`
+có `chcp 65001` rồi, nhưng log còn đi ra tệp, ra chỗ gom log, ra cửa sổ của
+người khác. Chú thích trong mã và tài liệu thì vẫn tiếng Việt — chúng không đi
+qua console.
 
 **Node 22 hoặc 24, đừng dùng 23.** Vài thư viện khai `engines` là
 `^20.19 || ^22.13 || >=24`; bản lẻ nằm ngoài lời hứa đó.

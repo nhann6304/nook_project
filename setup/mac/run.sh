@@ -35,15 +35,24 @@ BE_PID=""
 cleanup() { [ -n "$BE_PID" ] && kill "$BE_PID" 2>/dev/null || true; }
 trap cleanup EXIT INT TERM
 
+# Log server ghi ra màn hình VÀ ra tệp. Ra tệp để `scripts/smoke-auth.sh` đọc
+# được mã 6 số — khi dev thì mã chỉ đi ra log, không gửi đi đâu cả.
+BE_LOG="$ROOT/backend/.logs/server.log"
+mkdir -p "$(dirname "$BE_LOG")"
+
 case "$WHAT" in
-  be) say "Server — http://localhost:4000/docs"; exec npm run dev:be ;;
-  fe) say "App — quét mã QR bằng Expo Go";       exec npm run dev:fe ;;
+  be)
+    say "Server — http://localhost:4000/docs"
+    skip "log ghi thêm vào $BE_LOG"
+    npm run dev:be 2>&1 | tee "$BE_LOG"
+    ;;
+  fe) say "App — quét mã QR bằng Expo Go"; exec npm run dev:fe ;;
   all)
     say "Server — http://localhost:4000/docs"
-    npm run dev:be & BE_PID=$!
+    npm run dev:be > "$BE_LOG" 2>&1 & BE_PID=$!
     sleep 2
     say "App — quét mã QR bằng Expo Go"
-    say "Ctrl+C một lần là tắt cả hai."
+    say "Ctrl+C một lần là tắt cả hai. Log server ở $BE_LOG"
     npm run dev:fe
     ;;
   *) die "Không hiểu '$WHAT'. Dùng: run.sh [all|be|fe]" ;;
