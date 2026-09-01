@@ -17,7 +17,7 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from 'react-native';
-import { color, layout, radius, space, type } from '@design';
+import { layout, radius, space, useColors, useStyles, type, type Palette } from '@design';
 
 export type FieldProps = TextInputProps & {
   /** Khối cố định nằm trước ô gõ, ví dụ "+84". */
@@ -32,6 +32,8 @@ export const Field = forwardRef<TextInput, FieldProps>(function Field(
   { prefix, suffix, invalid = false, containerStyle, style, onFocus, onBlur, ...rest },
   ref,
 ) {
+  const s = useStyles(make);
+  const c = useColors();
   const [focused, setFocused] = useState(false);
 
   const handleFocus = useCallback<NonNullable<TextInputProps['onFocus']>>(
@@ -56,9 +58,9 @@ export const Field = forwardRef<TextInput, FieldProps>(function Field(
       <TextInput
         ref={ref}
         style={[s.input, style]}
-        placeholderTextColor={color.textFaint}
-        selectionColor={color.accent}
-        cursorColor={color.accent}
+        placeholderTextColor={c.textFaint}
+        selectionColor={c.accent}
+        cursorColor={c.accent}
         maxFontSizeMultiplier={type.body.maxScale}
         onFocus={handleFocus}
         onBlur={handleBlur}
@@ -69,23 +71,24 @@ export const Field = forwardRef<TextInput, FieldProps>(function Field(
   );
 });
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   box: {
     flexDirection: 'row',
     alignItems: 'center',
     minHeight: layout.controlHeight,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: color.border,
-    backgroundColor: color.surface,
+    borderColor: c.border,
+    backgroundColor: c.surface,
     paddingHorizontal: space.lg,
     gap: space.sm,
   },
-  focused: { borderColor: color.accent },
-  invalid: { borderColor: color.danger },
+  focused: { borderColor: c.accent },
+  invalid: { borderColor: c.danger },
   input: {
     flex: 1,
-    color: color.text,
+    color: c.text,
     fontSize: type.body.fontSize,
     fontFamily: type.body.fontFamily,
     paddingVertical: space.md,

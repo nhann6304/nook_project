@@ -11,7 +11,7 @@
  */
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
-import { color, layout } from '@design';
+import { layout, useStyles, type Palette } from '@design';
 
 export type ScreenProps = {
   children: React.ReactNode;
@@ -29,6 +29,7 @@ export function Screen({
   edges = ['top', 'bottom'],
   keyboard = false,
 }: ScreenProps) {
+  const s = useStyles(make);
   const body = <View style={[s.body, padded && s.padded]}>{children}</View>;
 
   return (
@@ -49,8 +50,9 @@ export function Screen({
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.bg },
+const make = (c: Palette) =>
+  StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.bg },
   body: { flex: 1 },
   padded: { paddingHorizontal: layout.screenPadding },
 });

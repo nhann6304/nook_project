@@ -32,7 +32,10 @@ frontend/
 │
 ├── src/
 │   ├── design/             ⚠ NƠI DUY NHẤT ĐƯỢC VIẾT MÃ MÀU
-│   │   ├── tokens.ts       màu · khoảng cách · bo góc · chữ · nhịp · bóng
+│   │   ├── palettes.ts     5 bảng màu + số đo tương phản. Sinh bằng script
+│   │   ├── theme.ts        kho: bảng đang chọn, nhớ xuống đĩa
+│   │   ├── useStyles.ts    useColors() · useStyles() · glow() — hai cửa lấy màu
+│   │   ├── tokens.ts       khoảng cách · bo góc · chữ · nhịp (KHÔNG có màu)
 │   │   ├── styles.ts       style dùng chung (đã lặp ≥3 màn mới được vào)
 │   │   └── index.ts        cửa '@design'
 │   │
@@ -52,10 +55,11 @@ frontend/
 │   │
 │   ├── features/           THEO TÍNH NĂNG, không theo loại file
 │   │   ├── auth/           screens/ · lib/ (identity, authApi) · store/
-│   │   ├── camera/         screens/ · components/ (Shutter · SendButton · CameraPermission)
+│   │   ├── camera/         screens/ · components/ (Shutter · SendButton · CameraPermission
+│   │   │                     · FlashToggle · ScreenFlash · NookStrip · MomentsPeek)
 │   │   ├── feed/           screens/ · components/ (MomentCard) · store/ · types.ts
 │   │   ├── circle/         screens/
-│   │   └── settings/       screens/
+│   │   └── settings/       screens/ · components/ (PalettePicker)
 │   │
 │   ├── hooks/              hook dùng chung: useReduceMotion · useCountdown
 │   ├── lib/                TS thuần, KHÔNG React: haptics · storage
@@ -129,7 +133,8 @@ Bốn tầng, mỗi tầng biết đúng một việc. Không tầng nào nhảy
 | Gọi mạng | `src/features/<tính-năng>/lib/<tên>Api.ts` |
 | Trạng thái một tính năng | `src/features/<tính-năng>/store/` |
 | Trạng thái nhiều tính năng dùng | `src/stores/` |
-| Màu / khoảng cách / nhịp mới | `src/design/tokens.ts` **kèm lý do** |
+| Khoảng cách / bo góc / nhịp mới | `src/design/tokens.ts` **kèm lý do** |
+| Một bảng màu mới | `src/design/palettes.ts` — xem [`10-theme.md`](10-theme.md) §5 |
 | Một câu chữ mới | `src/i18n/locales/vi.ts` rồi `en.ts` — xem [`09-i18n.md`](09-i18n.md) |
 
 ## 5 · Đường dẫn tắt

@@ -43,14 +43,16 @@ và mục 3 trước tiên**. Ba luật hay bị quên nhất:
 - **App nói hai thứ tiếng.** Chữ nằm ở `frontend/src/i18n/locales/`, không viết
   thẳng vào màn hình. Backend trả **mã lỗi**, không trả câu tiếng Việt —
   câu chữ là việc của app, xem `frontend/docs/09-i18n.md`.
+- **Người dùng chọn được bảng màu** (5 bảng). Backend không cần biết — màu là
+  việc của app, xem `frontend/docs/10-theme.md`.
 
 ## Trạng thái
 
 | Phần | Trạng thái |
 |---|---|
-| Frontend | **Chạy được.** `cd frontend && npm run dev` rồi quét QR bằng Expo Go. Nói **hai thứ tiếng** (Việt + Anh), đổi trong Cài đặt. Ghim **SDK 54** vì Expo Go trên App Store kẹt ở đó — đừng nâng, xem `frontend/docs/06-libraries.md` mục 7 |
+| Frontend | **Chạy được.** `cd frontend && npm run dev` rồi quét QR bằng Expo Go. Nói **hai thứ tiếng** (Việt + Anh) và có **năm bảng màu** người dùng chọn được, cả hai đổi trong Cài đặt. Ghim **SDK 54** vì Expo Go trên App Store kẹt ở đó — đừng nâng, xem `frontend/docs/06-libraries.md` mục 7 |
 | Backend | Chưa có dòng nào |
-| Tài liệu | 14 file, đã chia theo hai bên |
+| Tài liệu | 15 file, đã chia theo hai bên |
 
 Việc tiếp theo của FE: màn **Trò chuyện** (nửa còn lại của tương tác hai chiều),
 rồi màn **Tên + ảnh** để đi hết một lượt onboarding.

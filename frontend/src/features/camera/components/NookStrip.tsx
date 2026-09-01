@@ -23,7 +23,7 @@ import { memo } from 'react';
 import { StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar, Scroll, Tap } from '@ui';
-import { color, radius, space } from '@design';
+import { radius, space, useColors, useStyles, type Palette } from '@design';
 
 const SIZE = 40;
 /** Sức chứa một góc. Cùng con số với CircleScreen — đổi thì đổi cả hai. */
@@ -45,6 +45,8 @@ export const NookStrip = memo(function NookStrip({
   onPressFriend: () => void;
   onInvite: () => void;
 }) {
+  const s = useStyles(make);
+  const c = useColors();
   const room = friends.length < CIRCLE_SIZE;
 
   return (
@@ -77,14 +79,15 @@ export const NookStrip = memo(function NookStrip({
           scaleTo={0.9}
           style={s.invite}
         >
-          <Ionicons name="add" size={22} color={color.textMuted} />
+          <Ionicons name="add" size={22} color={c.textMuted} />
         </Tap>
       ) : null}
     </Scroll>
   );
 });
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   box: { alignSelf: 'stretch', flexGrow: 0 },
   row: { justifyContent: 'center', gap: space.md, paddingHorizontal: space.lg },
   invite: {
@@ -92,8 +95,8 @@ const s = StyleSheet.create({
     height: SIZE,
     borderRadius: radius.full,
     borderWidth: 1.5,
-    borderColor: color.borderSoft,
-    backgroundColor: color.surfaceSunken,
+    borderColor: c.borderSoft,
+    backgroundColor: c.surfaceSunken,
     alignItems: 'center',
     justifyContent: 'center',
   },

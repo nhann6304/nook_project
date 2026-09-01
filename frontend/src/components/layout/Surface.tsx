@@ -3,7 +3,7 @@
  * Ba cái, không hơn. Cần cái thứ tư thì hỏi trước: nó khác Card ở chỗ nào?
  */
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { alpha, color, radius, space } from '@design';
+import { radius, space, useStyles, type Palette } from '@design';
 import { Tap } from '../primitives/Tap';
 
 export function Card({
@@ -18,6 +18,7 @@ export function Card({
   raised?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
+  const s = useStyles(make);
   const box = [s.card, raised && s.raised, style];
   if (!onPress) return <View style={box}>{children}</View>;
   return (
@@ -40,6 +41,7 @@ export function Pill({
   onPhoto?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
+  const s = useStyles(make);
   const box = [s.pill, onPhoto && s.pillOnPhoto, style];
   if (!onPress) return <View style={box}>{children}</View>;
   return (
@@ -51,15 +53,17 @@ export function Pill({
 
 /** Kẻ mảnh giữa các hàng. Dày đúng 1 pixel THẬT của máy, không phải 1pt. */
 export function Divider({ inset }: { inset?: boolean }) {
+  const s = useStyles(make);
   return <View style={[s.divider, inset && s.dividerInset]} />;
 }
 
-const s = StyleSheet.create({
-  card: { backgroundColor: color.surface, borderRadius: radius.lg, padding: space.lg },
-  raised: { backgroundColor: color.surfaceRaised },
+const make = (c: Palette) =>
+  StyleSheet.create({
+  card: { backgroundColor: c.surface, borderRadius: radius.lg, padding: space.lg },
+  raised: { backgroundColor: c.surfaceRaised },
 
   pill: {
-    backgroundColor: color.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.full,
     paddingHorizontal: space.lg,
     minHeight: 34,
@@ -68,8 +72,8 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     gap: space.sm,
   },
-  pillOnPhoto: { backgroundColor: alpha.onPhoto },
+  pillOnPhoto: { backgroundColor: c.onPhoto },
 
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: color.borderSoft },
+  divider: { height: StyleSheet.hairlineWidth, backgroundColor: c.borderSoft },
   dividerInset: { marginLeft: space.huge + space.md },
 });

@@ -20,7 +20,7 @@
 import { forwardRef, useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { alpha, color, radius, space, type } from '@design';
+import { radius, space, useColors, useStyles, type, type Palette } from '@design';
 
 export const CAPTION_MAX = 80;
 
@@ -37,6 +37,8 @@ export const CaptionField = forwardRef<TextInput, CaptionFieldProps>(function Ca
   { value, onChangeText, placeholder, label, editable = true },
   _ref,
 ) {
+  const s = useStyles(make);
+  const c = useColors();
   const input = useRef<TextInput>(null);
   const [focused, setFocused] = useState(false);
   const focus = useCallback(() => input.current?.focus(), []);
@@ -52,7 +54,7 @@ export const CaptionField = forwardRef<TextInput, CaptionFieldProps>(function Ca
       style={[s.pill, focused && s.pillFocused]}
     >
       {showIcon ? (
-        <Ionicons name="create-outline" size={16} color={color.text} style={s.icon} />
+        <Ionicons name="create-outline" size={16} color={c.text} style={s.icon} />
       ) : null}
 
       <View style={s.inputBox}>
@@ -61,9 +63,9 @@ export const CaptionField = forwardRef<TextInput, CaptionFieldProps>(function Ca
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={color.text}
-          selectionColor={color.accent}
-          cursorColor={color.accent}
+          placeholderTextColor={c.text}
+          selectionColor={c.accent}
+          cursorColor={c.accent}
           maxLength={CAPTION_MAX}
           editable={editable}
           multiline
@@ -79,26 +81,27 @@ export const CaptionField = forwardRef<TextInput, CaptionFieldProps>(function Ca
   );
 });
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   pill: {
     maxWidth: '86%',
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.sm,
-    backgroundColor: alpha.onPhoto,
+    backgroundColor: c.onPhoto,
     borderRadius: radius.lg,
     paddingHorizontal: space.lg,
     paddingVertical: space.sm,
     // Viền LUÔN có, chỉ đổi màu khi focus — cộng viền lúc focus làm viên thuốc
     // cao thêm 2px và cả khối nhích một nấc ngay lúc bàn phím đang bật lên.
     borderWidth: 1,
-    borderColor: alpha.hairlineOnPhoto,
+    borderColor: c.hairlineOnPhoto,
   },
-  pillFocused: { borderColor: color.accent },
+  pillFocused: { borderColor: c.accent },
   icon: { opacity: 0.8 },
   inputBox: { flexShrink: 1 },
   input: {
-    color: color.text,
+    color: c.text,
     fontSize: type.body.fontSize,
     lineHeight: type.body.lineHeight,
     fontFamily: type.body.fontFamily,

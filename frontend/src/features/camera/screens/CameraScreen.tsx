@@ -24,11 +24,13 @@ import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { CaptionField, IconButton, Img, Loading, Pill, Rings, Screen, Txt } from '@ui';
-import { color, common, layout, media, radius, space } from '@design';
+import { common, layout, media, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import * as feel from '@/lib/haptics';
 import type { PhotoSource } from '@/features/feed/types';
 import { CameraPermission } from '../components/CameraPermission';
+import { FlashToggle, type FlashMode } from '../components/FlashToggle';
+import { ScreenFlash, WARMUP_MS, type ScreenFlashHandle } from '../components/ScreenFlash';
 import { MomentsPeek } from '../components/MomentsPeek';
 import { NookStrip, type StripFriend } from '../components/NookStrip';
 import { SendButton } from '../components/SendButton';
@@ -60,17 +62,21 @@ export function CameraScreen({
   /** Gửi cho cả góc. Trả về khi đã gửi xong — màn tự dọn ảnh và quay về chụp. */
   onSend: (shot: Shot) => Promise<void>;
 }) {
+  const s = useStyles(make);
+  const c = useColors();
   const t = useT();
   const { width } = useWindowDimensions();
   const friendCount = friends.length;
 
   const [permission, requestPermission, refreshPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('front');
+  const [flash, setFlash] = useState<FlashMode>('off');
   const [shot, setShot] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
   const [stageHeight, setStageHeight] = useState(0);
   const cam = useRef<CameraView>(null);
+  const screenFlash = useRef<ScreenFlashHandle>(null);
 
   const measure = useCallback((e: LayoutChangeEvent) => {
     setStageHeight(e.nativeEvent.layout.height);
@@ -80,13 +86,23 @@ export function CameraScreen({
     if (busy || !cam.current) return;
     setBusy(true);
     feel.capture();
+
+    // Camera trước không có đèn thật — lấy màn hình làm đèn. Phải chờ màn kịp
+    // sáng rồi mới chụp, nếu không cảm biến đọc xong khung trước khi có sáng.
+    const useScreen = flash === 'on' && facing === 'front';
+    if (useScreen) {
+      screenFlash.current?.on();
+      await new Promise((r) => setTimeout(r, WARMUP_MS));
+    }
+
     try {
       const photo = await cam.current.takePictureAsync({ quality: 0.8 });
       if (photo?.uri) setShot(photo.uri);
     } finally {
+      screenFlash.current?.off();
       setBusy(false);
     }
-  }, [busy]);
+  }, [busy, facing, flash]);
 
   // Thư viện ảnh xin quyền riêng, và expo-image-picker tự lo hộp thoại đó.
   // Người dùng bấm huỷ thì `canceled` = true — im lặng quay về, không báo lỗi:
@@ -125,6 +141,10 @@ export function CameraScreen({
     setFacing((f) => (f === 'front' ? 'back' : 'front'));
   }, []);
 
+  const toggleFlash = useCallback(() => {
+    setFlash((f) => (f === 'off' ? 'on' : 'off'));
+  }, []);
+
   // Chưa đọc xong quyền: đừng vẽ gì. Nháy màn xin quyền lên rồi tắt ngay là tệ
   // hơn hẳn một nhịp trống, vì người dùng kịp đọc và kịp hoang mang.
   if (!permission) {
@@ -157,7 +177,7 @@ export function CameraScreen({
           {reviewing ? (
             <>
               <IconButton label={t('review.discard')} onPress={discard}>
-                <Ionicons name="close" size={24} color={color.text} />
+                <Ionicons name="close" size={24} color={c.text} />
               </IconButton>
 
               {/* Chỉ để thông tin, KHÔNG bấm được: Nook không có bước chọn
@@ -185,7 +205,7 @@ export function CameraScreen({
               <Txt variant="section">{t('camera.openCircle')}</Txt>
 
               <IconButton label={t('camera.openSettings')} onPress={onOpenSettings}>
-                <Ionicons name="settings-outline" size={20} color={color.textMuted} />
+                <Ionicons name="settings-outline" size={20} color={c.textMuted} />
               </IconButton>
             </>
           )}
@@ -208,11 +228,25 @@ export function CameraScreen({
         <View style={s.stage} onLayout={measure}>
           {frame > 0 ? (
             <View style={[s.frame, { width: frame, height: frame }]}>
-              <CameraView ref={cam} style={common.absoluteFill} facing={facing} />
+              <CameraView
+                ref={cam}
+                style={common.absoluteFill}
+                facing={facing}
+                // Camera SAU dùng đèn thật; camera trước đã có đèn màn hình lo,
+                // bật cả hai là loé hai lần.
+                flash={facing === 'back' ? flash : 'off'}
+              />
 
               {reviewing ? (
                 <Img source={{ uri: shot }} style={media.fill} contentFit="cover" />
               ) : null}
+
+              {/* Công tắc đèn nằm trong góc khung, chỉ có nghĩa lúc đang ngắm. */}
+              {reviewing ? null : (
+                <View style={s.frameCorner}>
+                  <FlashToggle mode={flash} label={t('camera.flash')} onToggle={toggleFlash} />
+                </View>
+              )}
 
               <View style={s.captionSlot} pointerEvents={reviewing ? 'auto' : 'none'}>
                 {reviewing ? (
@@ -224,7 +258,7 @@ export function CameraScreen({
                   />
                 ) : (
                   <Pill onPhoto>
-                    <Ionicons name="create-outline" size={15} color={color.textMuted} />
+                    <Ionicons name="create-outline" size={15} color={c.textMuted} />
                     <Txt variant="label" tone="muted">
                       {t('camera.captionHint')}
                     </Txt>
@@ -246,13 +280,13 @@ export function CameraScreen({
           ) : (
             <>
               <IconButton label={t('camera.gallery')} onPress={() => void pick()}>
-                <Ionicons name="images-outline" size={24} color={color.textMuted} />
+                <Ionicons name="images-outline" size={24} color={c.textMuted} />
               </IconButton>
 
               <Shutter onPress={() => void capture()} busy={busy} label={t('camera.shutter')} />
 
               <IconButton label={t('camera.flip')} onPress={flip}>
-                <Ionicons name="camera-reverse-outline" size={24} color={color.textMuted} />
+                <Ionicons name="camera-reverse-outline" size={24} color={c.textMuted} />
               </IconButton>
             </>
           )}
@@ -276,13 +310,18 @@ export function CameraScreen({
           )}
         </View>
       </View>
+
+      {/* Nhuộm trắng CẢ MÀN chứ không riêng khung: cần bao nhiêu ánh sáng thì
+          lấy bấy nhiêu. Nằm ngoài cùng nên nó phủ lên mọi thứ. */}
+      <ScreenFlash ref={screenFlash} />
     </Screen>
   );
 }
 
 const FOOTER_HEIGHT = 76;
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   root: { flex: 1, alignItems: 'center', paddingVertical: space.sm },
 
   topBar: {
@@ -296,7 +335,7 @@ const s = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: radius.full,
-    backgroundColor: color.surface,
+    backgroundColor: c.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -324,9 +363,10 @@ const s = StyleSheet.create({
   },
   frame: {
     borderRadius: radius.viewfinder,
-    backgroundColor: color.surface,
+    backgroundColor: c.surface,
     overflow: 'hidden',
   },
+  frameCorner: { position: 'absolute', top: space.lg, left: space.lg },
   captionSlot: {
     position: 'absolute',
     left: 0,

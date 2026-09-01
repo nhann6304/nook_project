@@ -6,23 +6,62 @@
  *      máy Android rơi về Roboto, tiếng Việt lệch hẳn nhịp so với iOS.
  *   2. Chặn trần phóng chữ theo từng bậc (maxScale). Người bật cỡ chữ lớn nhất
  *      mà không chặn thì tiêu đề đẩy nút ra khỏi màn.
- *   3. Lấy màu từ token, không ai gõ hex.
+ *   3. Lấy màu từ bảng màu đang chọn, không ai gõ hex.
+ *
+ * Cỡ chữ và MÀU gộp chung vào một bảng style dựng theo bảng màu: mỗi cặp
+ * (bậc chữ × sắc thái) là MỘT mục đã đăng ký sẵn, nên lúc vẽ chỉ tra bảng chứ
+ * không dựng object `{ color }` mới. Đây là component bị gọi nhiều nhất cả app,
+ * một object thừa mỗi lần vẽ ở đây là hàng nghìn object mỗi lần cuộn feed.
  */
 import { StyleSheet, Text, type TextProps } from 'react-native';
-import { color, type } from '@design';
+import { type, useStyles, type Palette } from '@design';
 
 type Variant = keyof typeof type;
 type Tone = 'default' | 'muted' | 'faint' | 'accent' | 'onAccent' | 'danger' | 'mint' | 'honey';
 
-const TONE: Record<Tone, string> = {
-  default: color.text,
-  muted: color.textMuted,
-  faint: color.textFaint,
-  accent: color.accent,
-  onAccent: color.onAccent,
-  danger: color.danger,
-  mint: color.mint,
-  honey: color.honey,
+const VARIANTS = Object.keys(type) as Variant[];
+const TONES: Tone[] = [
+  'default',
+  'muted',
+  'faint',
+  'accent',
+  'onAccent',
+  'danger',
+  'mint',
+  'honey',
+];
+
+const toneColor = (c: Palette, tone: Tone): string =>
+  tone === 'default'
+    ? c.text
+    : tone === 'muted'
+      ? c.textMuted
+      : tone === 'faint'
+        ? c.textFaint
+        : tone === 'accent'
+          ? c.accent
+          : tone === 'onAccent'
+            ? c.onAccent
+            : tone === 'danger'
+              ? c.danger
+              : tone === 'mint'
+                ? c.mint
+                : c.honey;
+
+const make = (c: Palette) => {
+  const sheet: Record<string, object> = { center: { textAlign: 'center' } };
+  for (const v of VARIANTS) {
+    const t = type[v];
+    for (const tone of TONES) {
+      sheet[`${v}_${tone}`] = {
+        fontSize: t.fontSize,
+        lineHeight: t.lineHeight,
+        fontFamily: t.fontFamily,
+        color: toneColor(c, tone),
+      };
+    }
+  }
+  return StyleSheet.create(sheet);
 };
 
 export type TxtProps = TextProps & {
@@ -38,29 +77,12 @@ export function Txt({
   style,
   ...rest
 }: TxtProps) {
-  const t = type[variant];
+  const s = useStyles(make);
   return (
     <Text
-      maxFontSizeMultiplier={t.maxScale}
-      style={[
-        v[variant],
-        { color: TONE[tone] },
-        center && s.center,
-        style,
-      ]}
+      maxFontSizeMultiplier={type[variant].maxScale}
+      style={[s[`${variant}_${tone}`], center && s.center, style]}
       {...rest}
     />
   );
 }
-
-const s = StyleSheet.create({ center: { textAlign: 'center' } });
-
-// Dựng sẵn một lần lúc nạp module, không phải mỗi lần vẽ.
-const v = StyleSheet.create({
-  display: { fontSize: type.display.fontSize, lineHeight: type.display.lineHeight, fontFamily: type.display.fontFamily },
-  title: { fontSize: type.title.fontSize, lineHeight: type.title.lineHeight, fontFamily: type.title.fontFamily },
-  section: { fontSize: type.section.fontSize, lineHeight: type.section.lineHeight, fontFamily: type.section.fontFamily },
-  body: { fontSize: type.body.fontSize, lineHeight: type.body.lineHeight, fontFamily: type.body.fontFamily },
-  label: { fontSize: type.label.fontSize, lineHeight: type.label.lineHeight, fontFamily: type.label.fontFamily },
-  faint: { fontSize: type.faint.fontSize, lineHeight: type.faint.lineHeight, fontFamily: type.faint.fontFamily },
-});

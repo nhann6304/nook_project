@@ -16,7 +16,8 @@ Gọi skill **`nook-ui`** (`../.claude/skills/nook-ui/SKILL.md`). Nó là luật
 giao diện: dùng mảnh nào có sẵn, cái gì bị cấm, vì sao. Ba câu tóm tắt:
 
 1. **Không tự chế** — mọi thứ nhìn thấy được đã có trong `@ui`.
-2. **Không viết số** — màu/khoảng cách/nhịp nằm trong `@design`.
+2. **Không viết số** — khoảng cách/bo góc/nhịp nằm trong `@design`; màu qua
+   `useStyles`/`useColors` vì người dùng đổi được bảng màu.
 3. **Không viết chữ** — mọi câu hiện ra nằm trong `@i18n`, hai thứ tiếng.
 4. **Mượt là yêu cầu, không phải điểm cộng** — xem `docs/08-performance.md`.
 
@@ -40,6 +41,16 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 **Kỹ thuật**
 
 - `src/design/` là **nơi duy nhất** được viết mã màu. ESLint chặn ở mọi chỗ khác.
+- **Màu đi qua hook, không phải hằng số.** `@design` không xuất `color` nữa:
+  ```tsx
+  const make = (c: Palette) => StyleSheet.create({ box: { backgroundColor: c.surface } });
+  function Thing() {
+    const s = useStyles(make);   // StyleSheet theo bảng màu đang chọn
+    const c = useColors();       // màu rời, cho prop color của icon
+  }
+  ```
+  `make` phải khai ở **tầng module**, không khai trong thân component — khai
+  trong thân là mỗi lần vẽ một khoá mới và bảng nhớ không bao giờ trúng.
 - `src/i18n/locales/` là **nơi duy nhất** được viết câu tiếng Việt. Màn hình gọi
   `t('khoá')`; ngoài React thì gọi `translate('khoá')`. Thêm khoá vào `vi.ts` là
   tsc lập tức đòi bản `en.ts` — không có cách nào để một câu chưa dịch lọt ra.
@@ -59,18 +70,19 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 
 **Giao diện**
 
-- Nền tối `color.bg` mặc định. Không làm chế độ sáng ở V0.1.
+- Nền tối mặc định, **năm bảng màu** cho người dùng chọn. Không làm chế độ sáng ở V0.1.
 - **Mỗi màn đúng MỘT** nút `variant="primary"`.
-- Chữ trên nút primary là màu **tối** (`color.onAccent`), không phải trắng —
-  chữ trắng trên dải cam–hồng chỉ đạt 2.3:1.
-- Khung ngắm camera lấy cạnh bằng số **nhỏ hơn** của hai thứ: 96% bề ngang máy,
-  và chiều cao thật đo bằng `onLayout`. Đừng tính tay từ chắn tai thỏ.
+- Chữ trên nút primary là màu **tối** (`c.onAccent`), không phải trắng — chữ
+  trắng trên dải màu chỉ đạt 1.9–2.5:1 ở mọi bảng.
+- Khung ngắm camera lấy cạnh bằng số **nhỏ hơn** của hai thứ: **100%** bề ngang
+  máy, và chiều cao thật đo bằng `onLayout`. Đừng tính tay từ chắn tai thỏ.
+  Đo trên ảnh Locket: khung của họ 413/414pt — tràn mép, và **vuông**.
 - **Không thanh tab.** Điều hướng bằng cử chỉ.
 - **Không có linh vật** (bỏ 31/08/2026). Chỗ trống dùng `<GhostFrame>` hoặc
   lưới mười chỗ.
 - Wordmark **chỉ** ở màn Chào mừng; dấu hiệu `<Rings>` thì dùng trong app.
 - Vùng chạm tối thiểu `layout.minTouch` (48).
-- `color.textDisabled` **không phải màu chữ đọc được** (2.55:1).
+- `c.textDisabled` **không phải màu chữ đọc được** (~2.4:1 ở mọi bảng).
 - Không hiện số like/lượt xem công khai, không bảng xếp hạng giữa bạn bè.
 - Cấp thân chỉ hai người trong cặp nhìn thấy.
 - Ba từ **cấm** trong chữ hiện cho người dùng: *điểm*, *hạng*, *nhiệm vụ*
@@ -94,9 +106,10 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] Hệ token, style chung, 28 component, luật ESLint riêng
 - [x] React Compiler bật; Reanimated / FlashList / expo-image đã vào đúng chỗ
 - [x] Màn Chào mừng, Đăng nhập, Nhập mã, Camera, Vừa chụp xong, Khoảnh khắc, Góc
-- [x] Camera: khung ngắm 96% bề ngang, có hàng người trong góc + cửa nhòm
-      Khoảnh khắc ở chân màn; chọn ảnh có sẵn đã nối
 - [x] **Hai thứ tiếng** (vi + en), an toàn kiểu, đổi trong Cài đặt — `docs/09-i18n.md`
+- [x] **Năm bảng màu** người dùng chọn được, mọi cặp đã đo WCAG — `docs/10-theme.md`
+- [x] Camera: khung TRÀN MÉP, đèn (camera trước dùng đèn màn hình), chọn ảnh có sẵn
+- [x] Caption nằm TRONG ảnh ở cả lúc gửi lẫn trong feed
 - [x] Xin quyền camera: có nhánh "đã từ chối" mở Cài đặt máy + tự đọc lại khi quay về
 - [x] Điều hướng expo-router có kiểu, kho trạng thái Zustand
 - [x] Icon PNG cho store đã xuất; wordmark "nook" vẽ lại bằng SVG

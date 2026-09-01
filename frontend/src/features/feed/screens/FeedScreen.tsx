@@ -14,7 +14,7 @@
 import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { EmptyState, GhostFrame, List, Screen, TopBar, Txt } from '@ui';
-import { color, radius, space } from '@design';
+import { radius, space, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
 import { MomentCard, type Quick } from '../components/MomentCard';
 import type { Moment } from '../types';
@@ -28,6 +28,7 @@ export function FeedScreen({
   onOpenCamera: () => void;
   onReply: (moment: Moment, emoji: Quick | null) => void;
 }) {
+  const s = useStyles(make);
   const t = useT();
   const ago = useAgo();
 
@@ -91,6 +92,7 @@ const keyOf = (m: Moment) => m.id;
 
 /** Nhắc luật 48 giờ ngay trong feed: người dùng không phải đi tìm trong Cài đặt. */
 function Footer({ note }: { note: string }) {
+  const s = useStyles(make);
   return (
     <View style={s.footer}>
       <Txt variant="faint" tone="faint" center>
@@ -102,6 +104,7 @@ function Footer({ note }: { note: string }) {
 
 /** Ba khung đứt nét xoè ra — cùng dáng với chồng ảnh ở màn Chào mừng. */
 function GhostFan() {
+  const s = useStyles(make);
   return (
     <View style={s.fan}>
       <View style={[s.fanCard, s.fanLeft]}>
@@ -117,7 +120,8 @@ function GhostFan() {
   );
 }
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   bar: { paddingHorizontal: space.lg },
   footer: { paddingHorizontal: space.lg, paddingTop: space.sm },
 
@@ -125,7 +129,7 @@ const s = StyleSheet.create({
   fanCard: {
     position: 'absolute',
     borderRadius: radius.frame,
-    backgroundColor: color.surfaceSunken,
+    backgroundColor: c.surfaceSunken,
   },
   fanLeft: { transform: [{ translateX: -40 }, { translateY: 8 }, { rotate: '-9deg' }], opacity: 0.5 },
   fanRight: { transform: [{ translateX: 40 }, { translateY: 8 }, { rotate: '9deg' }], opacity: 0.5 },

@@ -10,7 +10,7 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Rect } from 'react-native-svg';
-import { color, radius } from '@design';
+import { radius, useColors, useStyles } from '@design';
 
 export const GhostFrame = memo(function GhostFrame({
   size = 160,
@@ -22,6 +22,8 @@ export const GhostFrame = memo(function GhostFrame({
   ratio?: number;
   children?: React.ReactNode;
 }) {
+  const s = useStyles(make);
+  const c = useColors();
   const h = size * ratio;
   return (
     <View style={[s.box, { width: size, height: h }]}>
@@ -32,7 +34,7 @@ export const GhostFrame = memo(function GhostFrame({
           width={size - 2}
           height={h - 2}
           rx={radius.frame}
-          stroke={color.border}
+          stroke={c.border}
           strokeWidth={1.5}
           strokeDasharray="7 8"
           fill="none"
@@ -43,6 +45,7 @@ export const GhostFrame = memo(function GhostFrame({
   );
 });
 
-const s = StyleSheet.create({
+const make = () =>
+  StyleSheet.create({
   box: { alignItems: 'center', justifyContent: 'center' },
 });

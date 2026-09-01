@@ -24,7 +24,7 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { color, space } from '@design';
+import { space, useColors, useStyles } from '@design';
 
 const VB_W = 214;
 const VB_H = 106;
@@ -38,10 +38,11 @@ export type WordmarkProps = {
 };
 
 export const Wordmark = memo(function Wordmark({ size = 34, mono = false }: WordmarkProps) {
+  const c = useColors();
   const width = (size * VB_W) / VB_H;
-  const ink = color.text;
-  const hug = mono ? ink : color.accent;
-  const held = mono ? ink : color.accentBright;
+  const ink = c.text;
+  const hug = mono ? ink : c.accent;
+  const held = mono ? ink : c.accentBright;
 
   return (
     <View accessible accessibilityRole="header" accessibilityLabel="nook" collapsable={false}>
@@ -74,9 +75,11 @@ const LINE = {
 
 /** Dấu hiệu + chữ nằm ngang. Chỉ dùng ở màn Chào mừng. */
 export function Lockup({ children }: { children?: React.ReactNode }) {
+  const s = useStyles(make);
   return <View style={s.lockup}>{children}</View>;
 }
 
-const s = StyleSheet.create({
+const make = () =>
+  StyleSheet.create({
   lockup: { flexDirection: 'row', alignItems: 'center', gap: space.md },
 });

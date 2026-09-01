@@ -17,7 +17,7 @@
 import { memo } from 'react';
 import { View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { color } from '@design';
+import { useColors } from '@design';
 
 export type RingsProps = {
   size?: number;
@@ -38,8 +38,9 @@ export const Rings = memo(function Rings({
   ghost = false,
   label = 'Nook',
 }: RingsProps) {
-  const hug = mono ? color.text : color.accent;
-  const closed = mono ? color.text : ghost ? color.border : color.accentBright;
+  const c = useColors();
+  const hug = mono ? c.text : c.accent;
+  const closed = mono ? c.text : ghost ? c.border : c.accentBright;
 
   return (
     <View

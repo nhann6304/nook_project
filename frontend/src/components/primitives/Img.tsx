@@ -15,7 +15,7 @@
  */
 import { Image, type ImageProps } from 'expo-image';
 import { StyleSheet } from 'react-native';
-import { color, duration } from '@design';
+import { duration, useStyles, type Palette } from '@design';
 
 export type ImgProps = ImageProps & {
   /** Bắt buộc truyền khi ảnh nằm trong danh sách tái dùng ô. */
@@ -23,6 +23,7 @@ export type ImgProps = ImageProps & {
 };
 
 export function Img({ style, ...rest }: ImgProps) {
+  const s = useStyles(make);
   return (
     <Image
       contentFit="cover"
@@ -34,7 +35,8 @@ export function Img({ style, ...rest }: ImgProps) {
   );
 }
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   // Nền cùng màu bề mặt: lúc ảnh chưa về thì thấy một ô xám, không thấy lỗ đen.
-  base: { backgroundColor: color.surface },
+  base: { backgroundColor: c.surface },
 });

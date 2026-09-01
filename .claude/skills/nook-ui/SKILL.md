@@ -8,7 +8,8 @@ description: Luật dựng giao diện của Nook (React Native + Expo). Dùng s
 Đọc file này TRƯỚC khi gõ dòng `.tsx` đầu tiên. Ba câu tóm tắt:
 
 1. **Không tự chế.** Mọi thứ nhìn thấy được đều đã có sẵn trong `@ui`.
-2. **Không viết số.** Màu, khoảng cách, bo góc, thời lượng đều nằm trong `@design`.
+2. **Không viết số.** Khoảng cách, bo góc, thời lượng nằm trong `@design`.
+   **Màu đi qua hook** — người dùng chọn được bảng màu, xem mục 2.
 3. **Không viết chữ.** Mọi câu hiện cho người dùng nằm trong `@i18n`, hai thứ tiếng.
 4. **Mượt là yêu cầu, không phải điểm cộng.** Xem mục "Luật hiệu năng".
 
@@ -48,6 +49,8 @@ Trước khi viết một component mới, tra bảng này. Cột phải là th�
 | Khung "lẽ ra có ảnh" | `<GhostFrame>` | `borderStyle:'dashed'` |
 | Màn trống | `<EmptyState>` | một dòng chữ giữa màn |
 | Vòng chờ | `<Loading>` | `<ActivityIndicator>` |
+| Thanh trên màn con | `<TopBar>` | tự dựng hàng nút + tiêu đề |
+| Ô nhập nổi trên ảnh | `<CaptionField>` | `<Field>` (có viền, dán đè lên ảnh) |
 | **Bất kỳ chữ nào hiện ra** | `t('khoá')` từ `@i18n` | viết thẳng câu vào JSX — **ESLint chặn** |
 
 **Thiếu mảnh?** Thêm vào `src/components/`, xuất ở `src/components/index.ts`,
@@ -55,33 +58,44 @@ rồi thêm một dòng vào bảng trên. Đừng dựng tại chỗ trong màn
 
 ---
 
-## 2 · Không viết số
+## 2 · Không viết số, và không giữ màu trong hằng
+
+### Màu: qua hook, luôn luôn
+
+`@design` **không xuất `color`.** Người dùng chọn được một trong năm bảng màu,
+nên một hằng số màu ở tầng module sẽ chốt cứng bảng cũ mãi mãi.
 
 ```tsx
-import { color, space, radius, type, duration, spring, layout } from '@design';
+// TẦNG MODULE — không khai trong thân component
+const make = (c: Palette) =>
+  StyleSheet.create({ box: { backgroundColor: c.surface, padding: space.lg } });
+
+export function Thing() {
+  const s = useStyles(make);   // StyleSheet theo bảng đang chọn
+  const c = useColors();       // màu rời, cho prop `color` của icon
+  return <View style={s.box}><Ionicons name="heart" color={c.accent} /></View>;
+}
 ```
+
+`make` không dùng `c` thì viết `const make = () => StyleSheet.create({…})`.
+Chi tiết và lý do: `frontend/docs/10-theme.md`.
+
+**Đừng** đọc `c.accent` rồi nhớ vào một biến sống lâu — đổi bảng là nó cũ.
+
+### Mọi thứ còn lại: lấy từ thang, không gõ số
 
 | Loại | Lấy từ | Ví dụ |
 |---|---|---|
-| Màu | `color.*` | `color.accent`, `color.textMuted` |
-| Trong suốt | `alpha.*` | `alpha.scrim`, `alpha.glowSoft` |
-| Dải màu | `gradient.warm` | |
+| Màu | `c.*` qua `useStyles` / `useColors` | `c.accent`, `c.textMuted`, `c.onPhoto` |
+| Dải màu | `c.gradient`, `c.gradientPressed` | góc chiếu: `GRADIENT_START/END` |
+| Vòng độ thân | `ringColor(c, level)` | |
+| Bóng màu nhấn | `glow(c).accent` | |
 | Khoảng cách | `space.*` | `xs 4 · sm 8 · md 12 · lg 16 · xl 20 · xxl 24 · xxxl 32 · huge 48` |
-| Bo góc | `radius.*` | `sm 12 · md 16 · lg 20 · xl 24 · frame 32 · full 999` |
-| Cỡ chữ | `type.*` qua `<Txt variant>` | `display · title · section · body · label · faint` |
+| Bo góc | `radius.*` | `sm 12 · md 16 · lg 20 · xl 24 · frame 24 · viewfinder 56 · full 999` |
+| Cỡ chữ | `<Txt variant>` | `display · title · section · body · label · faint` |
 | Thời lượng | `duration.*` | `instant 90 · fast 150 · base 220 · slow 320` |
 | Độ nảy | `spring.*` | `press · enter · gentle` |
-| Bóng | `elevation.*` | `glowAccent` |
 | Rung | `@/lib/haptics` | `tap() confirm() capture() select() reject()` |
-
-Cần màu mới → thêm vào `src/design/tokens.ts` **kèm lý do và số đo tương phản**,
-đừng thả hex vào chỗ đang code.
-
-Cần `13px`? Không có. Thang khoảng cách là bội số của 4 và đó là chủ đích —
-`space.md` (12) hoặc `space.lg` (16). Chênh 1px không ai thấy; ba mươi con số
-lẻ rải khắp code thì ai cũng thấy.
-
----
 
 ## 3 · Luật hiệu năng
 

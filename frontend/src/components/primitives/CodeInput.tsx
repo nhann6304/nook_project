@@ -13,7 +13,7 @@
  */
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { color, radius, space, type } from '@design';
+import { radius, space, useStyles, type, type Palette } from '@design';
 import { Txt } from './Txt';
 
 export type CodeInputProps = {
@@ -36,6 +36,7 @@ export function CodeInput({
   editable = true,
   label,
 }: CodeInputProps) {
+  const s = useStyles(make);
   const input = useRef<TextInput>(null);
   const [focused, setFocused] = useState(false);
 
@@ -95,7 +96,8 @@ export function CodeInput({
   );
 }
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   wrap: { width: '100%' },
   row: { flexDirection: 'row', gap: space.sm },
   cell: {
@@ -105,14 +107,14 @@ const s = StyleSheet.create({
     aspectRatio: 48 / 56,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: color.border,
-    backgroundColor: color.surfaceSunken,
+    borderColor: c.border,
+    backgroundColor: c.surfaceSunken,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cellFilled: { backgroundColor: color.surface },
-  cellActive: { borderColor: color.accent },
-  cellInvalid: { borderColor: color.danger },
+  cellFilled: { backgroundColor: c.surface },
+  cellActive: { borderColor: c.accent },
+  cellInvalid: { borderColor: c.danger },
   char: { fontSize: type.title.fontSize },
   // Ô thật đè lên sáu ô giả: trong suốt nhưng vẫn nhận bàn phím và tự điền.
   realInput: { ...StyleSheet.absoluteFillObject, opacity: 0, color: 'transparent' },

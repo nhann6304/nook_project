@@ -7,10 +7,12 @@
  */
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { color, common, duration, space } from '@design';
+import { common, duration, space, useColors, useStyles } from '@design';
 import { Txt } from '../primitives/Txt';
 
 export function Loading({ label, delay = duration.base }: { label?: string; delay?: number }) {
+  const s = useStyles(make);
+  const c = useColors();
   const [show, setShow] = useState(delay === 0);
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export function Loading({ label, delay = duration.base }: { label?: string; dela
 
   return (
     <View style={s.box}>
-      <ActivityIndicator color={color.accent} />
+      <ActivityIndicator color={c.accent} />
       {label ? (
         <Txt variant="label" tone="muted" center>
           {label}
@@ -33,6 +35,7 @@ export function Loading({ label, delay = duration.base }: { label?: string; dela
   );
 }
 
-const s = StyleSheet.create({
+const make = () =>
+  StyleSheet.create({
   box: { ...common.center, flex: 1, gap: space.md },
 });

@@ -8,7 +8,7 @@
  */
 import { StyleSheet, View } from 'react-native';
 import { Avatar, Col, EmptyState, Rings, Screen, TopBar, Txt } from '@ui';
-import { color, radius, space } from '@design';
+import { radius, space, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 
 const CIRCLE_SIZE = 10;
@@ -24,6 +24,7 @@ export function CircleScreen({
   onInvite: () => void;
   onClose: () => void;
 }) {
+  const s = useStyles(make);
   const t = useT();
   const empty = friends.length === 0;
 
@@ -72,6 +73,7 @@ export function CircleScreen({
 
 /** Lưới 5×2 — hình cho màn trống. Ô đầu là bạn, chín ô sau còn trống. */
 function SlotGrid({ filled, emptyLabel }: { filled: number; emptyLabel: string }) {
+  const s = useStyles(make);
   return (
     <View style={s.artGrid}>
       {Array.from({ length: CIRCLE_SIZE }, (_, i) =>
@@ -89,6 +91,7 @@ function SlotGrid({ filled, emptyLabel }: { filled: number; emptyLabel: string }
 
 /** Một chỗ trống: vòng đứt nét, không có chữ. */
 function EmptySlot({ size = 58, label }: { size?: number; label: string }) {
+  const s = useStyles(make);
   return (
     <View
       accessible
@@ -99,7 +102,8 @@ function EmptySlot({ size = 58, label }: { size?: number; label: string }) {
   );
 }
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   head: { paddingTop: space.md, paddingBottom: space.xl },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.lg, justifyContent: 'center' },
@@ -116,13 +120,13 @@ const s = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: radius.full,
-    backgroundColor: color.surface,
+    backgroundColor: c.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptySlot: {
     borderWidth: 1.5,
-    borderColor: color.borderSoft,
-    backgroundColor: color.surfaceSunken,
+    borderColor: c.borderSoft,
+    backgroundColor: c.surfaceSunken,
   },
 });

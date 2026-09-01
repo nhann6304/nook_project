@@ -11,7 +11,7 @@
       "ios",
       "android"
     ],
-    "backgroundColor": "#0E0D0C",
+    "backgroundColor": "#151312",
     "icon": "./assets/images/icon.png",
     "ios": {
       "supportsTablet": false,
@@ -27,7 +27,7 @@
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon-foreground.png",
-        "backgroundColor": "#0E0D0C"
+        "backgroundColor": "#151312"
       },
       "permissions": [
         "android.permission.CAMERA",
@@ -56,7 +56,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#0E0D0C"
+          "backgroundColor": "#151312"
         }
       ],
       "expo-localization"

@@ -9,7 +9,7 @@
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { color, gradient, radius, spring } from '@design';
+import { GRADIENT_END, GRADIENT_START, radius, spring, useColors, useStyles, type Palette } from '@design';
 import { Tap } from '@ui';
 
 const RING = 84;
@@ -24,6 +24,8 @@ export function Shutter({
   busy?: boolean;
   label: string;
 }) {
+  const s = useStyles(make);
+  const c = useColors();
   const p = useSharedValue(0);
 
   const core = useAnimatedStyle(() => ({
@@ -49,9 +51,9 @@ export function Shutter({
     >
       <Animated.View style={[s.core, core]}>
         <LinearGradient
-          colors={gradient.warm}
-          start={gradient.start}
-          end={gradient.end}
+          colors={c.gradient}
+          start={GRADIENT_START}
+          end={GRADIENT_END}
           style={s.fill}
         />
       </Animated.View>
@@ -60,20 +62,21 @@ export function Shutter({
   );
 }
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   ring: { width: RING, height: RING, alignItems: 'center', justifyContent: 'center' },
   ringLine: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: radius.full,
     borderWidth: 3.5,
-    borderColor: color.accent,
+    borderColor: c.accent,
   },
   core: {
     width: CORE,
     height: CORE,
     borderRadius: radius.full,
     overflow: 'hidden',
-    backgroundColor: color.accent,
+    backgroundColor: c.accent,
   },
   fill: StyleSheet.absoluteFillObject,
 });

@@ -22,7 +22,7 @@ import {
   Segmented,
   Txt,
 } from '@ui';
-import { color, layout, space } from '@design';
+import { layout, space, useStyles, type Palette } from '@design';
 import { useT, type T } from '@i18n';
 import { formatVnPhone, isValidTarget, type SignInMethod } from '../lib/identity';
 
@@ -55,6 +55,7 @@ export function SignInScreen({
   error?: string | null;
   onSubmit: (method: SignInMethod, target: string) => void;
 }) {
+  const s = useStyles(make);
   const t = useT();
   const [method, setMethod] = useState<SignInMethod>('email');
   const [value, setValue] = useState('');
@@ -153,6 +154,7 @@ export function SignInScreen({
  * Nội dung thật chưa có; chỗ này giữ đúng bố cục để sau thay chữ là xong.
  */
 function Terms({ text }: { text: string }) {
+  const s = useStyles(make);
   return (
     <Row style={s.terms}>
       <View style={s.termsBar} />
@@ -163,12 +165,13 @@ function Terms({ text }: { text: string }) {
   );
 }
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   head: { paddingTop: space.xxl, maxWidth: layout.maxTextWidth },
   form: { marginTop: space.xxxl, gap: space.lg, maxWidth: layout.maxTextWidth, width: '100%' },
   field: { marginTop: space.xs },
 
   terms: { marginTop: space.sm, gap: space.md, alignItems: 'flex-start' },
-  termsBar: { width: 2, alignSelf: 'stretch', backgroundColor: color.borderSoft },
+  termsBar: { width: 2, alignSelf: 'stretch', backgroundColor: c.borderSoft },
   termsText: { flex: 1 },
 });

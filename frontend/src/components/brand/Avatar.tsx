@@ -10,7 +10,7 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { color, ringColor } from '@design';
+import { ringColor, useColors, useStyles, type Palette } from '@design';
 import { Txt } from '../primitives/Txt';
 import { Img } from '../primitives/Img';
 import { Tap } from '../primitives/Tap';
@@ -42,6 +42,8 @@ export const Avatar = memo(function Avatar({
   label,
   recyclingKey,
 }: AvatarProps) {
+  const s = useStyles(make);
+  const c = useColors();
   const stroke = 2.5;
   const r = size / 2 - stroke / 2;
   const inner = size - stroke * 2;
@@ -53,7 +55,7 @@ export const Avatar = memo(function Avatar({
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke={dormant ? color.border : ringColor(level)}
+          stroke={dormant ? c.border : ringColor(c, level)}
           strokeWidth={stroke}
           strokeDasharray={dormant ? '4 5' : undefined}
           fill="none"
@@ -87,11 +89,12 @@ export const Avatar = memo(function Avatar({
   );
 });
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   tap: { alignSelf: 'flex-start' },
   box: { alignItems: 'center', justifyContent: 'center' },
   inner: {
-    backgroundColor: color.surface,
+    backgroundColor: c.surface,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',

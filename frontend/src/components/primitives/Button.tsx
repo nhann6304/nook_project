@@ -8,11 +8,11 @@
  *
  * Chữ trên nút primary là màu TỐI (#1A0E08), không phải trắng. Số đo trên ba
  * chặng của dải: chữ tối cho 8.37 / 6.85 / 6.47:1, chữ trắng chỉ 2.26 / 2.76 /
- * 2.92:1 — trượt chuẩn ở mọi chặng. Xem `color.onAccent` trong tokens.
+ * 2.92:1 — trượt chuẩn ở mọi chặng. Xem `c.onAccent` trong tokens.
  */
 import { ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { color, elevation, gradient, layout, radius, space } from '@design';
+import { GRADIENT_END, GRADIENT_START, glow, layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { Txt } from './Txt';
 import { Tap, type TapProps } from './Tap';
 
@@ -40,6 +40,8 @@ export function Button({
   feedback = variant === 'primary' ? 'confirm' : 'tap',
   ...rest
 }: ButtonProps) {
+  const s = useStyles(make);
+  const c = useColors();
   const off = disabled === true || loading;
   const primary = variant === 'primary';
 
@@ -64,16 +66,16 @@ export function Button({
           trông như miếng dán; dải màu làm nó trông có ánh sáng chiếu vào. */}
       {primary ? (
         <LinearGradient
-          colors={gradient.warm}
-          start={gradient.start}
-          end={gradient.end}
+          colors={c.gradient}
+          start={GRADIENT_START}
+          end={GRADIENT_END}
           style={s.fill}
           pointerEvents="none"
         />
       ) : null}
 
       {loading ? (
-        <ActivityIndicator color={primary ? color.onAccent : color.text} />
+        <ActivityIndicator color={primary ? c.onAccent : c.text} />
       ) : (
         <View style={s.content}>
           {icon}
@@ -93,7 +95,8 @@ const TONE = {
   danger: 'danger',
 } as const;
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   base: {
     minHeight: layout.controlHeight,
     borderRadius: radius.xl,
@@ -106,12 +109,12 @@ const s = StyleSheet.create({
   block: { alignSelf: 'stretch' },
   fill: StyleSheet.absoluteFillObject,
 
-  primary: { backgroundColor: color.accent, ...elevation.glowAccent },
-  secondary: { borderWidth: 1, borderColor: color.border, backgroundColor: color.surface },
+  primary: { backgroundColor: c.accent, ...glow(c).accent },
+  secondary: { borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
   ghost: { backgroundColor: 'transparent' },
-  danger: { borderWidth: 1, borderColor: color.danger, backgroundColor: 'transparent' },
+  danger: { borderWidth: 1, borderColor: c.danger, backgroundColor: 'transparent' },
 
-  off: { opacity: 0.4, ...elevation.none },
+  off: { opacity: 0.4, ...glow(c).none },
 
   content: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   label: { fontSize: 15 },

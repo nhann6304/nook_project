@@ -9,7 +9,7 @@ import { ActivityIndicator, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Tap } from '@ui';
-import { color, gradient, radius } from '@design';
+import { GRADIENT_END, GRADIENT_START, radius, useColors, useStyles, type Palette } from '@design';
 
 const SIZE = 72;
 
@@ -22,6 +22,8 @@ export function SendButton({
   busy?: boolean;
   label: string;
 }) {
+  const s = useStyles(make);
+  const c = useColors();
   return (
     <Tap
       accessibilityRole="button"
@@ -34,22 +36,23 @@ export function SendButton({
       style={s.box}
     >
       <LinearGradient
-        colors={gradient.warm}
-        start={gradient.start}
-        end={gradient.end}
+        colors={c.gradient}
+        start={GRADIENT_START}
+        end={GRADIENT_END}
         style={s.fill}
         pointerEvents="none"
       />
       {busy ? (
-        <ActivityIndicator color={color.onAccent} />
+        <ActivityIndicator color={c.onAccent} />
       ) : (
-        <Ionicons name="arrow-up" size={30} color={color.onAccent} />
+        <Ionicons name="arrow-up" size={30} color={c.onAccent} />
       )}
     </Tap>
   );
 }
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   box: {
     width: SIZE,
     height: SIZE,
@@ -57,7 +60,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    backgroundColor: color.accent,
+    backgroundColor: c.accent,
   },
   fill: StyleSheet.absoluteFillObject,
 });

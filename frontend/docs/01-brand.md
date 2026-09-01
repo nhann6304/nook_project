@@ -105,6 +105,47 @@ cần tự giới thiệu nữa.
 
 ---
 
+## 1.5 Màu không còn là một bảng cố định
+
+Người dùng **chọn được bảng màu** (Cài đặt → Màu sắc). Có năm bảng, mặc định là
+**Đất nung**:
+
+| Bảng | Sắc | Dành cho |
+|---|---|---|
+| **Đất nung** | cam đất → hồng | mặc định, ấm |
+| **Rêu** | xanh lá trầm | mắt mỏi với màu ấm |
+| **Biển đêm** | lơ → lam | phòng tối, đọc khuya |
+| **Hoàng hôn** | tím khói → hồng | dịu, hơi lạnh |
+| **Trung tính** | vàng đồng rất nhạt | gần như không màu |
+
+**Mỗi bảng là một bộ ĐẦY ĐỦ.** Nền, bề mặt, đường kẻ, chữ đều ngả theo sắc của
+bảng — chỉ đổi mỗi màu nhấn thì cả năm bảng trông y hệt nhau, chỉ khác cái nút.
+
+Số đo đầy đủ ở `src/design/palettes.ts`, sinh bằng script rồi chép vào. Cả năm
+bảng đều đạt: chữ ≥ 14:1 · chữ mờ ≥ 6.8:1 · chữ nhạt ≥ 4.8:1 · mọi sắc nhấn
+≥ 4.8:1 · chữ tối trên dải màu ≥ 5.6:1 ở cả ba chặng.
+
+### Bão hoà đi theo SẮC, không dùng chung một con số
+
+Bản sinh đầu tiên đặt một mức bão hoà chung cho mọi bảng và ra kết quả sai:
+cam ở S=0.76 trông ấm, còn xanh lá ở S=0.74 trông như đèn neon. Mắt chịu được
+sắc ấm đậm hơn hẳn sắc lạnh. Trần bão hoà theo vùng sắc:
+
+| Vùng sắc | Trần |
+|---|---|
+| cam / đỏ / hồng | 0.72 – 0.76 |
+| vàng | 0.52 |
+| xanh lá | 0.40 |
+| lơ | 0.46 |
+| lam | 0.52 |
+| tím | 0.54 |
+
+### Nền không bao giờ là đen tuyệt đối
+
+Bản trước dùng `#0E0D0C` — gần như đen thuần. Đặt một màu bão hoà lên đó là
+biên độ sáng lớn nhất một màn hình làm được, mắt phải đổi khẩu độ mỗi lần nhìn
+từ nền sang nút. Mọi bảng giờ đặt nền ở độ sáng ~8%, ngả theo sắc của bảng.
+
 ## 2. Màu
 
 ### 2.1 Song sắc: lửa đất → hồng

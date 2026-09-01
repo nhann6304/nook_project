@@ -66,6 +66,7 @@ export const en: Mirror<typeof vi> = {
     openCircle: 'Your nook',
     openSettings: 'Settings',
     gallery: 'Pick a photo you already have',
+    flash: 'Turn the light on or off',
     shutter: 'Take a moment',
     flip: 'Flip camera',
     peekEmpty: 'No moments yet',
@@ -128,6 +129,17 @@ export const en: Mirror<typeof vi> = {
     },
     waitingMessage: 'Invite your first friend. Only ten spots, so choose well.',
     invite: 'Invite a friend',
+  },
+
+  theme: {
+    title: 'Colours',
+    label: 'App colour set',
+    note: 'Changes right away. Every set is measured so text stays readable.',
+    terracotta: 'Terracotta',
+    moss: 'Moss',
+    deepsea: 'Deep sea',
+    dusk: 'Dusk',
+    neutral: 'Neutral',
   },
 
   language: {

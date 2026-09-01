@@ -18,7 +18,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { alpha } from '@design';
+import { useColors, useStyles } from '@design';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 export const Halo = memo(function Halo({
@@ -30,6 +30,8 @@ export const Halo = memo(function Halo({
   breathe?: boolean;
   children?: React.ReactNode;
 }) {
+  const s = useStyles(make);
+  const c = useColors();
   const t = useSharedValue(0);
   const reduced = useReduceMotion();
 
@@ -53,9 +55,9 @@ export const Halo = memo(function Halo({
   return (
     <View style={[s.box, { width: size, height: size }]}>
       <Animated.View style={[s.box, StyleSheet.absoluteFill, anim]}>
-        <Ring size={size} scale={1} bg={alpha.glowFaint} />
-        <Ring size={size} scale={0.72} bg={alpha.glowSoft} />
-        <Ring size={size} scale={0.48} bg={alpha.glowStrong} />
+        <Ring size={size} scale={1} bg={c.glowFaint} />
+        <Ring size={size} scale={0.72} bg={c.glowSoft} />
+        <Ring size={size} scale={0.48} bg={c.glowStrong} />
       </Animated.View>
       {children}
     </View>
@@ -63,6 +65,7 @@ export const Halo = memo(function Halo({
 });
 
 function Ring({ size, scale, bg }: { size: number; scale: number; bg: string }) {
+  const s = useStyles(make);
   const d = size * scale;
   return (
     <View
@@ -72,7 +75,8 @@ function Ring({ size, scale, bg }: { size: number; scale: number; bg: string }) 
   );
 }
 
-const s = StyleSheet.create({
+const make = () =>
+  StyleSheet.create({
   box: { alignItems: 'center', justifyContent: 'center' },
   ring: { position: 'absolute' },
 });

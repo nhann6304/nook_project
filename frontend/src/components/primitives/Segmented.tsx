@@ -8,7 +8,7 @@
 import { useCallback, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { color, radius, spring } from '@design';
+import { radius, spring, useStyles, type Palette } from '@design';
 import { Txt } from './Txt';
 import { Tap } from './Tap';
 
@@ -25,6 +25,7 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
   label?: string;
 }) {
+  const s = useStyles(make);
   const [width, setWidth] = useState(0);
   const index = Math.max(
     0,
@@ -87,10 +88,11 @@ export function Segmented<T extends string>({
 
 const PAD = 3;
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   track: {
     flexDirection: 'row',
-    backgroundColor: color.surfaceSunken,
+    backgroundColor: c.surfaceSunken,
     borderRadius: radius.full,
     padding: PAD,
   },
@@ -100,7 +102,7 @@ const s = StyleSheet.create({
     left: PAD,
     bottom: PAD,
     borderRadius: radius.full,
-    backgroundColor: color.surfaceRaised,
+    backgroundColor: c.surfaceRaised,
   },
   segment: { flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center' },
   label: { fontSize: 14 },

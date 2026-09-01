@@ -6,7 +6,7 @@
  * thành cái sọt rác và không ai dám sửa gì trong đó nữa.
  */
 import { StyleSheet, type ImageStyle, type TextStyle, type ViewStyle } from 'react-native';
-import { color, layout, radius, space } from './tokens';
+import { layout, radius } from './tokens';
 
 /**
  * Khai kiểu từng mục thay vì để TypeScript tự suy.
@@ -15,7 +15,6 @@ import { color, layout, radius, space } from './tokens';
  */
 type Common = {
   fill: ViewStyle;
-  fillBg: ViewStyle;
   center: ViewStyle;
   centerX: ViewStyle;
   centerY: ViewStyle;
@@ -24,8 +23,6 @@ type Common = {
   rowCenter: ViewStyle;
   padded: ViewStyle;
   textBlock: ViewStyle;
-  card: ViewStyle;
-  hairline: ViewStyle;
   textCenter: TextStyle;
   touchTarget: ViewStyle;
   absoluteFill: ViewStyle;
@@ -34,7 +31,6 @@ type Common = {
 export const common = StyleSheet.create<Common>({
   /* — Nền — */
   fill: { flex: 1 },
-  fillBg: { flex: 1, backgroundColor: color.bg },
 
   /* — Căn — */
   center: { alignItems: 'center', justifyContent: 'center' },
@@ -51,9 +47,6 @@ export const common = StyleSheet.create<Common>({
   /** Khối chữ dài. Chặn trần bề ngang để máy gập không kéo dòng ra 90 ký tự. */
   textBlock: { maxWidth: layout.maxTextWidth, alignSelf: 'center', width: '100%' },
 
-  /* — Bề mặt — */
-  card: { backgroundColor: color.surface, borderRadius: radius.lg, padding: space.lg },
-  hairline: { height: StyleSheet.hairlineWidth, backgroundColor: color.borderSoft },
 
   /* — Chữ — */
   textCenter: { textAlign: 'center' },

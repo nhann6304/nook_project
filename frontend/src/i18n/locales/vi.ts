@@ -71,6 +71,7 @@ export const vi = {
     openCircle: 'Góc của bạn',
     openSettings: 'Cài đặt',
     gallery: 'Chọn ảnh có sẵn',
+    flash: 'Bật tắt đèn',
     shutter: 'Chụp khoảnh khắc',
     flip: 'Đổi camera trước sau',
     peekEmpty: 'Chưa có khoảnh khắc nào',
@@ -129,6 +130,18 @@ export const vi = {
     waitingTitle: { other: 'Góc này còn chờ {count} người' },
     waitingMessage: 'Mời người đầu tiên vào đi. Chỉ mười chỗ thôi, nên chọn kỹ nhé.',
     invite: 'Mời một người bạn',
+  },
+
+  /* ---------- Màu sắc ---------- */
+  theme: {
+    title: 'Màu sắc',
+    label: 'Bảng màu của app',
+    note: 'Đổi là thấy ngay. Bảng nào cũng đã đo để chữ đọc được rõ.',
+    terracotta: 'Đất nung',
+    moss: 'Rêu',
+    deepsea: 'Biển đêm',
+    dusk: 'Hoàng hôn',
+    neutral: 'Trung tính',
   },
 
   /* ---------- Ngôn ngữ ---------- */

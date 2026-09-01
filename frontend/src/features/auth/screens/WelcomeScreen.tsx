@@ -21,7 +21,7 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { Button, Col, Flex, GhostFrame, Halo, Row, Screen, Txt, Wordmark } from '@ui';
-import { color, layout, radius, space, spring } from '@design';
+import { layout, radius, space, spring, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
@@ -32,6 +32,7 @@ export function WelcomeScreen({
   onCreate: () => void;
   onSignIn: () => void;
 }) {
+  const s = useStyles(make);
   const t = useT();
 
   return (
@@ -78,6 +79,7 @@ export function WelcomeScreen({
  * cả, và vẽ ảnh mẫu ở đây là hứa một thứ chưa tồn tại.
  */
 function PhotoFan({ label }: { label: string }) {
+  const s = useStyles(make);
   const reduced = useReduceMotion();
   // Tên biến là `spread` chứ không phải `t`: `t` giờ là hàm dịch, dùng lại tên
   // đó ở đây là che mất nó trong cả file.
@@ -102,6 +104,7 @@ function PhotoFan({ label }: { label: string }) {
 
 /** Một khung trong chồng. index: -1 trái, 0 giữa (trên cùng), 1 phải. */
 function Card({ t, index, label }: { t: SharedValue<number>; index: number; label?: string }) {
+  const s = useStyles(make);
   const anim = useAnimatedStyle(() => {
     const spread = t.value;
     return {
@@ -128,7 +131,8 @@ function Card({ t, index, label }: { t: SharedValue<number>; index: number; labe
   );
 }
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   top: { gap: space.sm, paddingTop: space.md },
 
   stage: { alignItems: 'center', justifyContent: 'center' },
@@ -136,7 +140,7 @@ const s = StyleSheet.create({
   card: {
     position: 'absolute',
     borderRadius: radius.frame,
-    backgroundColor: color.surfaceSunken,
+    backgroundColor: c.surfaceSunken,
   },
 
   words: { marginTop: space.xxl, maxWidth: layout.maxTextWidth, alignSelf: 'center' },

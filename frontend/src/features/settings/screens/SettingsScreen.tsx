@@ -13,7 +13,7 @@
  */
 import { StyleSheet, View } from 'react-native';
 import { Avatar, Button, Card, Col, Row, Screen, Scroll, Segmented, TopBar, Txt } from '@ui';
-import { layout, space } from '@design';
+import { layout, space, useStyles, type PaletteKey } from '@design';
 import {
   LOCALES,
   LOCALE_NAMES,
@@ -24,19 +24,27 @@ import {
   useT,
   type Locale,
 } from '@i18n';
+import { PalettePicker } from '../components/PalettePicker';
 
-const OPTIONS = LOCALES.map((l) => ({ value: l, label: LOCALE_NAMES[l] }));
+const LOCALE_OPTIONS = LOCALES.map((l) => ({ value: l, label: LOCALE_NAMES[l] }));
 
 export function SettingsScreen({
   name,
   friendCount,
+  palette,
+  paletteNames,
+  onPickPalette,
   onClose,
 }: {
   name: string;
   friendCount: number;
+  palette: PaletteKey;
+  paletteNames: Readonly<Record<PaletteKey, string>>;
+  onPickPalette: (key: PaletteKey) => void;
   onClose: () => void;
 }) {
   const t = useT();
+  const s = useStyles(make);
   const locale = useLocale();
   const following = useFollowingSystem();
   const setLocale = useSetLocale();
@@ -63,14 +71,24 @@ export function SettingsScreen({
           </Row>
         </Card>
 
-        <View style={s.group}>
-          <Txt variant="label" tone="faint" style={s.groupTitle}>
-            {t('language.title')}
-          </Txt>
+        <Group title={t('theme.title')}>
+          <Card style={s.card}>
+            <PalettePicker
+              current={palette}
+              names={paletteNames}
+              label={t('theme.label')}
+              onPick={onPickPalette}
+            />
+            <Txt variant="faint" tone="muted">
+              {t('theme.note')}
+            </Txt>
+          </Card>
+        </Group>
 
+        <Group title={t('language.title')}>
           <Card style={s.card}>
             <Segmented<Locale>
-              options={OPTIONS}
+              options={LOCALE_OPTIONS}
               value={locale}
               onChange={setLocale}
               label={t('language.label')}
@@ -84,15 +102,28 @@ export function SettingsScreen({
               <Button label={t('language.system')} variant="ghost" onPress={followSystem} block />
             )}
           </Card>
-        </View>
+        </Group>
       </Scroll>
     </Screen>
   );
 }
 
-const s = StyleSheet.create({
-  profile: { marginTop: space.lg, maxWidth: layout.maxTextWidth, width: '100%' },
-  group: { marginTop: space.xxl, gap: space.sm, maxWidth: layout.maxTextWidth, width: '100%' },
-  groupTitle: { paddingHorizontal: space.xs },
-  card: { gap: space.lg },
-});
+function Group({ title, children }: { title: string; children: React.ReactNode }) {
+  const s = useStyles(make);
+  return (
+    <View style={s.group}>
+      <Txt variant="label" tone="faint" style={s.groupTitle}>
+        {title}
+      </Txt>
+      {children}
+    </View>
+  );
+}
+
+const make = () =>
+  StyleSheet.create({
+    profile: { marginTop: space.lg, maxWidth: layout.maxTextWidth, width: '100%' },
+    group: { marginTop: space.xxl, gap: space.sm, maxWidth: layout.maxTextWidth, width: '100%' },
+    groupTitle: { paddingHorizontal: space.xs },
+    card: { gap: space.lg },
+  });

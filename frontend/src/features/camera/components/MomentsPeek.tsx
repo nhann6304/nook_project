@@ -16,7 +16,7 @@ import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Img, Tap, Txt } from '@ui';
-import { color, radius, space } from '@design';
+import { radius, space, useColors, useStyles, type Palette } from '@design';
 import type { PhotoSource } from '@/features/feed/types';
 
 const MAX = 3;
@@ -34,6 +34,8 @@ export const MomentsPeek = memo(function MomentsPeek({
   accessibilityLabel: string;
   onPress: () => void;
 }) {
+  const s = useStyles(make);
+  const c = useColors();
   const shown = photos.slice(0, MAX);
 
   return (
@@ -62,17 +64,18 @@ export const MomentsPeek = memo(function MomentsPeek({
         {label}
       </Txt>
 
-      <Ionicons name="chevron-up" size={16} color={color.textFaint} />
+      <Ionicons name="chevron-up" size={16} color={c.textFaint} />
     </Tap>
   );
 });
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
-    backgroundColor: color.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.full,
     paddingLeft: space.sm,
     paddingRight: space.lg,

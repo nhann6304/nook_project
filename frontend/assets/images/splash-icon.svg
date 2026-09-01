@@ -1,6 +1,6 @@
 <!-- Nook — hình trên màn splash. Nền trong suốt; màu nền do
      expo-splash-screen đặt (backgroundColor trong app.json). -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512" role="img" aria-label="Nook">
-  <path d="M50.9 34.7A20 20 0 1 0 50.9 65.3" fill="none" stroke="#FF7A3D" stroke-width="9" stroke-linecap="round"/>
-  <circle cx="56" cy="50" r="20" fill="none" stroke="#FFA166" stroke-width="9"/>
+  <path d="M50.9 34.7A20 20 0 1 0 50.9 65.3" fill="none" stroke="#E8834F" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="56" cy="50" r="20" fill="none" stroke="#F7A97A" stroke-width="9"/>
 </svg>

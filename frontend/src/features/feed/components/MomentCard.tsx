@@ -1,7 +1,18 @@
 /**
  * Một khoảnh khắc trong feed.
  *
- * Bốn tầng, đúng thứ tự mắt đi: ai gửi → ảnh → họ nói gì → mình đáp lại.
+ * Ba tầng, đúng thứ tự mắt đi: ai gửi → ảnh (có chữ NẰM TRONG) → mình đáp lại.
+ *
+ * ── Caption nằm TRONG ảnh, không nằm dưới ────────────────────────────────
+ * Đây là chỗ Locket làm đúng: câu chữ là một phần của khoảnh khắc, không phải
+ * chú thích dán bên dưới. Đặt trong ảnh được ba cái:
+ *   · Thẻ không đổi chiều cao theo việc có caption hay không, nên cuộn danh
+ *     sách không bị giật nhịp giữa thẻ có chữ và thẻ không chữ.
+ *   · Người xem đọc chữ mà mắt không rời khỏi ảnh.
+ *   · Nó khớp với chỗ người gửi vừa gõ nó vào — cùng một viên thuốc, cùng một
+ *     vị trí. Cái mình gõ hiện lên đúng như lúc gõ.
+ * Đổi lại: caption phải ngắn (trần 80 ký tự) và phải có nền mờ, không thì chữ
+ * chìm vào ảnh sáng.
  *
  * ── Vì sao hàng đáp lại nằm NGAY trong thẻ ───────────────────────────────
  * Ở Locket muốn trả lời phải mở một màn khác. Nook để ba nút cảm xúc và một ô
@@ -19,9 +30,9 @@
  * lại, kể cả những thẻ không đổi gì.
  */
 import { memo, useCallback } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Avatar, Card, Col, Img, Pill, Row, Txt } from '@ui';
-import { color, media, space } from '@design';
+import { media, radius, space, useStyles, type Palette } from '@design';
 import * as feel from '@/lib/haptics';
 import type { Moment } from '../types';
 
@@ -48,6 +59,7 @@ export const MomentCard = memo(function MomentCard({
   repliedLabel,
   onReply,
 }: MomentCardProps) {
+  const s = useStyles(make);
   const reply = useCallback(
     (emoji: Quick | null) => {
       feel.confirm();
@@ -75,19 +87,25 @@ export const MomentCard = memo(function MomentCard({
         </Col>
       </Row>
 
-      <Img
-        source={moment.photo}
-        // Bắt buộc trong danh sách tái dùng ô: thiếu thì cuộn nhanh sẽ thấy
-        // ảnh người này nhấp nháy ở ô người kia.
-        recyclingKey={moment.id}
-        style={media.cover}
-      />
+      <View style={s.photoBox}>
+        <Img
+          source={moment.photo}
+          // Bắt buộc trong danh sách tái dùng ô: thiếu thì cuộn nhanh sẽ thấy
+          // ảnh người này nhấp nháy ở ô người kia.
+          recyclingKey={moment.id}
+          style={media.cover}
+        />
 
-      {moment.caption ? (
-        <Txt variant="body" style={s.caption}>
-          {moment.caption}
-        </Txt>
-      ) : null}
+        {moment.caption ? (
+          <View style={s.captionSlot} pointerEvents="none">
+            <View style={s.caption}>
+              <Txt variant="body" center numberOfLines={3}>
+                {moment.caption}
+              </Txt>
+            </View>
+          </View>
+        ) : null}
+      </View>
 
       {/* Ảnh của chính mình thì không có hàng đáp — không ai tự nhắn cho mình. */}
       {moment.mine ? null : moment.repliedTo ? (
@@ -123,6 +141,7 @@ const QuickPill = memo(function QuickPill({
   emoji: Quick;
   onPress: (emoji: Quick) => void;
 }) {
+  const s = useStyles(make);
   return (
     <Pill onPress={() => onPress(emoji)} style={s.quick}>
       <Txt variant="body">{emoji}</Txt>
@@ -130,10 +149,25 @@ const QuickPill = memo(function QuickPill({
   );
 });
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   card: { gap: space.md, marginHorizontal: space.lg, marginBottom: space.lg },
-  caption: { paddingHorizontal: space.xs },
+  photoBox: { position: 'relative' },
+  captionSlot: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: space.lg,
+    alignItems: 'center',
+  },
+  caption: {
+    maxWidth: '86%',
+    backgroundColor: c.onPhoto,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm,
+  },
   quick: { paddingHorizontal: space.md, minWidth: 44 },
-  replyBox: { flex: 1, justifyContent: 'flex-start', backgroundColor: color.surfaceSunken },
+  replyBox: { flex: 1, justifyContent: 'flex-start', backgroundColor: c.surfaceSunken },
   replied: { paddingHorizontal: space.xs, minHeight: 34 },
 });

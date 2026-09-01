@@ -29,12 +29,14 @@ Tài liệu **riêng của app**. Thứ mà cả backend cũng cần thì nằm 
 | [`07-architecture.md`](07-architecture.md) | Cây thư mục, ba đường không được cắt qua, đặt file mới ở đâu | Không biết thứ mình sắp viết để chỗ nào |
 | [`08-performance.md`](08-performance.md) | Bảy luật giữ app mượt, chỗ đã tính trước, cách tự đo | Sắp viết animation / danh sách, hoặc thấy có chỗ giật |
 | [`09-i18n.md`](09-i18n.md) | Hai thứ tiếng: thêm câu chữ thế nào, số nhiều, lưới an toàn | Sắp viết bất kỳ chữ nào hiện cho người dùng |
+| [`10-theme.md`](10-theme.md) | Năm bảng màu người dùng chọn được, cách lấy màu, ngưỡng tương phản | Sắp dùng bất kỳ màu nào |
 
 ## Code — bốn chỗ hay tìm nhất
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `src/design/tokens.ts` | Mọi màu / khoảng cách / cỡ chữ / nhịp. **Nơi duy nhất được viết mã màu** |
+| `src/design/palettes.ts` | Năm bảng màu, kèm số đo tương phản. **Nơi duy nhất được viết mã màu** |
+| `src/design/tokens.ts` | Khoảng cách / bo góc / cỡ chữ / nhịp — thứ KHÔNG đổi theo bảng màu |
 | `src/components/index.ts` | Danh sách mảnh có sẵn — xem trước khi định tự dựng cái mới |
 | `src/i18n/locales/vi.ts` | Toàn bộ chữ hiện cho người dùng. **Nơi duy nhất được viết câu tiếng Việt** |
 | `src/features/<tên>/screens/` | Từng màn một, tên khớp với [`03-screen-specs.md`](03-screen-specs.md) |

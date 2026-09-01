@@ -89,7 +89,7 @@ Sau khi app mở lên:
 | 11 | Bấm **nút gửi** | Vào thẳng Khoảnh khắc, ảnh của bạn nằm **đầu danh sách** |
 | 12 | **Khoảnh khắc** | Bốn thẻ mẫu: avatar có vòng độ thân · tên · "3 phút trước" · ảnh · caption · ba icon cảm xúc + ô nhắn riêng. Bấm một icon → đổi thành *"Đã nhắn cho Yến"* |
 | 13 | Bấm **một avatar** ở hàng trên màn camera | **Góc của bạn**: sáu avatar + bốn chỗ viền đứt nét |
-| 14 | Bấm **bánh răng** ở trên phải | **Cài đặt** → đổi sang **English**. Cả app đổi ngay, không phải mở lại |
+| 14 | Bấm **bánh răng** ở trên phải | **Cài đặt** → đổi **bảng màu**: Đất nung · Rêu · Biển đêm · Hoàng hôn · Trung tính. Cả app đổi ngay. Rồi đổi sang **English** — cũng đổi ngay, không phải mở lại |
 
 ### Nhìn kỹ mấy chỗ này
 
@@ -100,6 +100,10 @@ Sau khi app mở lên:
 - Vặn cỡ chữ máy lên to nhất (Cài đặt → Màn hình) — **layout không vỡ**.
 
 - **Đổi sang English rồi đi lại một vòng.** Không câu nào còn tiếng Việt sót lại.
+- **Đổi bảng màu rồi đi lại một vòng.** Không màn nào còn sót màu của bảng cũ —
+  nếu thấy sót thì đó là một style dựng ở tầng module, xem `docs/10-theme.md`.
+- **Bật đèn ở góc trên-trái khung ngắm rồi chụp bằng camera trước.** Cả màn hình
+  phải loé trắng một nhịp — máy nào cũng chỉ có đèn thật ở mặt sau.
 - **Xoay cỡ máy.** Khung ngắm lấy cạnh bằng số nhỏ hơn giữa 96% bề ngang và
   chiều cao còn lại, nên máy ngắn thì nó tự co chứ không tràn: iPhone SE 307pt,
   iPhone 14 374pt, 14 Pro Max 413pt.
@@ -136,7 +140,7 @@ npm run doctor     # expo-doctor: soi lệch bản và lỗi cấu hình
 frontend/
 ├── app/                    ĐIỀU HƯỚNG. Chỉ điều hướng, không logic.
 ├── src/
-│   ├── design/             ⚠ NƠI DUY NHẤT ĐƯỢC VIẾT MÃ MÀU
+│   ├── design/             ⚠ NƠI DUY NHẤT ĐƯỢC VIẾT MÃ MÀU (5 bảng màu)
 │   ├── i18n/               ⚠ NƠI DUY NHẤT ĐƯỢC VIẾT CÂU TIẾNG VIỆT
 │   ├── components/         28 mảnh, xuất qua một cửa '@ui'
 │   ├── features/           theo tính năng: auth · camera · feed · circle · settings

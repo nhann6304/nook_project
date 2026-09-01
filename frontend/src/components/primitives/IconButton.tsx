@@ -8,7 +8,7 @@
  * `label` bắt buộc: không có chữ thì trình đọc màn hình đọc ra "nút", vô nghĩa.
  */
 import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
-import { HIT_SLOP, color, layout, radius } from '@design';
+import { HIT_SLOP, layout, radius, useStyles, type Palette } from '@design';
 import { Tap, type TapProps } from './Tap';
 
 export type IconButtonProps = Omit<TapProps, 'style'> & {
@@ -20,6 +20,7 @@ export type IconButtonProps = Omit<TapProps, 'style'> & {
 };
 
 export function IconButton({ label, onPhoto, style, children, ...rest }: IconButtonProps) {
+  const s = useStyles(make);
   return (
     <Tap
       accessibilityRole="button"
@@ -35,12 +36,13 @@ export function IconButton({ label, onPhoto, style, children, ...rest }: IconBut
   );
 }
 
-const s = StyleSheet.create({
+const make = (c: Palette) =>
+  StyleSheet.create({
   base: {
     width: layout.minTouch,
     height: layout.minTouch,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  onPhoto: { borderRadius: radius.full, backgroundColor: color.surface },
+  onPhoto: { borderRadius: radius.full, backgroundColor: c.surface },
 });

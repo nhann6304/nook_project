@@ -113,6 +113,12 @@ Còn thiếu, làm khi tới màn cần:
 | `Switch` | Công tắc cài đặt, bật = `accent` |
 | `SettingRow` | Hàng cài đặt: icon + tiêu đề + mô tả + mũi tên |
 
+> **Không có hằng số màu.** `@design` không xuất `color` nữa. Màu lấy qua
+> `useColors()` (màu rời) hoặc `useStyles(make)` (StyleSheet). Đây không phải
+> quy ước mà là **cấu trúc**: không có cách nào lấy được màu ngoài hai cửa đó,
+> nên không có cách nào viết một style chết cứng màu. Xem `09-i18n.md` là khuôn
+> tương tự cho chữ.
+
 > **Component không biết kho chữ tồn tại.** Mọi chữ — kể cả nhãn trợ năng —
 > nhận qua props (`<Rings label={…}>`, `<CodeInput label={…}>`). ESLint chặn
 > chữ tiếng Việt trong `src/components/`. Nhờ vậy component xem trước được mà

@@ -15,7 +15,7 @@
  */
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { color, layout, space } from '@design';
+import { layout, space, useColors, useStyles } from '@design';
 import { Txt } from '../primitives/Txt';
 import { IconButton } from '../primitives/IconButton';
 
@@ -40,6 +40,8 @@ export function TopBar({
   closeIcon = 'back',
   right,
 }: TopBarProps) {
+  const s = useStyles(make);
+  const c = useColors();
   return (
     <View style={s.bar}>
       {onClose && closeLabel ? (
@@ -47,7 +49,7 @@ export function TopBar({
           <Ionicons
             name={closeIcon === 'down' ? 'chevron-down' : 'chevron-back'}
             size={24}
-            color={color.text}
+            color={c.text}
           />
         </IconButton>
       ) : (
@@ -67,7 +69,8 @@ export function TopBar({
   );
 }
 
-const s = StyleSheet.create({
+const make = () =>
+  StyleSheet.create({
   bar: {
     flexDirection: 'row',
     alignItems: 'center',

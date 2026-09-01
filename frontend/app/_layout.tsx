@@ -4,10 +4,11 @@
  * GestureHandlerRootView phải nằm NGOÀI CÙNG, nếu không mọi cử chỉ vuốt đều
  * câm trên Android — và câm không báo lỗi, chỉ là không có gì xảy ra.
  *
- * Splash được giữ lại cho tới khi CẢ HAI thứ xong: bộ chữ và ngôn ngữ đã chọn.
- * Thả sớm vì chữ thì người dùng thấy một nhịp Roboto rồi mới nhảy sang Be
- * Vietnam Pro; thả sớm vì ngôn ngữ thì họ thấy màn đầu bằng tiếng Việt rồi đổi
- * sang tiếng Anh. Cả hai đều chỉ khoảng 30ms, nhưng là 30ms đầu tiên họ nhìn.
+ * Splash được giữ tới khi BA thứ xong: bộ chữ, ngôn ngữ đã chọn, bảng màu đã
+ * chọn. Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Be Vietnam Pro;
+ * thả sớm vì ngôn ngữ thì thấy màn đầu sai tiếng; thả sớm vì bảng màu thì cả
+ * app nháy một cái đổi màu. Mỗi cái chỉ khoảng 30ms, nhưng là 30ms đầu tiên
+ * người dùng nhìn thấy.
  *
  * Ba nút điều hướng của Android không cần nhuộm tay: userInterfaceStyle 'dark'
  * trong app.json đã cho chúng màu sáng. (expo-navigation-bar SDK 57 đã bỏ
@@ -26,20 +27,22 @@ import {
   BeVietnamPro_500Medium,
   BeVietnamPro_600SemiBold,
 } from '@expo-google-fonts/be-vietnam-pro';
-import { color } from '@design';
+import { useStyles, useThemeReady, type Palette } from '@design';
 import { useI18nReady } from '@i18n';
 
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const s = useStyles(make);
   const localeReady = useI18nReady();
+  const themeReady = useThemeReady();
   const [fontsReady, error] = useFonts({
     BeVietnamPro_400Regular,
     BeVietnamPro_500Medium,
     BeVietnamPro_600SemiBold,
   });
 
-  const ready = (fontsReady || error !== null) && localeReady;
+  const ready = (fontsReady || error !== null) && localeReady && themeReady;
 
   useEffect(() => {
     // Thả splash cả khi nạp chữ HỎNG. Không có nhánh này thì một lỗi font
@@ -71,7 +74,8 @@ export default function RootLayout() {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.bg },
-  page: { backgroundColor: color.bg },
-});
+const make = (c: Palette) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: c.bg },
+    page: { backgroundColor: c.bg },
+  });

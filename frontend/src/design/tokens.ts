@@ -1,125 +1,16 @@
 /**
- * Nook — token thiết kế. NGUỒN SỰ THẬT DUY NHẤT.
+ * Token KHÔNG đổi theo bảng màu: khoảng cách, bo góc, cỡ chữ, nhịp, bố cục.
  *
- * Luật: không một mã màu, không một con số khoảng cách nào được viết thẳng
- * trong component. ESLint chặn cứng (xem eslint.config.js). Cần màu mới thì
- * thêm token ở đây, kèm lý do — đừng thêm hex vào chỗ đang code.
- *
- * Mọi tỉ lệ tương phản ghi trong file này đều là số ĐO THẬT theo công thức
- * WCAG 2.1 trên nền `bg` (#0E0D0C), không phải ước lượng.
+ * MÀU không nằm ở đây nữa — nó ở `palettes.ts`, vì người dùng đổi được. Muốn
+ * dùng màu thì gọi `useColors()` hoặc `useStyles()`, xem `useStyles.ts`.
  */
-
-/* ══════════════ MÀU ══════════════ */
 
 /**
- * Song sắc cam → hồng. Bản trước chỉ có một sắc cam: đúng nhưng nguội, và trên
- * màn hình chủ đầy icon bão hoà cao thì lẫn vào đám đông. Thêm sắc hồng ở đầu
- * kia của dải làm nút chính có chiều sâu mà vẫn không thành cam quảng cáo.
+ * Góc chiếu của dải màu: từ trên-trái xuống dưới-phải.
+ * Là hình học, không phải màu — nên nó ở đây chứ không ở bảng màu.
  */
-export const color = {
-  /* — Nền, xếp từ sâu nhất lên trên — */
-  bg: '#0E0D0C',
-  /** Chìm hơn nền: đáy ô nhập, rãnh của thanh chuyển. */
-  surfaceSunken: '#141312',
-  /** Mặt phẳng thứ nhất: thẻ, pill, ô nhập. */
-  surface: '#1A1817',
-  /** Nổi lên trên surface: sheet, ô đang focus, thẻ được chọn. */
-  surfaceRaised: '#221F1D',
-
-  /* — Đường kẻ — */
-  /** Viền ô nhập, viền thẻ. 1.45:1 — là đường kẻ, không phải chữ. */
-  border: '#332E2A',
-  /** Kẻ mảnh giữa các hàng trong danh sách. */
-  borderSoft: '#241F1D',
-
-  /* — Sắc chính — */
-  /** Cam lửa. 7.49:1. Dùng cho viền focus, icon đang bật, nét nhấn. */
-  accent: '#FF7A3D',
-  /** Hồng. 6.20:1. Đầu kia của dải; điểm nhấn phụ, huy hiệu, tim. */
-  accent2: '#FF4E8A',
-  /** Đỉnh sáng. 9.75:1. Hào quang, vòng ngoài của dấu hiệu. */
-  accentBright: '#FFA166',
-  /** Nấc tối khi nhấn giữ. 5.23:1. */
-  accentDeep: '#E05A22',
-
-  /* — Chữ —
-   * text 16.12:1 · textMuted 7.23:1 · textFaint 5.03:1 · textDisabled 2.55:1
-   * textDisabled KHÔNG đạt chuẩn đọc. Nó chỉ dùng cho chữ đã tắt và nét trang
-   * trí. Chữ nhỏ nhất mà người ta phải đọc được là textFaint. */
-  text: '#EFE9E3',
-  textMuted: '#A79C93',
-  textFaint: '#8A8078',
-  textDisabled: '#5C5249',
-
-  /**
-   * Chữ NẰM TRÊN nút gradient. Không phải màu trắng.
-   * Đo trên ba chặng của dải: #1A0E08 cho 8.37 / 6.85 / 6.47:1 — đạt ở cả ba.
-   * Chữ trắng chỉ được 2.26 / 2.76 / 2.92:1 — trượt chuẩn ở mọi chặng.
-   * Đây là lý do nút chính của Nook có chữ tối.
-   */
-  onAccent: '#1A0E08',
-
-  /* — Màu mang nghĩa. Tách hẳn khỏi sắc chính để không ai nhầm
-       "màu thương hiệu" với "trạng thái xấu". — */
-  honey: '#FFC94D', // 12.68:1 — chuỗi ngày, thành tựu
-  mint: '#4FD1A5', //  10.17:1 — xong, đã gửi
-  violet: '#A77BFF', //  6.40:1 — mới, chưa xem
-  danger: '#FF6B6B', //  7.00:1 — lỗi, huỷ, xoá
-} as const;
-
-/**
- * Lớp phủ trong suốt. Viết sẵn thành token vì rgba() bị ESLint chặn trong
- * component — và vì ba vòng hào quang phải luôn cùng một bộ số, không thì
- * mỗi màn một kiểu sáng.
- */
-export const alpha = {
-  glowStrong: 'rgba(255,122,61,0.12)',
-  glowSoft: 'rgba(255,122,61,0.08)',
-  glowFaint: 'rgba(255,122,61,0.05)',
-  glowPink: 'rgba(255,78,138,0.10)',
-  /** Lớp mờ đè lên ảnh để chữ nổi lên được. */
-  scrim: 'rgba(14,13,12,0.60)',
-  scrimSoft: 'rgba(14,13,12,0.35)',
-  /** Nền pill nổi trên ảnh chụp. */
-  onPhoto: 'rgba(14,13,12,0.55)',
-  /** Viền mảnh cho khối nằm trên ảnh — đủ để tách khỏi ảnh sáng, không thành khung. */
-  hairlineOnPhoto: 'rgba(239,233,227,0.16)',
-} as const;
-
-/**
- * Dải màu. Cần `expo-linear-gradient`.
- * Nút một màu phẳng trên nền gần đen trông như miếng dán; dải màu làm nó
- * trông có ánh sáng chiếu vào.
- *
- * Ba chặng chứ không phải hai: chặng giữa #FF6E52 giữ cho quãng cam→hồng
- * không đi vòng qua vùng đỏ xỉn ở giữa.
- */
-export const gradient = {
-  warm: ['#FF8F4D', '#FF6E52', '#FF5C90'] as const,
-  warmPressed: ['#E05A22', '#D14E3E', '#D6437A'] as const,
-  /** Góc chiếu 118°: từ trên-trái xuống dưới-phải, hơi nghiêng. */
-  start: { x: 0, y: 0 },
-  end: { x: 1, y: 1 },
-} as const;
-
-/** Vòng độ thân, cấp 1 → 10. Đi từ nâu tro tới cam rồi chớm hồng ở cấp cuối. */
-export const friendshipRing = [
-  '#3D3330',
-  '#4A3B33',
-  '#5F4738',
-  '#74533D',
-  '#8B6043',
-  '#A26B46',
-  '#C07547',
-  '#DC7F43',
-  '#FF7A3D',
-  '#FF5C90',
-] as const;
-
-export function ringColor(level: number): string {
-  const i = Math.min(Math.max(Math.round(level), 1), friendshipRing.length) - 1;
-  return friendshipRing[i] ?? friendshipRing[0];
-}
+export const GRADIENT_START = { x: 0, y: 0 } as const;
+export const GRADIENT_END = { x: 1, y: 1 } as const;
 
 /* ══════════════ KHÔNG GIAN ══════════════ */
 
@@ -146,8 +37,12 @@ export const radius = {
    * Khung ngắm camera. To hơn hẳn `frame` vì khối này to hơn hẳn: cùng một độ
    * bo, đặt trên một ô 360pt thì trông vuông vức, đặt trên ô 160pt thì trông
    * tròn. Độ bo phải đi theo kích thước mới giữ được cùng một cảm giác.
+   *
+   * Con số 56 đo từ ảnh chụp màn hình Locket (máy 414pt): mép trái của khung
+   * chạm x=0 ở khoảng 56pt tính từ mép trên. Đó là dáng "squircle" chứ không
+   * còn là hình vuông bo góc.
    */
-  viewfinder: 44,
+  viewfinder: 56,
   full: 999,
 } as const;
 
@@ -188,17 +83,20 @@ export const type = {
 
 export const layout = {
   /**
-   * Khung ngắm camera = 96% CHIỀU NGANG máy — TRẦN, không phải số cố định.
+   * Khung ngắm camera = 100% CHIỀU NGANG máy — TRẦN, không phải số cố định.
    *
    * Khung là hình vuông và nó lấy cạnh bằng số NHỎ HƠN giữa hai thứ: 94% bề
    * ngang máy, và chiều cao thật còn lại sau khi trừ thanh trên / hàng chụp /
    * chân màn. Nhờ vậy máy dài thì khung to hết cỡ ngang, máy ngắn thì khung tự
    * co lại cho vừa chứ không tràn ra ngoài.
    *
-   * Trước đây là 0.88 cố định: trên máy dài nó để thừa hơn 200pt khoảng trống
-   * chia đều vào ba khe, nhìn rỗng và rời rạc.
+   * Đo trên ảnh Locket (máy 414pt): khung của họ rộng 413pt — lề trái 0pt, lề
+   * phải 1pt. Tức là TRÀN SÁT MÉP. Và nó VUÔNG (tỉ lệ 0.999), không phải hình
+   * đứng — cảm giác "cao" mà người ta thấy đến từ việc nó tràn mép, không phải
+   * từ tỉ lệ. Đây là lý do Nook giữ hình vuông: widget và thẻ ảnh trong feed
+   * đều vuông, đổi tỉ lệ là phải cắt ảnh ở hai chỗ đó.
    */
-  cameraFrameRatio: 0.96,
+  cameraFrameRatio: 1,
   /** Vùng chạm tối thiểu. Apple khuyến nghị 44pt, Android 48dp — lấy số lớn hơn. */
   minTouch: 48,
   screenPadding: 16,
@@ -237,31 +135,6 @@ export const spring = {
   gentle: { damping: 26, stiffness: 90, mass: 1 },
 } as const;
 
-/**
- * Bóng cùng màu nút, không phải bóng đen: nút trông như đang PHÁT SÁNG
- * chứ không phải đang nổi lên khỏi mặt phẳng. Trên nền gần đen, bóng đen
- * là vô hình.
- */
-export const elevation = {
-  glowAccent: {
-    shadowColor: color.accent,
-    shadowOpacity: 0.35,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
-  },
-  glowAccentPressed: {
-    shadowColor: color.accent,
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
-  },
-  none: {
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-} as const;
 
 /** Cường độ rung. Gom một chỗ để không màn nào tự chọn kiểu rung riêng. */
 export const haptic = {
