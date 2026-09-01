@@ -365,6 +365,20 @@ cái bẫy "thẻ bị chép" cũng im luôn. Nay mỗi thẻ mang một `jti` n
 kiểm `scripts/smoke-auth.sh` gọi làm mới **không có `sleep`** để luôn đi qua
 đúng ca này — đừng thêm `sleep` vào đó.
 
+**Luật gói: Nest làm được rồi thì đừng cài thêm.** Đã rà một lượt và gỡ:
+
+| Gỡ | Vì sao |
+|---|---|
+| `nestjs-pino` `pino` `pino-http` `pino-pretty` | `ConsoleLogger` của Nest làm đủ, kể cả JSON cho bản thật |
+| `@nestjs/passport` `passport` `passport-jwt` | ba gói cho ba việc mà `@nestjs/jwt` + `SessionService` đã làm |
+| `@fastify/cookie` | chỉ phục vụ `CookieService`, mà cái đó chưa ai gọi |
+
+Còn lại **27 gói**, và mấy gói trông "không được nhập ở đâu" đều có lý do thật:
+`pg` do TypeORM nạp theo tên lúc chạy · `bullmq` do `@nestjs/bullmq` nạp ·
+`@fastify/static` do SwaggerModule nạp (gỡ thử thì Nest báo thẳng
+*"The @fastify/static package is missing"*) · `reflect-metadata` và `dotenv`
+nhập kiểu side-effect nên không có chữ `from`.
+
 **Log dùng `ConsoleLogger` có sẵn của Nest, không dùng pino.** Từng dùng pino;
 bỏ, vì bốn lý do xếp theo sức nặng: (1) dòng log không còn ra hình dạng mà ai
 làm Nest cũng nhận ra — `[Nest] pid - giờ  LOG [Context] câu chữ +5ms`;

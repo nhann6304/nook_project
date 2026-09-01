@@ -42,9 +42,6 @@ export function setupSwagger(app: INestApplication): void {
     // Không có dòng này thì thẻ trình duyệt ghi "Swagger UI" — mở ba dự án là
     // ba thẻ giống hệt nhau, không biết cái nào là cái nào.
     customSiteTitle: 'Nook API',
-    // Thanh xanh trên cùng chỉ có một ô nhập đường dẫn spec khác. Trang này chỉ
-    // phục vụ đúng một spec, nên nó không làm gì ngoài chiếm chỗ.
-    customCss: '.swagger-ui .topbar { display: none }',
     swaggerOptions: {
       // Giữ thẻ đã bấm Authorize qua các lần tải lại trang. Không có nó thì mỗi
       // lần sửa mã, server nạp lại, lại phải dán thẻ vào từ đầu.
