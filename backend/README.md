@@ -371,6 +371,26 @@ có `chcp 65001` rồi, nhưng log còn đi ra tệp, ra chỗ gom log, ra cửa
 người khác. Chú thích trong mã và tài liệu thì vẫn tiếng Việt — chúng không đi
 qua console.
 
+**`incremental` phải để `false`.** Bộ nhớ đệm dịch (`*.tsbuildinfo`) chỉ theo
+dõi tệp trong `src/`. Bản dịch của `@nook/shared` nằm ngoài đó, nên sửa một
+kiểu bên gói dùng chung rồi dựng lại thì bộ nhớ đệm **không biết mình đã cũ** —
+`nest start --watch` báo lỗi vào một dòng hoàn toàn đúng, kiểu ngồi soi bằng
+mắt cả buổi không ra. Đã xảy ra thật: `TokenClaims` có `jti` ở cả nguồn lẫn bản
+dịch, mà watch vẫn kêu `'jti' does not exist`; xoá `tsconfig.build.tsbuildinfo`
+là hết.
+
+Giá của việc tắt: **0,9 giây** mỗi lần dịch đầy đủ (3,0s so với 2,3s trên 147
+tệp), và bằng 0 trong lúc watch chạy vì tsc giữ hết trong bộ nhớ. Cách "đúng
+bài" hơn là dùng project references của TypeScript, nhưng Nest CLI chạy `tsc`
+thẳng chứ không chạy `tsc -b` nên references không tự dựng — đổi lấy một lớp
+phức tạp mới để tiết kiệm 0,9 giây thì không đáng.
+
+Gặp lỗi kiểu "cái này rõ ràng có mà nó bảo không có" thì việc đầu tiên:
+
+```bash
+rm -f backend/*.tsbuildinfo && npm run build:shared
+```
+
 **Node 22 hoặc 24, đừng dùng 23.** Vài thư viện khai `engines` là
 `^20.19 || ^22.13 || >=24`; bản lẻ nằm ngoài lời hứa đó.
 
