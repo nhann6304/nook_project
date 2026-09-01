@@ -383,13 +383,31 @@ qua console.
 (`TApiResponse = IApiEnvelope | IApiError`). Nhìn tên là biết loại và biết nằm
 ở thư mục nào, không phải mở tệp ra xem. Áp dụng cho cả `shared/`.
 
-**Gói `@nook/shared` phải được dịch TRƯỚC.** `dist/` của nó không nằm trong git,
-nên sau mỗi lần `git pull` thì bản dịch trên máy là bản CŨ — và backend báo lỗi
-vào những dòng hoàn toàn đúng, kiểu `'jti' does not exist in type ITokenClaims`
-trong khi `jti` nằm sờ sờ ở nguồn.
+**Bản dịch cũ của `@nook/shared` — bẫy đắt nhất, đã chặn ở hai lớp.**
 
-Không phải nhớ mà gõ: `predev`, `prebuild`, `pretypecheck`, `pretest` đều chạy
-`tsc -p ../shared/tsconfig.json` trước. Mọi đường vào trình biên dịch đi qua đó.
+`shared/dist/` không nằm trong git. Sau mỗi lần `git pull` thì bản dịch trên máy
+là bản CŨ, và backend báo lỗi vào những dòng hoàn toàn đúng:
+
+```
+'@nook/shared' has no exported member named 'ITokenClaims'. Did you mean 'TokenClaims'?
+'jti' does not exist in type 'TokenClaims'
+```
+
+Hai lớp chặn, vì hai chỗ đọc kiểu là hai chỗ khác nhau:
+
+| Ai đọc | Đọc ở đâu | Chặn bằng |
+|---|---|---|
+| VSCode, `npm run typecheck` | **nguồn** `shared/src` | `paths` trong `tsconfig.json` |
+| `nest build` | bản dịch `shared/dist` | `pre*` dựng lại trước |
+
+Lớp thứ nhất quan trọng hơn: mấy cái `pre*` chỉ chữa được dòng lệnh, **không
+chữa được trình soạn thảo** — VSCode chạy trình biên dịch riêng của nó và đọc
+thẳng `dist`. Trỏ `paths` về nguồn thì gạch đỏ không bao giờ cũ được nữa.
+
+Đổi lại: `rootDir` và `outDir` phải chuyển hết sang `tsconfig.build.json`. Để ở
+`tsconfig.json` thì tsc kéo tệp của gói dùng chung vào chương trình rồi đòi xuất
+chúng ra, mà chúng nằm ngoài `rootDir` — lỗi `TS6059`.
+
 Đang sửa nhiều bên `shared` thì mở thêm cửa sổ `npm run dev -w @nook/shared`.
 
 **`incremental` phải để `false`.** Bộ nhớ đệm dịch (`*.tsbuildinfo`) chỉ theo

@@ -11,8 +11,6 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "sourceMap": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
     "incremental": false,
     "skipLibCheck": true,
     "strict": true,
@@ -24,7 +22,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+
+    "paths": {
+      "@nook/shared": ["../shared/src/index.ts"],
+      "@nook/shared/*": ["../shared/src/*/index.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

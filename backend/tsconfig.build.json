@@ -1,4 +1,12 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Lúc DỰNG thì `@nook/shared` trỏ về bản dịch, không phải nguồn: trỏ về
+    // nguồn thì tsc kéo cả tệp của gói dùng chung vào chương trình rồi đòi xuất
+    // chúng ra, mà chúng nằm ngoài `rootDir`.
+    "paths": {},
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
   "exclude": ["node_modules", "dist", "test", "**/*.spec.ts"]
 }
