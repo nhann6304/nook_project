@@ -6,7 +6,19 @@ nhất là **"ký ức"** — tương tác hai chiều thật giữa hai ngườ
 
 ---
 
-## Chạy thử trong 3 bước
+## Chạy thử — một lệnh
+
+```bash
+./setup/mac/run.sh          # macOS
+setup\win\run.bat           # Windows
+```
+
+Bật cả server lẫn app. Lần đầu nó tự cài thư viện, dựng `backend/.env`, kéo
+Postgres + Redis về và chạy migration; những lần sau bỏ qua mấy bước đã xong.
+Cần **Node 22 hoặc 24** và **Docker Desktop** đang bật.
+Chi tiết: [`setup/README.md`](setup/README.md).
+
+Chỉ muốn app thôi thì `./setup/mac/run.sh fe`, hoặc làm tay:
 
 ```bash
 cd frontend
@@ -23,7 +35,9 @@ Máy tính và điện thoại phải chung một mạng Wi-Fi.
 Không có điện thoại thì bấm `i` (mở máy giả lập iOS, cần Xcode) hoặc `a`
 (máy giả lập Android, cần Android Studio) ngay trong terminal đang chạy.
 
-**Mã đăng nhập giả để bấm thử: `123456`.** Chưa có server; mọi mã khác đều bị từ chối.
+**Mã đăng nhập giả để bấm thử: `123456`.** App vẫn đang gọi hàng giả — backend
+đã có khung và Swagger nhưng ruột đăng nhập chưa viết, xem
+[`backend/README.md`](backend/README.md).
 
 Hướng dẫn đầy đủ, gồm cả cách xử lý khi không quét được:
 [`frontend/README.md`](frontend/README.md).
@@ -33,17 +47,22 @@ Hướng dẫn đầy đủ, gồm cả cách xử lý khi không quét được
 ```
 nook_project/
 ├── .docs/          tài liệu CHUNG — cả hai bên đều đọc (thư mục ẩn)
-├── frontend/       app React Native (Expo) — ĐANG LÀM
-├── backend/        server — CHƯA BẮT ĐẦU
+├── shared/         @nook/shared — hợp đồng giữa app và server, KHÔNG phụ thuộc
+├── frontend/       app React Native (Expo)
+├── backend/        server NestJS trên Fastify
+├── setup/          script chạy và đẩy mã, cho macOS và Windows
 ├── .claude/        skill cho AI
+├── package.json    gom shared + backend thành workspace
 └── CLAUDE.md       ngữ cảnh chung
 ```
 
 | Thư mục | Nội dung | Trạng thái |
 |---|---|---|
 | [`.docs/`](.docs/) | Hệ thống sản phẩm, danh sách việc trước khi lên store | đang có |
+| [`shared/`](shared/) | Đường dẫn API, mã lỗi, giới hạn, kiểu dữ liệu — cả hai bên đọc chung | **dùng được** |
 | [`frontend/`](frontend/) | Toàn bộ app: mã nguồn, tài liệu FE, cấu hình, thư viện | **chạy được** |
-| [`backend/`](backend/) | Server, cơ sở dữ liệu, API | chỗ đã dành sẵn, chưa có gì |
+| [`backend/`](backend/) | Server, cơ sở dữ liệu, API | **khung chạy được**, ruột đăng nhập chưa viết |
+| [`setup/`](setup/) | `run` và `push`, mỗi cái một bản cho macOS và Windows | dùng được |
 
 Ranh giới hai bên: **màn hình không biết server tồn tại.** Mọi lệnh gọi mạng nằm
 trong `frontend/src/features/<tên>/lib/*Api.ts`. Hiện `authApi.ts` là hàng giả —

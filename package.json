@@ -1,0 +1,25 @@
+{
+  "name": "nook",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nook — app xã hội camera-first. Kho gộp: shared + backend. Frontend đứng riêng (Expo có luật gói riêng).",
+  "workspaces": ["shared", "backend"],
+  "scripts": {
+    "install:all": "npm install && npm --prefix frontend install",
+    "build:shared": "npm run build -w @nook/shared",
+    "dev:shared": "npm run dev -w @nook/shared",
+    "dev:be": "npm run build:shared && npm run dev -w @nook/backend",
+    "dev:fe": "npm --prefix frontend run dev",
+    "check": "npm run typecheck -w @nook/shared && npm run check -w @nook/backend",
+    "check:fe": "npm --prefix frontend run check",
+    "up": "docker compose -f backend/docker/compose.dev.yml up -d",
+    "down": "docker compose -f backend/docker/compose.dev.yml down",
+    "logs": "docker compose -f backend/docker/compose.dev.yml logs -f",
+    "reset:db": "docker compose -f backend/docker/compose.dev.yml down -v && docker compose -f backend/docker/compose.dev.yml up -d",
+    "migration:run": "npm run migration:run -w @nook/backend",
+    "migration:revert": "npm run migration:revert -w @nook/backend"
+  },
+  "engines": {
+    "node": ">=20.11"
+  }
+}

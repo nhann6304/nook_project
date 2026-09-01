@@ -1,0 +1,78 @@
+# Cụm dịch vụ cho máy dev. Backend KHÔNG nằm trong này — nó chạy thẳng trên máy
+# để `nest start --watch` nạp lại tức thì.
+#
+#   docker compose -f backend/docker/compose.dev.yml up -d        # chỉ Redis
+#
+# **Postgres mặc định KHÔNG chạy ở đây.** Máy này đã có Postgres 15 cài bằng
+# Homebrew, và dùng bản đó thì đỡ một tầng: `psql` gõ thẳng được, dữ liệu không
+# biến mất khi ai đó lỡ `down -v`, và không phải nhớ hai cổng.
+#
+# Cần Postgres trong Docker (máy khác, máy mới, hoặc muốn xoá sạch làm lại):
+#
+#   docker compose -f backend/docker/compose.dev.yml --profile db up -d
+#   rồi đổi DB_PORT trong backend/.env thành 5433.
+#
+# Cổng Redis là 6380 chứ không phải 6379: 6379 đã có Redis của dự án khác.
+name: nook-dev
+
+services:
+  # Chỉ lên khi gọi tên: --profile db
+  db:
+    image: postgres:16-alpine
+    container_name: nook-db
+    profiles: ['db']
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nook
+      POSTGRES_PASSWORD: nook
+      POSTGRES_DB: nook
+      # Sắp xếp chữ theo chuẩn C cho nhanh và ổn định giữa các máy.
+      POSTGRES_INITDB_ARGS: '--locale-provider=icu --icu-locale=vi-VN --encoding=UTF8'
+    ports:
+      - '5433:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nook -d nook']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: nook-redis
+    restart: unless-stopped
+    # appendonly để mã đăng nhập không bay mất khi khởi động lại giữa chừng.
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6380:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Kho ảnh giả lập, nói cùng thứ tiếng với Cloudflare R2 (S3).
+  # CHƯA dùng ở chặng này — bật khi làm tới phần ảnh:
+  #   docker compose -f backend/docker/compose.dev.yml --profile media up -d
+  minio:
+    image: minio/minio:latest
+    container_name: nook-minio
+    profiles: ['media']
+    restart: unless-stopped
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: nook
+      MINIO_ROOT_PASSWORD: nook12345
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio-data:/data
+
+volumes:
+  db-data:
+  redis-data:
+  minio-data:

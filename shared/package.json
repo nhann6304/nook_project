@@ -1,0 +1,22 @@
+{
+  "name": "@nook/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Hợp đồng giữa app và server. Chỉ interface, type, hằng số, hàm thuần.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  }
+}
