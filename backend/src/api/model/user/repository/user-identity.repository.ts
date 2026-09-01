@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import type { SignInMethod } from '@nook/shared';
+import type { TSignInMethod } from '@nook/shared';
 import { BaseRepository } from '../../../../database/repository/index.js';
 import { UserIdentity } from '../../../../database/entity/index.js';
 
@@ -19,7 +19,7 @@ export class UserIdentityRepository extends BaseRepository<UserIdentity> {
    * câu hỏi nữa, nhưng là câu hỏi nhìn thấy được, và không có chuyện phần nối
    * bảng tự lọc mất dòng rồi làm ngã một nhánh đang đúng.
    */
-  findByTarget(kind: SignInMethod, value: string): Promise<UserIdentity | null> {
+  findByTarget(kind: TSignInMethod, value: string): Promise<UserIdentity | null> {
     return this.findOne({ kind, value });
   }
 
@@ -37,7 +37,7 @@ export class UserIdentityRepository extends BaseRepository<UserIdentity> {
    */
   async insertIfAbsent(
     userId: string,
-    kind: SignInMethod,
+    kind: TSignInMethod,
     value: string,
   ): Promise<UserIdentity | null> {
     const rows: { id: string }[] = await this.manager.query(

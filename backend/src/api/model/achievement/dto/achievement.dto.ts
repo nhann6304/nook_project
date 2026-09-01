@@ -2,18 +2,18 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   LIMITS,
   STAT_KEYS,
-  type AchievementItem,
-  type AchievementListResult,
-  type CircleCapacity,
-  type StatKey,
+  type IAchievementItem,
+  type IAchievementListResult,
+  type ICircleCapacity,
+  type TStatKey,
 } from '@nook/shared';
 
-export class AchievementItemDto implements AchievementItem {
+export class AchievementItemDto implements IAchievementItem {
   @ApiProperty({ example: 'circle.full_house', description: 'Khoá tra chữ ở app' })
   key!: string;
 
   @ApiProperty({ enum: STAT_KEYS, example: 'friend_count' })
-  metric!: StatKey;
+  metric!: TStatKey;
 
   @ApiProperty({ example: 10 })
   threshold!: number;
@@ -28,7 +28,7 @@ export class AchievementItemDto implements AchievementItem {
   unlockedAt!: string | null;
 }
 
-export class CircleCapacityDto implements CircleCapacity {
+export class CircleCapacityDto implements ICircleCapacity {
   @ApiProperty({ example: LIMITS.circleBase })
   base!: number;
 
@@ -52,7 +52,7 @@ export class CircleCapacityDto implements CircleCapacity {
  * không phải ra bản mới. Đó là cả điểm của việc để danh mục trong bảng thay vì
  * trong mã.
  */
-export class AchievementListDto implements AchievementListResult {
+export class AchievementListDto implements IAchievementListResult {
   @ApiProperty({ type: CircleCapacityDto })
   circle!: CircleCapacityDto;
 

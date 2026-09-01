@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { ERR, type SignInMethod } from '@nook/shared';
+import { ERR, type TSignInMethod } from '@nook/shared';
 import { AppException } from '../../../common/error/index.js';
 import { UserProfileDto } from '../../../common/dto/index.js';
 import { Transactional } from '../../../../database/transaction/index.js';
@@ -66,7 +66,7 @@ export class UserService {
    * nhánh "đã có", vì bên kia đã ghi xong.
    */
   async findOrCreateByIdentity(
-    kind: SignInMethod,
+    kind: TSignInMethod,
     value: string,
   ): Promise<{ user: User; isNew: boolean }> {
     try {
@@ -81,7 +81,7 @@ export class UserService {
 
   @Transactional()
   private async attachOrCreate(
-    kind: SignInMethod,
+    kind: TSignInMethod,
     value: string,
   ): Promise<{ user: User; isNew: boolean }> {
     const existing = await this.identities.findByTarget(kind, value);

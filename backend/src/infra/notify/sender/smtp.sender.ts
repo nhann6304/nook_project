@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
-import { LIMITS, type SignInMethod } from '@nook/shared';
+import { LIMITS, type TSignInMethod } from '@nook/shared';
 import { Env } from '../../../config/env/index.js';
-import type { CodeSender } from './code-sender.interface.js';
+import type { ICodeSender } from './code-sender.interface.js';
 
 /**
  * Gửi mã qua email thật.
@@ -14,7 +14,7 @@ import type { CodeSender } from './code-sender.interface.js';
  * kia để tra bảng chữ.
  */
 @Injectable()
-export class SmtpSender implements CodeSender {
+export class SmtpSender implements ICodeSender {
   readonly kind = 'smtp';
   private readonly log = new Logger('SMTP');
   private readonly from: string;
@@ -24,7 +24,7 @@ export class SmtpSender implements CodeSender {
     this.from = this.config.get('SMTP_FROM', { infer: true }) ?? 'Nook <no-reply@nook.app>';
   }
 
-  async send(method: SignInMethod, target: string, code: string): Promise<void> {
+  async send(method: TSignInMethod, target: string, code: string): Promise<void> {
     if (method !== 'email') {
       // TODO(chặng sau): chọn nhà mạng gửi SMS rồi tách ra `sms.sender.ts`.
       // Chưa chọn thì thà hỏng to còn hơn im lặng không gửi gì.

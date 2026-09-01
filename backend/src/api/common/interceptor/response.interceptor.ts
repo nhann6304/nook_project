@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Reflector } from '@nestjs/core';
 import type { FastifyRequest } from 'fastify';
 import { map, type Observable } from 'rxjs';
-import { MSG, type ApiEnvelope, type MsgCode } from '@nook/shared';
+import { MSG, type IApiEnvelope, type TMsgCode } from '@nook/shared';
 import { MESSAGE_CODE } from '../decorator/index.js';
 
 /**
@@ -22,9 +22,9 @@ import { MESSAGE_CODE } from '../decorator/index.js';
 export class ResponseInterceptor implements NestInterceptor {
   constructor(private readonly reflector: Reflector) {}
 
-  intercept(ctx: ExecutionContext, next: CallHandler): Observable<ApiEnvelope<unknown>> {
+  intercept(ctx: ExecutionContext, next: CallHandler): Observable<IApiEnvelope<unknown>> {
     const code =
-      this.reflector.getAllAndOverride<MsgCode>(MESSAGE_CODE, [ctx.getHandler(), ctx.getClass()]) ??
+      this.reflector.getAllAndOverride<TMsgCode>(MESSAGE_CODE, [ctx.getHandler(), ctx.getClass()]) ??
       MSG.OK;
 
     const req = ctx.switchToHttp().getRequest<FastifyRequest>();

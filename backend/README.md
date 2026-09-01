@@ -371,6 +371,27 @@ có `chcp 65001` rồi, nhưng log còn đi ra tệp, ra chỗ gom log, ra cửa
 người khác. Chú thích trong mã và tài liệu thì vẫn tiếng Việt — chúng không đi
 qua console.
 
+**Quy ước đặt tên — bắt buộc.**
+
+| | Thư mục | Tên tệp | Tiền tố |
+|---|---|---|---|
+| interface | `interface/` | `user.interface.ts` | **`I`** — `IAuthUser` |
+| type | `type/` | `user.type.ts` | **`T`** — `TIdentityKind` |
+| DTO | `dto/` | `send-code.dto.ts` | hậu tố `Dto` — `SendCodeDto` |
+
+`interface` tả MỘT hình dạng; `type` ghép hoặc suy ra từ hình dạng có sẵn
+(`TApiResponse = IApiEnvelope | IApiError`). Nhìn tên là biết loại và biết nằm
+ở thư mục nào, không phải mở tệp ra xem. Áp dụng cho cả `shared/`.
+
+**Gói `@nook/shared` phải được dịch TRƯỚC.** `dist/` của nó không nằm trong git,
+nên sau mỗi lần `git pull` thì bản dịch trên máy là bản CŨ — và backend báo lỗi
+vào những dòng hoàn toàn đúng, kiểu `'jti' does not exist in type ITokenClaims`
+trong khi `jti` nằm sờ sờ ở nguồn.
+
+Không phải nhớ mà gõ: `predev`, `prebuild`, `pretypecheck`, `pretest` đều chạy
+`tsc -p ../shared/tsconfig.json` trước. Mọi đường vào trình biên dịch đi qua đó.
+Đang sửa nhiều bên `shared` thì mở thêm cửa sổ `npm run dev -w @nook/shared`.
+
 **`incremental` phải để `false`.** Bộ nhớ đệm dịch (`*.tsbuildinfo`) chỉ theo
 dõi tệp trong `src/`. Bản dịch của `@nook/shared` nằm ngoài đó, nên sửa một
 kiểu bên gói dùng chung rồi dựng lại thì bộ nhớ đệm **không biết mình đã cũ** —
@@ -385,11 +406,9 @@ bài" hơn là dùng project references của TypeScript, nhưng Nest CLI chạy
 thẳng chứ không chạy `tsc -b` nên references không tự dựng — đổi lấy một lớp
 phức tạp mới để tiết kiệm 0,9 giây thì không đáng.
 
-Gặp lỗi kiểu "cái này rõ ràng có mà nó bảo không có" thì việc đầu tiên:
-
-```bash
-rm -f backend/*.tsbuildinfo && npm run build:shared
-```
+Hai bẫy trên cùng một triệu chứng — "cái này rõ ràng có mà nó bảo không có" —
+nay đều đã chặn sẵn: `incremental` tắt, và `shared` tự dịch lại trước mọi lệnh.
+Nếu vẫn gặp thì `rm -f backend/*.tsbuildinfo` rồi chạy lại.
 
 **Node 22 hoặc 24, đừng dùng 23.** Vài thư viện khai `engines` là
 `^20.19 || ^22.13 || >=24`; bản lẻ nằm ngoài lời hứa đó.

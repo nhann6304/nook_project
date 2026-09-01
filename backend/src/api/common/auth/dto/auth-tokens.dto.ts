@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsJWT, IsString } from 'class-validator';
-import type { AuthTokens, LogoutBody, RefreshBody, RefreshResult } from '@nook/shared';
+import type { IAuthTokens, ILogoutBody, IRefreshBody, TRefreshResult } from '@nook/shared';
 
-export class AuthTokensDto implements AuthTokens {
+export class AuthTokensDto implements IAuthTokens {
   @ApiProperty({ description: 'Đính vào mỗi lần gọi, sống ngắn' })
   accessToken!: string;
 
@@ -14,16 +14,16 @@ export class AuthTokensDto implements AuthTokens {
 }
 
 /** Kết quả làm mới đúng bằng kết quả phát thẻ. Giữ tên riêng cho Swagger dễ đọc. */
-export class RefreshResultDto extends AuthTokensDto implements RefreshResult {}
+export class RefreshResultDto extends AuthTokensDto implements TRefreshResult {}
 
-export class RefreshDto implements RefreshBody {
+export class RefreshDto implements IRefreshBody {
   @ApiProperty({ description: 'Thẻ dài hạn đang giữ' })
   @IsString()
   @IsJWT()
   refreshToken!: string;
 }
 
-export class LogoutDto implements LogoutBody {
+export class LogoutDto implements ILogoutBody {
   @ApiProperty({ description: 'Thẻ dài hạn của chính phiên muốn thu hồi' })
   @IsString()
   @IsJWT()

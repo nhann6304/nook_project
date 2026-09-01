@@ -4,7 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ERR } from '@nook/shared';
 import { AppException } from '../../error/index.js';
 import { IS_PUBLIC } from '../../decorator/index.js';
-import type { AuthUser } from '../type/index.js';
+import type { IAuthUser } from '../interface/index.js';
 
 /**
  * Cổng thẻ, gắn TOÀN CỤC (xem `APP_GUARD` trong `auth.module.ts`).
@@ -32,7 +32,7 @@ export class JwtAccessGuard extends AuthGuard('jwt-access') {
    * Đổi lỗi của passport sang mã của mình. Không có chỗ này thì cửa 401 trả về
    * một hình dạng khác hẳn mọi lỗi còn lại, và app không tra bảng chữ được.
    */
-  override handleRequest<T = AuthUser>(err: unknown, user: T | false): T {
+  override handleRequest<T = IAuthUser>(err: unknown, user: T | false): T {
     if (err instanceof AppException) throw err;
     if (err || !user) throw new AppException(ERR.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
     return user;

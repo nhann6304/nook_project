@@ -2,7 +2,7 @@ import { Column, Entity, Index, Unique } from 'typeorm';
 import { AuditEntity } from '../base/index.js';
 
 /** Email hay số điện thoại. Tách bảng vì một người có thể có cả hai. */
-export type IdentityKind = 'email' | 'phone';
+export type TIdentityKind = 'email' | 'phone';
 
 /**
  * Đích đăng nhập.
@@ -36,7 +36,7 @@ export class UserIdentity extends AuditEntity {
   userId!: string;
 
   @Column({ name: 'kind', type: 'varchar', length: 8 })
-  kind!: IdentityKind;
+  kind!: TIdentityKind;
 
   /** Đã chuẩn hoá. 320 là trần độ dài email theo RFC. */
   @Column({ name: 'value', type: 'varchar', length: 320 })

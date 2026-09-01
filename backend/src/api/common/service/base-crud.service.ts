@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import type { DeepPartial, FindOptionsWhere, ObjectLiteral, Repository } from 'typeorm';
-import { ERR, type CursorPage, type ErrCode } from '@nook/shared';
+import { ERR, type ICursorPage, type TErrCode } from '@nook/shared';
 import type { BaseRepository } from '../../../database/repository/index.js';
 import { AppException } from '../error/index.js';
 import type { BaseMapper } from '../mapper/index.js';
@@ -50,7 +50,7 @@ export abstract class BaseCrudService<E extends ObjectLiteral, Dto> {
    *
    * Mặc định là mã chung — app vẫn tra được chữ, chỉ là chữ chung chung hơn.
    */
-  protected notFoundCode(): ErrCode {
+  protected notFoundCode(): TErrCode {
     return ERR.NOT_FOUND;
   }
 
@@ -67,7 +67,7 @@ export abstract class BaseCrudService<E extends ObjectLiteral, Dto> {
   }
 
   /** Một trang, lật bằng con trỏ. Bảng phải có `created_at`. */
-  async page(query: CursorQueryDto, where?: FindOptionsWhere<E>): Promise<CursorPage<Dto>> {
+  async page(query: CursorQueryDto, where?: FindOptionsWhere<E>): Promise<ICursorPage<Dto>> {
     const { items, nextCursor } = await this.repo.pageByCursor(
       { cursor: query.cursor, limit: query.limit },
       where,

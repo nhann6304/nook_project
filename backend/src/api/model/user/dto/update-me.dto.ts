@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
-import { LIMITS, type UpdateMeBody } from '@nook/shared';
+import { LIMITS, type IUpdateMeBody } from '@nook/shared';
 
 /**
  * Sửa hồ sơ. Mọi trường đều tuỳ chọn — gửi cái nào thì sửa cái đó.
@@ -10,7 +10,7 @@ import { LIMITS, type UpdateMeBody } from '@nook/shared';
  * Suy ra thì trình biên dịch im lặng còn `forbidNonWhitelisted` lại chặn lúc
  * chạy, và câu lỗi "property … should not exist" không chỉ được ra chỗ sai.
  */
-export class UpdateMeDto implements UpdateMeBody {
+export class UpdateMeDto implements IUpdateMeBody {
   @ApiPropertyOptional({
     example: 'Nam',
     minLength: LIMITS.displayNameMin,

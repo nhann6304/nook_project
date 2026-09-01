@@ -8,7 +8,7 @@ import { TransactionContext } from './transaction.context.js';
  * chép một dòng còn hơn moi vào đường dẫn nội bộ của thư viện, thứ sẽ đổi mà
  * không báo trước.
  */
-export type IsolationLevel =
+export type TIsolationLevel =
   | 'READ UNCOMMITTED'
   | 'READ COMMITTED'
   | 'REPEATABLE READ'
@@ -53,7 +53,7 @@ export class TransactionService {
    * Hiếm khi đúng. Dùng khi cần ghi một thứ phải ở lại dù việc chính bị huỷ —
    * ví dụ một dòng sổ kiểm toán ghi lại chính lần thất bại đó.
    */
-  runIsolated<T>(work: () => Promise<T>, isolation?: IsolationLevel): Promise<T> {
+  runIsolated<T>(work: () => Promise<T>, isolation?: TIsolationLevel): Promise<T> {
     this.log.debug('opening an isolated transaction');
     const runner = (manager: EntityManager) => TransactionContext.run(manager, work);
     return isolation

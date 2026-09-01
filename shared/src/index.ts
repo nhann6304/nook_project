@@ -1,25 +1,28 @@
 /**
  * @nook/shared — hợp đồng giữa app và server.
  *
- * ── Xếp theo MIỀN, không theo loại tệp ──────────────────────────────────────
+ * ── Xếp theo MIỀN, trong miền xếp theo LOẠI ─────────────────────────────────
  *
- *   record/        mảnh chung của mọi bản ghi: Identified · Timestamps · AuditTrail
- *   http/          hợp đồng vận chuyển: đường dẫn, mã HTTP, vỏ câu trả lời
- *   auth/          đăng nhập, mã 6 số, thẻ phiên
- *   user/          hồ sơ
- *   circle/        góc bạn bè, sức chứa, mốc cấp thân
- *   achievement/   thành tích và con đếm
- *   memory/        ký ức: trần theo ngày, khoá ngày theo giờ người dùng
- *   realtime/      tên đường và tên sự kiện của ống socket
- *   catalog/       gộp mảnh từ các miền: ERR · MSG · LIMITS
+ *   <miền>/constant/   hằng số, giới hạn, danh sách, mã lỗi, mã thông báo
+ *   <miền>/interface/  tả một hình dạng dữ liệu        → tên bắt đầu bằng `I`
+ *   <miền>/type/       ghép hoặc suy ra từ hình dạng có sẵn → tên bắt đầu bằng `T`
+ *   <miền>/util/       hàm thuần
  *
- * Vì sao không xếp theo `constant/ type/ util/`: xếp kiểu đó thì một tính năng
- * nằm rải ở ba thư mục, và **không tách ra được**. Ngày nào `circle` cần thành
- * gói riêng thì chỉ việc bê nguyên thư mục đi. Với cách cũ thì phải bóc từng
- * dòng ra khỏi năm tệp chung.
+ * Chín miền: http · auth · user · circle · achievement · memory · realtime ·
+ * record · catalog.
  *
- * Trong mỗi miền, loại nằm ở TÊN TỆP: `auth.constant.ts` · `auth.type.ts` ·
- * `auth.util.ts` · `auth.error.ts` · `auth.message.ts`.
+ * Vì sao xếp theo miền chứ không theo loại ở tầng ngoài: xếp theo loại thì một
+ * tính năng nằm rải khắp nơi và **không tách ra được**. Ngày nào `circle` cần
+ * thành gói riêng thì bê nguyên thư mục đi là xong.
+ *
+ * ── `interface` hay `type` ──────────────────────────────────────────────────
+ *
+ *   interface  tả MỘT hình dạng            IUserProfile, IAuthTokens
+ *   type       ghép/suy ra hình dạng khác  TApiResponse = IApiEnvelope | IApiError
+ *                                          TSignInMethod = (typeof SIGNIN_METHODS)[number]
+ *
+ * Tiền tố `I`/`T` là bắt buộc, và tên tệp phải nói loại: `user.interface.ts`,
+ * `auth.type.ts`, `circle.constant.ts`, `memory.util.ts`.
  *
  * ── Ba luật ─────────────────────────────────────────────────────────────────
  *

@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
-import type { StatKey } from '@nook/shared';
+import type { TStatKey } from '@nook/shared';
 
 /**
  * DANH MỤC thành tích. Đây là bảng tra, không phải bảng của người dùng.
@@ -19,7 +19,7 @@ export class Achievement {
 
   /** Con đếm mà nó canh. Xem `STAT` trong @nook/shared. */
   @Column({ name: 'metric', type: 'varchar', length: 32 })
-  metric!: StatKey;
+  metric!: TStatKey;
 
   /** Chạm tới đâu thì mở. */
   @Column({ name: 'threshold', type: 'integer' })

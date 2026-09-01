@@ -3,17 +3,17 @@ import { IsIn, IsOptional, IsString, Length, Matches, MaxLength } from 'class-va
 import { Transform } from 'class-transformer';
 import {
   LIMITS,
-  type SignInMethod,
-  type VerifyCodeBody,
-  type VerifyCodeResult,
+  type TSignInMethod,
+  type IVerifyCodeBody,
+  type IVerifyCodeResult,
 } from '@nook/shared';
 import { UserProfileDto } from '../../dto/index.js';
 import { AuthTokensDto } from './auth-tokens.dto.js';
 
-export class VerifyCodeDto implements VerifyCodeBody {
+export class VerifyCodeDto implements IVerifyCodeBody {
   @ApiProperty({ enum: ['email', 'phone'], example: 'email' })
   @IsIn(['email', 'phone'])
-  method!: SignInMethod;
+  method!: TSignInMethod;
 
   @ApiProperty({ example: 'nam@gmail.com' })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
@@ -27,7 +27,7 @@ export class VerifyCodeDto implements VerifyCodeBody {
   @Matches(/^\d+$/)
   code!: string;
 
-  // Ba trường dưới đây KHÔNG nằm trong `VerifyCodeBody` của @nook/shared, và
+  // Ba trường dưới đây KHÔNG nằm trong `IVerifyCodeBody` của @nook/shared, và
   // đó là chủ ý: chúng chỉ để ghi vào sổ phiên cho người dùng biết máy nào đang
   // đăng nhập. App có gửi thì tốt, không gửi cũng chạy.
   @ApiProperty({ required: false, example: 'iPhone của Nam' })
@@ -48,7 +48,7 @@ export class VerifyCodeDto implements VerifyCodeBody {
   appVersion?: string;
 }
 
-export class VerifyCodeResultDto extends AuthTokensDto implements VerifyCodeResult {
+export class VerifyCodeResultDto extends AuthTokensDto implements IVerifyCodeResult {
   @ApiProperty({ example: true, description: 'Vừa mở tài khoản lần đầu' })
   isNew!: boolean;
 

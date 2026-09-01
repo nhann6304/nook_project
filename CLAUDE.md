@@ -38,9 +38,14 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
 - **Không tệp nào nằm lung tung.** Mỗi loại một thư mục, mỗi thư mục một
   `index.ts`. Gốc một module chỉ có đúng `*.module.ts`. Import: cùng thư mục thì
   thẳng tệp, qua thư mục khác thì đi qua `index.js`.
-- **`shared/` xếp theo MIỀN, không theo loại tệp** (`auth/` `user/` `circle/`…),
-  để sau này tách được thành gói riêng. Trong mỗi miền, loại nằm ở tên tệp:
-  `auth.constant.ts` · `auth.type.ts` · `auth.util.ts` · `auth.error.ts`.
+- **`shared/` xếp theo MIỀN ở ngoài, LOẠI ở trong.** `auth/`, `user/`, `circle/`…
+  để sau này tách được thành gói riêng; trong mỗi miền có `constant/`,
+  `interface/`, `type/`, `util/`, mỗi thư mục một `index.ts`.
+- **Quy ước đặt tên, bắt buộc, cả hai bên:** `interface` → thư mục `interface/`,
+  tệp `*.interface.ts`, tên bắt đầu bằng **`I`**. `type` → thư mục `type/`, tệp
+  `*.type.ts`, tên bắt đầu bằng **`T`**. DTO → thư mục `dto/`, tệp `*.dto.ts`,
+  tên kết thúc bằng `Dto`. `interface` tả một hình dạng; `type` ghép hoặc suy ra
+  từ hình dạng có sẵn.
 - **Không dùng quan hệ ORM.** Cấu trúc nhiều-về-một vẫn giữ (cột khoá ngoại +
   ràng buộc trong cơ sở dữ liệu), nhưng KHÔNG có `@ManyToOne` / `@OneToMany` /
   `@OneToOne` / `@JoinColumn`. Tham chiếu là cột `uuid`, cần bên kia thì hỏi kho

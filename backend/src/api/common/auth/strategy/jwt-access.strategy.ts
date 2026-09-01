@@ -2,12 +2,12 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { ERR, type TokenClaims } from '@nook/shared';
+import { ERR, type ITokenClaims } from '@nook/shared';
 import { Env } from '../../../../config/env/index.js';
 import { RequestContext } from '../../../../database/context/index.js';
 import { AppException } from '../../error/index.js';
 import { SessionService } from '../service/index.js';
-import type { AuthUser } from '../type/index.js';
+import type { IAuthUser } from '../interface/index.js';
 
 /**
  * Đọc thẻ ngắn hạn từ `Authorization: Bearer …`.
@@ -29,7 +29,7 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt-access') 
     });
   }
 
-  async validate(claims: TokenClaims): Promise<AuthUser> {
+  async validate(claims: ITokenClaims): Promise<IAuthUser> {
     // Thẻ dài hạn KHÔNG được dùng thay thẻ ngắn hạn. Thiếu dòng này là ai cầm
     // thẻ 30 ngày cũng gọi được mọi đường, và việc thu hồi mất hết tác dụng.
     if (claims.typ !== 'access') {
