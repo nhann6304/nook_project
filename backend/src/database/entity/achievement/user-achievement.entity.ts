@@ -1,6 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
-import { User } from '../user/index.js';
-import { Achievement } from './achievement.entity.js';
+import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
 
 /**
  * Ai đã mở được gì, lúc nào. **Chỉ ghi thêm, không sửa, không xoá.**
@@ -12,20 +10,12 @@ import { Achievement } from './achievement.entity.js';
  */
 @Entity('user_achievements')
 export class UserAchievement {
+  @Index('idx_user_achievement_user')
   @PrimaryColumn({ name: 'user_id', type: 'uuid' })
   userId!: string;
 
   @PrimaryColumn({ name: 'achievement_key', type: 'varchar', length: 64 })
   achievementKey!: string;
-
-  @Index('idx_user_achievement_user')
-  @ManyToOne(() => User, (user) => user.achievements, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user!: User;
-
-  @ManyToOne(() => Achievement, { onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'achievement_key' })
-  achievement!: Achievement;
 
   @Column({ name: 'unlocked_at', type: 'timestamptz', default: () => 'now()' })
   unlockedAt!: Date;

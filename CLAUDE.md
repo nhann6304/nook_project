@@ -41,6 +41,10 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
 - **`shared/` xếp theo MIỀN, không theo loại tệp** (`auth/` `user/` `circle/`…),
   để sau này tách được thành gói riêng. Trong mỗi miền, loại nằm ở tên tệp:
   `auth.constant.ts` · `auth.type.ts` · `auth.util.ts` · `auth.error.ts`.
+- **Không dùng quan hệ ORM.** Cấu trúc nhiều-về-một vẫn giữ (cột khoá ngoại +
+  ràng buộc trong cơ sở dữ liệu), nhưng KHÔNG có `@ManyToOne` / `@OneToMany` /
+  `@OneToOne` / `@JoinColumn`. Tham chiếu là cột `uuid`, cần bên kia thì hỏi kho
+  bằng id. Lý do ở `backend/README.md` mục 3.
 - **Log của server viết TIẾNG ANH và chỉ ASCII.** `cmd` trên Windows mặc định
   chạy bảng mã cũ, chữ tiếng Việt ra thành rác. Chú thích trong mã, tài liệu,
   chữ trên Swagger thì vẫn tiếng Việt — chúng không đi qua console.

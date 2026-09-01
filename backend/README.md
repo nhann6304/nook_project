@@ -152,6 +152,41 @@ override async create(input: DeepPartial<Moment>) {
 protected override notFoundCode() { return ERR.MOMENT_NOT_FOUND; }
 ```
 
+### Không dùng quan hệ ORM
+
+**Cấu trúc vẫn là nhiều-về-một.** Cột khoá ngoại vẫn còn, ràng buộc vẫn nằm
+trong cơ sở dữ liệu:
+
+```
+sessions.user_id          -> users.id           ON DELETE CASCADE
+user_identities.user_id   -> users.id           ON DELETE CASCADE
+user_stats.user_id        -> users.id           ON DELETE CASCADE
+user_achievements.user_id -> users.id           ON DELETE CASCADE
+user_achievements.achievement_key -> achievements.key  ON DELETE RESTRICT
+```
+
+Thứ **không** dùng là `@ManyToOne` / `@OneToMany` / `@OneToOne` / `@JoinColumn`.
+Tham chiếu là một cột `uuid` bình thường, và ai cần bên kia thì tự đi hỏi:
+
+```ts
+const identity = await this.identities.findByTarget(kind, value);
+const user = await this.users.findById(identity.userId, { withDeleted: true });
+```
+
+Hai câu hỏi thay vì một cú nối bảng — và cả hai đều nhìn thấy được.
+
+Bốn thứ decorator quan hệ mang theo mà không nói ra:
+
+- **nạp thừa hay thiếu** tuỳ chỗ gọi có nhớ khai `relations` hay không
+- **sinh câu JOIN** mà không ai đọc được nó ra sao cho tới lúc bật log SQL
+- **buộc hai tệp entity nhập khẩu lẫn nhau** — ở ESM thì vòng tròn đó làm server
+  chết ngay lúc nạp, và đã làm thật một lần
+- **đổi hành vi ngầm**: từ khi `User` xoá mềm, phần nối bảng tự lọc bỏ người đã
+  xoá, và một nhánh kiểm đang đúng bỗng ngã 500 — cũng đã xảy ra thật
+
+Ràng buộc trong cơ sở dữ liệu thì giữ, vì nó là chuyện khác hẳn: nó nằm trong
+SQL viết tay, đọc là thấy, và nó còn hiệu lực cả khi có người gõ `psql` xoá tay.
+
 ### Thang bảng dữ liệu
 
 | Kế thừa | Được gì | Dùng khi |
@@ -294,9 +329,11 @@ tương đối phải có đuôi `.js`** (kể cả khi file nguồn là `.ts`).
 Nói cho đúng thì nó cũng đúng về nguyên tắc: entity không bao giờ được là mẫu
 Swagger, vì như vậy là để lộ cột ra ngoài.
 
-**Bảng `users` là trục của bốn quan hệ.** Phía trục dùng `import type` + tên
-bảng dạng chuỗi + `Relation<>`; bốn bảng con nhập `User` bình thường. Một chiều
-thì không thành vòng. Xem ghi chú trong `user.entity.ts`.
+**Vòng tròn nhập khẩu giữa các entity — nay không còn.** Trước đây `users` là
+trục của bốn quan hệ và phải lách bằng `import type` + tên bảng dạng chuỗi +
+`Relation<>`. Từ khi bỏ hẳn decorator quan hệ thì entity không nhập khẩu lẫn
+nhau nữa, nên vòng tròn không dựng lên được. Đừng thêm `@ManyToOne` vào — nó
+kéo ngay chuyện cũ trở lại.
 
 **Tệp data-source chỉ được xuất ra ĐÚNG MỘT thứ.** Thấy hai thứ là bộ lệnh
 TypeORM không đoán, nó từ chối. Và vì nó nằm ở `database/data-source/`, đường

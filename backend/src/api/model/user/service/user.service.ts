@@ -84,19 +84,21 @@ export class UserService {
     kind: SignInMethod,
     value: string,
   ): Promise<{ user: User; isNew: boolean }> {
-    const existing = await this.identities.findWithUser(kind, value);
+    const existing = await this.identities.findByTarget(kind, value);
 
     if (existing) {
-      // `user` có thể RỖNG chứ không phải chỉ "có deletedAt": từ khi `User` kế
-      // thừa `SoftDeleteEntity`, TypeORM tự thêm `deleted_at IS NULL` vào cả
-      // phần nối bảng — người đã xoá thì dòng đích danh vẫn còn mà người thì
-      // không nối ra. Thiếu vế đầu là một cú ngã 500 thay vì một câu trả lời.
-      if (!existing.user || existing.user.deletedAt !== null) {
-        // Đã tự xoá tài khoản thì không hồi sinh bằng một lần đăng nhập.
+      // Hai câu hỏi thay vì một cú nối bảng — và đó là chủ ý (không dùng quan
+      // hệ ORM). `withDeleted` để thấy CẢ người đã xoá: cần phân biệt "đã tự
+      // xoá tài khoản" với "dòng đích danh mồ côi", hai chuyện khác hẳn nhau.
+      const user = await this.users.findById(existing.userId, { withDeleted: true });
+
+      // Đã tự xoá tài khoản thì không hồi sinh bằng một lần đăng nhập.
+      if (!user || user.deletedAt !== null) {
         throw new AppException(ERR.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
       }
+
       await this.identities.markVerified(existing.id);
-      return { user: existing.user, isNew: false };
+      return { user, isNew: false };
     }
 
     const user = await this.users.create({});

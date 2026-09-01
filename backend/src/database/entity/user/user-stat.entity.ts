@@ -1,5 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
-import { User } from './user.entity.js';
+import { Column, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
 /**
  * Những con đếm mà thành tích canh chừng. Một dòng cho một người.
@@ -15,10 +14,6 @@ import { User } from './user.entity.js';
 export class UserStat {
   @PrimaryColumn({ name: 'user_id', type: 'uuid' })
   userId!: string;
-
-  @OneToOne(() => User, (user) => user.stat, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
-  user!: User;
 
   /** Số người đang ở trong góc. */
   @Column({ name: 'friend_count', type: 'integer', default: 0 })

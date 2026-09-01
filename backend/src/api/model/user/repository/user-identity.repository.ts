@@ -11,9 +11,16 @@ export class UserIdentityRepository extends BaseRepository<UserIdentity> {
     super(dataSource, UserIdentity);
   }
 
-  /** Đích đăng nhập kèm luôn người sở hữu. `value` phải đã chuẩn hoá. */
-  findWithUser(kind: SignInMethod, value: string): Promise<UserIdentity | null> {
-    return this.findOne({ kind, value }, { relations: { user: true } });
+  /**
+   * Đích đăng nhập. `value` phải đã chuẩn hoá.
+   *
+   * Trả về **đúng dòng này**, không kéo theo người sở hữu. Không có quan hệ ORM
+   * ở dự án này — ai cần người sở hữu thì hỏi kho người dùng bằng `userId`. Một
+   * câu hỏi nữa, nhưng là câu hỏi nhìn thấy được, và không có chuyện phần nối
+   * bảng tự lọc mất dòng rồi làm ngã một nhánh đang đúng.
+   */
+  findByTarget(kind: SignInMethod, value: string): Promise<UserIdentity | null> {
+    return this.findOne({ kind, value });
   }
 
   /**
