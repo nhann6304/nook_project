@@ -145,11 +145,16 @@ Năm khối xếp dọc. Ba khối cao cố định, khối "sân khấu" ở gi
    Nổi ở đáy khung một pill `✎ Thêm một dòng…`.
 4. **Hàng chụp**: icon thư viện (trái) · nút chụp — vòng 84px viền 3,5px màu đất
    nung, lõi đặc 68px (giữa) · icon đảo camera (phải).
-5. **Chân màn**: cửa nhòm sang Khoảnh khắc — ba ảnh thu nhỏ 48px + "Khoảnh khắc ·
-   N" + mũi tên lên. Chưa có ảnh nào thì thu về đúng dáng một viên thuốc chữ.
+5. **Thanh tab** (do navigator vẽ, không thuộc màn này).
 
-Số đo thật của khung ngắm: iPhone SE **307**, iPhone 14 **374**, 14 Pro Max
-**413**, Samsung 360dp **346**. Máy nào cũng vừa, không máy nào tràn.
+Chân màn **không** có "cửa nhòm" sang Khoảnh khắc nữa. Nó đúng khi chưa có thanh
+tab; giờ hai hàng cạnh nhau cùng dẫn tới một chỗ, mà cái giá là 60pt cắt thẳng
+vào khung ngắm — trên iPhone SE khung tụt từ 311 xuống 251. Tín hiệu "có gì mới"
+sẽ về đúng chỗ của nó: một chấm nhỏ trên icon tab Khoảnh khắc.
+
+Số đo thật của khung ngắm (đã trừ thanh tab): iPhone SE **311**, iPhone 14
+**390**, 14 Pro Max **430**, Samsung 360dp **360**. Máy nào cũng vừa, không máy
+nào tràn.
 
 **Chưa cho quyền camera:** màn này thay bằng lời giải thích + nút xin quyền. Nếu
 người dùng đã từ chối một lần thì hệ thống **không hỏi lại nữa** — lúc đó phải đổi
@@ -175,9 +180,9 @@ Bốn khối giữ nguyên chiều cao của màn 7, chỉ đổi ruột:
    biến mất, vì lúc đó nó chiếm chỗ của chữ.
 4. **Hàng gửi**: chỉ **một** nút, ở giữa — vòng tròn đặc dải màu với mũi tên lên.
    Sau khi chụp thì chỉ có đúng một việc để làm.
-5. **Chân màn**: nhắc lại lời hứa — *"Ảnh này chỉ đi tới {n} người trong góc của
-   bạn. Không ai khác thấy được."* Đây là chỗ duy nhất trong app mà câu đó còn
-   kịp thay đổi quyết định.
+5. **Chân màn** (chỉ có ở bước này): nhắc lại lời hứa — *"Ảnh này chỉ đi tới {n}
+   người trong góc của bạn. Không ai khác thấy được."* Đây là chỗ duy nhất trong
+   app mà câu đó còn kịp thay đổi quyết định.
 
 ### 9. Khoảnh khắc (feed)
 Tiêu đề "Khoảnh khắc" ở trên, mũi tên xuống bên trái để đóng. Danh sách thẻ cuộn dọc,
@@ -189,12 +194,29 @@ khai.** Dòng chú thích cuối feed: "Chỉ hiện 48 giờ gần nhất."
 Feed rỗng: khung đứt nét vuông 208px (đúng độ bo 32 của khung ngắm camera) + "Hết rồi.
 Chụp gì đó đi." + nút phụ "Mở camera".
 
+### 10a. Danh sách trò chuyện (tab thứ ba)
+Mỗi hàng là **một người**, không phải một chủ đề — Nook không có nhóm, và một
+người đúng một cuộc trò chuyện. Hàng gồm avatar có vòng độ thân · tên · tin cuối
+(có tiền tố "Bạn:" nếu là tin của mình) · thời gian.
+
+**Không hiện số tin chưa đọc.** Con số chưa đọc là thứ kéo người ta mở app vì áy
+náy; Nook không làm loại đó.
+
+Trống: khung đứt nét + "Chưa nói chuyện với ai" + nút phụ "Xem khoảnh khắc".
+
 ### 10. Trò chuyện
 Mở ra từ một khoảnh khắc cụ thể. Thanh trên: mũi tên trái (quay lại) · avatar nhỏ +
 tên người đang chat · khoảng trống. Ngay dưới thanh trên là **thẻ ảnh gốc được ghim**
 (thumbnail nhỏ + caption) làm ngữ cảnh cuộc trò chuyện. Bên dưới là bong bóng chat:
 tin của người kia căn trái nền surface chữ sáng, tin của mình căn phải nền đất nung
-chữ tối. Ô nhập ở đáy dạng pill với nút gửi hình mũi tên tròn.
+chữ tối. Ô nhập ở đáy dạng pill với nút gửi hình mũi tên tròn — nút **chỉ sáng lên khi đã
+có chữ**.
+
+Ảnh ghim **không cuộn theo** tin nhắn: cuộn mất là mất luôn ngữ cảnh, đúng lúc
+cuộc trò chuyện dài ra và người ta cần nó nhất.
+
+Hai đường vào từ feed, cố ý khác nhau: **icon cảm xúc** gửi ngay và ở lại feed
+(nhanh là cả điểm của nó); **ô nhắn chữ** mở màn này với ảnh đã ghim sẵn.
 
 ---
 
@@ -263,8 +285,8 @@ khoảnh khắc và ký ức"). **Bắt buộc phải có để qua duyệt App 
 - [ ] Màn 1–6 (Nhóm A): stack điều hướng riêng, chỉ chạy một lần.
       Màn 1–3 (Chào mừng, Đăng nhập, Nhập mã) **đã code xong giao diện**, chưa nối backend.
       Còn màn 4 (Tên và ảnh), 5 (Mời người đầu tiên), 6 (Xin quyền)
-- [ ] Màn 7–10 (Nhóm B): màn 7 (Camera), 8 (Vừa chụp xong), 9 (Khoảnh khắc) **đã code xong**.
-      Còn **màn 10 (Trò chuyện)** — ô "Nhắn riêng cho…" trong feed đang trỏ tới hư không
+- [x] Màn 7–10 (Nhóm B): Camera, Vừa chụp xong, Khoảnh khắc, Trò chuyện (cả danh
+      sách lẫn một cuộc) **đã code xong**
 - [ ] Màn 11–14 (Nhóm C): màn 11 (Góc) **đã code xong**. Màn 12–13 thuộc V0.1,
       màn 14 (Chi tiết tình bạn) hoãn sang V0.2
 - [ ] Màn 15–18 (Nhóm D): màn 15 (Cài đặt) mới có **hàng Ngôn ngữ**. Ưu tiên tiếp

@@ -77,7 +77,12 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - Khung ngắm camera lấy cạnh bằng số **nhỏ hơn** của hai thứ: **100%** bề ngang
   máy, và chiều cao thật đo bằng `onLayout`. Đừng tính tay từ chắn tai thỏ.
   Đo trên ảnh Locket: khung của họ 413/414pt — tràn mép, và **vuông**.
-- **Không thanh tab.** Điều hướng bằng cử chỉ.
+- **Có thanh tab ba chỗ** (Khoảnh khắc · Camera · Trò chuyện), tự vẽ, không
+  dùng thanh mặc định của navigator. Luật cũ "không thanh tab, điều hướng bằng
+  cử chỉ" đã bỏ 01/09/2026: cử chỉ vuốt lên **chưa bao giờ tồn tại trong code**,
+  nên trên thực tế không có cử chỉ nào để học, chỉ có nút nằm rải ba góc.
+- **Tab thì `navigate`, màn chồng thì `push`.** Chuyển giữa ba tab không được
+  đẻ ra lịch sử — không ai "quay lại" khỏi màn camera.
 - **Không có linh vật** (bỏ 31/08/2026). Chỗ trống dùng `<GhostFrame>` hoặc
   lưới mười chỗ.
 - Wordmark **chỉ** ở màn Chào mừng; dấu hiệu `<Rings>` thì dùng trong app.
@@ -109,12 +114,12 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] **Hai thứ tiếng** (vi + en), an toàn kiểu, đổi trong Cài đặt — `docs/09-i18n.md`
 - [x] **Năm bảng màu** người dùng chọn được, mọi cặp đã đo WCAG — `docs/10-theme.md`
 - [x] Camera: khung TRÀN MÉP, đèn (camera trước dùng đèn màn hình), chọn ảnh có sẵn
+- [x] **Thanh tab ba chỗ** + **Trò chuyện** (danh sách + một cuộc), nối từ feed
 - [x] Caption nằm TRONG ảnh ở cả lúc gửi lẫn trong feed
 - [x] Xin quyền camera: có nhánh "đã từ chối" mở Cài đặt máy + tự đọc lại khi quay về
 - [x] Điều hướng expo-router có kiểu, kho trạng thái Zustand
 - [x] Icon PNG cho store đã xuất; wordmark "nook" vẽ lại bằng SVG
 - [ ] Onboarding — còn 3 màn: Tên và ảnh, Mời người đầu tiên, Xin quyền
-- [ ] Trò chuyện (màn 10) — ô "Nhắn riêng cho…" trong feed đang chưa mở màn nào
 - [ ] Cài đặt: mới có hàng Ngôn ngữ. Còn Vị trí, Thông báo, Tài khoản
 - [ ] Thêm bạn — đặc tả xong, chưa code
 - [ ] "Lưu về máy" ở màn Vừa chụp xong — cần `expo-media-library` + xin quyền ghi
@@ -124,11 +129,10 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 
 ## Việc tiếp theo hợp lý
 
-Gần nhất: màn **Trò chuyện** (đặc tả màn 10). Nó là chỗ ô "Nhắn riêng cho…"
-trong feed đang trỏ tới hư không, và là nửa còn lại của tương tác hai chiều —
-thứ mà cả hệ "ký ức" dựa vào.
+Gần nhất: màn **Tên + ảnh** để đi hết một lượt onboarding (màn 4).
 
-Sau đó: màn **Tên + ảnh** để đi hết một lượt onboarding.
+Sau đó: **Thêm bạn** (màn 12–13) — hiện ô `+` ở hàng người chỉ mở màn Góc, chưa
+mời được ai thật.
 
 Cần quyết sớm: **có chuyển sang development build không.** Hiện mọi thứ còn chạy
 trên Expo Go (quét QR là xem được trên máy thật). Widget và `react-native-mmkv`

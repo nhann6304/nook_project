@@ -9,6 +9,6 @@ import { useAuth } from '@/features/auth/store/authStore';
 
 export default function Entry() {
   const phase = useAuth((s) => s.phase);
-  if (phase === 'signed-in') return <Redirect href="/(app)/camera" />;
+  if (phase === 'signed-in') return <Redirect href="/(app)/(tabs)/camera" />;
   return <Redirect href="/(auth)/welcome" />;
 }

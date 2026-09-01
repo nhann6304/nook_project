@@ -74,8 +74,6 @@ export const vi = {
     flash: 'Bật tắt đèn',
     shutter: 'Chụp khoảnh khắc',
     flip: 'Đổi camera trước sau',
-    peekEmpty: 'Chưa có khoảnh khắc nào',
-    peekSome: { other: 'Khoảnh khắc · {count}' },
     peekHint: 'Ảnh chỉ đi tới những người trong góc của bạn.',
     captionHint: 'Thêm một dòng…',
 
@@ -130,6 +128,27 @@ export const vi = {
     waitingTitle: { other: 'Góc này còn chờ {count} người' },
     waitingMessage: 'Mời người đầu tiên vào đi. Chỉ mười chỗ thôi, nên chọn kỹ nhé.',
     invite: 'Mời một người bạn',
+  },
+
+  /* ---------- Thanh tab ---------- */
+  tabs: {
+    feed: 'Khoảnh khắc',
+    camera: 'Chụp',
+    chat: 'Trò chuyện',
+  },
+
+  /* ---------- Trò chuyện ---------- */
+  chat: {
+    title: 'Trò chuyện',
+    emptyTitle: 'Chưa nói chuyện với ai',
+    emptyMessage:
+      'Chạm vào ô nhắn dưới một khoảnh khắc là mở được cuộc trò chuyện với người gửi.',
+    openFeed: 'Xem khoảnh khắc',
+    placeholder: 'Nhắn cho {name}…',
+    send: 'Gửi',
+    noMessages: 'Chưa có tin nào. Bạn nói câu đầu tiên nhé.',
+    aboutThis: 'Về khoảnh khắc này',
+    mineSaid: 'Bạn: {text}',
   },
 
   /* ---------- Màu sắc ---------- */

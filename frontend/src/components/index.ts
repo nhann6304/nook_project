@@ -18,6 +18,7 @@ export { CaptionField } from './primitives/CaptionField';
 export { Field, type FieldProps } from './primitives/Field';
 export { HelperText } from './primitives/HelperText';
 export { CodeInput, type CodeInputProps } from './primitives/CodeInput';
+export { ComposerField } from './primitives/ComposerField';
 export { Segmented, type SegmentedOption } from './primitives/Segmented';
 export { Img, type ImgProps } from './primitives/Img';
 
@@ -28,6 +29,7 @@ export { Card, Pill, Divider } from './layout/Surface';
 export { List, type ListProps } from './layout/List';
 export { Scroll } from './layout/Scroll';
 export { TopBar, type TopBarProps } from './layout/TopBar';
+export { TabBar, type TabItem } from './layout/TabBar';
 
 /* — Thương hiệu — */
 export { Rings, type RingsProps } from './brand/Rings';

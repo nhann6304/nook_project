@@ -48,7 +48,8 @@ frontend/
 │   │
 │   ├── components/         BỘ MẢNH. Màn hình lắp từ đây, không tự dựng.
 │   │   ├── primitives/     Txt · Tap · Button · IconButton · Field · CodeInput …
-│   │   ├── layout/         Screen · Row/Col/Spacer/Flex · Card/Pill/Divider · List · Scroll
+│   │   ├── layout/         Screen · Row/Col/Spacer/Flex · Card/Pill/Divider · List
+│   │   │                     · Scroll · TopBar · TabBar
 │   │   ├── brand/          Rings · Wordmark · Halo · GhostFrame · Avatar
 │   │   ├── feedback/       EmptyState · Loading
 │   │   └── index.ts        cửa '@ui'
@@ -58,6 +59,7 @@ frontend/
 │   │   ├── camera/         screens/ · components/ (Shutter · SendButton · CameraPermission
 │   │   │                     · FlashToggle · ScreenFlash · NookStrip · MomentsPeek)
 │   │   ├── feed/           screens/ · components/ (MomentCard) · store/ · types.ts
+│   │   ├── chat/           screens/ (danh sách + một cuộc) · components/ · store/
 │   │   ├── circle/         screens/
 │   │   └── settings/       screens/ · components/ (PalettePicker)
 │   │

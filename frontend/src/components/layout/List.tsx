@@ -15,15 +15,25 @@
  *   3. Danh sách trộn nhiều kiểu ô thì phải khai `getItemType`, nếu không
  *      FlashList tái dùng nhầm ô khác kiểu và phải vẽ lại từ đầu.
  */
-import { FlashList, type FlashListProps } from '@shopify/flash-list';
+import { forwardRef } from 'react';
+import { FlashList, type FlashListProps, type FlashListRef } from '@shopify/flash-list';
 import { StyleSheet } from 'react-native';
 import { space } from '@design';
 
 export type ListProps<T> = FlashListProps<T>;
 
-export function List<T>({ contentContainerStyle, ...rest }: ListProps<T>) {
+/**
+ * Có chuyển tiếp `ref` để chỗ gọi cuộn được (`scrollToEnd`, `scrollToIndex`).
+ * Màn Trò chuyện cần: gửi xong mà không kéo xuống thì tin của mình nằm ngoài
+ * màn, người ta tưởng chưa gửi được.
+ */
+function ListInner<T>(
+  { contentContainerStyle, ...rest }: ListProps<T>,
+  ref: React.ForwardedRef<FlashListRef<T>>,
+) {
   return (
     <FlashList
+      ref={ref}
       // Bàn phím đóng khi bắt đầu kéo — không ai vừa gõ vừa cuộn.
       keyboardDismissMode="on-drag"
       keyboardShouldPersistTaps="handled"
@@ -35,6 +45,14 @@ export function List<T>({ contentContainerStyle, ...rest }: ListProps<T>) {
     />
   );
 }
+
+/**
+ * `forwardRef` xoá mất kiểu tổng quát, nên phải khai lại. Không có bước này thì
+ * mọi danh sách trong app rơi về `unknown` và mất sạch kiểm kiểu của `renderItem`.
+ */
+export const List = forwardRef(ListInner) as <T>(
+  props: ListProps<T> & { ref?: React.ForwardedRef<FlashListRef<T>> },
+) => React.ReactElement;
 
 const s = StyleSheet.create({
   content: { paddingBottom: space.huge },

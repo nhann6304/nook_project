@@ -82,12 +82,15 @@ Sau khi app mở lên:
 | 4 | Gõ email đúng, bấm **Tiếp tục** | Nút hiện vòng chờ 700ms |
 | 5 | **Màn nhập mã** — sáu ô | Gõ `123456` → **tự vào app**, không cần bấm nút nào. Gõ mã khác → rung một nhịp, ô tự xoá trắng |
 | 6 | **Xin quyền camera** | Bấm **Cho phép camera** → hộp thoại của máy. Thử bấm **Không cho phép**: màn đổi thành *"Camera đang tắt"* và nút thành *Mở Cài đặt máy*. Bật lại quyền rồi quay về app → màn **tự cập nhật**, không phải mở lại app |
-| 7 | **Màn camera** | Khung ngắm **vuông**, gần kín bề ngang máy. Ngay dưới thanh trên là **hàng người trong góc** — sáu avatar có vòng độ thân + một ô `+` để mời thêm. Chân màn là **cửa nhòm**: ba ảnh thu nhỏ + "Khoảnh khắc · 4" |
+| 7 | **Màn camera** | Khung ngắm **vuông, tràn sát mép** (390pt trên iPhone 14). Dưới thanh trên là **hàng người trong góc** — sáu avatar có vòng độ thân + ô `+` để mời. Đáy màn là **thanh tab ba chỗ**: Khoảnh khắc · Camera · Trò chuyện |
 | 8 | Bấm nút chụp | Lõi co lại, máy rung một nhịp nặng |
 | 9 | **Vừa chụp xong** | Ảnh đè lên khung ngắm, thanh trên đổi thành `✕` + *"Gửi cho 6 người trong góc"*, nút chụp thành **nút gửi** ở giữa. Hàng người vẫn đó — giờ nó là **danh sách người nhận**, và ô `+` biến mất. Chân màn nhắc lại lời hứa riêng tư. Bấm `✕` → về chụp lại **tức thì** (camera không bị tháo) |
 | 10 | Chạm pill **`✎ Thêm một dòng…`** trên ảnh | Vào ô gõ ngay, icon bút chì biến mất khi có chữ đầu tiên |
 | 11 | Bấm **nút gửi** | Vào thẳng Khoảnh khắc, ảnh của bạn nằm **đầu danh sách** |
-| 12 | **Khoảnh khắc** | Bốn thẻ mẫu: avatar có vòng độ thân · tên · "3 phút trước" · ảnh · caption · ba icon cảm xúc + ô nhắn riêng. Bấm một icon → đổi thành *"Đã nhắn cho Yến"* |
+| 12 | **Khoảnh khắc** | Bốn thẻ mẫu: avatar có vòng độ thân · tên · "3 phút trước" · ảnh có **caption nằm bên trong** · ba icon cảm xúc + ô nhắn riêng |
+| 12b | Bấm **một icon cảm xúc** | Gửi ngay, **ở lại feed**, hàng đổi thành *"Đã nhắn cho Yến"* |
+| 12c | Bấm **ô "Nhắn riêng cho Yến…"** | Mở **Trò chuyện** với tấm ảnh đó **ghim sẵn** ở đầu màn |
+| 12d | Tab **Trò chuyện** | Danh sách: avatar · tên · tin cuối · thời gian. **Không có số tin chưa đọc** |
 | 13 | Bấm **một avatar** ở hàng trên màn camera | **Góc của bạn**: sáu avatar + bốn chỗ viền đứt nét |
 | 14 | Bấm **bánh răng** ở trên phải | **Cài đặt** → đổi **bảng màu**: Đất nung · Rêu · Biển đêm · Hoàng hôn · Trung tính. Cả app đổi ngay. Rồi đổi sang **English** — cũng đổi ngay, không phải mở lại |
 
@@ -104,6 +107,10 @@ Sau khi app mở lên:
   nếu thấy sót thì đó là một style dựng ở tầng module, xem `docs/10-theme.md`.
 - **Bật đèn ở góc trên-trái khung ngắm rồi chụp bằng camera trước.** Cả màn hình
   phải loé trắng một nhịp — máy nào cũng chỉ có đèn thật ở mặt sau.
+- **Chuyển tab qua lại vài lần rồi chụp.** Camera phải mở ra ngay, không có nhịp
+  chờ khởi động — nó nằm trong tab nên không bị tháo.
+- **Trong Trò chuyện, gõ một tin dài.** Ô soạn cao dần tới bốn dòng rồi mới cuộn
+  bên trong; nút gửi chỉ sáng khi đã có chữ.
 - **Xoay cỡ máy.** Khung ngắm lấy cạnh bằng số nhỏ hơn giữa 96% bề ngang và
   chiều cao còn lại, nên máy ngắn thì nó tự co chứ không tràn: iPhone SE 307pt,
   iPhone 14 374pt, 14 Pro Max 413pt.
@@ -143,7 +150,7 @@ frontend/
 │   ├── design/             ⚠ NƠI DUY NHẤT ĐƯỢC VIẾT MÃ MÀU (5 bảng màu)
 │   ├── i18n/               ⚠ NƠI DUY NHẤT ĐƯỢC VIẾT CÂU TIẾNG VIỆT
 │   ├── components/         28 mảnh, xuất qua một cửa '@ui'
-│   ├── features/           theo tính năng: auth · camera · feed · circle · settings
+│   ├── features/           theo tính năng: auth · camera · feed · chat · circle · settings
 │   ├── hooks/  lib/        dùng chung
 │   └── mocks/              dữ liệu giả, xoá khi có server
 ├── docs/                   tài liệu frontend

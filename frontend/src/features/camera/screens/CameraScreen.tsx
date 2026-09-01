@@ -15,8 +15,12 @@
  * Nếu đẩy sang một màn khác thì camera bị tháo, và bấm "chụp tiếp" phải chờ nó
  * khởi động lại — trên máy tầm trung là 300–500ms nhìn thấy được bằng mắt.
  *
- * Bốn khối xếp dọc; khối giữa co giãn, ba khối kia cao cố định. Nhờ vậy đổi
- * giữa "đang chụp" và "đang xem lại" không có gì nhảy chỗ.
+ * ── Chân màn chỉ còn ở bước xem lại ─────────────────────────────────────
+ * Trước đây đáy màn có một "cửa nhòm" sang Khoảnh khắc: ba ảnh thu nhỏ + mũi
+ * tên. Nó đúng khi chưa có thanh tab. Giờ có rồi thì hai hàng cạnh nhau cùng
+ * dẫn tới một chỗ, mà cái giá là 60pt cắt thẳng vào khung ngắm — trên iPhone
+ * SE khung tụt từ 311 xuống 251. Tín hiệu "có gì mới" sẽ về đúng chỗ của nó:
+ * một chấm nhỏ trên icon tab Khoảnh khắc.
  */
 import { useCallback, useRef, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -27,11 +31,9 @@ import { CaptionField, IconButton, Img, Loading, Pill, Rings, Screen, Txt } from
 import { common, layout, media, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import * as feel from '@/lib/haptics';
-import type { PhotoSource } from '@/features/feed/types';
 import { CameraPermission } from '../components/CameraPermission';
 import { FlashToggle, type FlashMode } from '../components/FlashToggle';
 import { ScreenFlash, WARMUP_MS, type ScreenFlashHandle } from '../components/ScreenFlash';
-import { MomentsPeek } from '../components/MomentsPeek';
 import { NookStrip, type StripFriend } from '../components/NookStrip';
 import { SendButton } from '../components/SendButton';
 import { Shutter } from '../components/Shutter';
@@ -40,8 +42,6 @@ export type Shot = { uri: string; caption: string };
 
 export function CameraScreen({
   friends,
-  peekPhotos,
-  peekLabel,
   peekHint,
   inviteLabel,
   onOpenCircle,
@@ -51,9 +51,7 @@ export function CameraScreen({
 }: {
   /** Người trong góc. Vừa là hàng avatar trên đầu, vừa là danh sách người nhận. */
   friends: readonly StripFriend[];
-  /** Ba tấm mới nhất — cửa nhòm ở chân màn. */
-  peekPhotos: readonly PhotoSource[];
-  peekLabel: string;
+  /** Câu nhắc riêng tư, dùng khi góc chưa có ai. */
   peekHint: string;
   inviteLabel: string;
   onOpenCircle: () => void;
@@ -169,8 +167,10 @@ export function CameraScreen({
   const reviewing = shot !== null;
   const frame = Math.min(Math.round(width * layout.cameraFrameRatio), Math.floor(stageHeight));
 
+  // Chỉ chắn cạnh TRÊN: cạnh dưới đã là việc của thanh tab. Chừa hai lần là
+  // mất thêm một khoảng bằng vạch home, và khung ngắm co lại theo.
   return (
-    <Screen padded={false} edges={['top', 'bottom']} keyboard>
+    <Screen padded={false} edges={['top']} keyboard>
       <View style={s.root}>
         {/* 1 — Thanh trên */}
         <View style={s.topBar}>
@@ -292,23 +292,16 @@ export function CameraScreen({
           )}
         </View>
 
-        {/* 5 — Chân màn. Hai trạng thái, cùng chiều cao. */}
-        <View style={s.footer}>
-          {reviewing ? (
-            // Nhắc lại lời hứa đúng vào giây người ta sắp gửi. Đây là chỗ duy
-            // nhất trong app mà câu đó còn kịp thay đổi quyết định.
+        {/* 5 — Chân màn. Chỉ còn ở bước xem lại. */}
+        {reviewing ? (
+          <View style={s.footer}>
+            {/* Nhắc lại lời hứa đúng vào giây người ta sắp gửi. Đây là chỗ duy
+                nhất trong app mà câu đó còn kịp thay đổi quyết định. */}
             <Txt variant="faint" tone="faint" center style={s.promise}>
               {friendCount === 0 ? peekHint : t('review.privacy', { count: friendCount })}
             </Txt>
-          ) : (
-            <MomentsPeek
-              photos={peekPhotos}
-              label={peekLabel}
-              accessibilityLabel={peekLabel}
-              onPress={onOpenFeed}
-            />
-          )}
-        </View>
+          </View>
+        ) : null}
       </View>
 
       {/* Nhuộm trắng CẢ MÀN chứ không riêng khung: cần bao nhiêu ánh sáng thì
@@ -318,7 +311,7 @@ export function CameraScreen({
   );
 }
 
-const FOOTER_HEIGHT = 76;
+const FOOTER_HEIGHT = 60;
 
 const make = (c: Palette) =>
   StyleSheet.create({

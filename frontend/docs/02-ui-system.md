@@ -18,40 +18,44 @@ cụ thể xem [`03-screen-specs.md`](03-screen-specs.md).
 
 ## 2. Điều hướng
 
-Không có tab bar. App mở thẳng vào camera như Locket, mọi thứ khác là một cử chỉ:
+Hai tầng, và ranh giới giữa chúng là một quyết định về sản phẩm chứ không phải
+chuyện kỹ thuật.
+
+### Tab — ba chỗ đi đi lại lại cả ngày
 
 ```
-                    CAMERA
-        (mở app là thấy, không màn chờ)
-                       │
-   ┌───────────────────┼───────────────────┐
-   │                   │                   │
-chạm avatar        vuốt lên          chạm bánh răng
-   │                   │                   │
-Góc của bạn      Khoảnh khắc          Cài đặt
-   │                   │
-chạm 1 người      chạm 1 ảnh
-   │                   │
-Chi tiết          Trò chuyện
-tình bạn          (riêng tư)
+Khoảnh khắc   ·   Camera   ·   Trò chuyện
 ```
 
-Tab bar chiếm 80px dưới màn hình và ngầm nói "app này có nhiều chỗ để lượn". Nook chỉ
-có một hành động chính — chụp.
+Camera nằm **giữa** vì nó là màn mặc định và là việc chính — chỗ ngón cái rơi
+vào. Chuyển giữa ba tab dùng `navigate`, **không** `push`: không ai "quay lại"
+khỏi màn camera, nên chuyển tab không được đẻ ra lịch sử.
 
-**Onboarding là một chồng màn riêng, đi thẳng một chiều**, có nút quay lại ở góc trên
-trái và không cử chỉ nào khác. Xong rồi thì không bao giờ quay lại được — đó là chủ ý.
+Camera nằm trong tab nên nó **không bị tháo** khi sang Khoảnh khắc — quay lại
+chụp là tức thì, không phải chờ camera khởi động lại (300–500ms thấy được bằng
+mắt trên máy tầm trung).
 
-Cửa vào app có đúng hai đường và cả hai dẫn về **một** ô nhập:
+Thanh tab **tự vẽ** (`<TabBar>`), không dùng thanh mặc định của navigator:
+thanh mặc định mang theo chiều cao, nền và nhãn của hệ điều hành — ba thứ khác
+nhau giữa iOS và Android, đúng loại khác nhau mà cả dự án đang tránh.
 
-```
-Chào mừng ──┬── "Tạo tài khoản"  ──┐
-            └── "Đăng nhập"      ──┴──► Nhập email / SĐT ──► Nhập mã ──► vào app
-                                                                    (người mới đi tiếp: Tên và ảnh)
-```
+Nó **chiếm chỗ thật**, không nổi đè lên nội dung. Nổi đè thì mọi màn phải tự
+chừa đệm đáy đúng bằng chiều cao thanh, và chỉ cần một màn quên là dòng cuối bị
+che. Màn trong tab dùng `<Screen edges={['top']}>`.
 
-Hai nút vì người dùng cần thấy đường của mình trên màn đầu tiên, dù bên dưới là cùng
-một luồng. Nút nào bấm thì màn sau đổi tiêu đề và câu mô tả theo, không đổi thao tác.
+### Đẩy chồng — chỗ vào rồi ra
+
+Góc · Cài đặt · một cuộc trò chuyện cụ thể. Những màn này **có nút quay lại**
+(`<TopBar onClose>`) và có nghĩa "ở trên" màn trước.
+
+### Luật cũ đã bỏ
+
+Trước 01/09/2026 Nook chốt "không thanh tab, điều hướng bằng cử chỉ". Bỏ vì
+**cử chỉ chưa bao giờ tồn tại trong code** — vuốt lên để mở Khoảnh khắc chưa
+từng được viết, chỉ có một cái nút ở chân màn. Trên thực tế người dùng không có
+cử chỉ nào để học, chỉ có vài cái nút nằm rải ở ba góc khác nhau.
+
+Cử chỉ giấu thì đẹp, nhưng chỉ đẹp với người **đã biết** nó tồn tại.
 
 ---
 
@@ -72,6 +76,7 @@ import thẳng đường dẫn con, và không bao giờ tự dựng lại một
 | `CaptionField` | Ô nhập nổi **trên ảnh** — nền mờ, không viền, chữ căn giữa |
 | `HelperText` | Dòng phụ dưới ô nhập, **luôn chiếm chỗ** để lỗi không đẩy layout |
 | `CodeInput` | Sáu ô mã, một ô nhập thật trong suốt phủ lên trên để giữ tự điền mã |
+| `ComposerField` | Ô soạn tin dạng viên thuốc + nút gửi. Nút chỉ **sáng lên** khi đã có chữ |
 | `Segmented` | Thanh chuyển hai/ba chế độ, con trượt chạy bằng Reanimated |
 | `Img` | Bọc `expo-image`. Trong danh sách **bắt buộc** truyền `recyclingKey` |
 
@@ -85,6 +90,7 @@ import thẳng đường dẫn con, và không bao giờ tự dựng lại một
 | `List` | Bọc **FlashList**, không bao giờ FlatList |
 | `TopBar` | Nút đóng · tiêu đề · chỗ nút phải. Nook tắt header của navigator nên không có nút quay lại nào khác |
 | `Scroll` | Bọc ScrollView. `horizontal` dùng khuôn đệm riêng — đệm đáy 32 của bản dọc mang sang bản ngang là hàng bỗng cao thêm 32pt |
+| `TabBar` | Ba tab ở đáy. Chiếm chỗ thật, không nổi đè |
 
 **Thương hiệu**
 

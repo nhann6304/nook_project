@@ -27,6 +27,8 @@ export const space = {
 } as const;
 
 export const radius = {
+  /** Góc "chân" của bong bóng tin nhắn — nó nói ra hướng của tin. */
+  xs: 6,
   sm: 12,
   md: 16,
   lg: 20,

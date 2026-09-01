@@ -69,8 +69,6 @@ export const en: Mirror<typeof vi> = {
     flash: 'Turn the light on or off',
     shutter: 'Take a moment',
     flip: 'Flip camera',
-    peekEmpty: 'No moments yet',
-    peekSome: { one: 'Moments · {count}', other: 'Moments · {count}' },
     peekHint: 'Photos only go to the people in your nook.',
     captionHint: 'Add a line…',
 
@@ -129,6 +127,24 @@ export const en: Mirror<typeof vi> = {
     },
     waitingMessage: 'Invite your first friend. Only ten spots, so choose well.',
     invite: 'Invite a friend',
+  },
+
+  tabs: {
+    feed: 'Moments',
+    camera: 'Camera',
+    chat: 'Chats',
+  },
+
+  chat: {
+    title: 'Chats',
+    emptyTitle: 'No chats yet',
+    emptyMessage: 'Tap the message box under a moment to start talking to whoever sent it.',
+    openFeed: 'See moments',
+    placeholder: 'Message {name}…',
+    send: 'Send',
+    noMessages: 'Nothing here yet. Say the first thing.',
+    aboutThis: 'About this moment',
+    mineSaid: 'You: {text}',
   },
 
   theme: {

@@ -47,13 +47,8 @@ export function FeedScreen({
 
   if (moments.length === 0) {
     return (
-      <Screen>
-        <TopBar
-          title={t('feed.title')}
-          closeLabel={t('common.closeScreen')}
-          closeIcon="down"
-          onClose={onOpenCamera}
-        />
+      <Screen edges={['top']}>
+        <TopBar title={t('feed.title')} />
         <EmptyState
           art={<GhostFan />}
           title={t('feed.emptyTitle')}
@@ -66,16 +61,12 @@ export function FeedScreen({
   }
 
   return (
-    <Screen padded={false}>
-      {/* Thanh trên nằm NGOÀI danh sách, không phải ListHeaderComponent: nút
-          đóng phải luôn ở đó, không được cuộn mất. */}
+    <Screen padded={false} edges={['top']}>
+      {/* Thanh trên nằm NGOÀI danh sách, không phải ListHeaderComponent: tiêu
+          đề phải luôn ở đó, không được cuộn mất.
+          KHÔNG có nút đóng — Khoảnh khắc là một TAB, thoát bằng thanh tab. */}
       <View style={s.bar}>
-        <TopBar
-          title={t('feed.title')}
-          closeLabel={t('common.closeScreen')}
-          closeIcon="down"
-          onClose={onOpenCamera}
-        />
+        <TopBar title={t('feed.title')} />
       </View>
 
       <List

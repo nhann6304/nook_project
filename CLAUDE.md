@@ -54,7 +54,7 @@ và mục 3 trước tiên**. Ba luật hay bị quên nhất:
 | Backend | Chưa có dòng nào |
 | Tài liệu | 15 file, đã chia theo hai bên |
 
-Việc tiếp theo của FE: màn **Trò chuyện** (nửa còn lại của tương tác hai chiều),
-rồi màn **Tên + ảnh** để đi hết một lượt onboarding.
+Việc tiếp theo của FE: màn **Tên + ảnh** để đi hết một lượt onboarding, rồi
+**Thêm bạn** — ô `+` ở hàng người hiện chỉ mở màn Góc, chưa mời được ai thật.
 Việc cần quyết sớm: **có chuyển sang development build không** — widget cần nó,
 và chuyển giữa chừng là đổi cả cách chạy dự án.
