@@ -1,5 +1,5 @@
-import { Column, Entity, Index, OneToMany, OneToOne, type Relation } from 'typeorm';
-import { BaseEntity } from '../base/index.js';
+import { Column, Entity, OneToMany, OneToOne, type Relation } from 'typeorm';
+import { SoftDeleteEntity } from '../base/index.js';
 // `import type` chứ không phải `import`. Xem ghi chú "Vòng tròn nhập khẩu" bên dưới.
 import type { UserIdentity } from './user-identity.entity.js';
 import type { Session } from '../session/index.js';
@@ -17,6 +17,10 @@ import type { UserAchievement } from '../achievement/index.js';
  * Cũng KHÔNG có email hay số điện thoại — chúng nằm ở `user_identities`, vì một
  * người có thể có cả hai, và sau này còn đổi được.
  *
+ * Kế thừa `SoftDeleteEntity`: người tự xoá tài khoản thì đánh dấu chứ không
+ * mất. TypeORM tự thêm `WHERE deleted_at IS NULL` vào mọi câu `find`, nên
+ * không tầng nào phải nhớ mà lọc.
+ *
  * ── Vòng tròn nhập khẩu ─────────────────────────────────────────────────────
  *
  * Bảng này là TRỤC: bốn bảng kia trỏ về nó, nó trỏ ngược lại cả bốn. Ở
@@ -30,7 +34,7 @@ import type { UserAchievement } from '../achievement/index.js';
  * `User` bình thường — một chiều thì không thành vòng.
  */
 @Entity('users')
-export class User extends BaseEntity {
+export class User extends SoftDeleteEntity {
   @Column({ name: 'display_name', type: 'varchar', length: 24, nullable: true })
   displayName!: string | null;
 
@@ -61,11 +65,6 @@ export class User extends BaseEntity {
 
   @Column({ name: 'last_seen_at', type: 'timestamptz', nullable: true })
   lastSeenAt!: Date | null;
-
-  /** Người dùng tự xoá tài khoản. Cửa đăng nhập phải từ chối dòng có cột này. */
-  @Index('idx_users_deleted_at')
-  @Column({ name: 'deleted_at', type: 'timestamptz', nullable: true })
-  deletedAt!: Date | null;
 
   @OneToMany('UserIdentity', 'user')
   identities!: Relation<UserIdentity[]>;

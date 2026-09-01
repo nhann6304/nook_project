@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, Unique } from 'typeorm';
-import { BaseEntity } from '../base/index.js';
+import { AuditEntity } from '../base/index.js';
 import { User } from './user.entity.js';
 
 /** Email hay số điện thoại. Tách bảng vì một người có thể có cả hai. */
@@ -14,7 +14,7 @@ export type IdentityKind = 'email' | 'phone';
  */
 @Entity('user_identities')
 @Unique('uq_identity_kind_value', ['kind', 'value'])
-export class UserIdentity extends BaseEntity {
+export class UserIdentity extends AuditEntity {
   @Index('idx_identity_user')
   @Column({ name: 'user_id', type: 'uuid' })
   userId!: string;

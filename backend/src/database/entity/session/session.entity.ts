@@ -1,5 +1,5 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
-import { BaseEntity } from '../base/index.js';
+import { AuditEntity } from '../base/index.js';
 import { User } from '../user/index.js';
 
 /**
@@ -12,7 +12,7 @@ import { User } from '../user/index.js';
  * bảng này cũng không đăng nhập thay ai được — argon2 không quay ngược.
  */
 @Entity('sessions')
-export class Session extends BaseEntity {
+export class Session extends AuditEntity {
   @Index('idx_session_user')
   @Column({ name: 'user_id', type: 'uuid' })
   userId!: string;

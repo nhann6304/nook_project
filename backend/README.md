@@ -78,9 +78,10 @@ backend/
     │
     ├── config/                env/ · swagger/
     ├── database/
-    │   ├── entity/            base/ · user/ · session/ · achievement/
+    │   ├── entity/            base/ (thang uuid → audit → soft-delete) · user/ · session/ · achievement/
+    │   ├── context/           RequestContext — ai đang thao tác
     │   ├── migration/         SQL viết TAY (không có index — nạp bằng glob)
-    │   ├── repository/        BaseRepository — tự bám giao dịch
+    │   ├── repository/        BaseRepository · GenericRepository · RepositoryManager
     │   ├── transaction/       TransactionContext · TransactionService · @Transactional
     │   └── data-source/       cho bộ lệnh TypeORM
     │
@@ -95,6 +96,8 @@ backend/
     │   │   ├── filter/        gom mọi thứ hỏng về một hình dạng
     │   │   ├── interceptor/   bọc vỏ · đo chậm
     │   │   ├── mapper/        BaseMapper
+    │   │   ├── middleware/    mở RequestContext, chạy trước cổng thẻ
+    │   │   ├── service/       BaseCrudService (+ bài kiểm)
     │   │   └── pipe/          bộ kiểm đầu vào
     │   └── model/             một thư mục cho một thứ có thật trong sản phẩm
     │       ├── user/          user.module.ts + controller/ service/ repository/ mapper/ dto/
@@ -118,70 +121,93 @@ import { SessionRepository } from './repository/index.js';
 Chặng sau thêm vào `api/model/`: `circle` · `moment` · `thread` · `media` ·
 `memory` · `push`. Mỗi cái một thư mục đủ bộ, dựng theo đúng khuôn trên.
 
-## 3. Bốn khuôn mẫu — đọc trước khi viết cửa thứ chín
+## 3. Tầng dùng chung — đọc trước khi viết module thứ ba
 
-Mục này là phần đáng đọc nhất của file. Bốn thứ dưới đây khiến **cửa mới không
-phải viết lại thứ cửa cũ đã viết**.
+Mục này là phần đáng đọc nhất. Nó tồn tại để **module mới không phải viết lại
+thứ module cũ đã viết**.
 
-### Kho dữ liệu (`BaseRepository`)
-
-Dịch vụ **không** chạm vào `Repository<T>` của TypeORM, và **không** dùng
-`@InjectRepository`. Nó gọi kho, kho tự chọn `Repository` theo giao dịch đang
-chạy.
+### Module mới, phiên bản ngắn nhất
 
 ```ts
 @Injectable()
-export class UserRepository extends BaseRepository<User> {
-  constructor(@InjectDataSource() ds: DataSource) { super(ds, User); }
-  findAlive(id: string) { return this.findOne({ id, deletedAt: IsNull() }); }
+export class MomentService extends BaseCrudService<Moment, MomentDto> {
+  constructor(repos: RepositoryManager, mapper: MomentMapper) {
+    super(repos.for(Moment), mapper);   // xong. Đã có đủ create/read/update/delete/page
+  }
 }
 ```
 
-Vì sao không `@InjectRepository`: nó trả về một `Repository` **neo cứng vào kết
-nối gốc**. Gọi nó trong `tx.run()` thì câu lệnh chạy NGOÀI giao dịch — ghi được,
-không báo lỗi, và ở lại kể cả khi giao dịch bị huỷ.
+**Không phải viết tệp kho nào.** `RepositoryManager.for(Entity)` phát ra một
+kho đã biết bám giao dịch và tự đóng dấu sổ ghi việc. Có câu truy vấn riêng thì
+mới viết lớp kế thừa `BaseRepository` — hai cách dùng chung một lớp gốc nên
+hành vi giống hệt nhau.
 
-Câu SQL thô thì đi qua `this.manager.query(...)` — cũng bám giao dịch.
-
-### Giao dịch (`TransactionService` · `@Transactional()`)
+Cần khác thì **đè đúng phương thức đó**, mấy cái còn lại giữ nguyên:
 
 ```ts
-@Transactional()
-async attachOrCreate(...) {
-  const user = await this.users.create({});
-  await this.stats.create({ userId: user.id });
-  // ba câu vào hết, hoặc không câu nào vào
+override async create(input: DeepPartial<Moment>) {
+  await this.assertUnderDailyCap();      // luật riêng
+  return super.create(input);            // phần chung vẫn dùng lại
 }
+protected override notFoundCode() { return ERR.MOMENT_NOT_FOUND; }
 ```
 
-`AsyncLocalStorage` giữ `EntityManager` theo nhánh gọi, nên **không phải chuyền
-tay `manager` qua từng tầng**. Quên chuyền ở một chỗ là câu đó rơi ra ngoài
-giao dịch — loại bug nhìn bằng mắt không ra.
+### Thang bảng dữ liệu
 
-**Lồng nhau thì NHẬP vào, không mở giao dịch mới.** Cần tách rời thật thì gọi
-`runIsolated()`, và phải cố ý.
+| Kế thừa | Được gì | Dùng khi |
+|---|---|---|
+| `UuidEntity` | `id` uuid | bảng tra, bảng nối |
+| `AuditEntity` | + `createdAt` `updatedAt` `createdBy` `updatedBy` | gần như mọi bảng có người thật đứng sau |
+| `SoftDeleteEntity` | + `deletedAt` `deletedBy` | chỉ khi xoá thật là sai |
 
-### Bộ nắn (`BaseMapper`)
+`createdBy` / `updatedBy` **tự điền**, không tầng nào chuyền tay id người gọi:
 
-Chỗ **duy nhất** quyết định người ngoài được thấy cột nào. Để việc này nằm rải
-trong dịch vụ thì sớm muộn có một cửa trả nguyên entity ra ngoài. Với Nook thì
-còn nặng hơn: luật sản phẩm cấm trả cấp thân của người khác cho người thứ ba, và
-chỗ chặn được là đây.
+```
+lớp giữa mở RequestContext  →  cổng thẻ gọi setActor(userId)  →  kho đọc ra lúc ghi
+```
+
+Bảng không có mấy cột đó thì kho bỏ qua, im lặng và đúng. Rỗng cũng là một câu
+trả lời đúng: lúc mở tài khoản thì chưa có ai để ghi.
+
+UUID chứ không phải số tự tăng — `/users/1` và `/users/2` nói ra app có bao
+nhiêu người và họ vào lúc nào. Với một app về chuyện riêng tư giữa vài người
+thì đó là chỗ rò không cần thiết.
+
+### Bốn lớp gốc
+
+**`BaseRepository`** — dịch vụ **không** chạm `Repository<T>` của TypeORM và
+**không** dùng `@InjectRepository`. Lý do thật: `@InjectRepository` trả về thứ
+**neo cứng vào kết nối gốc**; gọi trong `tx.run()` thì câu lệnh chạy NGOÀI giao
+dịch — ghi được, không báo lỗi, và ở lại kể cả khi giao dịch bị huỷ. Kho ở đây
+hỏi `TransactionContext` lúc dùng nên luôn ở đúng chỗ. Kèm `pageByCursor`.
+
+**`TransactionService` · `@Transactional()`** — `AsyncLocalStorage` giữ
+`EntityManager` theo nhánh gọi, nên không phải chuyền tay `manager` qua từng
+tầng. Lồng nhau thì **nhập vào**, không mở giao dịch con. Cần tách rời thật thì
+`runIsolated()` — và trong cả dự án chỉ có **đúng một chỗ** cần nó (xem mục 7).
+
+**`BaseMapper`** — chỗ **duy nhất** quyết định người ngoài thấy cột nào. Để việc
+này rải trong dịch vụ thì sớm muộn có cửa trả nguyên entity ra ngoài. Với Nook
+còn nặng hơn: luật cấm trả cấp thân của người khác cho người thứ ba, và chỗ chặn
+được là đây.
+
+**`BaseCrudService`** — sáu cửa cơ bản. Cố ý **không** có `@Transactional()`
+(mỗi phương thức chỉ chạy một câu lệnh, Postgres đã bọc sẵn) và **không** có
+hook `beforeCreate`/`afterCreate` (hook làm luồng chạy biến mất khỏi chỗ đọc —
+nhìn `create()` không còn biết thật ra có bao nhiêu thứ chạy). Có bài kiểm ở
+`base-crud.service.spec.ts`.
 
 ### Vỏ câu trả lời
 
 Tay viết controller chỉ trả về **dữ liệu**. `ResponseInterceptor` bọc, tự động:
 
 ```jsonc
-{ "ok": true,  "code": "auth.code_sent", "data": { }, "requestId": "req-9f2c" }
+{ "ok": true,  "code": "auth.code_sent",    "data": { }, "requestId": "req-9f2c" }
 { "ok": false, "code": "auth.code_expired", "status": 410, "requestId": "req-9f2c" }
 ```
 
 `ok` là chỗ rẽ nhánh duy nhất. `code` LUÔN là khoá tra chữ, **không bao giờ** là
-câu tiếng Việt — app tra bảng chữ của nó, server không biết máy người dùng đang
-để tiếng gì.
-
-Khai ở controller bằng ba decorator, không tả tay:
+câu tiếng Việt. Khai ở controller bằng ba decorator, không tả tay:
 
 ```ts
 @Message(MSG.CODE_SENT)        // đổi `code`; không dán thì mặc định 'ok'

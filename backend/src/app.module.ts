@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
@@ -12,6 +12,7 @@ import { RealtimeModule } from './realtime/index.js';
 import { QueueModule } from './queue/index.js';
 import { AllExceptionFilter } from './api/common/filter/index.js';
 import { TimingInterceptor, ResponseInterceptor } from './api/common/interceptor/index.js';
+import { RequestContextMiddleware } from './api/common/middleware/index.js';
 
 /**
  * Gốc cây. Sáu mảng, mỗi mảng một việc:
@@ -47,4 +48,15 @@ import { TimingInterceptor, ResponseInterceptor } from './api/common/interceptor
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  /**
+   * Lớp giữa mở vùng `RequestContext` cho MỌI đường, trước cả cổng thẻ.
+   *
+   * Phải là lớp giữa chứ không phải bộ chặn: bộ chặn chạy SAU cổng thẻ, mà
+   * chính cổng thẻ là chỗ gọi `setActor()` — đặt sau thì lúc cần ghi, vùng
+   * còn chưa mở.
+   */
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(RequestContextMiddleware).forRoutes('*');
+  }
+}

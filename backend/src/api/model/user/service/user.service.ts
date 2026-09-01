@@ -87,7 +87,11 @@ export class UserService {
     const existing = await this.identities.findWithUser(kind, value);
 
     if (existing) {
-      if (existing.user.deletedAt !== null) {
+      // `user` có thể RỖNG chứ không phải chỉ "có deletedAt": từ khi `User` kế
+      // thừa `SoftDeleteEntity`, TypeORM tự thêm `deleted_at IS NULL` vào cả
+      // phần nối bảng — người đã xoá thì dòng đích danh vẫn còn mà người thì
+      // không nối ra. Thiếu vế đầu là một cú ngã 500 thay vì một câu trả lời.
+      if (!existing.user || existing.user.deletedAt !== null) {
         // Đã tự xoá tài khoản thì không hồi sinh bằng một lần đăng nhập.
         throw new AppException(ERR.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
       }

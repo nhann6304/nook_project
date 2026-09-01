@@ -3,6 +3,7 @@
  *
  * ── Xếp theo MIỀN, không theo loại tệp ──────────────────────────────────────
  *
+ *   record/        mảnh chung của mọi bản ghi: Identified · Timestamps · AuditTrail
  *   http/          hợp đồng vận chuyển: đường dẫn, mã HTTP, vỏ câu trả lời
  *   auth/          đăng nhập, mã 6 số, thẻ phiên
  *   user/          hồ sơ
@@ -26,6 +27,7 @@
  * 2. Không bí mật, không luật tính toán. Người ta mở được file `.apk` ra đọc.
  * 3. Type là type, không phải bộ kiểm. Backend buộc DTO khớp bằng `implements`.
  */
+export * from './record/index.js';
 export * from './http/index.js';
 export * from './auth/index.js';
 export * from './user/index.js';

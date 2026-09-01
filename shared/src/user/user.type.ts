@@ -1,3 +1,5 @@
+import type { Identified } from '../record/index.js';
+
 /**
  * Hồ sơ của CHÍNH MÌNH.
  *
@@ -5,8 +7,7 @@
  * là một kiểu KHÁC, hẹp hơn — luật sản phẩm cấm trả cấp thân của người khác cho
  * người thứ ba.
  */
-export interface UserProfile {
-  id: string;
+export interface UserProfile extends Identified {
   /** `null` khi vừa mở tài khoản, chưa qua màn đặt tên */
   displayName: string | null;
   /** Đường dẫn ảnh đầy đủ, đã ký sẵn. `null` khi chưa có ảnh */
