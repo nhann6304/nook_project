@@ -4,8 +4,9 @@ NestJS trên Fastify · PostgreSQL · Redis · TypeORM · Socket.IO · BullMQ.
 **Đăng nhập bằng email đã chạy được đầu-tới-cuối.**
 
 ```bash
-./setup/mac/run.sh be            # cửa sổ 1 — server
-./backend/scripts/smoke-auth.sh  # cửa sổ 2 — chạy thử toàn bộ luồng đăng nhập
+./setup/mac/run.sh be             # cửa sổ 1 — server
+./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 15 bước của luồng đăng nhập
+./backend/scripts/smoke-admin.sh  #            9 bước của đường quản trị
 ```
 
 Cần: **Postgres trên máy** (Homebrew, cổng 5432) và **Docker** cho Redis.
@@ -56,6 +57,47 @@ WARN [Mã đăng nhập] [CHỈ DÙNG KHI DEV] email → nam@gmail.com — mã: 
 Muốn gửi email thật thì đổi `CODE_SENDER=smtp` và điền `SMTP_URL`.
 `validateEnv` chặn không cho `console` đi cùng bản thật.
 
+### Quản trị
+
+| | Đường | Vai |
+|---|---|---|
+| `GET` | `/v1/admin/stats` | `admin` `root` |
+| `GET` | `/v1/admin/users` | `admin` `root` |
+
+Hai cổng, đúng thứ tự: cổng thẻ hỏi *"anh có phải là ai đó không"* (401), cổng
+vai hỏi *"người đó vào được đây không"* (403). Gộp làm một thì app không phân
+biệt được "đăng nhập lại đi" với "tài khoản này không có quyền", mà hai câu đó
+dẫn người dùng đi hai hướng ngược nhau.
+
+**Vai đọc từ BẢNG, không đọc từ thẻ.** Nhét vai vào thẻ thì nhanh hơn một câu
+truy vấn, nhưng hạ một admin xong họ vẫn còn quyền tới khi thẻ hết hạn — mười
+lăm phút, đúng mười lăm phút mà người ta muốn chặn ngay.
+
+### Tài khoản gốc — tạo sẵn, không xoá được
+
+Migration `RootAdmin` tạo sẵn một tài khoản vai `root` với email
+`root@nook.local` (hoặc `ROOT_ADMIN_EMAIL` nếu khai lúc chạy migration). Địa chỉ
+mặc định đó không có thật nên **không ai đăng nhập vào nó được** — nó là chỗ giữ
+vai, không phải một lối vào.
+
+Khai `ROOT_ADMIN_EMAIL` bằng email THẬT rồi bật server: `RootAdminService` phong
+vai `root` cho tài khoản đó (chưa có thì mở sẵn), nên lần đăng nhập đầu tiên đã
+là root. **Không có API nào phong `root`** — người đầu tiên phải tới từ bên
+ngoài hệ thống, nếu không thì gà và trứng.
+
+Không xoá được, và chặn bằng **trigger trong cơ sở dữ liệu** chứ không bằng mã:
+
+```
+DELETE FROM users WHERE role='root';
+  ERROR:  root admin cannot be deleted (user f2c1b627-...)
+UPDATE users SET deleted_at = now() WHERE role='root';
+  ERROR:  root admin cannot be soft-deleted (user f2c1b627-...)
+```
+
+Chặn ở tầng mã thì chỉ chặn được đường đi qua mã — còn `psql`, còn lệnh dọn dữ
+liệu, còn một migration viết vội lúc nửa đêm. Hạ vai thì KHÔNG chặn: phải có
+đường bàn giao. Lỡ hạ hết thì lần bật server sau `ROOT_ADMIN_EMAIL` dựng lại.
+
 ### Chưa có
 
 `AchievementService.evaluate()` đã viết đủ nhưng **chưa ai gọi** — nó chỉ chạy
@@ -63,63 +105,70 @@ từ chặng 3, khi có góc bạn bè và ký ức thật làm con đếm nhúc
 `/v1/me/achievements` có thể hiện `value` đã vượt `threshold` mà `unlockedAt`
 vẫn `null`. Đúng, không phải lỗi.
 
-## 2. Cây thư mục
-
-**Luật: không tệp nào nằm lung tung.** Mỗi loại một thư mục, mỗi thư mục một
-`index.ts`. Ở gốc một module chỉ có đúng tệp `*.module.ts` — cái đặt tên cho
-thư mục.
+## 2. Cây thư mục — ba tầng, ba vai
 
 ```
-backend/
-├── docker/compose.dev.yml     Redis (+ Postgres và MinIO trong profile riêng)
-├── Dockerfile                 bản thật, nhiều chặng
-└── src/
-    ├── main.ts · app.module.ts
-    │
-    ├── config/                env/ · swagger/
-    ├── database/
-    │   ├── entity/            base/ (thang uuid → audit → soft-delete) · user/ · session/ · achievement/
-    │   ├── context/           RequestContext — ai đang thao tác
-    │   ├── migration/         SQL viết TAY (không có index — nạp bằng glob)
-    │   ├── repository/        BaseRepository · GenericRepository · RepositoryManager
-    │   ├── transaction/       TransactionContext · TransactionService · @Transactional
-    │   └── data-source/       cho bộ lệnh TypeORM
-    │
-    ├── api/
-    │   ├── common/            thứ mọi cửa đều dùng
-    │   │   ├── auth/          auth.module.ts + controller/ service/ repository/
-    │   │   │                  dto/ guard/ strategy/ type/
-    │   │   ├── health/        health.module.ts + controller/ dto/
-    │   │   ├── decorator/     @Public @CurrentUser @Message @ApiResult @ApiErrors
-    │   │   ├── dto/           vỏ câu trả lời · lỗi · lật trang · hồ sơ
-    │   │   ├── error/         AppException
-    │   │   ├── filter/        gom mọi thứ hỏng về một hình dạng
-    │   │   ├── interceptor/   bọc vỏ · đo chậm
-    │   │   ├── mapper/        BaseMapper
-    │   │   ├── middleware/    mở RequestContext, chạy trước cổng thẻ
-    │   │   ├── service/       BaseCrudService (+ bài kiểm)
-    │   │   └── pipe/          bộ kiểm đầu vào
-    │   └── model/             một thư mục cho một thứ có thật trong sản phẩm
-    │       ├── user/          user.module.ts + controller/ service/ repository/ mapper/ dto/
-    │       └── achievement/   achievement.module.ts + (như trên)
-    │
-    ├── infra/                 redis/service/ · notify/{sender,service}/
-    ├── realtime/              gateway/ · adapter/
-    └── queue/                 constant/
+src/
+├── core/          KHUNG. Không biết một chữ nào về nghiệp vụ Nook.
+│   ├── context/      RequestContext — ai đang thao tác
+│   ├── decorator/    @Public @CurrentUser @Message @Roles @ApiResult @ApiErrors
+│   ├── dto/          vỏ câu trả lời · lỗi · lật trang · hồ sơ
+│   ├── error/        AppException
+│   ├── filter/ interceptor/ middleware/ pipe/
+│   ├── interface/    IAuthUser
+│   ├── mapper/       BaseMapper
+│   ├── repository/   BaseRepository · GenericRepository · RepositoryManager
+│   ├── service/      BaseCrudService
+│   └── transaction/  TransactionService · @Transactional
+│
+├── database/      KẾT NỐI THẬT. data-source · entity/ · migration/
+├── repository/    KHO THEO BẢNG. user/ session/ achievement/ — dùng chung mọi khán giả
+│
+├── api/           TÍNH NĂNG, chia theo KHÁN GIẢ
+│   ├── auth/         đăng nhập — CẢ HAI khán giả đi qua đây
+│   ├── app/          app React Native   → /v1/...
+│   │   ├── user/ achievement/ setting/
+│   ├── admin/        web quản trị       → /v1/admin/...  (đều @Roles)
+│   │   ├── stats/ user/ bootstrap/
+│   └── health/
+│
+├── config/        env/ logger/ swagger/
+├── infra/         redis/ notify/
+├── realtime/      gateway/ adapter/
+└── queue/
 ```
 
-**Luật import, một câu:** *cùng thư mục thì import thẳng tệp; qua thư mục khác
-thì đi qua `index.js` của thư mục đó.* Nhờ vậy tệp module đọc được như một bản
-mục lục:
+Trong mỗi module: `controller/` `service/` `mapper/` `dto/`, mỗi thư mục một
+`index.ts`, gốc module chỉ có `*.module.ts`.
 
-```ts
-import { AuthController } from './controller/index.js';
-import { AuthService, CodeService, CookieService, SessionService } from './service/index.js';
-import { SessionRepository } from './repository/index.js';
+### Ba luật, và có bộ soi
+
+```bash
+npm run check:arch     # chạy luôn trong npm run check, nên push cũng chạy
 ```
 
-Chặng sau thêm vào `api/model/`: `circle` · `moment` · `thread` · `media` ·
-`memory` · `push`. Mỗi cái một thư mục đủ bộ, dựng theo đúng khuôn trên.
+1. **`core/` không được nhập từ `api/`.** Khung không biết nghiệp vụ. Bộ soi này
+   bắt được một chỗ ngay hôm dựng nó: `@CurrentUser()` nằm ở khung mà đi lấy
+   kiểu `IAuthUser` từ `api/auth/`. Nghĩ kỹ thì "ai đang gọi" đúng là chuyện của
+   khung — `IAuthUser` chuyển sang `core/interface/`.
+2. **`repository/` không thuộc về khán giả nào.** App và web quản trị hỏi cùng
+   bảng `users`. Nhét kho vào thư mục của một bên là để bên kia phải với sang.
+3. **`api/app/` và `api/admin/` không được với sang nhau.** Cái GIỐNG nhau là
+   câu truy vấn, đã nằm ở `repository/`. Cái KHÁC nhau — controller, dto,
+   mapper — mỗi bên giữ của mình.
+
+Luật chỉ nằm trong tài liệu thì mục. Luật có bộ soi thì không.
+
+### Vì sao chia theo khán giả
+
+App React Native và web quản trị nhìn cùng một bảng nhưng được thấy hai thứ
+khác nhau và làm được hai việc khác nhau. `UserProfileDto` (app) không có `role`
+hay `lastSeenAt`; `AdminUserDto` (web) có. Gộp chung một module rồi phân nhánh
+bằng `if (isAdmin)` là cách nhanh nhất để một hôm nào đó app trả ra thứ chỉ
+quản trị mới được thấy.
+
+Đăng nhập thì **dùng chung**: admin là một người dùng có vai khác, không phải
+một hệ thống tài khoản thứ hai. Dựng hai hệ thống tài khoản là dựng hai chỗ để hở.
 
 ## 3. Tầng dùng chung — đọc trước khi viết module thứ ba
 

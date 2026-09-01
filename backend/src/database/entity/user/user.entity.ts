@@ -1,4 +1,5 @@
 import { Column, Entity } from 'typeorm';
+import { ROLE, type TUserRole } from '@nook/shared';
 import { SoftDeleteEntity } from '../base/index.js';
 
 /**
@@ -22,6 +23,13 @@ import { SoftDeleteEntity } from '../base/index.js';
  */
 @Entity('users')
 export class User extends SoftDeleteEntity {
+  /**
+   * Vai trong hệ thống — KHÔNG phải "hạng" của sản phẩm, và không bao giờ hiện
+   * ra ở app. Nó chỉ trả lời: người này có vào được trang quản trị không.
+   */
+  @Column({ name: 'role', type: 'varchar', length: 16, default: ROLE.member })
+  role!: TUserRole;
+
   @Column({ name: 'display_name', type: 'varchar', length: 24, nullable: true })
   displayName!: string | null;
 

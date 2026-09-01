@@ -24,6 +24,12 @@ export const API = {
     /** PATCH — sửa hồ sơ của chính mình */
     updateMe: '/v1/me',
   },
+  admin: {
+    /** GET — mấy con số cho trang thống kê trên web */
+    stats: '/v1/admin/stats',
+    /** GET — danh sách người dùng, lật trang bằng con trỏ */
+    users: '/v1/admin/users',
+  },
   achievement: {
     /** GET — thành tích của chính mình, kèm số chỗ trong góc */
     mine: '/v1/me/achievements',

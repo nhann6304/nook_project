@@ -9,7 +9,7 @@ import { AppModule } from './app.module.js';
 import { Env, NodeEnv } from './config/env/index.js';
 import { setupSwagger } from './config/swagger/index.js';
 import { buildLogger, registerHttpLog } from './config/logger/index.js';
-import { buildValidationPipe } from './api/common/pipe/index.js';
+import { buildValidationPipe } from './core/pipe/index.js';
 import { RedisIoAdapter } from './realtime/adapter/index.js';
 import { RedisService } from './infra/redis/service/index.js';
 
