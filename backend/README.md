@@ -365,6 +365,24 @@ cái bẫy "thẻ bị chép" cũng im luôn. Nay mỗi thẻ mang một `jti` n
 kiểm `scripts/smoke-auth.sh` gọi làm mới **không có `sleep`** để luôn đi qua
 đúng ca này — đừng thêm `sleep` vào đó.
 
+**Log dùng `ConsoleLogger` có sẵn của Nest, không dùng pino.** Từng dùng pino;
+bỏ, vì bốn lý do xếp theo sức nặng: (1) dòng log không còn ra hình dạng mà ai
+làm Nest cũng nhận ra — `[Nest] pid - giờ  LOG [Context] câu chữ +5ms`;
+(2) bớt bốn gói; (3) bản thật vẫn có JSON, chỉ cần `json: true`; (4) tốc độ của
+pino chỉ đáng kể ở lượng log rất lớn, chưa tới lúc đó.
+
+Một request = **một dòng**, và nó là **hook `onResponse` của Fastify** chứ không
+phải bộ chặn của Nest — bộ chặn chỉ chạy khi có controller nhận, nên 404 sẽ
+không được ghi, mà 404 lại đúng là thứ đáng ghi khi app gọi sai đường. Mã lỗi
+do `AllExceptionFilter` gắn lên `req.raw` rồi hook đọc ra, nên không phải in
+thêm một dòng nữa chỉ để nói mã:
+
+```
+LOG  [HTTP] POST /v1/auth/code 200 69ms
+WARN [HTTP] POST /v1/auth/verify 400 54ms auth.code_invalid
+WARN [HTTP] GET /khong-co 404 1ms common.not_found
+```
+
 **Log viết bằng TIẾNG ANH và chỉ ASCII.** Không phải chuyện thẩm mỹ: `cmd` trên
 Windows mặc định chạy bảng mã cũ, chữ tiếng Việt ra thành rác. Mấy tệp `.bat`
 có `chcp 65001` rồi, nhưng log còn đi ra tệp, ra chỗ gom log, ra cửa sổ của

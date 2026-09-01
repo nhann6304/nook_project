@@ -1,1 +1,1 @@
-export * from './logger.config.js';
+export * from './logger.factory.js';
