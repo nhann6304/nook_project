@@ -8,11 +8,11 @@ import helmet from '@fastify/helmet';
 import cookie from '@fastify/cookie';
 import { DOCS_PATH } from '@nook/shared';
 import { AppModule } from './app.module.js';
-import { Env, NodeEnv } from './config/env.validation.js';
-import { setupSwagger } from './config/swagger.setup.js';
-import { buildValidationPipe } from './api/common/pipe/validation.pipe.js';
-import { RedisIoAdapter } from './realtime/redis-io.adapter.js';
-import { RedisService } from './infra/redis/redis.service.js';
+import { Env, NodeEnv } from './config/env/index.js';
+import { setupSwagger } from './config/swagger/index.js';
+import { buildValidationPipe } from './api/common/pipe/index.js';
+import { RedisIoAdapter } from './realtime/adapter/index.js';
+import { RedisService } from './infra/redis/service/index.js';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(

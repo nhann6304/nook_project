@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
-import { ApiErrorDto } from '../dto/error.dto.js';
+import { ApiErrorDto } from '../dto/index.js';
 
 /**
  * Khai các mã hỏng của một đường, gọn trong một dòng.

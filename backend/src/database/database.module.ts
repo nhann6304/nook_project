@@ -1,9 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Env } from '../config/env.validation.js';
+import { Env } from '../config/env/index.js';
 import { ENTITIES } from './entity/index.js';
-import { TransactionService } from './transaction/transaction.service.js';
+import { TransactionService } from './transaction/index.js';
 
 /**
  * Kết nối cơ sở dữ liệu.

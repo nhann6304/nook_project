@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { ERR, type ApiError } from '@nook/shared';
-import { AppException } from '../error/app.exception.js';
+import { AppException } from '../error/index.js';
 
 /**
  * Một cửa ra duy nhất cho mọi thứ hỏng — nhánh `ok: false` của cái vỏ chung.

@@ -7,7 +7,7 @@ import {
   type VerifyCodeBody,
   type VerifyCodeResult,
 } from '@nook/shared';
-import { UserProfileDto } from '../../dto/user-profile.dto.js';
+import { UserProfileDto } from '../../dto/index.js';
 import { AuthTokensDto } from './auth-tokens.dto.js';
 
 export class VerifyCodeDto implements VerifyCodeBody {

@@ -9,7 +9,7 @@ import type {
   ObjectLiteral,
   Repository,
 } from 'typeorm';
-import { TransactionContext } from '../transaction/transaction.context.js';
+import { TransactionContext } from '../transaction/index.js';
 
 /**
  * Kho dữ liệu — lớp gốc cho mọi kho.

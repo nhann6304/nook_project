@@ -1,17 +1,14 @@
-import { User } from './user.entity.js';
-import { UserIdentity } from './user-identity.entity.js';
-import { Session } from './session.entity.js';
-import { Achievement } from './achievement.entity.js';
-import { UserAchievement } from './user-achievement.entity.js';
-import { UserStat } from './user-stat.entity.js';
+import { User, UserIdentity, UserStat } from './user/index.js';
+import { Session } from './session/index.js';
+import { Achievement, UserAchievement } from './achievement/index.js';
 
-export * from './base.entity.js';
-export * from './user.entity.js';
-export * from './user-identity.entity.js';
-export * from './session.entity.js';
-export * from './achievement.entity.js';
-export * from './user-achievement.entity.js';
-export * from './user-stat.entity.js';
+export * from './base/index.js';
+export * from './user/index.js';
+export * from './user/index.js';
+export * from './session/index.js';
+export * from './achievement/index.js';
+export * from './achievement/index.js';
+export * from './user/index.js';
 
 /**
  * Danh sách bảng. Cả Nest và bộ lệnh TypeORM đều đọc mảng này — khai một chỗ

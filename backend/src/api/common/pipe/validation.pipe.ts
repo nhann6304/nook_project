@@ -1,6 +1,6 @@
 import { HttpStatus, ValidationError, ValidationPipe } from '@nestjs/common';
 import { ERR } from '@nook/shared';
-import { AppException } from '../error/app.exception.js';
+import { AppException } from '../error/index.js';
 
 /**
  * Bộ kiểm đầu vào, gắn toàn cục.

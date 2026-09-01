@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import type { FastifyRequest } from 'fastify';
 import { map, type Observable } from 'rxjs';
 import { MSG, type ApiEnvelope, type MsgCode } from '@nook/shared';
-import { MESSAGE_CODE } from '../decorator/message.decorator.js';
+import { MESSAGE_CODE } from '../decorator/index.js';
 
 /**
  * Bọc mọi câu trả lời trót lọt vào MỘT cái vỏ.

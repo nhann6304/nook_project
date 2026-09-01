@@ -16,7 +16,7 @@
     "check": "npm run typecheck && npm run lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typeorm": "typeorm -d dist/database/data-source.js",
+    "typeorm": "typeorm -d dist/database/data-source/data-source.js",
     "migration:run": "npm run build && npm run typeorm -- migration:run",
     "migration:revert": "npm run build && npm run typeorm -- migration:revert",
     "migration:show": "npm run build && npm run typeorm -- migration:show"

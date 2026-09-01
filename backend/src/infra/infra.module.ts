@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { RedisModule } from './redis/redis.module.js';
-import { NotifyModule } from './notify/notify.module.js';
+import { RedisModule } from './redis/index.js';
+import { NotifyModule } from './notify/index.js';
 
 /**
  * Thế giới bên ngoài: Redis, đường gửi thư, và sau này là kho ảnh (R2/MinIO)

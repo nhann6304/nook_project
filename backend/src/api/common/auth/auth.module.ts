@@ -2,15 +2,12 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { UserModule } from '../../model/user/user.module.js';
-import { AuthController } from './auth.controller.js';
-import { AuthService } from './auth.service.js';
-import { CodeService } from './code.service.js';
-import { CookieService } from './cookie.service.js';
-import { SessionService } from './session.service.js';
-import { SessionRepository } from './session.repository.js';
-import { JwtAccessGuard } from './guard/jwt-access.guard.js';
-import { JwtAccessStrategy } from './strategy/jwt-access.strategy.js';
+import { UserModule } from '../../model/user/index.js';
+import { AuthController } from './controller/index.js';
+import { AuthService, CodeService, CookieService, SessionService } from './service/index.js';
+import { SessionRepository } from './repository/index.js';
+import { JwtAccessGuard } from './guard/index.js';
+import { JwtAccessStrategy } from './strategy/index.js';
 
 /**
  * `JwtModule.register({})` để trống là cố ý: có HAI chuỗi ký khác nhau (thẻ

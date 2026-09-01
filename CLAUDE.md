@@ -35,6 +35,12 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
 - **Đường dẫn API, mã lỗi, giới hạn: lấy từ `@nook/shared`, đừng gõ lại.** Gõ
   lại là mở đường cho hai bên lệch nhau mà không ai báo. Gói đó phải luôn
   `dependencies: {}` — nó bị nhét vào bản app trên điện thoại.
+- **Không tệp nào nằm lung tung.** Mỗi loại một thư mục, mỗi thư mục một
+  `index.ts`. Gốc một module chỉ có đúng `*.module.ts`. Import: cùng thư mục thì
+  thẳng tệp, qua thư mục khác thì đi qua `index.js`.
+- **`shared/` xếp theo MIỀN, không theo loại tệp** (`auth/` `user/` `circle/`…),
+  để sau này tách được thành gói riêng. Trong mỗi miền, loại nằm ở tên tệp:
+  `auth.constant.ts` · `auth.type.ts` · `auth.util.ts` · `auth.error.ts`.
 - **Mọi câu trả lời của server đều có cùng một cái vỏ:**
   `{ ok, code, data, requestId }` khi trót lọt, `{ ok, code, status, requestId }`
   khi hỏng. `code` LUÔN là khoá tra chữ, không bao giờ là câu tiếng Việt.

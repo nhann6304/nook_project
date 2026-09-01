@@ -13,9 +13,12 @@ nhất là **"ký ức"** — tương tác hai chiều thật giữa hai ngườ
 setup\win\run.bat           # Windows
 ```
 
-Bật cả server lẫn app. Lần đầu nó tự cài thư viện, dựng `backend/.env`, kéo
-Postgres + Redis về và chạy migration; những lần sau bỏ qua mấy bước đã xong.
+Bật cả server lẫn app. Máy chưa cài thì nó tự gọi `install` trước — cài thư
+viện, dựng `backend/.env`, kéo Redis về, dựng kho Postgres, chạy migration.
 Cần **Node 22 hoặc 24** và **Docker Desktop** đang bật.
+
+Cài riêng (chạy lại được sau mỗi lần `git pull`):
+`./setup/mac/install.sh` · `setup\win\install.bat`.
 Chi tiết: [`setup/README.md`](setup/README.md).
 
 Chỉ muốn app thôi thì `./setup/mac/run.sh fe`, hoặc làm tay:
@@ -62,7 +65,7 @@ nook_project/
 | [`shared/`](shared/) | Đường dẫn API, mã lỗi, giới hạn, kiểu dữ liệu — cả hai bên đọc chung | **dùng được** |
 | [`frontend/`](frontend/) | Toàn bộ app: mã nguồn, tài liệu FE, cấu hình, thư viện | **chạy được** |
 | [`backend/`](backend/) | Server, cơ sở dữ liệu, API | **khung chạy được**, ruột đăng nhập chưa viết |
-| [`setup/`](setup/) | `run` và `push`, mỗi cái một bản cho macOS và Windows | dùng được |
+| [`setup/`](setup/) | `install` · `run` · `push`, mỗi cái một bản cho macOS và Windows | dùng được |
 
 Ranh giới hai bên: **màn hình không biết server tồn tại.** Mọi lệnh gọi mạng nằm
 trong `frontend/src/features/<tên>/lib/*Api.ts`. Hiện `authApi.ts` là hàng giả —

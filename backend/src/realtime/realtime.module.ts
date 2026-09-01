@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from '../api/common/auth/auth.module.js';
-import { RealtimeGateway } from './realtime.gateway.js';
+import { AuthModule } from '../api/common/auth/index.js';
+import { RealtimeGateway } from './gateway/index.js';
 
 /**
  * Ống realtime đứng RIÊNG, không nằm trong `api/`.

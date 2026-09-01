@@ -1,7 +1,6 @@
 import { applyDecorators, type Type } from '@nestjs/common';
 import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
-import { ApiEnvelopeDto } from '../dto/envelope.dto.js';
-import { CursorPageDto } from '../dto/cursor.dto.js';
+import { ApiEnvelopeDto, CursorPageDto } from '../dto/index.js';
 
 /**
  * Khai câu trả lời của một cửa, ĐÃ tính cả cái vỏ chung.
