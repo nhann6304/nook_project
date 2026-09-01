@@ -33,9 +33,13 @@ Không cần Xcode hay Android Studio nếu chỉ xem trên điện thoại th�
 
 ```bash
 cd frontend
-npm install        # lần đầu, khoảng 5 phút
+npm ci             # cài lại đúng cây thư viện trong lockfile
 npm run dev
 ```
+
+> Dùng `npm ci`, **đừng xoá `package-lock.json`**. Lock đang ghim `react-dom`
+> đúng bản; xoá nó thì npm tự lấy bản mới nhất và cài hỏng với lỗi `ERESOLVE`.
+> Lý do đầy đủ ở [`docs/06-libraries.md`](docs/06-libraries.md) mục 1.
 
 Terminal hiện một mã QR. Từ đây có ba đường:
 
@@ -63,8 +67,8 @@ Máy tính và điện thoại **phải chung một mạng Wi-Fi**.
 |---|---|
 | Điện thoại quay mãi rồi lỗi | Máy tính và điện thoại khác mạng Wi-Fi. Kiểm lại. |
 | Công ty chặn mạng nội bộ | `npm run dev:tunnel` — chậm hơn nhưng đi vòng qua được |
-| Expo Go báo sai phiên bản | `npm run dev:clear` rồi cập nhật Expo Go lên bản mới |
-| Lỗi lạ sau khi đổi thư viện | `rm -rf node_modules .expo && npm install` |
+| Expo Go báo **incompatible version** | Máy chủ đọc số SDK từ `node_modules/expo`, không phải `package.json`. Chạy `npm ci` rồi `npm run dev:clear`, và trên điện thoại phải **quét QR mới** chứ đừng bấm dòng cũ trong *Recently opened* |
+| Lỗi lạ sau khi đổi thư viện | `rm -rf node_modules .expo && npm ci` — giữ nguyên `package-lock.json` |
 
 ## 3 · Đi thử một vòng
 

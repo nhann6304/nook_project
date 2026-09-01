@@ -25,9 +25,32 @@ thứ không ai hiểu.
 | `expo` | 54.0.37 | Bộ khung. Lo build, quyền, cập nhật, quản lý bản gốc. **Cố ý không phải bản mới nhất** — xem mục 7. | Buộc theo nhịp SDK của Expo. |
 | `react-native` | 0.81.5 | Bản do Expo 54 chọn. **Đừng tự nâng.** | |
 | `react` | 19.1.0 | Bản Expo 54 khai. | |
+| `react-dom` | 19.1.0 | **Không dùng để làm web** — nhưng `expo-router` kéo nó vào, và không khai ở đây thì npm tự lấy bản mới nhất rồi cài hỏng. Xem cảnh báo ngay dưới bảng. | |
 | `typescript` | 5.9.3 | Kiểu chặt (`strict` + `noUncheckedIndexedAccess`). | |
 | `expo-router` | 6.0.24 | Điều hướng theo tệp. Đường dẫn có kiểu (`typedRoutes`), gõ sai route là tsc báo. | Kéo theo `react-dom` và một cụm `@radix-ui` cho bản web mà mình không dùng. |
 | `expo-constants` · `expo-linking` | 18 / 8 | expo-router cần. | |
+
+> ### ⚠ Đừng xoá `package-lock.json`
+>
+> `expo-router` kéo `react-dom` vào như một phụ thuộc kèm theo, dù dự án khai
+> `platforms: ['ios','android']` và không hề làm web. Nếu `react-dom` không được
+> ghim trong `package.json`, npm sẽ tự lấy **bản mới nhất** — mà bản đó đòi
+> `react` cao hơn 19.1.0 của SDK 54. Kết quả:
+>
+> ```
+> npm error ERESOLVE could not resolve
+> npm error While resolving: react-dom@19.2.8
+> npm error Found: react@19.1.0
+> ```
+>
+> Đã ghim `react-dom: 19.1.0` để chặn. Hai điều cần nhớ:
+>
+> 1. **Cài lại thì dùng `npm ci`**, đừng xoá `package-lock.json`. Lock đang giữ
+>    đúng cây thư viện; xoá nó là để npm tự chọn lại từ đầu.
+> 2. Có máy npm chỉ **cảnh báo** rồi cho qua (`ERESOLVE overriding peer
+>    dependency`), có máy **chặn thẳng**. Máy cho qua thì còn tệ hơn: nó cài
+>    `react-dom` lệch bản với `react` mà không ai biết. Đã kiểm bằng
+>    `npm install --strict-peer-deps` — sạch.
 
 ## 2 · Hiệu năng — nhóm quan trọng nhất
 

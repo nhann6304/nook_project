@@ -10,7 +10,7 @@ nhất là **"ký ức"** — tương tác hai chiều thật giữa hai ngườ
 
 ```bash
 cd frontend
-npm install
+npm ci             # đừng xoá package-lock.json — xem frontend/README.md
 npm run dev
 ```
 
