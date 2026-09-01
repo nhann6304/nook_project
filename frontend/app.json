@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "scheme": "nook",
     "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
     "platforms": [
       "ios",
       "android"
@@ -31,7 +32,8 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.VIBRATE"
-      ]
+      ],
+      "edgeToEdgeEnabled": true
     },
     "plugins": [
       "expo-router",

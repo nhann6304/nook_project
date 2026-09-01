@@ -113,7 +113,7 @@ Chi tiết ở [`04-widget.md`](04-widget.md). Cần chuyển dự án sang deve
 
 | Chức năng | Bản | Trạng thái |
 |---|---|---|
-| Dự án Expo chạy được, bundle sạch iOS + Android | V0.1 | xong |
+| Dự án Expo chạy được, bundle sạch iOS + Android | V0.1 | xong — ghim SDK 54 để Expo Go trên iPhone mở được |
 | Hệ token + style chung (`src/design`) | V0.1 | xong |
 | Bộ 27 component qua một cửa `@ui` | V0.1 | xong |
 | Luật ESLint chặn hex / style trong lúc vẽ / primitive thô | V0.1 | xong |

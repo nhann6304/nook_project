@@ -5,10 +5,33 @@
  * đã xuất hiện ở ít nhất ba màn. Dưới ba thì để tại chỗ; quá tay thì file này
  * thành cái sọt rác và không ai dám sửa gì trong đó nữa.
  */
-import { StyleSheet } from 'react-native';
+import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 import { color, layout, radius, space } from './tokens';
 
-export const common = StyleSheet.create({
+/**
+ * Khai kiểu từng mục thay vì để TypeScript tự suy.
+ * Không khai thì mỗi mục ra kiểu hợp `ViewStyle | TextStyle | ImageStyle`,
+ * và lúc đó không truyền thẳng vào `style` của <View> được nữa.
+ */
+type Common = {
+  fill: ViewStyle;
+  fillBg: ViewStyle;
+  center: ViewStyle;
+  centerX: ViewStyle;
+  centerY: ViewStyle;
+  row: ViewStyle;
+  rowBetween: ViewStyle;
+  rowCenter: ViewStyle;
+  padded: ViewStyle;
+  textBlock: ViewStyle;
+  card: ViewStyle;
+  hairline: ViewStyle;
+  textCenter: TextStyle;
+  touchTarget: ViewStyle;
+  absoluteFill: ViewStyle;
+};
+
+export const common = StyleSheet.create<Common>({
   /* — Nền — */
   fill: { flex: 1 },
   fillBg: { flex: 1, backgroundColor: color.bg },
@@ -44,7 +67,7 @@ export const common = StyleSheet.create({
   },
 
   /* — Phủ toàn phần — */
-  absoluteFill: StyleSheet.absoluteFill,
+  absoluteFill: StyleSheet.absoluteFillObject,
 });
 
 /** hitSlop mặc định cho những nút icon nhỏ hơn vùng chạm chuẩn. */

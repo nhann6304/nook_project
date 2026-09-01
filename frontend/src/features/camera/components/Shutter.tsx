@@ -55,7 +55,7 @@ export function Shutter({ onPress, busy }: { onPress: () => void; busy?: boolean
 const s = StyleSheet.create({
   ring: { width: RING, height: RING, alignItems: 'center', justifyContent: 'center' },
   ringLine: {
-    ...StyleSheet.absoluteFill,
+    ...StyleSheet.absoluteFillObject,
     borderRadius: radius.full,
     borderWidth: 3,
     borderColor: color.accent,
@@ -67,5 +67,5 @@ const s = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: color.accent,
   },
-  fill: StyleSheet.absoluteFill,
+  fill: StyleSheet.absoluteFillObject,
 });

@@ -28,7 +28,9 @@ export function List<T>({ contentContainerStyle, ...rest }: ListProps<T>) {
       keyboardDismissMode="on-drag"
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ ...s.content, ...contentContainerStyle }}
+      // Mảng chứ không spread: contentContainerStyle kế thừa từ ScrollView nên
+      // bản thân nó có thể đã là một mảng — spread ra là hỏng.
+      contentContainerStyle={[s.content, contentContainerStyle]}
       {...rest}
     />
   );

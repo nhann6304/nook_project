@@ -112,5 +112,5 @@ const s = StyleSheet.create({
   cellInvalid: { borderColor: color.danger },
   char: { fontSize: type.title.fontSize },
   // Ô thật đè lên sáu ô giả: trong suốt nhưng vẫn nhận bàn phím và tự điền.
-  realInput: { ...StyleSheet.absoluteFill, opacity: 0, color: 'transparent' },
+  realInput: { ...StyleSheet.absoluteFillObject, opacity: 0, color: 'transparent' },
 });

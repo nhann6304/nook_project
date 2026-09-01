@@ -5,7 +5,7 @@ hệ thống sản phẩm ở [`../.docs/01-product-system.md`](../.docs/01-prod
 
 Mọi lệnh trong file này chạy từ thư mục `frontend/`.
 
-**Stack:** React Native 0.86 + Expo SDK 57 + TypeScript 6. Chưa có backend;
+**Stack:** Expo SDK **54** + React Native 0.81.5 + TypeScript 5.9. Chưa có backend;
 `src/features/auth/lib/authApi.ts` là hàng giả (mã đúng: `123456`).
 
 ---
@@ -45,7 +45,9 @@ ESLint chặn cứng cả ba. Thấy mình đang tìm cách lách nó là đang 
 - Ảnh: `<Img>` (expo-image), không bao giờ `<Image>`.
 - Không `style={{…}}` viết thẳng trong JSX.
 - Đọc kho trạng thái bằng selector: `useAuth((s) => s.phase)`.
-- **Đừng "sửa"** `react` về 19.2.3 — xem mục 7 của `docs/06-libraries.md`.
+- **Đừng nâng SDK.** Expo Go trên App Store kẹt ở 54.0.2 — nâng là app không mở
+  được trên iPhone nữa. Lý do đầy đủ + ba chỗ code phải đảo ngược: mục 7 của
+  `docs/06-libraries.md`.
 - Chạy `npm run check` trước khi coi là xong. Phải sạch cả tsc lẫn eslint.
 
 **Giao diện**
@@ -76,7 +78,8 @@ ESLint chặn cứng cả ba. Thấy mình đang tìm cách lách nó là đang 
 
 ## Trạng thái hiện tại
 
-- [x] Dự án Expo chạy được. Bundle sạch cả iOS lẫn Android, `expo-doctor` 18/18.
+- [x] Dự án Expo chạy được trên iPhone thật qua Expo Go. Bundle sạch cả hai nền
+      tảng, `expo-doctor` 17/17.
 - [x] Hệ token, style chung, 27 component, luật ESLint riêng
 - [x] React Compiler bật; Reanimated / FlashList / expo-image đã vào đúng chỗ
 - [x] Màn Chào mừng, Đăng nhập, Nhập mã, Camera, Góc (trống), Khoảnh khắc (trống)

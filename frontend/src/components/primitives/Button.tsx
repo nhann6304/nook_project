@@ -104,7 +104,7 @@ const s = StyleSheet.create({
     overflow: 'hidden',
   },
   block: { alignSelf: 'stretch' },
-  fill: StyleSheet.absoluteFill,
+  fill: StyleSheet.absoluteFillObject,
 
   primary: { backgroundColor: color.accent, ...elevation.glowAccent },
   secondary: { borderWidth: 1, borderColor: color.border, backgroundColor: color.surface },

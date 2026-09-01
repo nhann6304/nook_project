@@ -153,8 +153,12 @@ npm run doctor     # expo-doctor: soi lệch bản và lỗi cấu hình
 
 ## 7 · Còn chạy được trên Expo Go
 
-**Có.** Mọi gói đang dùng đều nằm trong danh sách Expo SDK 57, nên quét QR là
+**Có.** Mọi gói đang dùng đều nằm trong danh sách Expo SDK 54, nên quét QR là
 xem được ngay trên máy thật, không cần build.
+
+Dự án ghim **SDK 54** chính vì việc này: Expo Go trên App Store kẹt ở bản 54.0.2
+và chỉ chạy được project SDK 54. Đừng nâng SDK — xem [`06-libraries.md`](06-libraries.md)
+mục 7.
 
 Điều này sẽ **mất** khi làm widget màn hình chính — widget cần mã gốc, tức là
 development build. Xem `04-widget.md`. Đó là quyết định nên chốt sớm:

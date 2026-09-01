@@ -2,8 +2,13 @@
 
 App React Native chạy trên Expo. iOS và Android, không làm bản web.
 
-**Stack:** Expo SDK 57 · React Native 0.86 · React 19.2 · TypeScript 6 ·
-Expo Router · Reanimated 4 · FlashList 2 · Zustand.
+**Stack:** Expo SDK 54 · React Native 0.81.5 · React 19.1 · TypeScript 5.9 ·
+Expo Router 6 · Reanimated 4 · FlashList 2 · Zustand.
+
+> **Vì sao SDK 54 chứ không phải bản mới nhất:** Expo Go trên App Store kẹt ở
+> bản 54.0.2 từ 23/09/2025 và chỉ chạy được project SDK 54. Từ bản 55 trở lên
+> Expo không phát hành cho iPhone thật nữa. Đừng nâng SDK — lý do đầy đủ ở
+> [`docs/06-libraries.md`](docs/06-libraries.md) mục 7.
 
 ---
 
@@ -13,7 +18,7 @@ Expo Router · Reanimated 4 · FlashList 2 · Zustand.
 |---|---|---|
 | Node.js | **20.19+ / 22.13+ / 24.3+** | `node -v` |
 | npm | 10+ | `npm -v` |
-| Expo Go trên điện thoại | mới nhất | App Store / Play Store |
+| Expo Go trên điện thoại | **54.x** | App Store / Play Store (bản mới nhất ở đó chính là 54) |
 
 > ⚠ Máy bạn đang là **Node v23.11.0** — bản lẻ, không phải LTS. Hiện chưa gây
 > lỗi (chỉ có cảnh báo `EBADENGINE` lúc cài) nhưng nên đổi sang **Node 22 LTS**

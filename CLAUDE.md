@@ -44,7 +44,7 @@ và mục 3 trước tiên**. Ba luật hay bị quên nhất:
 
 | Phần | Trạng thái |
 |---|---|
-| Frontend | **Chạy được.** `cd frontend && npm run dev` rồi quét QR bằng Expo Go |
+| Frontend | **Chạy được.** `cd frontend && npm run dev` rồi quét QR bằng Expo Go. Ghim **SDK 54** vì Expo Go trên App Store kẹt ở đó — đừng nâng, xem `frontend/docs/06-libraries.md` mục 7 |
 | Backend | Chưa có dòng nào |
 | Tài liệu | 13 file, đã chia theo hai bên |
 

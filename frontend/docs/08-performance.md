@@ -12,11 +12,11 @@ kiểu lag mà người dùng cảm nhận được — không có luật nào �
 
 | Thứ | Trạng thái | Được gì |
 |---|---|---|
-| **Kiến trúc mới** (Fabric + TurboModules + JSI) | Luôn bật ở SDK 57 | Bỏ hẳn cây cầu JSON giữa JS và mã gốc. Đây là nền, mọi thứ khác xây lên trên. |
+| **Kiến trúc mới** (Fabric + TurboModules + JSI) | Mặc định từ SDK 52 | Bỏ hẳn cây cầu JSON giữa JS và mã gốc. Đây là nền, mọi thứ khác xây lên trên. |
 | **Hermes** | Mặc định | Mã máy dựng sẵn lúc build, mở app nhanh hơn. |
 | **React Compiler** | `experiments.reactCompiler: true` | Tự ghi nhớ component và hàm. Cắt phần lớn số lần vẽ lại thừa mà không phải rải `useMemo`/`useCallback` khắp nơi. Xác nhận đang bật: dòng `React Compiler enabled` khi chạy `npx expo export`. |
-| **Reanimated 4** | Mọi animation | Chạy trên luồng UI. |
-| **FlashList 2** | Mọi danh sách | Tái dùng ô. |
+| **Reanimated 4** (4.1.7) | Mọi animation | Chạy trên luồng UI. |
+| **FlashList 2** (2.0.2) | Mọi danh sách | Tái dùng ô. |
 | **expo-image** | Mọi ảnh | Cache đĩa, giải mã ngoài luồng chính. |
 
 ## 2 · Bảy luật
@@ -114,7 +114,7 @@ npx expo export --platform all --clear
 
 Ba thứ cần thấy trong log:
 1. `React Compiler enabled`
-2. Kích thước gói iOS/Android — hiện **4.4MB / 4.6MB** bytecode Hermes.
+2. Kích thước gói iOS/Android — hiện **4,69MB / 4,69MB** bytecode Hermes.
    Tăng vọt đột ngột nghĩa là có ai kéo vào một thư viện nặng.
 3. Không có cảnh báo nào.
 
