@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { RedisService } from './redis.service.js';
+import { RedisService } from './service/index.js';
 
 /**
  * `@Global` vì gần như tầng nào cũng chạm tới Redis. Đây là một trong vài chỗ

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './common/auth/auth.module.js';
-import { HealthModule } from './common/health/health.module.js';
-import { UserModule } from './model/user/user.module.js';
-import { AchievementModule } from './model/achievement/achievement.module.js';
+import { AuthModule } from './common/auth/index.js';
+import { HealthModule } from './common/health/index.js';
+import { UserModule } from './model/user/index.js';
+import { AchievementModule } from './model/achievement/index.js';
 
 /**
  * Mặt API, gom một chỗ.

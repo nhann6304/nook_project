@@ -3,9 +3,53 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Hợp đồng giữa app và server. Chỉ interface, type, hằng số, hàm thuần.",
+  "description": "Hợp đồng giữa app Nook và server Nook: đường dẫn API, mã lỗi, mã thông báo, giới hạn, kiểu dữ liệu, hàm thuần. Không phụ thuộc.",
+  "license": "UNLICENSED",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.11"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./http": {
+      "types": "./dist/http/index.d.ts",
+      "default": "./dist/http/index.js"
+    },
+    "./auth": {
+      "types": "./dist/auth/index.d.ts",
+      "default": "./dist/auth/index.js"
+    },
+    "./user": {
+      "types": "./dist/user/index.d.ts",
+      "default": "./dist/user/index.js"
+    },
+    "./circle": {
+      "types": "./dist/circle/index.d.ts",
+      "default": "./dist/circle/index.js"
+    },
+    "./achievement": {
+      "types": "./dist/achievement/index.d.ts",
+      "default": "./dist/achievement/index.js"
+    },
+    "./memory": {
+      "types": "./dist/memory/index.d.ts",
+      "default": "./dist/memory/index.js"
+    },
+    "./realtime": {
+      "types": "./dist/realtime/index.d.ts",
+      "default": "./dist/realtime/index.js"
+    },
+    "./catalog": {
+      "types": "./dist/catalog/index.d.ts",
+      "default": "./dist/catalog/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist"
   ],
@@ -13,7 +57,8 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "dependencies": {},
   "devDependencies": {

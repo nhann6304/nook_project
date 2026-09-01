@@ -1,6 +1,6 @@
 import { ExecutionContext, createParamDecorator } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
-import type { AuthUser } from '../auth/auth.types.js';
+import type { AuthUser } from '../auth/type/index.js';
 
 /**
  * Lấy người đang gọi ra khỏi request.

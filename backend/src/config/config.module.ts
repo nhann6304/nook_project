@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
-import { validateEnv } from './env.validation.js';
+import { validateEnv } from './env/index.js';
 
 /**
  * Cấu hình dùng chung toàn server. `@Global` để khỏi phải import lại ở từng

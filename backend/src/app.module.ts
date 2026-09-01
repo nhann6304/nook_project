@@ -2,16 +2,15 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
-import { ConfigModule } from './config/config.module.js';
-import { Env, NodeEnv } from './config/env.validation.js';
-import { DatabaseModule } from './database/database.module.js';
-import { InfraModule } from './infra/infra.module.js';
-import { ApiModule } from './api/api.module.js';
-import { RealtimeModule } from './realtime/realtime.module.js';
-import { QueueModule } from './queue/queue.module.js';
-import { AllExceptionFilter } from './api/common/filter/all-exception.filter.js';
-import { TimingInterceptor } from './api/common/interceptor/timing.interceptor.js';
-import { ResponseInterceptor } from './api/common/interceptor/response.interceptor.js';
+import { ConfigModule } from './config/index.js';
+import { Env, NodeEnv } from './config/env/index.js';
+import { DatabaseModule } from './database/index.js';
+import { InfraModule } from './infra/index.js';
+import { ApiModule } from './api/index.js';
+import { RealtimeModule } from './realtime/index.js';
+import { QueueModule } from './queue/index.js';
+import { AllExceptionFilter } from './api/common/filter/index.js';
+import { TimingInterceptor, ResponseInterceptor } from './api/common/interceptor/index.js';
 
 /**
  * Gốc cây. Sáu mảng, mỗi mảng một việc:

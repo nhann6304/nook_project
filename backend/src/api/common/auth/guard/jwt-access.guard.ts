@@ -2,9 +2,9 @@ import { ExecutionContext, HttpStatus, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { ERR } from '@nook/shared';
-import { AppException } from '../../error/app.exception.js';
-import { IS_PUBLIC } from '../../decorator/public.decorator.js';
-import type { AuthUser } from '../auth.types.js';
+import { AppException } from '../../error/index.js';
+import { IS_PUBLIC } from '../../decorator/index.js';
+import type { AuthUser } from '../type/index.js';
 
 /**
  * Cổng thẻ, gắn TOÀN CỤC (xem `APP_GUARD` trong `auth.module.ts`).

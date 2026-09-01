@@ -3,10 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ERR, type TokenClaims } from '@nook/shared';
-import { Env } from '../../../../config/env.validation.js';
-import { AppException } from '../../error/app.exception.js';
-import { SessionService } from '../session.service.js';
-import type { AuthUser } from '../auth.types.js';
+import { Env } from '../../../../config/env/index.js';
+import { AppException } from '../../error/index.js';
+import { SessionService } from '../service/index.js';
+import type { AuthUser } from '../type/index.js';
 
 /**
  * Đọc thẻ ngắn hạn từ `Authorization: Bearer …`.

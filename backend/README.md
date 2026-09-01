@@ -60,44 +60,58 @@ vẫn `null`. Đúng, không phải lỗi.
 
 ## 2. Cây thư mục
 
+**Luật: không tệp nào nằm lung tung.** Mỗi loại một thư mục, mỗi thư mục một
+`index.ts`. Ở gốc một module chỉ có đúng tệp `*.module.ts` — cái đặt tên cho
+thư mục.
+
 ```
 backend/
-├── docker/compose.dev.yml     Postgres + Redis (+ MinIO, chưa bật)
+├── docker/compose.dev.yml     Redis (+ Postgres và MinIO trong profile riêng)
 ├── Dockerfile                 bản thật, nhiều chặng
 └── src/
-    ├── main.ts                bật server: helmet, cookie, CORS, Swagger, cầu socket
-    ├── app.module.ts          gốc cây, gắn bộ lọc + bộ chặn toàn cục
+    ├── main.ts · app.module.ts
     │
-    ├── config/                đọc và KIỂM biến môi trường lúc bật
+    ├── config/                env/ · swagger/
     ├── database/
-    │   ├── entity/            7 bảng
-    │   ├── migration/         SQL viết TAY
+    │   ├── entity/            base/ · user/ · session/ · achievement/
+    │   ├── migration/         SQL viết TAY (không có index — nạp bằng glob)
     │   ├── repository/        BaseRepository — tự bám giao dịch
-    │   ├── transaction/       TransactionContext · TransactionService · @Transactional()
-    │   └── data-source.ts     cho bộ lệnh TypeORM
+    │   ├── transaction/       TransactionContext · TransactionService · @Transactional
+    │   └── data-source/       cho bộ lệnh TypeORM
     │
     ├── api/
     │   ├── common/            thứ mọi cửa đều dùng
-    │   │   ├── auth/          đăng nhập, phiên, bánh quy, cổng thẻ, dto/ guard/ strategy/
+    │   │   ├── auth/          auth.module.ts + controller/ service/ repository/
+    │   │   │                  dto/ guard/ strategy/ type/
+    │   │   ├── health/        health.module.ts + controller/ dto/
     │   │   ├── decorator/     @Public @CurrentUser @Message @ApiResult @ApiErrors
     │   │   ├── dto/           vỏ câu trả lời · lỗi · lật trang · hồ sơ
     │   │   ├── error/         AppException
     │   │   ├── filter/        gom mọi thứ hỏng về một hình dạng
-    │   │   ├── health/        dò sống chết
     │   │   ├── interceptor/   bọc vỏ · đo chậm
     │   │   ├── mapper/        BaseMapper
     │   │   └── pipe/          bộ kiểm đầu vào
     │   └── model/             một thư mục cho một thứ có thật trong sản phẩm
-    │       ├── user/          controller · service · 3 kho · mapper · dto/
-    │       └── achievement/   controller · service · 2 kho · mapper · dto/
+    │       ├── user/          user.module.ts + controller/ service/ repository/ mapper/ dto/
+    │       └── achievement/   achievement.module.ts + (như trên)
     │
-    ├── infra/                 thế giới bên ngoài: redis/ notify/
-    ├── realtime/              ống socket + cầu Redis
-    └── queue/                 BullMQ, chưa có việc nào
+    ├── infra/                 redis/service/ · notify/{sender,service}/
+    ├── realtime/              gateway/ · adapter/
+    └── queue/                 constant/
+```
+
+**Luật import, một câu:** *cùng thư mục thì import thẳng tệp; qua thư mục khác
+thì đi qua `index.js` của thư mục đó.* Nhờ vậy tệp module đọc được như một bản
+mục lục:
+
+```ts
+import { AuthController } from './controller/index.js';
+import { AuthService, CodeService, CookieService, SessionService } from './service/index.js';
+import { SessionRepository } from './repository/index.js';
 ```
 
 Chặng sau thêm vào `api/model/`: `circle` · `moment` · `thread` · `media` ·
-`memory` · `push`. Mỗi cái một thư mục đủ bộ, không đổ chung.
+`memory` · `push`. Mỗi cái một thư mục đủ bộ, dựng theo đúng khuôn trên.
 
 ## 3. Bốn khuôn mẫu — đọc trước khi viết cửa thứ chín
 
@@ -253,8 +267,15 @@ Swagger, vì như vậy là để lộ cột ra ngoài.
 bảng dạng chuỗi + `Relation<>`; bốn bảng con nhập `User` bình thường. Một chiều
 thì không thành vòng. Xem ghi chú trong `user.entity.ts`.
 
-**File data-source chỉ được xuất ra ĐÚNG MỘT thứ.** Thấy hai thứ là bộ lệnh
-TypeORM không đoán, nó từ chối.
+**Tệp data-source chỉ được xuất ra ĐÚNG MỘT thứ.** Thấy hai thứ là bộ lệnh
+TypeORM không đoán, nó từ chối. Và vì nó nằm ở `database/data-source/`, đường
+dò migration phải là `${import.meta.dirname}/../migration/*` — thiếu `..` thì
+`migration:show` im lặng trả về rỗng, trông y như chưa có migration nào.
+
+**Gộp bảng hằng số thì trùng khoá là đè im lặng.** `ERR` bên `@nook/shared` gộp
+từ bốn miền; `USER_ERR.NOT_FOUND` từng đè `COMMON_ERR.NOT_FOUND` mà không ai
+báo. Nay khoá của từng miền mang tiền tố (`USER_NOT_FOUND`, `CIRCLE_FULL`) và
+có chốt biên dịch bắt trùng — xem `shared/src/catalog/error.catalog.ts`.
 
 **Ném trong giao dịch thì cuộn luôn thứ vừa ghi.** Chỗ `rotate()` phát hiện thẻ
 dài hạn bị chép: nó thu hồi hết phiên rồi ném. Viết thẳng thì việc thu hồi bị

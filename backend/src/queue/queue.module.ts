@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { Redis } from 'ioredis';
-import { Env } from '../config/env.validation.js';
+import { Env } from '../config/env/index.js';
 
 /**
  * Hàng đợi việc nền.

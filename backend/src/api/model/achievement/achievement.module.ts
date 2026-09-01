@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { UserModule } from '../user/user.module.js';
-import { AchievementController } from './achievement.controller.js';
-import { AchievementService } from './achievement.service.js';
-import { AchievementMapper } from './achievement.mapper.js';
-import { AchievementRepository } from './achievement.repository.js';
-import { UserAchievementRepository } from './user-achievement.repository.js';
+import { UserModule } from '../user/index.js';
+import { AchievementController } from './controller/index.js';
+import { AchievementService } from './service/index.js';
+import { AchievementMapper } from './mapper/index.js';
+import { AchievementRepository, UserAchievementRepository } from './repository/index.js';
 
 @Module({
   // Con đếm thuộc về người dùng, nên kho của nó ở module `user`. Mượn, không chép.
