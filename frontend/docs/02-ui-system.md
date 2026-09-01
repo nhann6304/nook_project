@@ -83,7 +83,8 @@ import thẳng đường dẫn con, và không bao giờ tự dựng lại một
 | `Row` `Col` `Spacer` `Flex` | Xếp khối. `gap` chỉ nhận tên trong thang khoảng cách, không nhận số |
 | `Card` `Pill` `Divider` | Ba bề mặt. `Pill onPhoto` = nền mờ khi đè lên ảnh |
 | `List` | Bọc **FlashList**, không bao giờ FlatList |
-| `Scroll` | Bọc ScrollView |
+| `TopBar` | Nút đóng · tiêu đề · chỗ nút phải. Nook tắt header của navigator nên không có nút quay lại nào khác |
+| `Scroll` | Bọc ScrollView. `horizontal` dùng khuôn đệm riêng — đệm đáy 32 của bản dọc mang sang bản ngang là hàng bỗng cao thêm 32pt |
 
 **Thương hiệu**
 
@@ -117,8 +118,12 @@ Còn thiếu, làm khi tới màn cần:
 > chữ tiếng Việt trong `src/components/`. Nhờ vậy component xem trước được mà
 > không cần dựng cả app. Xem `09-i18n.md` §10.
 
-Bo góc: 12 (thẻ nhỏ) · 16 (ảnh, ô mã) · 20 (thẻ lớn, ô nhập) · 24 (nút) · 32 (khung
-camera) · tròn (avatar, pill, thanh chuyển).
+Bo góc: 12 (thẻ nhỏ) · 16 (ảnh, ô mã) · 20 (thẻ lớn, ô nhập) · 24 (nút, thẻ ảnh
+trong feed) · **44 (khung ngắm camera)** · tròn (avatar, pill, thanh chuyển).
+
+Khung ngắm bo đậm hơn hẳn thẻ ảnh vì nó to hơn hẳn: cùng một độ bo đặt trên ô
+360pt thì trông vuông vức, đặt trên ô 160pt thì trông tròn. Độ bo phải đi theo
+kích thước mới giữ được cùng một cảm giác.
 
 Vùng chạm tối thiểu **48**, không ngoại lệ. Chữ nhỏ bấm được thì bọc `hitSlop`.
 

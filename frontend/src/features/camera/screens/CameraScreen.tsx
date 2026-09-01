@@ -1,46 +1,59 @@
 /**
  * Màn Camera — màn mặc định khi mở app. Gồm cả bước xem lại sau khi chụp.
  *
- * ── Bố cục ───────────────────────────────────────────────────────────────
- * Khung ngắm tính theo CHIỀU NGANG máy (88%), không theo chiều dọc. Máy dài
- * hơn thì phần thừa thành khoảng thở, khung KHÔNG giãn ra. Đây là lý do camera
- * của Locket trông gọn còn phần lớn app bắt chước thì nặng nề — và là câu trả
- * lời cho "iPhone SE và iPhone Pro Max có vừa cả hai không": vừa, vì chiều dọc
- * không tham gia vào phép tính.
+ * ── Khung ngắm lấy cạnh bằng số NHỎ HƠN của hai thứ ──────────────────────
+ * 94% bề ngang máy, và chiều cao thật còn lại giữa thanh trên và hàng chụp.
+ * Chiều cao đó đo bằng `onLayout` chứ không tính tay từ chắn tai thỏ — tính
+ * tay là mỗi lần thêm một hàng lại phải sửa một hằng số, và quên sửa thì khung
+ * tràn ra ngoài trên máy ngắn mà không ai biết cho tới khi cầm đúng cái máy đó.
  *
- * Bốn khối xếp dọc: thanh trên · khung ngắm · hàng chụp · chân màn.
+ * Trước đây khung khoá cứng ở 88% bề ngang. Trên iPhone 14 nó để thừa hơn 200pt
+ * khoảng trống chia đều vào ba khe — màn nhìn rỗng và các khối rời rạc nhau.
  *
  * ── Chụp xong thì KHÔNG chuyển màn ───────────────────────────────────────
  * Ảnh vừa chụp đè lên chính khung ngắm, `CameraView` vẫn nằm nguyên bên dưới.
  * Nếu đẩy sang một màn khác thì camera bị tháo, và bấm "chụp tiếp" phải chờ nó
- * khởi động lại — trên máy tầm trung là 300–500ms nhìn thấy được bằng mắt. Giữ
- * camera sống thì quay lại chụp là tức thì.
+ * khởi động lại — trên máy tầm trung là 300–500ms nhìn thấy được bằng mắt.
  *
- * Ba khối trên/dưới đổi nội dung theo `shot`, còn khung ở giữa thì không đổi
- * kích thước — nên lúc đổi giữa hai trạng thái không có gì nhảy chỗ.
+ * Bốn khối xếp dọc; khối giữa co giãn, ba khối kia cao cố định. Nhờ vậy đổi
+ * giữa "đang chụp" và "đang xem lại" không có gì nhảy chỗ.
  */
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { LayoutChangeEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { CaptionField, Col, IconButton, Img, Loading, Pill, Rings, Screen, Txt } from '@ui';
+import { CaptionField, IconButton, Img, Loading, Pill, Rings, Screen, Txt } from '@ui';
 import { color, common, layout, media, radius, space } from '@design';
 import { useT } from '@i18n';
 import * as feel from '@/lib/haptics';
+import type { PhotoSource } from '@/features/feed/types';
 import { CameraPermission } from '../components/CameraPermission';
+import { MomentsPeek } from '../components/MomentsPeek';
+import { NookStrip, type StripFriend } from '../components/NookStrip';
 import { SendButton } from '../components/SendButton';
 import { Shutter } from '../components/Shutter';
 
 export type Shot = { uri: string; caption: string };
 
 export function CameraScreen({
-  friendCount,
+  friends,
+  peekPhotos,
+  peekLabel,
+  peekHint,
+  inviteLabel,
   onOpenCircle,
   onOpenSettings,
   onOpenFeed,
   onSend,
 }: {
-  friendCount: number;
+  /** Người trong góc. Vừa là hàng avatar trên đầu, vừa là danh sách người nhận. */
+  friends: readonly StripFriend[];
+  /** Ba tấm mới nhất — cửa nhòm ở chân màn. */
+  peekPhotos: readonly PhotoSource[];
+  peekLabel: string;
+  peekHint: string;
+  inviteLabel: string;
   onOpenCircle: () => void;
   onOpenSettings: () => void;
   onOpenFeed: () => void;
@@ -49,14 +62,19 @@ export function CameraScreen({
 }) {
   const t = useT();
   const { width } = useWindowDimensions();
-  const frame = Math.round(width * layout.cameraFrameRatio);
+  const friendCount = friends.length;
 
   const [permission, requestPermission, refreshPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('front');
   const [shot, setShot] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
+  const [stageHeight, setStageHeight] = useState(0);
   const cam = useRef<CameraView>(null);
+
+  const measure = useCallback((e: LayoutChangeEvent) => {
+    setStageHeight(e.nativeEvent.layout.height);
+  }, []);
 
   const capture = useCallback(async () => {
     if (busy || !cam.current) return;
@@ -68,6 +86,23 @@ export function CameraScreen({
     } finally {
       setBusy(false);
     }
+  }, [busy]);
+
+  // Thư viện ảnh xin quyền riêng, và expo-image-picker tự lo hộp thoại đó.
+  // Người dùng bấm huỷ thì `canceled` = true — im lặng quay về, không báo lỗi:
+  // huỷ là một lựa chọn, không phải một sự cố.
+  const pick = useCallback(async () => {
+    if (busy) return;
+    const res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    const first = res.assets?.[0];
+    if (res.canceled || !first) return;
+    feel.select();
+    setShot(first.uri);
   }, [busy]);
 
   const discard = useCallback(() => {
@@ -90,9 +125,15 @@ export function CameraScreen({
     setFacing((f) => (f === 'front' ? 'back' : 'front'));
   }, []);
 
-  // Chưa đọc xong quyền: đừng vẽ gì. Nháy màn xin quyền lên rồi tắt ngay là
-  // tệ hơn hẳn một nhịp trống, vì người dùng kịp đọc và kịp hoang mang.
-  if (!permission) return <Screen><Loading /></Screen>;
+  // Chưa đọc xong quyền: đừng vẽ gì. Nháy màn xin quyền lên rồi tắt ngay là tệ
+  // hơn hẳn một nhịp trống, vì người dùng kịp đọc và kịp hoang mang.
+  if (!permission) {
+    return (
+      <Screen>
+        <Loading />
+      </Screen>
+    );
+  }
 
   if (!permission.granted) {
     return (
@@ -106,6 +147,7 @@ export function CameraScreen({
   }
 
   const reviewing = shot !== null;
+  const frame = Math.min(Math.round(width * layout.cameraFrameRatio), Math.floor(stageHeight));
 
   return (
     <Screen padded={false} edges={['top', 'bottom']} keyboard>
@@ -115,7 +157,7 @@ export function CameraScreen({
           {reviewing ? (
             <>
               <IconButton label={t('review.discard')} onPress={discard}>
-                <Ionicons name="close" size={24} color={color.textMuted} />
+                <Ionicons name="close" size={24} color={color.text} />
               </IconButton>
 
               {/* Chỉ để thông tin, KHÔNG bấm được: Nook không có bước chọn
@@ -138,9 +180,9 @@ export function CameraScreen({
                 </View>
               </IconButton>
 
-              <Pill onPress={onOpenCircle}>
-                <Txt variant="label">{t('camera.circlePill', { count: friendCount })}</Txt>
-              </Pill>
+              {/* Không lặp lại con số ở đây: hàng avatar ngay dưới đã nói rồi,
+                  và nói bằng hình thì đọc nhanh hơn. */}
+              <Txt variant="section">{t('camera.openCircle')}</Txt>
 
               <IconButton label={t('camera.openSettings')} onPress={onOpenSettings}>
                 <Ionicons name="settings-outline" size={20} color={color.textMuted} />
@@ -149,86 +191,99 @@ export function CameraScreen({
           )}
         </View>
 
-        {/* 2 — Khung ngắm. Camera Ở LẠI bên dưới ảnh, không bị tháo. */}
-        <View style={[s.frame, { width: frame, height: frame }]}>
-          <CameraView ref={cam} style={common.absoluteFill} facing={facing} />
-
-          {reviewing ? (
-            <Img source={{ uri: shot }} style={media.fill} contentFit="cover" />
-          ) : null}
-
-          <View style={s.captionSlot} pointerEvents={reviewing ? 'auto' : 'none'}>
-            {reviewing ? (
-              <CaptionField
-                value={caption}
-                onChangeText={setCaption}
-                placeholder={t('review.captionPlaceholder')}
-              />
-            ) : (
-              <Pill onPhoto>
-                <Txt variant="label" tone="faint">
-                  {t('camera.captionHint')}
-                </Txt>
-              </Pill>
-            )}
-          </View>
+        {/* 2 — Hàng người trong góc. Có ở CẢ HAI trạng thái: lúc chụp nó nói
+            "ai sẽ thấy tấm này", lúc xem lại nó chính là danh sách người nhận. */}
+        <View style={s.strip}>
+          <NookStrip
+            friends={friends}
+            inviteLabel={inviteLabel}
+            showInvite={!reviewing}
+            onPressFriend={onOpenCircle}
+            onInvite={onOpenCircle}
+          />
         </View>
 
-        {/* 3 — Hàng chụp / hàng gửi */}
+        {/* 3 — Sân khấu: co giãn hết chỗ còn lại. Khung vuông lấy cạnh bằng số
+            NHỎ HƠN giữa 96% bề ngang và chiều cao thật của cái sân này. */}
+        <View style={s.stage} onLayout={measure}>
+          {frame > 0 ? (
+            <View style={[s.frame, { width: frame, height: frame }]}>
+              <CameraView ref={cam} style={common.absoluteFill} facing={facing} />
+
+              {reviewing ? (
+                <Img source={{ uri: shot }} style={media.fill} contentFit="cover" />
+              ) : null}
+
+              <View style={s.captionSlot} pointerEvents={reviewing ? 'auto' : 'none'}>
+                {reviewing ? (
+                  <CaptionField
+                    value={caption}
+                    onChangeText={setCaption}
+                    placeholder={t('review.captionPlaceholder')}
+                    label={t('review.captionLabel')}
+                  />
+                ) : (
+                  <Pill onPhoto>
+                    <Ionicons name="create-outline" size={15} color={color.textMuted} />
+                    <Txt variant="label" tone="muted">
+                      {t('camera.captionHint')}
+                    </Txt>
+                  </Pill>
+                )}
+              </View>
+            </View>
+          ) : null}
+        </View>
+
+        {/* 4 — Hàng chụp / hàng gửi. Cùng chiều cao ở cả hai trạng thái. */}
         <View style={s.actionRow}>
           {reviewing ? (
             <>
-              {/* Chỗ của "Lưu về máy" — chưa nối, nên chưa vẽ. Nút bấm không ăn
-                  là thứ tệ nhất có thể để lại trên màn hình. Cần
-                  expo-media-library + một lượt xin quyền ghi. */}
               <View style={s.slot} />
-
               <SendButton onPress={() => void send()} busy={busy} label={t('review.send')} />
-
               <View style={s.slot} />
             </>
           ) : (
             <>
-              {/* Chỗ của "Mở thư viện ảnh" — chưa nối, cần expo-image-picker. */}
-              <View style={s.slot} />
+              <IconButton label={t('camera.gallery')} onPress={() => void pick()}>
+                <Ionicons name="images-outline" size={24} color={color.textMuted} />
+              </IconButton>
 
               <Shutter onPress={() => void capture()} busy={busy} label={t('camera.shutter')} />
 
               <IconButton label={t('camera.flip')} onPress={flip}>
-                <Ionicons name="camera-reverse-outline" size={22} color={color.textMuted} />
+                <Ionicons name="camera-reverse-outline" size={24} color={color.textMuted} />
               </IconButton>
             </>
           )}
         </View>
 
-        {/* 4 — Chân màn. Lúc đang xem lại thì giữ CHỖ chứ không giữ nút: bỏ hẳn
-            đi là ba khối trên bị kéo tụt xuống. */}
-        {reviewing ? (
-          <View style={s.footerSpacer} />
-        ) : (
-          <IconButton label={t('camera.openMoments')} onPress={onOpenFeed} style={s.footer}>
-            <Col align="center">
-              <Ionicons name="chevron-up" size={16} color={color.textFaint} />
-              <Txt variant="faint" tone="faint">
-                {t('camera.moments')}
-              </Txt>
-            </Col>
-          </IconButton>
-        )}
+        {/* 5 — Chân màn. Hai trạng thái, cùng chiều cao. */}
+        <View style={s.footer}>
+          {reviewing ? (
+            // Nhắc lại lời hứa đúng vào giây người ta sắp gửi. Đây là chỗ duy
+            // nhất trong app mà câu đó còn kịp thay đổi quyết định.
+            <Txt variant="faint" tone="faint" center style={s.promise}>
+              {friendCount === 0 ? peekHint : t('review.privacy', { count: friendCount })}
+            </Txt>
+          ) : (
+            <MomentsPeek
+              photos={peekPhotos}
+              label={peekLabel}
+              accessibilityLabel={peekLabel}
+              onPress={onOpenFeed}
+            />
+          )}
+        </View>
       </View>
     </Screen>
   );
 }
 
+const FOOTER_HEIGHT = 76;
+
 const s = StyleSheet.create({
-  // space-between + flex:1 — chỗ thừa của máy dài rơi vào khoảng GIỮA các khối,
-  // không rơi vào khung ngắm.
-  root: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: space.lg,
-  },
+  root: { flex: 1, alignItems: 'center', paddingVertical: space.sm },
 
   topBar: {
     width: '100%',
@@ -248,12 +303,35 @@ const s = StyleSheet.create({
   /** Giữ chỗ đúng bằng một IconButton để pill ở giữa đứng yên. */
   slot: { width: layout.minTouch },
 
-  frame: { borderRadius: radius.frame, backgroundColor: color.surface, overflow: 'hidden' },
+  strip: { alignSelf: 'stretch', paddingTop: space.md, paddingBottom: space.sm },
+
+  /*
+   * Khung neo về ĐÁY sân, không nằm giữa.
+   *
+   * Khung là hình vuông nên trên máy dài luôn còn thừa chiều cao. Chia đôi chỗ
+   * thừa thì có một khe ngay trên nút chụp — nút bấm nhiều nhất app lại là nút
+   * trôi lơ lửng. Dồn chỗ thừa lên trên thì nó nhập vào khoảng thở dưới hàng
+   * avatar, còn nút chụp nằm sát ngay dưới ảnh: đúng chỗ ngón cái với tới, và
+   * đúng chỗ mắt đang nhìn.
+   */
+  stage: {
+    flex: 1,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingTop: space.md,
+    paddingBottom: space.xxl,
+  },
+  frame: {
+    borderRadius: radius.viewfinder,
+    backgroundColor: color.surface,
+    overflow: 'hidden',
+  },
   captionSlot: {
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: space.md,
+    bottom: space.lg,
     alignItems: 'center',
   },
 
@@ -262,9 +340,14 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: space.xxxl + space.xs,
+    paddingHorizontal: space.xxxl + space.sm,
   },
 
-  footer: { width: 'auto', paddingHorizontal: space.lg },
-  footerSpacer: { height: layout.minTouch },
+  footer: {
+    height: FOOTER_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: space.xxl,
+  },
+  promise: { maxWidth: layout.maxTextWidth },
 });

@@ -19,13 +19,7 @@
 export const vi = {
   /* ---------- Dùng chung nhiều màn ---------- */
   common: {
-    continue: 'Tiếp tục',
-    back: 'Quay lại',
-    cancel: 'Huỷ',
-    close: 'Đóng',
     closeScreen: 'Đóng màn này',
-    retry: 'Thử lại',
-    notNow: 'Để sau',
     settings: 'Cài đặt',
     openSettings: 'Mở Cài đặt máy',
   },
@@ -74,13 +68,14 @@ export const vi = {
 
   /* ---------- Màn 7 — Camera ---------- */
   camera: {
-    circlePill: 'Góc của bạn · {count}',
     openCircle: 'Góc của bạn',
     openSettings: 'Cài đặt',
+    gallery: 'Chọn ảnh có sẵn',
     shutter: 'Chụp khoảnh khắc',
     flip: 'Đổi camera trước sau',
-    moments: 'Khoảnh khắc',
-    openMoments: 'Xem khoảnh khắc của bạn bè',
+    peekEmpty: 'Chưa có khoảnh khắc nào',
+    peekSome: { other: 'Khoảnh khắc · {count}' },
+    peekHint: 'Ảnh chỉ đi tới những người trong góc của bạn.',
     captionHint: 'Thêm một dòng…',
 
     permission: {
@@ -95,7 +90,6 @@ export const vi = {
       blockedMessage:
         'Bạn đã tắt camera cho Nook. Máy sẽ không hỏi lại nữa — mở lại trong Cài đặt máy, phần Nook, rồi quay về đây.',
 
-      asking: 'Đang chờ bạn trả lời…',
       skip: 'Xem khoảnh khắc của bạn bè',
     },
   },
@@ -107,8 +101,9 @@ export const vi = {
     sendTo: { other: 'Gửi cho {count} người trong góc' },
     sendToNobody: 'Chưa có ai trong góc để gửi',
     captionPlaceholder: 'Thêm một dòng…',
+    captionLabel: 'Thêm một dòng cho ảnh',
+    privacy: { other: 'Ảnh này chỉ đi tới {count} người trong góc của bạn. Không ai khác thấy được.' },
     send: 'Gửi đi',
-    sending: 'Đang gửi…',
   },
 
   /* ---------- Màn 9 — Khoảnh khắc ---------- */
@@ -120,7 +115,6 @@ export const vi = {
     window: 'Chỉ hiện 48 giờ gần nhất.',
     replyTo: 'Nhắn riêng cho {name}…',
     replied: 'Đã nhắn cho {name}',
-    mine: 'Bạn',
     justNow: 'vừa xong',
     minutesAgo: { other: '{count} phút trước' },
     hoursAgo: { other: '{count} giờ trước' },
@@ -135,16 +129,12 @@ export const vi = {
     waitingTitle: { other: 'Góc này còn chờ {count} người' },
     waitingMessage: 'Mời người đầu tiên vào đi. Chỉ mười chỗ thôi, nên chọn kỹ nhé.',
     invite: 'Mời một người bạn',
-    dormant: 'Lâu rồi chưa gặp',
-    level: 'Cấp {level}',
   },
 
   /* ---------- Ngôn ngữ ---------- */
   language: {
     title: 'Ngôn ngữ',
     label: 'Chữ trong app',
-    vi: 'Tiếng Việt',
-    en: 'English',
     system: 'Theo máy',
     systemNote: 'Đang theo ngôn ngữ máy của bạn: {name}.',
   },

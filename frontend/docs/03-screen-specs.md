@@ -128,16 +128,28 @@ trong Cài đặt."
 ## Nhóm B — Vòng lặp hàng ngày (4 màn)
 
 ### 7. Camera (màn mặc định khi mở app)
-Bốn khối xếp dọc, `justifyContent: space-between`:
-1. **Thanh trên**: dấu hiệu hai vòng (28px, trong vòng tròn nền surface 36px) bên trái · pill
-   "Góc của bạn · {số}" ở giữa · icon bánh răng bên phải.
-2. **Khung ngắm**: hình vuông, rộng = **88% chiều ngang máy** (không phải chiều dọc),
-   bo góc 32px, nền surface. Camera preview lấp đầy. Nổi ở đáy khung một pill mờ
-   "Thêm một dòng…" (placeholder cho caption, chưa gõ).
-3. **Hàng chụp**: icon thư viện (trái) · nút chụp — vòng tròn 66px viền 3px màu
-   đất nung, bên trong là khối tròn 52px đặc màu đất nung (giữa) · icon đảo camera
-   (phải).
-4. **Chân màn**: mũi tên hướng lên + chữ "Khoảnh khắc" màu mờ.
+
+Năm khối xếp dọc. Ba khối cao cố định, khối "sân khấu" ở giữa co giãn:
+
+1. **Thanh trên**: dấu hiệu hai vòng (26px, trong vòng tròn `surface` 36px) bên
+   trái · chữ "Góc của bạn" ở giữa · bánh răng bên phải.
+2. **Hàng người trong góc**: avatar 40px có vòng độ thân, cuộn ngang, cuối hàng
+   là một ô dấu **+** để mời thêm (ẩn khi góc đã đủ mười). Nó trả lời câu người
+   ta hỏi trước khi bấm chụp: *tấm này ai thấy?*
+   **Không vẽ đủ số chỗ trống ở đây** — mười ô 40pt là 508pt, tràn khỏi mọi máy.
+   Con số mười được nhìn kỹ ở màn 11.
+3. **Sân khấu + khung ngắm**: hình vuông, cạnh = số **nhỏ hơn** giữa `96% bề
+   ngang máy` và `chiều cao thật còn lại`. Bo góc **44**. Khung neo về **đáy**
+   sân chứ không nằm giữa: chỗ thừa của máy dài dồn lên trên, nhập vào khoảng
+   thở dưới hàng avatar, còn nút chụp thì nằm sát ngay dưới ảnh.
+   Nổi ở đáy khung một pill `✎ Thêm một dòng…`.
+4. **Hàng chụp**: icon thư viện (trái) · nút chụp — vòng 84px viền 3,5px màu đất
+   nung, lõi đặc 68px (giữa) · icon đảo camera (phải).
+5. **Chân màn**: cửa nhòm sang Khoảnh khắc — ba ảnh thu nhỏ 48px + "Khoảnh khắc ·
+   N" + mũi tên lên. Chưa có ảnh nào thì thu về đúng dáng một viên thuốc chữ.
+
+Số đo thật của khung ngắm: iPhone SE **307**, iPhone 14 **374**, 14 Pro Max
+**413**, Samsung 360dp **346**. Máy nào cũng vừa, không máy nào tràn.
 
 **Chưa cho quyền camera:** màn này thay bằng lời giải thích + nút xin quyền. Nếu
 người dùng đã từ chối một lần thì hệ thống **không hỏi lại nữa** — lúc đó phải đổi
@@ -146,14 +158,26 @@ chữ ("Camera đang tắt") và đổi nút thành *Mở Cài đặt máy*, đ�
 Camera là màn mặc định — kẹt ở đây là kẹt cả app.
 
 ### 8. Vừa chụp xong
+
 **Không chuyển màn.** Ảnh vừa chụp đè lên chính khung ngắm, `CameraView` vẫn nằm
-nguyên bên dưới — tháo camera ra rồi lắp lại tốn 300–500ms nhìn thấy được bằng mắt
-trên máy tầm trung. Thay khối camera bằng ảnh vừa chụp. Thanh trên đổi: icon `x` (huỷ, trái) · pill xám
-"Gửi cho {n} người trong góc" (**chỉ để thông tin, không bấm được** — không có bước
-chọn người nhận) · khoảng trống (phải). Trong khung ảnh, pill caption giờ có con trỏ
-nhấp nháy, đang gõ được. Hàng dưới: icon tải xuống (trái) · **nút gửi** — vòng tròn
-đặc màu đất nung với icon mũi tên lên (giữa, thay cho nút chụp) · icon emoji nhanh
-(phải).
+nguyên bên dưới — tháo camera ra rồi lắp lại tốn 300–500ms nhìn thấy được bằng
+mắt trên máy tầm trung.
+
+Bốn khối giữ nguyên chiều cao của màn 7, chỉ đổi ruột:
+
+1. **Thanh trên**: icon `✕` (bỏ tấm này, trái) · pill xám "Gửi cho {n} người
+   trong góc" (**chỉ để thông tin, không bấm được** — Nook không có bước chọn
+   người nhận) · khoảng trống (phải).
+2. **Hàng người**: y như màn 7 nhưng **bỏ ô dấu +**. Ở bước này hàng đó là danh
+   sách người nhận; chèn một lời mời vào giữa danh sách người nhận là mời sai lúc.
+3. **Khung**: ảnh vừa chụp. Pill caption giờ gõ được — chạm bất kỳ đâu trên viên
+   thuốc là vào ô gõ. Icon `✎` chỉ hiện khi ô còn trống; gõ chữ đầu tiên là nó
+   biến mất, vì lúc đó nó chiếm chỗ của chữ.
+4. **Hàng gửi**: chỉ **một** nút, ở giữa — vòng tròn đặc dải màu với mũi tên lên.
+   Sau khi chụp thì chỉ có đúng một việc để làm.
+5. **Chân màn**: nhắc lại lời hứa — *"Ảnh này chỉ đi tới {n} người trong góc của
+   bạn. Không ai khác thấy được."* Đây là chỗ duy nhất trong app mà câu đó còn
+   kịp thay đổi quyết định.
 
 ### 9. Khoảnh khắc (feed)
 Tiêu đề "Khoảnh khắc" ở trên, mũi tên xuống bên trái để đóng. Danh sách thẻ cuộn dọc,
@@ -246,10 +270,9 @@ khoảnh khắc và ký ức"). **Bắt buộc phải có để qua duyệt App 
 - [ ] Màn 15–18 (Nhóm D): màn 15 (Cài đặt) mới có **hàng Ngôn ngữ**. Ưu tiên tiếp
       màn 16 (Vị trí) và 18 (Tài khoản) vì liên quan trực tiếp đến việc qua duyệt App Store
 
-Hai nút trong đặc tả **chưa vẽ ra màn** vì chưa nối được: "Mở thư viện ảnh"
-(cần `expo-image-picker`) và "Lưu về máy" (cần `expo-media-library`). Chỗ của
-chúng đã chừa sẵn trong `CameraScreen` — vẽ một nút bấm không ăn thì tệ hơn là
-chưa vẽ.
+Nút **"Lưu về máy"** trong đặc tả màn 8 chưa vẽ ra màn vì chưa nối được (cần
+`expo-media-library` và một lượt xin quyền ghi). Vẽ một nút bấm không ăn thì tệ
+hơn là chưa vẽ.
 
 Chưa thiết kế (cố ý hoãn, xem lý do trong `../../.docs/01-product-system.md` mục 8 Roadmap):
 Album chung, Dòng thời gian, Nearby/WhereAreYou, Shared Places — tất cả thuộc V0.2–V0.3.

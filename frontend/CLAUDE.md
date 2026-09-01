@@ -63,7 +63,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - **Mỗi màn đúng MỘT** nút `variant="primary"`.
 - Chữ trên nút primary là màu **tối** (`color.onAccent`), không phải trắng —
   chữ trắng trên dải cam–hồng chỉ đạt 2.3:1.
-- Khung ngắm camera tính theo **chiều ngang** máy (88%), không theo chiều dọc.
+- Khung ngắm camera lấy cạnh bằng số **nhỏ hơn** của hai thứ: 96% bề ngang máy,
+  và chiều cao thật đo bằng `onLayout`. Đừng tính tay từ chắn tai thỏ.
 - **Không thanh tab.** Điều hướng bằng cử chỉ.
 - **Không có linh vật** (bỏ 31/08/2026). Chỗ trống dùng `<GhostFrame>` hoặc
   lưới mười chỗ.
@@ -93,6 +94,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] Hệ token, style chung, 28 component, luật ESLint riêng
 - [x] React Compiler bật; Reanimated / FlashList / expo-image đã vào đúng chỗ
 - [x] Màn Chào mừng, Đăng nhập, Nhập mã, Camera, Vừa chụp xong, Khoảnh khắc, Góc
+- [x] Camera: khung ngắm 96% bề ngang, có hàng người trong góc + cửa nhòm
+      Khoảnh khắc ở chân màn; chọn ảnh có sẵn đã nối
 - [x] **Hai thứ tiếng** (vi + en), an toàn kiểu, đổi trong Cài đặt — `docs/09-i18n.md`
 - [x] Xin quyền camera: có nhánh "đã từ chối" mở Cài đặt máy + tự đọc lại khi quay về
 - [x] Điều hướng expo-router có kiểu, kho trạng thái Zustand
@@ -101,9 +104,7 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [ ] Trò chuyện (màn 10) — ô "Nhắn riêng cho…" trong feed đang chưa mở màn nào
 - [ ] Cài đặt: mới có hàng Ngôn ngữ. Còn Vị trí, Thông báo, Tài khoản
 - [ ] Thêm bạn — đặc tả xong, chưa code
-- [ ] Hai nút đã **gỡ khỏi màn** vì chưa nối — chỗ của chúng vẫn chừa sẵn trong
-      `CameraScreen`: "Mở thư viện ảnh" (cần `expo-image-picker`) và "Lưu về máy"
-      (cần `expo-media-library` + xin quyền ghi)
+- [ ] "Lưu về máy" ở màn Vừa chụp xong — cần `expo-media-library` + xin quyền ghi
 - [ ] Chưa đo hiệu năng trên máy Android tầm trung
 - [ ] Widget: thiết kế xong, chưa viết mã gốc — **cần development build**
 - [ ] Supabase: chưa khởi tạo

@@ -82,12 +82,14 @@ Sau khi app mở lên:
 | 4 | Gõ email đúng, bấm **Tiếp tục** | Nút hiện vòng chờ 700ms |
 | 5 | **Màn nhập mã** — sáu ô | Gõ `123456` → **tự vào app**, không cần bấm nút nào. Gõ mã khác → rung một nhịp, ô tự xoá trắng |
 | 6 | **Xin quyền camera** | Bấm **Cho phép camera** → hộp thoại của máy. Thử bấm **Không cho phép**: màn đổi thành *"Camera đang tắt"* và nút thành *Mở Cài đặt máy*. Bật lại quyền rồi quay về app → màn **tự cập nhật**, không phải mở lại app |
-| 7 | **Màn camera** | Khung ngắm **vuông**, rộng 88% bề ngang máy. Bấm nút chụp: lõi co lại, máy rung một nhịp nặng |
-| 8 | **Vừa chụp xong** | Ảnh đè lên khung ngắm, thanh trên đổi thành `✕` + *"Gửi cho 6 người trong góc"*, nút chụp thành **nút gửi**. Gõ caption ngay trên ảnh. Bấm `✕` → về chụp lại **tức thì** (camera không bị tháo) |
-| 9 | Bấm **nút gửi** | Vào thẳng Khoảnh khắc, ảnh của bạn nằm **đầu danh sách** |
-| 10 | **Khoảnh khắc** | Bốn thẻ mẫu: avatar có vòng độ thân · tên · "3 phút trước" · ảnh · caption · ba icon cảm xúc + ô nhắn riêng. Bấm một icon → đổi thành *"Đã nhắn cho Yến"* |
-| 11 | Bấm **"Góc của bạn · 6"** ở trên | Sáu avatar có vòng độ thân + bốn chỗ viền đứt nét |
-| 12 | Bấm **bánh răng** ở trên phải | **Cài đặt** → đổi sang **English**. Cả app đổi ngay, không phải mở lại |
+| 7 | **Màn camera** | Khung ngắm **vuông**, gần kín bề ngang máy. Ngay dưới thanh trên là **hàng người trong góc** — sáu avatar có vòng độ thân + một ô `+` để mời thêm. Chân màn là **cửa nhòm**: ba ảnh thu nhỏ + "Khoảnh khắc · 4" |
+| 8 | Bấm nút chụp | Lõi co lại, máy rung một nhịp nặng |
+| 9 | **Vừa chụp xong** | Ảnh đè lên khung ngắm, thanh trên đổi thành `✕` + *"Gửi cho 6 người trong góc"*, nút chụp thành **nút gửi** ở giữa. Hàng người vẫn đó — giờ nó là **danh sách người nhận**, và ô `+` biến mất. Chân màn nhắc lại lời hứa riêng tư. Bấm `✕` → về chụp lại **tức thì** (camera không bị tháo) |
+| 10 | Chạm pill **`✎ Thêm một dòng…`** trên ảnh | Vào ô gõ ngay, icon bút chì biến mất khi có chữ đầu tiên |
+| 11 | Bấm **nút gửi** | Vào thẳng Khoảnh khắc, ảnh của bạn nằm **đầu danh sách** |
+| 12 | **Khoảnh khắc** | Bốn thẻ mẫu: avatar có vòng độ thân · tên · "3 phút trước" · ảnh · caption · ba icon cảm xúc + ô nhắn riêng. Bấm một icon → đổi thành *"Đã nhắn cho Yến"* |
+| 13 | Bấm **một avatar** ở hàng trên màn camera | **Góc của bạn**: sáu avatar + bốn chỗ viền đứt nét |
+| 14 | Bấm **bánh răng** ở trên phải | **Cài đặt** → đổi sang **English**. Cả app đổi ngay, không phải mở lại |
 
 ### Nhìn kỹ mấy chỗ này
 
@@ -98,6 +100,9 @@ Sau khi app mở lên:
 - Vặn cỡ chữ máy lên to nhất (Cài đặt → Màn hình) — **layout không vỡ**.
 
 - **Đổi sang English rồi đi lại một vòng.** Không câu nào còn tiếng Việt sót lại.
+- **Xoay cỡ máy.** Khung ngắm lấy cạnh bằng số nhỏ hơn giữa 96% bề ngang và
+  chiều cao còn lại, nên máy ngắn thì nó tự co chứ không tràn: iPhone SE 307pt,
+  iPhone 14 374pt, 14 Pro Max 413pt.
 - Nhìn chữ **nook** ở màn chào mừng: hai chữ "o" chính là hai vòng của logo,
   một đậm một sáng, chồng lên nhau.
 

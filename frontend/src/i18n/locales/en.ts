@@ -18,13 +18,7 @@ import type { vi } from './vi';
 
 export const en: Mirror<typeof vi> = {
   common: {
-    continue: 'Continue',
-    back: 'Back',
-    cancel: 'Cancel',
-    close: 'Close',
     closeScreen: 'Close this screen',
-    retry: 'Try again',
-    notNow: 'Not now',
     settings: 'Settings',
     openSettings: 'Open phone settings',
   },
@@ -69,13 +63,14 @@ export const en: Mirror<typeof vi> = {
   },
 
   camera: {
-    circlePill: 'Your nook · {count}',
     openCircle: 'Your nook',
     openSettings: 'Settings',
+    gallery: 'Pick a photo you already have',
     shutter: 'Take a moment',
     flip: 'Flip camera',
-    moments: 'Moments',
-    openMoments: 'See your friends’ moments',
+    peekEmpty: 'No moments yet',
+    peekSome: { one: 'Moments · {count}', other: 'Moments · {count}' },
+    peekHint: 'Photos only go to the people in your nook.',
     captionHint: 'Add a line…',
 
     permission: {
@@ -88,7 +83,6 @@ export const en: Mirror<typeof vi> = {
       blockedMessage:
         'You turned the camera off for Nook, and your phone won’t ask again. Turn it back on in your phone settings under Nook, then come back here.',
 
-      asking: 'Waiting for your answer…',
       skip: 'See your friends’ moments',
     },
   },
@@ -101,8 +95,12 @@ export const en: Mirror<typeof vi> = {
     },
     sendToNobody: 'Nobody in your nook to send to yet',
     captionPlaceholder: 'Add a line…',
+    captionLabel: 'Add a line to this photo',
+    privacy: {
+      one: 'This photo only goes to {count} person in your nook. Nobody else can see it.',
+      other: 'This photo only goes to {count} people in your nook. Nobody else can see it.',
+    },
     send: 'Send',
-    sending: 'Sending…',
   },
 
   feed: {
@@ -114,7 +112,6 @@ export const en: Mirror<typeof vi> = {
     window: 'Only the last 48 hours.',
     replyTo: 'Message {name}…',
     replied: 'Sent to {name}',
-    mine: 'You',
     justNow: 'just now',
     minutesAgo: { one: '{count} minute ago', other: '{count} minutes ago' },
     hoursAgo: { one: '{count} hour ago', other: '{count} hours ago' },
@@ -131,15 +128,11 @@ export const en: Mirror<typeof vi> = {
     },
     waitingMessage: 'Invite your first friend. Only ten spots, so choose well.',
     invite: 'Invite a friend',
-    dormant: 'Quiet lately',
-    level: 'Level {level}',
   },
 
   language: {
     title: 'Language',
     label: 'App language',
-    vi: 'Tiếng Việt',
-    en: 'English',
     system: 'Match my phone',
     systemNote: 'Following your phone’s language: {name}.',
   },

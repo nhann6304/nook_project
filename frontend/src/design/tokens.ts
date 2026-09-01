@@ -82,6 +82,8 @@ export const alpha = {
   scrimSoft: 'rgba(14,13,12,0.35)',
   /** Nền pill nổi trên ảnh chụp. */
   onPhoto: 'rgba(14,13,12,0.55)',
+  /** Viền mảnh cho khối nằm trên ảnh — đủ để tách khỏi ảnh sáng, không thành khung. */
+  hairlineOnPhoto: 'rgba(239,233,227,0.16)',
 } as const;
 
 /**
@@ -138,8 +140,14 @@ export const radius = {
   md: 16,
   lg: 20,
   xl: 24,
-  /** Khung ngắm camera và thẻ ảnh. Một con số, dùng ở cả hai chỗ. */
-  frame: 32,
+  /** Thẻ ảnh trong feed. */
+  frame: 24,
+  /**
+   * Khung ngắm camera. To hơn hẳn `frame` vì khối này to hơn hẳn: cùng một độ
+   * bo, đặt trên một ô 360pt thì trông vuông vức, đặt trên ô 160pt thì trông
+   * tròn. Độ bo phải đi theo kích thước mới giữ được cùng một cảm giác.
+   */
+  viewfinder: 44,
   full: 999,
 } as const;
 
@@ -180,10 +188,17 @@ export const type = {
 
 export const layout = {
   /**
-   * Khung ngắm camera = 88% CHIỀU NGANG máy. Không tính theo chiều dọc.
-   * Máy dài hơn thì phần thừa thành khoảng thở, khung KHÔNG giãn ra.
+   * Khung ngắm camera = 96% CHIỀU NGANG máy — TRẦN, không phải số cố định.
+   *
+   * Khung là hình vuông và nó lấy cạnh bằng số NHỎ HƠN giữa hai thứ: 94% bề
+   * ngang máy, và chiều cao thật còn lại sau khi trừ thanh trên / hàng chụp /
+   * chân màn. Nhờ vậy máy dài thì khung to hết cỡ ngang, máy ngắn thì khung tự
+   * co lại cho vừa chứ không tràn ra ngoài.
+   *
+   * Trước đây là 0.88 cố định: trên máy dài nó để thừa hơn 200pt khoảng trống
+   * chia đều vào ba khe, nhìn rỗng và rời rạc.
    */
-  cameraFrameRatio: 0.88,
+  cameraFrameRatio: 0.96,
   /** Vùng chạm tối thiểu. Apple khuyến nghị 44pt, Android 48dp — lấy số lớn hơn. */
   minTouch: 48,
   screenPadding: 16,

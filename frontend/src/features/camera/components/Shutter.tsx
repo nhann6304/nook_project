@@ -12,8 +12,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { color, gradient, radius, spring } from '@design';
 import { Tap } from '@ui';
 
-const RING = 72;
-const CORE = 58;
+const RING = 84;
+const CORE = 68;
 
 export function Shutter({
   onPress,
@@ -65,7 +65,7 @@ const s = StyleSheet.create({
   ringLine: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: radius.full,
-    borderWidth: 3,
+    borderWidth: 3.5,
     borderColor: color.accent,
   },
   core: {
