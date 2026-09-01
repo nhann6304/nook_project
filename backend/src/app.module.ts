@@ -3,7 +3,8 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import { ConfigModule } from './config/index.js';
-import { Env, NodeEnv } from './config/env/index.js';
+import { loggerConfig } from './config/logger/index.js';
+import { Env } from './config/env/index.js';
 import { DatabaseModule } from './database/index.js';
 import { InfraModule } from './infra/index.js';
 import { ApiModule } from './api/index.js';
@@ -30,20 +31,7 @@ import { TimingInterceptor, ResponseInterceptor } from './api/common/interceptor
     ConfigModule,
     LoggerModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService<Env, true>) => ({
-        pinoHttp: {
-          level: config.get('LOG_LEVEL', { infer: true }),
-          // Máy dev đọc bằng mắt nên tô màu; bản thật ra JSON một dòng cho máy đọc.
-          transport:
-            config.get('NODE_ENV', { infer: true }) === NodeEnv.development
-              ? { target: 'pino-pretty', options: { singleLine: true, translateTime: 'HH:MM:ss' } }
-              : undefined,
-          // Đừng để thẻ và bánh quy rơi vào log. Log bị đọc bởi nhiều người hơn
-          // ta tưởng, và nó còn nằm lại rất lâu.
-          redact: ['req.headers.authorization', 'req.headers.cookie', 'req.body.code'],
-          autoLogging: { ignore: (req) => req.url === '/health' },
-        },
-      }),
+      useFactory: (config: ConfigService<Env, true>) => loggerConfig(config),
     }),
     DatabaseModule,
     InfraModule,

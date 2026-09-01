@@ -84,17 +84,17 @@ export function validateEnv(raw: Record<string, unknown>): Env {
 
   if (problems.length > 0) {
     const lines = problems.map((p) => `  ${p.property}: ${Object.values(p.constraints ?? {}).join(', ')}`);
-    throw new Error(`Biến môi trường không hợp lệ:\n${lines.join('\n')}\n\nXem backend/.env.example.`);
+    throw new Error(`Invalid environment variables:\n${lines.join('\n')}\n\nSee backend/.env.example.`);
   }
 
   if (env.JWT_ACCESS_SECRET === env.JWT_REFRESH_SECRET) {
-    throw new Error('JWT_ACCESS_SECRET và JWT_REFRESH_SECRET phải khác nhau.');
+    throw new Error('JWT_ACCESS_SECRET and JWT_REFRESH_SECRET must differ.');
   }
   if (env.CODE_SENDER === CodeSenderKind.smtp && !env.SMTP_URL) {
-    throw new Error('CODE_SENDER=smtp thì phải có SMTP_URL.');
+    throw new Error('CODE_SENDER=smtp requires SMTP_URL.');
   }
   if (env.NODE_ENV === NodeEnv.production && env.SWAGGER_ENABLED) {
-    throw new Error('Bản thật không được mở Swagger. Đặt SWAGGER_ENABLED=false.');
+    throw new Error('Swagger must be off in production. Set SWAGGER_ENABLED=false.');
   }
 
   return env;

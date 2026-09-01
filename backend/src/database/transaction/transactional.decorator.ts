@@ -19,7 +19,7 @@ export function Transactional(): MethodDecorator {
     const original = descriptor.value as (...args: unknown[]) => Promise<unknown>;
 
     if (typeof original !== 'function') {
-      throw new Error(`@Transactional() chỉ dán được lên phương thức: ${String(propertyKey)}`);
+      throw new Error(`@Transactional() can only decorate a method: ${String(propertyKey)}`);
     }
 
     descriptor.value = function (this: unknown, ...args: unknown[]) {

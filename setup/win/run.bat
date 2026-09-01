@@ -1,4 +1,12 @@
 @echo off
+REM UTF-8 cho cua so nay. KHONG CO DONG NAY thi chu tieng Viet cua server ra
+REM thanh rac (vi du: "Redis connected" ra thanh cac ky tu la).
+REM
+REM cmd doc file .bat theo bang ma DANG dung, va no doc lai tung dong khi chay.
+REM Doi bang ma o giua file roi de chu co dau phia duoi la mot cach lam hong
+REM chinh file nay tren vai ban Windows - nen chu trong file nay co tinh de
+REM KHONG DAU. Chu co dau la cua server, va no ra dung sau khi da chcp.
+chcp 65001 >nul
 REM ---------------------------------------------------------------------------
 REM  Chay Nook.
 REM
@@ -6,7 +14,7 @@ REM    setup\win\run.bat          bat ca server lan app
 REM    setup\win\run.bat be       chi server
 REM    setup\win\run.bat fe       chi app
 REM
-REM  May chua cai thi no tu goi install.bat — nen van dung duoc tu may trang.
+REM  May chua cai thi no tu goi install.bat - nen van dung duoc tu may trang.
 REM ---------------------------------------------------------------------------
 setlocal enabledelayedexpansion
 
@@ -23,7 +31,7 @@ set "READY=1"
 if not exist "node_modules" set "READY="
 if not exist "backend\.env" set "READY="
 if not defined READY (
-  echo ^> Chua cai — chay install truoc
+  echo ^> Chua cai - chay install truoc
   call "%~dp0install.bat" %WHAT% || goto :fail
   echo.
 )
@@ -41,20 +49,20 @@ if not "%WHAT%"=="fe" (
 REM --- Chay ------------------------------------------------------------------
 echo.
 if "%WHAT%"=="be" (
-  echo ^> Server — http://localhost:4000/docs
+  echo ^> Server - http://localhost:4000/docs
   call npm run dev:be
   goto :done
 )
 if "%WHAT%"=="fe" (
-  echo ^> App — quet ma QR bang Expo Go
+  echo ^> App - quet ma QR bang Expo Go
   call npm run dev:fe
   goto :done
 )
 if "%WHAT%"=="all" (
-  echo ^> Server — mo o cua so rieng, http://localhost:4000/docs
-  start "Nook server" cmd /k "cd /d %ROOT% && npm run dev:be"
+  echo ^> Server - mo o cua so rieng, http://localhost:4000/docs
+  start "Nook server" cmd /k "chcp 65001 >nul && cd /d %ROOT% && npm run dev:be"
   ping -n 3 127.0.0.1 >nul
-  echo ^> App — quet ma QR bang Expo Go
+  echo ^> App - quet ma QR bang Expo Go
   echo   Dong cua so "Nook server" de tat server.
   call npm run dev:fe
   goto :done

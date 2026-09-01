@@ -1,6 +1,14 @@
 @echo off
+REM UTF-8 cho cua so nay. KHONG CO DONG NAY thi chu tieng Viet cua server ra
+REM thanh rac (vi du: "Redis connected" ra thanh cac ky tu la).
+REM
+REM cmd doc file .bat theo bang ma DANG dung, va no doc lai tung dong khi chay.
+REM Doi bang ma o giua file roi de chu co dau phia duoi la mot cach lam hong
+REM chinh file nay tren vai ban Windows - nen chu trong file nay co tinh de
+REM KHONG DAU. Chu co dau la cua server, va no ra dung sau khi da chcp.
+chcp 65001 >nul
 REM ---------------------------------------------------------------------------
-REM  Cai dat Nook — chay duoc nhieu lan, khong phai chi mot lan trong doi.
+REM  Cai dat Nook - chay duoc nhieu lan, khong phai chi mot lan trong doi.
 REM
 REM    setup\win\install.bat          cai het
 REM    setup\win\install.bat be       chi phan server
@@ -20,7 +28,7 @@ REM --- Kiem nhung thu phai co san -------------------------------------------
 where node >nul 2>&1 || (echo [x] Chua co Node. Cai ban 22 hoac 24. & goto :fail)
 for /f "delims=" %%v in ('node -p "process.versions.node.split(^'.^')[0]"') do set "NODEMAJOR=%%v"
 if not "%NODEMAJOR%"=="22" if not "%NODEMAJOR%"=="24" (
-  echo   ! Node v%NODEMAJOR% — may thu vien o day chi hua chay tren 22 hoac 24.
+  echo   ! Node v%NODEMAJOR% - may thu vien o day chi hua chay tren 22 hoac 24.
 )
 if not "%WHAT%"=="fe" (
   where docker >nul 2>&1 || (echo [x] Chua co Docker. Can no de chay Redis. & goto :fail)
@@ -35,14 +43,14 @@ if not exist "node_modules" (
   echo   [v] server + goi dung chung
 ) else (
   call npm install --silent || goto :fail
-  echo   . server — da co ^(da soat lai^)
+  echo   . server - da co ^(da soat lai^)
 )
 if not "%WHAT%"=="be" (
   if not exist "frontend\node_modules" (
     call npm --prefix frontend install || goto :fail
     echo   [v] app
   ) else (
-    echo   . app — da co
+    echo   . app - da co
   )
 )
 if "%WHAT%"=="fe" (
@@ -60,9 +68,9 @@ if not exist "backend\.env" (
   for /f "delims=" %%a in ('node -e "console.log(require(^'crypto^').randomBytes(48).toString(^'base64url^'))"') do set "ACCESS=%%a"
   for /f "delims=" %%a in ('node -e "console.log(require(^'crypto^').randomBytes(48).toString(^'base64url^'))"') do set "REFRESH=%%a"
   powershell -NoProfile -Command "(Get-Content 'backend\.env') -replace '^JWT_ACCESS_SECRET=.*', 'JWT_ACCESS_SECRET=%ACCESS%' -replace '^JWT_REFRESH_SECRET=.*', 'JWT_REFRESH_SECRET=%REFRESH%' | Set-Content 'backend\.env'"
-  echo   [v] backend\.env — hai chuoi ky sinh ngau nhien
+  echo   [v] backend\.env - hai chuoi ky sinh ngau nhien
 ) else (
-  echo   . backend\.env — da co, khong dung vao
+  echo   . backend\.env - da co, khong dung vao
 )
 
 REM --- Redis -----------------------------------------------------------------
@@ -96,7 +104,7 @@ if "%DBPORT%"=="5433" (
 ) else (
   echo   . dung Postgres tren may, cong %DBPORT%
   echo     Chua co Postgres tren may? Doi DB_PORT trong backend\.env thanh 5433
-  echo     roi chay lai — script se tu keo ban Docker len.
+  echo     roi chay lai - script se tu keo ban Docker len.
 )
 
 REM --- Goi dung chung + bang -------------------------------------------------
@@ -107,7 +115,7 @@ echo   [v] @nook/shared da dich
 
 echo.
 echo ^> Bang
-call npm run migration:run --silent >nul || (echo [x] Migration hong — kiem lai ket noi Postgres. & goto :fail)
+call npm run migration:run --silent >nul || (echo [x] Migration hong - kiem lai ket noi Postgres. & goto :fail)
 echo   [v] migration da chay toi ban moi nhat
 
 echo.

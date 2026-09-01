@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'node:crypto';
 import argon2 from 'argon2';
 import { ERR, type AuthTokens, type TokenClaims } from '@nook/shared';
 import { Env } from '../../../../config/env/index.js';
@@ -149,17 +150,29 @@ export class SessionService {
 
   // ── Bên trong ──────────────────────────────────────────────────────────────
 
+  /**
+   * Ký một cặp thẻ mới.
+   *
+   * `jti` là bắt buộc, không phải trang trí. Thiếu nó thì ruột thẻ chỉ còn
+   * `{sub, sid, typ, iat, exp}`, mà `iat`/`exp` tính bằng GIÂY — ký hai lần
+   * trong cùng một giây ra hai thẻ giống hệt nhau từng byte. Khi đó việc xoay
+   * thẻ dài hạn KHÔNG xảy ra: thẻ "mới" chính là thẻ cũ, dấu vân trong bảng
+   * vẫn khớp, và cái bẫy "thẻ bị chép" cũng im luôn.
+   *
+   * App vừa đăng nhập xong đã gọi làm mới thẻ là chuyện bình thường, nên đây
+   * không phải trường hợp hiếm.
+   */
   private mint(userId: string, sessionId: string): AuthTokens {
     const expiresInSeconds = this.config.get('JWT_ACCESS_TTL', { infer: true });
     const base = { sub: userId, sid: sessionId };
 
     return {
       accessToken: this.jwt.sign(
-        { ...base, typ: 'access' } satisfies TokenClaims,
+        { ...base, typ: 'access', jti: randomUUID() } satisfies TokenClaims,
         { secret: this.secretFor('access'), expiresIn: expiresInSeconds },
       ),
       refreshToken: this.jwt.sign(
-        { ...base, typ: 'refresh' } satisfies TokenClaims,
+        { ...base, typ: 'refresh', jti: randomUUID() } satisfies TokenClaims,
         {
           secret: this.secretFor('refresh'),
           expiresIn: this.config.get('JWT_REFRESH_TTL', { infer: true }),

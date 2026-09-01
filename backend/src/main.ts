@@ -29,7 +29,7 @@ async function bootstrap(): Promise<void> {
 
   app.useLogger(app.get(PinoLogger));
   const config = app.get(ConfigService<Env, true>);
-  const log = new Logger('Khởi động');
+  const log = new Logger('Bootstrap');
 
   await app.register(helmet, { contentSecurityPolicy: false });
   await app.register(cookie);
@@ -60,9 +60,9 @@ async function bootstrap(): Promise<void> {
   const host = config.get('HOST', { infer: true });
   await app.listen(port, host);
 
-  log.log(`Nook API — http://localhost:${port}`);
+  log.log(`Nook API   http://localhost:${port}`);
   if (config.get('NODE_ENV', { infer: true }) === NodeEnv.development) {
-    log.log(`Swagger  — http://localhost:${port}${DOCS_PATH}`);
+    log.log(`Swagger    http://localhost:${port}${DOCS_PATH}`);
   }
 }
 

@@ -34,7 +34,7 @@ export type IsolationLevel =
  */
 @Injectable()
 export class TransactionService {
-  private readonly log = new Logger('Giao dịch');
+  private readonly log = new Logger('Transaction');
 
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {
     // Cho `@Transactional()` mượn — decorator không có chỗ nào để tiêm phụ thuộc.
@@ -54,7 +54,7 @@ export class TransactionService {
    * ví dụ một dòng sổ kiểm toán ghi lại chính lần thất bại đó.
    */
   runIsolated<T>(work: () => Promise<T>, isolation?: IsolationLevel): Promise<T> {
-    this.log.debug('mở giao dịch tách rời');
+    this.log.debug('opening an isolated transaction');
     const runner = (manager: EntityManager) => TransactionContext.run(manager, work);
     return isolation
       ? this.dataSource.transaction(isolation, runner)
@@ -77,8 +77,8 @@ function registerTransactionService(service: TransactionService): void {
 export function currentTransactionService(): TransactionService {
   if (!singleton) {
     throw new Error(
-      '@Transactional() được gọi trước khi TransactionService kịp dựng. ' +
-        'Kiểm lại xem DatabaseModule đã nằm trong AppModule chưa.',
+      '@Transactional() ran before TransactionService was constructed. ' +
+        'Check that DatabaseModule is imported in AppModule.',
     );
   }
   return singleton;

@@ -28,7 +28,7 @@ export class SmtpSender implements CodeSender {
     if (method !== 'email') {
       // TODO(chặng sau): chọn nhà mạng gửi SMS rồi tách ra `sms.sender.ts`.
       // Chưa chọn thì thà hỏng to còn hơn im lặng không gửi gì.
-      throw new Error('Chưa có đường gửi SMS');
+      throw new Error('No SMS transport configured');
     }
 
     const minutes = Math.round(LIMITS.codeTtlSeconds / 60);
@@ -39,7 +39,7 @@ export class SmtpSender implements CodeSender {
       text: `Mã của bạn là ${code}. Mã sống trong ${minutes} phút.\n\nKhông phải bạn xin mã này? Bỏ qua thư này là xong.`,
     });
 
-    this.log.debug({ to: target }, 'đã gửi mã');
+    this.log.debug({ to: target }, 'code sent');
   }
 
   /** Dựng lúc cần chứ không lúc bật server: dev không có SMTP thì cũng chạy được. */

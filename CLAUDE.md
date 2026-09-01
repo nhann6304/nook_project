@@ -41,6 +41,9 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
 - **`shared/` xếp theo MIỀN, không theo loại tệp** (`auth/` `user/` `circle/`…),
   để sau này tách được thành gói riêng. Trong mỗi miền, loại nằm ở tên tệp:
   `auth.constant.ts` · `auth.type.ts` · `auth.util.ts` · `auth.error.ts`.
+- **Log của server viết TIẾNG ANH và chỉ ASCII.** `cmd` trên Windows mặc định
+  chạy bảng mã cũ, chữ tiếng Việt ra thành rác. Chú thích trong mã, tài liệu,
+  chữ trên Swagger thì vẫn tiếng Việt — chúng không đi qua console.
 - **Mọi câu trả lời của server đều có cùng một cái vỏ:**
   `{ ok, code, data, requestId }` khi trót lọt, `{ ok, code, status, requestId }`
   khi hỏng. `code` LUÔN là khoá tra chữ, không bao giờ là câu tiếng Việt.

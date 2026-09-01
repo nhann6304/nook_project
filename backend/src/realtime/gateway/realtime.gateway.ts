@@ -33,7 +33,7 @@ const room = (userId: string) => `user:${userId}`;
   // Không có `cors` mở toang: app gửi thẳng, không qua trình duyệt.
 })
 export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private readonly log = new Logger('Ống');
+  private readonly log = new Logger('Realtime');
 
   // `Namespace` chứ không phải `Server`: gateway này khai `namespace` nên thứ
   // Nest tiêm vào là không gian riêng, không phải cả máy chủ socket.
@@ -45,10 +45,10 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   async handleConnection(client: Socket): Promise<void> {
     try {
       const token = client.handshake.auth?.[SOCKET.authField] as string | undefined;
-      if (!token) throw new Error('không có thẻ');
+      if (!token) throw new Error('no token');
 
       const claims = this.sessions.verify(token, 'access');
-      if (!(await this.sessions.isLive(claims.sid))) throw new Error('phiên đã thu hồi');
+      if (!(await this.sessions.isLive(claims.sid))) throw new Error('session revoked');
 
       client.data.userId = claims.sub;
       client.data.sessionId = claims.sid;
@@ -62,7 +62,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   handleDisconnect(client: Socket): void {
-    this.log.debug({ userId: client.data?.userId }, 'rời ống');
+    this.log.debug({ userId: client.data?.userId }, 'disconnected');
   }
 
   @SubscribeMessage(SOCKET_IN.ping)
@@ -83,6 +83,6 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
         socket.disconnect(true);
       }
     }
-    this.log.debug({ userId }, 'đã đá phiên khỏi ống');
+    this.log.debug({ userId }, 'session kicked off the socket');
   }
 }

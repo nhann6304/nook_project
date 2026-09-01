@@ -4,10 +4,15 @@ NestJS trên Fastify · PostgreSQL · Redis · TypeORM · Socket.IO · BullMQ.
 **Đăng nhập bằng email đã chạy được đầu-tới-cuối.**
 
 ```bash
-./setup/mac/run.sh be     # từ gốc kho — tự cài, tự dựng .env, tự migrate
+./setup/mac/run.sh be            # cửa sổ 1 — server
+./backend/scripts/smoke-auth.sh  # cửa sổ 2 — chạy thử toàn bộ luồng đăng nhập
 ```
 
 Cần: **Postgres trên máy** (Homebrew, cổng 5432) và **Docker** cho Redis.
+
+`smoke-auth.sh` đi hết 15 bước — xin mã, chặn xin dồn, mã sai, mã đúng, mã dùng
+một lần, xoay thẻ, thẻ bị chép, cổng thẻ — rồi kết bằng một dòng ĐẠT/HỎNG. Nó
+đọc mã 6 số từ `backend/.logs/server.log`, tệp mà `run.sh` ghi ra.
 
 - API — <http://localhost:4000>
 - Swagger — <http://localhost:4000/docs>
@@ -289,6 +294,19 @@ vai `nook`. Đỡ một tầng: `psql` gõ thẳng được, dữ liệu không 
 `down -v`. Máy khác không có Postgres thì
 `docker compose -f backend/docker/compose.dev.yml --profile db up -d` rồi đổi
 `DB_PORT=5433`. **Redis vẫn ở Docker, cổng 6380** — 6379 đã có Redis của dự án khác.
+
+**Thẻ ký hai lần trong cùng một giây ra hai thẻ GIỐNG HỆT NHAU.** Ruột thẻ chỉ
+có `{sub, sid, typ, iat, exp}` mà `iat`/`exp` tính bằng giây — nên app vừa đăng
+nhập xong đã gọi làm mới thẻ là ra đúng thẻ cũ, việc xoay thẻ không xảy ra, và
+cái bẫy "thẻ bị chép" cũng im luôn. Nay mỗi thẻ mang một `jti` ngẫu nhiên. Bài
+kiểm `scripts/smoke-auth.sh` gọi làm mới **không có `sleep`** để luôn đi qua
+đúng ca này — đừng thêm `sleep` vào đó.
+
+**Log viết bằng TIẾNG ANH và chỉ ASCII.** Không phải chuyện thẩm mỹ: `cmd` trên
+Windows mặc định chạy bảng mã cũ, chữ tiếng Việt ra thành rác. Mấy tệp `.bat`
+có `chcp 65001` rồi, nhưng log còn đi ra tệp, ra chỗ gom log, ra cửa sổ của
+người khác. Chú thích trong mã và tài liệu thì vẫn tiếng Việt — chúng không đi
+qua console.
 
 **Node 22 hoặc 24, đừng dùng 23.** Vài thư viện khai `engines` là
 `^20.19 || ^22.13 || >=24`; bản lẻ nằm ngoài lời hứa đó.

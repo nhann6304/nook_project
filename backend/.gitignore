@@ -7,5 +7,6 @@ dist/
 .env.*
 !.env.example
 
-# Log
+# Log — server ghi ra đây để bài kiểm đọc mã 6 số
+.logs/
 *.log

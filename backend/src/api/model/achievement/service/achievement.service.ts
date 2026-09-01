@@ -29,7 +29,7 @@ const VALUE_OF = {
  */
 @Injectable()
 export class AchievementService {
-  private readonly log = new Logger('Thành tích');
+  private readonly log = new Logger('Achievement');
 
   constructor(
     private readonly catalog: AchievementRepository,
@@ -86,7 +86,7 @@ export class AchievementService {
     const opened = await this.unlocked.unlockMany(userId, reached);
     if (opened.length > 0) await this.unlocked.recomputeExtraSlots(userId);
 
-    this.log.debug({ userId, opened }, 'vừa mở thành tích');
+    this.log.debug({ userId, opened }, 'achievements unlocked');
     return opened;
   }
 }

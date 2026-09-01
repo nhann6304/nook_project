@@ -22,7 +22,7 @@ import { AppException } from '../error/index.js';
  */
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
-  private readonly log = new Logger('Lỗi');
+  private readonly log = new Logger('Error');
 
   catch(error: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -32,13 +32,19 @@ export class AllExceptionFilter implements ExceptionFilter {
 
     const body = this.shape(error, requestId);
 
+    // Gắn mã lên chính request để dòng log của nó mang theo. Không có chỗ này
+    // thì một request hỏng tốn HAI dòng — một dòng nói mã, một dòng nói đường —
+    // và người đọc phải tự ghép chúng lại bằng mắt.
+    if (req?.raw) (req.raw as { nookErrCode?: string }).nookErrCode = body.code;
+
+    // Chỉ 500 mới đáng một dòng riêng: đó là thứ không ai lường trước, và vết
+    // ngăn xếp chỉ có ở đây. Lỗi 4xx là chuyện thường ngày, đã nằm gọn trong
+    // dòng của request rồi.
     if (body.status >= 500) {
       this.log.error(
         { requestId, path: req?.url, err: error },
-        `500 ${req?.method ?? '?'} ${req?.url ?? '?'}`,
+        `${body.status} ${req?.method ?? '?'} ${req?.url ?? '?'} - ${body.code}`,
       );
-    } else {
-      this.log.debug({ requestId, code: body.code }, `${body.status} ${body.code}`);
     }
 
     void res.status(body.status).send(body);
