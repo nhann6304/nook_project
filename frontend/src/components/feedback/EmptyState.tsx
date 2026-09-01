@@ -17,12 +17,15 @@ export function EmptyState({
   message,
   actionLabel,
   onAction,
+  loading = false,
   art,
 }: {
   title?: string;
   message: string;
   actionLabel?: string;
   onAction?: () => void;
+  /** Nút đang chờ hệ thống trả lời — ví dụ hộp thoại xin quyền đang mở. */
+  loading?: boolean;
   art?: React.ReactNode;
 }) {
   return (
@@ -41,7 +44,7 @@ export function EmptyState({
       </View>
 
       {actionLabel && onAction ? (
-        <Button label={actionLabel} onPress={onAction} style={s.cta} />
+        <Button label={actionLabel} onPress={onAction} loading={loading} style={s.cta} />
       ) : null}
     </View>
   );

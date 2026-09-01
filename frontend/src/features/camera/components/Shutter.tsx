@@ -15,7 +15,15 @@ import { Tap } from '@ui';
 const RING = 72;
 const CORE = 58;
 
-export function Shutter({ onPress, busy }: { onPress: () => void; busy?: boolean }) {
+export function Shutter({
+  onPress,
+  busy,
+  label,
+}: {
+  onPress: () => void;
+  busy?: boolean;
+  label: string;
+}) {
   const p = useSharedValue(0);
 
   const core = useAnimatedStyle(() => ({
@@ -25,7 +33,7 @@ export function Shutter({ onPress, busy }: { onPress: () => void; busy?: boolean
   return (
     <Tap
       accessibilityRole="button"
-      accessibilityLabel="Chụp khoảnh khắc"
+      accessibilityLabel={label}
       accessibilityState={{ busy: Boolean(busy) }}
       disabled={busy}
       feedback={null} /* Shutter tự rung nhịp 'capture' trong màn Camera */

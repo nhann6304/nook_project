@@ -12,6 +12,7 @@ export default function AppLayout() {
       <Stack.Screen name="camera" />
       <Stack.Screen name="feed" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="circle" />
+      <Stack.Screen name="settings" />
     </Stack>
   );
 }

@@ -20,8 +20,9 @@ import Animated, {
   withSpring,
   type SharedValue,
 } from 'react-native-reanimated';
-import { Button, Col, Flex, GhostFrame, Halo, Rings, Row, Screen, Txt, Wordmark } from '@ui';
+import { Button, Col, Flex, GhostFrame, Halo, Row, Screen, Txt, Wordmark } from '@ui';
 import { color, layout, radius, space, spring } from '@design';
+import { useT } from '@i18n';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 export function WelcomeScreen({
@@ -31,35 +32,39 @@ export function WelcomeScreen({
   onCreate: () => void;
   onSignIn: () => void;
 }) {
+  const t = useT();
+
   return (
     <Screen>
+      {/* Chỉ wordmark, KHÔNG kèm dấu hiệu hai vòng: hai chữ "o" trong "nook"
+          đã chính là hai vòng đó rồi (xem Wordmark). Đặt cạnh nhau là nói cùng
+          một câu hai lần. */}
       <Row justify="center" style={s.top}>
-        <Rings size={26} />
-        <Wordmark size={22} />
+        <Wordmark size={30} />
       </Row>
 
       <Flex />
 
       <View style={s.stage}>
         <Halo size={280} breathe>
-          <PhotoFan />
+          <PhotoFan label={t('welcome.firstMoment')} />
         </Halo>
       </View>
 
       <Col gap="sm" style={s.words}>
         <Txt variant="display" center style={s.headline}>
-          Ảnh trực tiếp{'\n'}từ góc nhỏ của mình
+          {t('welcome.headline')}
         </Txt>
         <Txt variant="body" tone="muted" center>
-          Mười người bạn. Không tim, không lượt xem, không người lạ.
+          {t('welcome.sub')}
         </Txt>
       </Col>
 
       <Flex />
 
       <Col gap="md" style={s.actions}>
-        <Button label="Tạo tài khoản" onPress={onCreate} block />
-        <Button label="Mình đã có tài khoản" variant="ghost" onPress={onSignIn} block />
+        <Button label={t('welcome.create')} onPress={onCreate} block />
+        <Button label={t('welcome.signIn')} variant="ghost" onPress={onSignIn} block />
       </Col>
     </Screen>
   );
@@ -72,29 +77,31 @@ export function WelcomeScreen({
  * Khung ĐỨT NÉT chứ không phải ảnh thật: chưa có tài khoản thì chưa có ảnh nào
  * cả, và vẽ ảnh mẫu ở đây là hứa một thứ chưa tồn tại.
  */
-function PhotoFan() {
+function PhotoFan({ label }: { label: string }) {
   const reduced = useReduceMotion();
-  const t = useSharedValue(reduced ? 1 : 0);
+  // Tên biến là `spread` chứ không phải `t`: `t` giờ là hàm dịch, dùng lại tên
+  // đó ở đây là che mất nó trong cả file.
+  const spread = useSharedValue(reduced ? 1 : 0);
 
   useEffect(() => {
     if (reduced) {
-      t.value = 1;
+      spread.value = 1;
       return;
     }
-    t.value = withDelay(120, withSpring(1, spring.enter));
-  }, [reduced, t]);
+    spread.value = withDelay(120, withSpring(1, spring.enter));
+  }, [reduced, spread]);
 
   return (
     <View style={s.fan}>
-      <Card t={t} index={-1} />
-      <Card t={t} index={1} />
-      <Card t={t} index={0} />
+      <Card t={spread} index={-1} />
+      <Card t={spread} index={1} />
+      <Card t={spread} index={0} label={label} />
     </View>
   );
 }
 
 /** Một khung trong chồng. index: -1 trái, 0 giữa (trên cùng), 1 phải. */
-function Card({ t, index }: { t: SharedValue<number>; index: number }) {
+function Card({ t, index, label }: { t: SharedValue<number>; index: number; label?: string }) {
   const anim = useAnimatedStyle(() => {
     const spread = t.value;
     return {
@@ -111,9 +118,9 @@ function Card({ t, index }: { t: SharedValue<number>; index: number }) {
   return (
     <Animated.View style={[s.card, anim]}>
       <GhostFrame size={148}>
-        {index === 0 ? (
+        {label ? (
           <Txt variant="faint" tone="faint" center>
-            khoảnh khắc đầu tiên
+            {label}
           </Txt>
         ) : null}
       </GhostFrame>

@@ -55,20 +55,53 @@ vòng, đừng tăng độ dày nét.
 
 ### 1.3 Wordmark
 
-Chữ thường **nook**, Be Vietnam Pro **700**, giãn chữ `-0.02em`. Hai chữ **oo** màu
-`#FF7A3D`, còn lại `#EFE9E3`.
+Chữ thường **nook**, **vẽ bằng hình chứ không gõ bằng phông chữ**
+(`src/components/brand/Wordmark.tsx`).
 
-- Cỡ ≥ 28px: bản hai màu. Cỡ nhỏ hơn: một màu `#EFE9E3`.
-- Khoảng thở quanh wordmark tối thiểu bằng chiều cao chữ "n".
-- Đặt dấu hiệu cạnh wordmark thì dấu hiệu cao bằng chiều cao chữ hoa, cách một
-  khoảng bằng nửa chiều cao đó.
+**Hai chữ "o" CHÍNH LÀ hai vòng của dấu hiệu.** Cái tên và cái dấu hiệu nói cùng
+một câu — hai người, một người ôm người kia — nên đặt cạnh nhau chúng không phải
+là hai thứ rời rạc dán vào nhau. Vì thế luật màu của dấu hiệu áp nguyên vào đây:
 
-Không xoay, không đổ bóng, không viền, không đặt lên ảnh nhiều chi tiết.
+- `o` thứ nhất `#FF7A3D`, `o` thứ hai `#FFA166` — **lệch nhau một nấc sáng**,
+  chồng lên nhau 9 đơn vị. Cùng màu là mất ý "hai người", chỉ còn thấy một cục.
+- `n` và `k` màu `#EFE9E3`.
+- Bản `mono`: cả ba màu về `#EFE9E3`, dùng khi đặt trên nền màu hoặc in một màu.
+
+#### Hình học
+
+Khung `viewBox 214 × 106`, toạ độ là **đường tâm nét**, nét dày 13, hai đầu bo tròn.
+
+| Nét | Đường |
+|---|---|
+| `n` thân | `M9 84 V46` |
+| `n` vòm | `M9 63 A17 17 0 0 1 43 63 V84` |
+| `o` ôm | tâm `(86, 63)`, bán kính 21 |
+| `o` được ôm | tâm `(132, 63)`, bán kính 21 |
+| `k` thân | `M176 18 V84` |
+| `k` chéo lên | `M176 70 L202 44` |
+| `k` chéo xuống | `M186 60 L205 84` |
+
+Truyền vào component là **chiều cao**, bề ngang tự tính theo tỉ lệ — không kéo
+méo được.
+
+#### Vì sao là hình, không phải chữ
+
+1. **Không phụ thuộc phông.** Phông tải hụt là tên thương hiệu rơi về phông hệ
+   thống — thứ duy nhất trong app không được phép trông khác đi.
+2. Chữ gõ bằng phông thì không nhuộm hai chữ "o" hai màu khác nhau được.
+3. Nét không đổi độ dày khi phóng to, và bo tròn đúng bằng nhau ở mọi cỡ. Chữ
+   thật thì độ dày nét gắn với cỡ chữ, không tách ra được.
+
+Đã đọc được rõ ở **22pt** — cỡ nhỏ nhất từng dùng. Không xoay, không đổ bóng,
+không viền, không đặt lên ảnh nhiều chi tiết.
 
 ### 1.4 Logo và wordmark đi cùng nhau
 
-Chỉ đi cùng nhau ở màn chào mừng và trên tài liệu giới thiệu. Trong app thì hoặc dấu
-hiệu, hoặc chữ — app đã ở trong máy người ta rồi, không cần tự giới thiệu nữa.
+**Không đặt dấu hiệu cạnh wordmark nữa.** Hai chữ "o" đã chính là hai vòng đó
+rồi; để cạnh nhau là nói cùng một câu hai lần. Màn Chào mừng chỉ có wordmark.
+
+Trong app thì hoặc dấu hiệu, hoặc chữ — app đã ở trong máy người ta rồi, không
+cần tự giới thiệu nữa.
 
 ---
 
@@ -185,7 +218,13 @@ không bị vỡ ở cỡ nhỏ. Đây là điểm nhiều app Việt làm hỏn
 | Chú thích | 11px | 400 | 16 | Điều khoản, ghi chú cuối màn |
 | Số lớn | 22px | 500 | 26 | Ký ức, số ngày, mã 6 số |
 
-Chỉ hai độ đậm: 400 và 500. Không dùng 700 trừ wordmark.
+Chỉ hai độ đậm: 400 và 500 (600 cho tiêu đề lớn). Wordmark không dùng phông nào
+— nó là hình vẽ.
+
+**Không có phông trưng bày riêng.** Trước đây bậc lớn nhất dùng Fredoka. Nhưng
+bậc đó chỉ dùng đúng một chỗ — tiêu đề màn Chào mừng — mà tiêu đề đó là tiếng
+Việt đầy dấu, đúng loại chữ Fredoka vẽ xấu nhất. Nay bậc đó dùng Be Vietnam Pro
+600, và gói `@expo-google-fonts/fredoka` đã gỡ khỏi dự án.
 
 **Chữ phải phóng to được.** Mỗi cấp có `maxScale` trong `theme/tokens.ts` — giới hạn
 phóng để layout không vỡ, nhưng không bao giờ khoá `allowFontScaling`. Người dùng

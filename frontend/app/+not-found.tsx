@@ -1,14 +1,17 @@
 import { useRouter } from 'expo-router';
 import { EmptyState, Screen } from '@ui';
+import { useT } from '@i18n';
 
 export default function NotFound() {
   const router = useRouter();
+  const t = useT();
+
   return (
     <Screen>
       <EmptyState
-        title="Không tìm thấy trang này"
-        message="Đường dẫn bạn vừa mở không còn nữa."
-        actionLabel="Về màn chính"
+        title={t('notFound.title')}
+        message={t('notFound.message')}
+        actionLabel={t('notFound.home')}
         onAction={() => router.replace('/')}
       />
     </Screen>

@@ -9,9 +9,10 @@ description: Luật dựng giao diện của Nook (React Native + Expo). Dùng s
 
 1. **Không tự chế.** Mọi thứ nhìn thấy được đều đã có sẵn trong `@ui`.
 2. **Không viết số.** Màu, khoảng cách, bo góc, thời lượng đều nằm trong `@design`.
-3. **Mượt là yêu cầu, không phải điểm cộng.** Xem mục "Luật hiệu năng".
+3. **Không viết chữ.** Mọi câu hiện cho người dùng nằm trong `@i18n`, hai thứ tiếng.
+4. **Mượt là yêu cầu, không phải điểm cộng.** Xem mục "Luật hiệu năng".
 
-ESLint chặn cứng ba luật đầu. Nếu bạn thấy mình đang tìm cách lách nó — dừng lại,
+ESLint chặn cứng cả bốn. Nếu bạn thấy mình đang tìm cách lách nó — dừng lại,
 gần như chắc chắn là đang đi sai đường.
 
 ---
@@ -27,6 +28,7 @@ Trước khi viết một component mới, tra bảng này. Cột phải là th�
 | Nút icon | `<IconButton label>` | `<Pressable>` trần |
 | Bất kỳ thứ gì bấm được khác | `<Tap>` | `<Pressable>` trần |
 | Ô nhập | `<Field>` | `<TextInput>` |
+| Ô nhập nổi trên ảnh | `<CaptionField>` | `<Field>` (có viền, dán đè lên ảnh) |
 | Dòng phụ dưới ô nhập | `<HelperText>` | `<Txt>` tự đặt |
 | Ô nhập mã 6 số | `<CodeInput>` | sáu `<Field>` |
 | Chuyển 2–3 chế độ | `<Segmented>` | hai nút tự tô màu |
@@ -46,6 +48,7 @@ Trước khi viết một component mới, tra bảng này. Cột phải là th�
 | Khung "lẽ ra có ảnh" | `<GhostFrame>` | `borderStyle:'dashed'` |
 | Màn trống | `<EmptyState>` | một dòng chữ giữa màn |
 | Vòng chờ | `<Loading>` | `<ActivityIndicator>` |
+| **Bất kỳ chữ nào hiện ra** | `t('khoá')` từ `@i18n` | viết thẳng câu vào JSX — **ESLint chặn** |
 
 **Thiếu mảnh?** Thêm vào `src/components/`, xuất ở `src/components/index.ts`,
 rồi thêm một dòng vào bảng trên. Đừng dựng tại chỗ trong màn hình.
@@ -173,10 +176,33 @@ Lấy từ `frontend/docs/02-ui-system.md`, nhắc lại ở đây vì hay bị 
 
 ## 5 · Chữ nghĩa
 
-Ba từ **cấm** trong chữ hiện ra cho người dùng: *điểm*, *hạng*, *nhiệm vụ*.
+**Không có câu nào viết thẳng vào màn hình.** Chữ nằm ở `src/i18n/locales/vi.ts`,
+và mỗi câu phải có bản tiếng Anh ở `en.ts`.
+
+```tsx
+const t = useT();                              // import { useT } from '@i18n'
+<Txt>{t('feed.emptyTitle')}</Txt>
+<Txt>{t('verify.resendIn', { seconds: 42 })}</Txt>
+<Txt>{t('feed.minutesAgo', { count: 3 })}</Txt>  // số nhiều
+```
+
+Thêm một câu: viết vào `vi.ts` → **tsc lập tức báo đỏ ở `en.ts`** → dịch → dùng.
+Không có bước đăng ký nào khác. Chi tiết: `frontend/docs/09-i18n.md`.
+
+Bốn thứ tsc bắt được ngay: gõ sai khoá · thiếu bản dịch · quên tham số · thừa
+tham số. Ngoài React (trong `*Api.ts`) thì dùng `translate()` thay `useT()`.
+
+**Component trong `src/components/` KHÔNG được gọi `t()`** — nhãn trợ năng nhận
+qua props (`<Rings label>`, `<Avatar label>`, `<CodeInput label>`). Người gọi
+mới là người dịch.
+
+### Giọng — áp cho cả tiếng Việt lẫn tiếng Anh
+
+Ba từ **cấm**: *điểm*, *hạng*, *nhiệm vụ* — tiếng Anh: *points*, *rank*,
+*quest/mission*.
 
 Không dùng chữ kỹ thuật: không "OTP", không "xác thực", không "hợp lệ",
-không "token", không "session".
+không "token", không "session" — *verify*, *valid*, *session* cũng vậy.
 
 | Đừng viết | Viết |
 |---|---|
@@ -186,6 +212,9 @@ không "token", không "session".
 | Danh sách trống | Góc này còn chờ chín người |
 
 Câu lỗi phải nói **làm gì tiếp**, không chỉ nói cái gì hỏng.
+
+Câu tiếng Anh dài hơn câu tiếng Việt cùng nghĩa khoảng 15–20%. Chỗ chật (nhãn
+nút, pill) thì **viết ngắn lại**, đừng dịch sát rồi để nó tràn ra khỏi nút.
 
 ---
 
@@ -221,6 +250,7 @@ app/                    CHỈ điều hướng. Không logic, không style.
 src/design/             token + style chung. Nơi DUY NHẤT được viết hex.
 src/components/         bộ component. Xuất qua src/components/index.ts.
 src/features/<tên>/     theo tính năng: screens/ components/ lib/ store/
+src/i18n/               kho chữ hai thứ tiếng. Cửa duy nhất: '@i18n'.
 src/hooks/  src/lib/    dùng chung. src/lib là TS thuần, không React.
 src/mocks/              dữ liệu giả. Xoá khi có server.
 ```

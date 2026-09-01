@@ -37,17 +37,22 @@ và mục 3 trước tiên**. Ba luật hay bị quên nhất:
 - **Cấp thân chỉ hai người trong cặp nhìn thấy.** Không API nào trả cấp thân của
   người khác cho người thứ ba.
 - **Không bảng xếp hạng, không số like công khai.**
-- Ba từ **cấm** trong chữ hiện cho người dùng: *điểm*, *hạng*, *nhiệm vụ*.
-  Không chữ kỹ thuật ("OTP", "xác thực", "hợp lệ", "token", "session").
+- Ba từ **cấm** trong chữ hiện cho người dùng: *điểm*, *hạng*, *nhiệm vụ*
+  (tiếng Anh: *points*, *rank*, *quest*). Không chữ kỹ thuật ("OTP", "xác thực",
+  "hợp lệ", "token", "session").
+- **App nói hai thứ tiếng.** Chữ nằm ở `frontend/src/i18n/locales/`, không viết
+  thẳng vào màn hình. Backend trả **mã lỗi**, không trả câu tiếng Việt —
+  câu chữ là việc của app, xem `frontend/docs/09-i18n.md`.
 
 ## Trạng thái
 
 | Phần | Trạng thái |
 |---|---|
-| Frontend | **Chạy được.** `cd frontend && npm run dev` rồi quét QR bằng Expo Go. Ghim **SDK 54** vì Expo Go trên App Store kẹt ở đó — đừng nâng, xem `frontend/docs/06-libraries.md` mục 7 |
+| Frontend | **Chạy được.** `cd frontend && npm run dev` rồi quét QR bằng Expo Go. Nói **hai thứ tiếng** (Việt + Anh), đổi trong Cài đặt. Ghim **SDK 54** vì Expo Go trên App Store kẹt ở đó — đừng nâng, xem `frontend/docs/06-libraries.md` mục 7 |
 | Backend | Chưa có dòng nào |
-| Tài liệu | 13 file, đã chia theo hai bên |
+| Tài liệu | 14 file, đã chia theo hai bên |
 
-Việc tiếp theo của FE: màn **Tên + ảnh** để đi hết một lượt onboarding.
+Việc tiếp theo của FE: màn **Trò chuyện** (nửa còn lại của tương tác hai chiều),
+rồi màn **Tên + ảnh** để đi hết một lượt onboarding.
 Việc cần quyết sớm: **có chuyển sang development build không** — widget cần nó,
 và chuyển giữa chừng là đổi cả cách chạy dự án.

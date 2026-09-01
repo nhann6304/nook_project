@@ -36,6 +36,13 @@ frontend/
 │   │   ├── styles.ts       style dùng chung (đã lặp ≥3 màn mới được vào)
 │   │   └── index.ts        cửa '@design'
 │   │
+│   ├── i18n/               ⚠ NƠI DUY NHẤT ĐƯỢC VIẾT CÂU TIẾNG VIỆT
+│   │   ├── locales/vi.ts   bộ chữ GỐC — mọi khoá sinh ra ở đây trước
+│   │   ├── locales/en.ts   phải khớp từng khoá với vi.ts (tsc bắt buộc)
+│   │   ├── types.ts        suy khoá + tham số từ vi.ts
+│   │   ├── core.ts · store.ts · plural.ts · format.ts
+│   │   └── index.ts        cửa '@i18n'
+│   │
 │   ├── components/         BỘ MẢNH. Màn hình lắp từ đây, không tự dựng.
 │   │   ├── primitives/     Txt · Tap · Button · IconButton · Field · CodeInput …
 │   │   ├── layout/         Screen · Row/Col/Spacer/Flex · Card/Pill/Divider · List · Scroll
@@ -45,18 +52,19 @@ frontend/
 │   │
 │   ├── features/           THEO TÍNH NĂNG, không theo loại file
 │   │   ├── auth/           screens/ · lib/ (identity, authApi) · store/
-│   │   ├── camera/         screens/ · components/ (Shutter)
-│   │   ├── feed/           screens/
-│   │   └── circle/         screens/
+│   │   ├── camera/         screens/ · components/ (Shutter · SendButton · CameraPermission)
+│   │   ├── feed/           screens/ · components/ (MomentCard) · store/ · types.ts
+│   │   ├── circle/         screens/
+│   │   └── settings/       screens/
 │   │
 │   ├── hooks/              hook dùng chung: useReduceMotion · useCountdown
-│   ├── lib/                TS thuần, KHÔNG React: haptics
+│   ├── lib/                TS thuần, KHÔNG React: haptics · storage
 │   ├── stores/             kho dùng chung nhiều tính năng — tạo khi cần
 │   ├── types/              kiểu dùng chung — tạo khi cần
 │   └── mocks/              dữ liệu giả. Xoá khi có server.
 │
 ├── docs/                   tài liệu frontend
-├── assets/images/          logo SVG + icon PNG
+├── assets/images/          logo SVG + icon PNG + sample/ (ảnh mẫu cho feed)
 ├── README.md               cách chạy và cách đi thử một vòng
 ├── CLAUDE.md               ngữ cảnh frontend cho AI
 └── eslint.config.js        lưới chặn "tự tiện ghi ra"
@@ -122,6 +130,7 @@ Bốn tầng, mỗi tầng biết đúng một việc. Không tầng nào nhảy
 | Trạng thái một tính năng | `src/features/<tính-năng>/store/` |
 | Trạng thái nhiều tính năng dùng | `src/stores/` |
 | Màu / khoảng cách / nhịp mới | `src/design/tokens.ts` **kèm lý do** |
+| Một câu chữ mới | `src/i18n/locales/vi.ts` rồi `en.ts` — xem [`09-i18n.md`](09-i18n.md) |
 
 ## 5 · Đường dẫn tắt
 
@@ -130,10 +139,11 @@ Khai trong `tsconfig.json`:
 | Viết | Trỏ tới |
 |---|---|
 | `@design` | `src/design` |
+| `@i18n` | `src/i18n` |
 | `@ui` | `src/components` |
 | `@/…` | `src/…` |
 
-Luôn dùng `@ui` và `@design`, đừng đi thẳng vào đường dẫn con
+Luôn dùng `@ui`, `@design` và `@i18n`, đừng đi thẳng vào đường dẫn con
 (`@/components/primitives/Txt`). Một cửa thì đổi cấu trúc bên trong không phải
 sửa 40 file.
 

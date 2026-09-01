@@ -25,9 +25,19 @@ export type RingsProps = {
   mono?: boolean;
   /** Vòng ngoài đứt nét: "góc còn một chỗ trống". */
   ghost?: boolean;
+  /**
+   * Chữ cho trình đọc màn hình. Component không tự dịch — src/components không
+   * biết kho chữ tồn tại, để nó còn xem trước được mà không cần dựng cả app.
+   */
+  label?: string;
 };
 
-export const Rings = memo(function Rings({ size = 40, mono = false, ghost = false }: RingsProps) {
+export const Rings = memo(function Rings({
+  size = 40,
+  mono = false,
+  ghost = false,
+  label = 'Nook',
+}: RingsProps) {
   const hug = mono ? color.text : color.accent;
   const closed = mono ? color.text : ghost ? color.border : color.accentBright;
 
@@ -35,7 +45,7 @@ export const Rings = memo(function Rings({ size = 40, mono = false, ghost = fals
     <View
       accessible
       accessibilityRole="image"
-      accessibilityLabel={ghost ? 'Góc còn một chỗ trống' : 'Nook'}
+      accessibilityLabel={label}
       collapsable={false}
     >
       <Svg width={size} height={size} viewBox="0 0 100 100">

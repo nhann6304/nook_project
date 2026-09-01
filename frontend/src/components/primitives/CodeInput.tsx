@@ -23,6 +23,8 @@ export type CodeInputProps = {
   invalid?: boolean;
   autoFocus?: boolean;
   editable?: boolean;
+  /** Chữ cho trình đọc màn hình, ví dụ "Mã gồm 6 chữ số". */
+  label?: string;
 };
 
 export function CodeInput({
@@ -32,6 +34,7 @@ export function CodeInput({
   invalid = false,
   autoFocus = false,
   editable = true,
+  label,
 }: CodeInputProps) {
   const input = useRef<TextInput>(null);
   const [focused, setFocused] = useState(false);
@@ -83,7 +86,7 @@ export function CodeInput({
         textContentType="oneTimeCode"
         autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
         importantForAutofill="yes"
-        accessibilityLabel={`Mã gồm ${length} chữ số`}
+        accessibilityLabel={label}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={s.realInput}

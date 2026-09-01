@@ -1,45 +1,60 @@
 /**
- * Màn Camera — màn mặc định khi mở app.
+ * Màn Camera — màn mặc định khi mở app. Gồm cả bước xem lại sau khi chụp.
  *
- * Điểm quan trọng nhất của file này: khung ngắm tính theo CHIỀU NGANG máy
- * (88%), không theo chiều dọc. Máy dài hơn thì phần thừa thành khoảng thở,
- * khung KHÔNG giãn ra. Đây là lý do camera của Locket trông gọn còn phần lớn
- * app bắt chước thì nặng nề — và là câu trả lời cho "iPhone SE và iPhone Pro
- * Max có vừa cả hai không": vừa, vì chiều dọc không tham gia vào phép tính.
+ * ── Bố cục ───────────────────────────────────────────────────────────────
+ * Khung ngắm tính theo CHIỀU NGANG máy (88%), không theo chiều dọc. Máy dài
+ * hơn thì phần thừa thành khoảng thở, khung KHÔNG giãn ra. Đây là lý do camera
+ * của Locket trông gọn còn phần lớn app bắt chước thì nặng nề — và là câu trả
+ * lời cho "iPhone SE và iPhone Pro Max có vừa cả hai không": vừa, vì chiều dọc
+ * không tham gia vào phép tính.
  *
- * Bốn khối, xếp dọc, không có gì khác:
- *   1. Thanh trên   — dấu hiệu · pill số bạn · cài đặt
- *   2. Khung ngắm   — vuông, bo 32, có pill caption nổi ở đáy
- *   3. Hàng chụp    — thư viện · nút chụp · đảo camera
- *   4. Chân màn     — "Khoảnh khắc"
+ * Bốn khối xếp dọc: thanh trên · khung ngắm · hàng chụp · chân màn.
+ *
+ * ── Chụp xong thì KHÔNG chuyển màn ───────────────────────────────────────
+ * Ảnh vừa chụp đè lên chính khung ngắm, `CameraView` vẫn nằm nguyên bên dưới.
+ * Nếu đẩy sang một màn khác thì camera bị tháo, và bấm "chụp tiếp" phải chờ nó
+ * khởi động lại — trên máy tầm trung là 300–500ms nhìn thấy được bằng mắt. Giữ
+ * camera sống thì quay lại chụp là tức thì.
+ *
+ * Ba khối trên/dưới đổi nội dung theo `shot`, còn khung ở giữa thì không đổi
+ * kích thước — nên lúc đổi giữa hai trạng thái không có gì nhảy chỗ.
  */
 import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
-import { Col, EmptyState, IconButton, Pill, Rings, Screen, Txt } from '@ui';
-import { color, common, layout, radius, space } from '@design';
+import { CaptionField, Col, IconButton, Img, Loading, Pill, Rings, Screen, Txt } from '@ui';
+import { color, common, layout, media, radius, space } from '@design';
+import { useT } from '@i18n';
 import * as feel from '@/lib/haptics';
+import { CameraPermission } from '../components/CameraPermission';
+import { SendButton } from '../components/SendButton';
 import { Shutter } from '../components/Shutter';
+
+export type Shot = { uri: string; caption: string };
 
 export function CameraScreen({
   friendCount,
   onOpenCircle,
   onOpenSettings,
   onOpenFeed,
-  onCapture,
+  onSend,
 }: {
   friendCount: number;
   onOpenCircle: () => void;
   onOpenSettings: () => void;
   onOpenFeed: () => void;
-  onCapture: (uri: string) => void;
+  /** Gửi cho cả góc. Trả về khi đã gửi xong — màn tự dọn ảnh và quay về chụp. */
+  onSend: (shot: Shot) => Promise<void>;
 }) {
+  const t = useT();
   const { width } = useWindowDimensions();
   const frame = Math.round(width * layout.cameraFrameRatio);
 
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission, refreshPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('front');
+  const [shot, setShot] = useState<string | null>(null);
+  const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
   const cam = useRef<CameraView>(null);
 
@@ -49,88 +64,157 @@ export function CameraScreen({
     feel.capture();
     try {
       const photo = await cam.current.takePictureAsync({ quality: 0.8 });
-      if (photo?.uri) onCapture(photo.uri);
+      if (photo?.uri) setShot(photo.uri);
     } finally {
       setBusy(false);
     }
-  }, [busy, onCapture]);
+  }, [busy]);
+
+  const discard = useCallback(() => {
+    setShot(null);
+    setCaption('');
+  }, []);
+
+  const send = useCallback(async () => {
+    if (busy || !shot) return;
+    setBusy(true);
+    try {
+      await onSend({ uri: shot, caption: caption.trim() });
+      discard();
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, caption, discard, onSend, shot]);
 
   const flip = useCallback(() => {
     setFacing((f) => (f === 'front' ? 'back' : 'front'));
   }, []);
 
-  if (!permission) return <Screen><View style={common.fill} /></Screen>;
+  // Chưa đọc xong quyền: đừng vẽ gì. Nháy màn xin quyền lên rồi tắt ngay là
+  // tệ hơn hẳn một nhịp trống, vì người dùng kịp đọc và kịp hoang mang.
+  if (!permission) return <Screen><Loading /></Screen>;
 
-  // Xin quyền có giải thích lý do TRƯỚC, không đẩy thẳng hộp thoại hệ thống.
-  // Người dùng bấm "Không cho phép" ở hộp thoại hệ thống là mất luôn, lần sau
-  // phải vào Cài đặt máy mới mở lại được.
   if (!permission.granted) {
     return (
-      <Screen>
-        <EmptyState
-          title="Nook cần camera"
-          message="Để bạn chụp khoảnh khắc gửi cho bạn bè. Ảnh chỉ đi tới những người trong góc của bạn, không đi đâu khác."
-          actionLabel="Cho phép camera"
-          onAction={requestPermission}
-        />
-      </Screen>
+      <CameraPermission
+        permission={permission}
+        onRequest={requestPermission}
+        onRefresh={refreshPermission}
+        onSkip={onOpenFeed}
+      />
     );
   }
 
+  const reviewing = shot !== null;
+
   return (
-    <Screen padded={false} edges={['top', 'bottom']}>
+    <Screen padded={false} edges={['top', 'bottom']} keyboard>
       <View style={s.root}>
         {/* 1 — Thanh trên */}
         <View style={s.topBar}>
-          <IconButton label="Góc của bạn" onPress={onOpenCircle}>
-            <View style={s.mark}>
-              <Rings size={26} />
-            </View>
-          </IconButton>
+          {reviewing ? (
+            <>
+              <IconButton label={t('review.discard')} onPress={discard}>
+                <Ionicons name="close" size={24} color={color.textMuted} />
+              </IconButton>
 
-          <Pill onPress={onOpenCircle}>
-            <Txt variant="label">{`Góc của bạn · ${friendCount}`}</Txt>
-          </Pill>
+              {/* Chỉ để thông tin, KHÔNG bấm được: Nook không có bước chọn
+                  người nhận — gửi là gửi cho cả góc. */}
+              <Pill>
+                <Txt variant="label" tone="muted">
+                  {friendCount === 0
+                    ? t('review.sendToNobody')
+                    : t('review.sendTo', { count: friendCount })}
+                </Txt>
+              </Pill>
 
-          <IconButton label="Cài đặt" onPress={onOpenSettings}>
-            <Ionicons name="settings-outline" size={20} color={color.textMuted} />
-          </IconButton>
+              <View style={s.slot} />
+            </>
+          ) : (
+            <>
+              <IconButton label={t('camera.openCircle')} onPress={onOpenCircle}>
+                <View style={s.mark}>
+                  <Rings size={26} />
+                </View>
+              </IconButton>
+
+              <Pill onPress={onOpenCircle}>
+                <Txt variant="label">{t('camera.circlePill', { count: friendCount })}</Txt>
+              </Pill>
+
+              <IconButton label={t('camera.openSettings')} onPress={onOpenSettings}>
+                <Ionicons name="settings-outline" size={20} color={color.textMuted} />
+              </IconButton>
+            </>
+          )}
         </View>
 
-        {/* 2 — Khung ngắm: vuông, khoá theo chiều ngang */}
+        {/* 2 — Khung ngắm. Camera Ở LẠI bên dưới ảnh, không bị tháo. */}
         <View style={[s.frame, { width: frame, height: frame }]}>
           <CameraView ref={cam} style={common.absoluteFill} facing={facing} />
-          <View style={s.captionSlot} pointerEvents="none">
-            <Pill onPhoto>
-              <Txt variant="label" tone="faint">
-                Thêm một dòng…
-              </Txt>
-            </Pill>
+
+          {reviewing ? (
+            <Img source={{ uri: shot }} style={media.fill} contentFit="cover" />
+          ) : null}
+
+          <View style={s.captionSlot} pointerEvents={reviewing ? 'auto' : 'none'}>
+            {reviewing ? (
+              <CaptionField
+                value={caption}
+                onChangeText={setCaption}
+                placeholder={t('review.captionPlaceholder')}
+              />
+            ) : (
+              <Pill onPhoto>
+                <Txt variant="label" tone="faint">
+                  {t('camera.captionHint')}
+                </Txt>
+              </Pill>
+            )}
           </View>
         </View>
 
-        {/* 3 — Hàng chụp */}
-        <View style={s.shutterRow}>
-          <IconButton label="Mở thư viện ảnh" onPress={() => {}}>
-            <Ionicons name="images-outline" size={22} color={color.textMuted} />
-          </IconButton>
+        {/* 3 — Hàng chụp / hàng gửi */}
+        <View style={s.actionRow}>
+          {reviewing ? (
+            <>
+              {/* Chỗ của "Lưu về máy" — chưa nối, nên chưa vẽ. Nút bấm không ăn
+                  là thứ tệ nhất có thể để lại trên màn hình. Cần
+                  expo-media-library + một lượt xin quyền ghi. */}
+              <View style={s.slot} />
 
-          <Shutter onPress={capture} busy={busy} />
+              <SendButton onPress={() => void send()} busy={busy} label={t('review.send')} />
 
-          <IconButton label="Đổi camera trước sau" onPress={flip}>
-            <Ionicons name="camera-reverse-outline" size={22} color={color.textMuted} />
-          </IconButton>
+              <View style={s.slot} />
+            </>
+          ) : (
+            <>
+              {/* Chỗ của "Mở thư viện ảnh" — chưa nối, cần expo-image-picker. */}
+              <View style={s.slot} />
+
+              <Shutter onPress={() => void capture()} busy={busy} label={t('camera.shutter')} />
+
+              <IconButton label={t('camera.flip')} onPress={flip}>
+                <Ionicons name="camera-reverse-outline" size={22} color={color.textMuted} />
+              </IconButton>
+            </>
+          )}
         </View>
 
-        {/* 4 — Chân màn */}
-        <IconButton label="Xem khoảnh khắc của bạn bè" onPress={onOpenFeed} style={s.footer}>
-          <Col align="center">
-            <Ionicons name="chevron-up" size={16} color={color.textFaint} />
-            <Txt variant="faint" tone="faint">
-              Khoảnh khắc
-            </Txt>
-          </Col>
-        </IconButton>
+        {/* 4 — Chân màn. Lúc đang xem lại thì giữ CHỖ chứ không giữ nút: bỏ hẳn
+            đi là ba khối trên bị kéo tụt xuống. */}
+        {reviewing ? (
+          <View style={s.footerSpacer} />
+        ) : (
+          <IconButton label={t('camera.openMoments')} onPress={onOpenFeed} style={s.footer}>
+            <Col align="center">
+              <Ionicons name="chevron-up" size={16} color={color.textFaint} />
+              <Txt variant="faint" tone="faint">
+                {t('camera.moments')}
+              </Txt>
+            </Col>
+          </IconButton>
+        )}
       </View>
     </Screen>
   );
@@ -161,6 +245,8 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  /** Giữ chỗ đúng bằng một IconButton để pill ở giữa đứng yên. */
+  slot: { width: layout.minTouch },
 
   frame: { borderRadius: radius.frame, backgroundColor: color.surface, overflow: 'hidden' },
   captionSlot: {
@@ -171,7 +257,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
 
-  shutterRow: {
+  actionRow: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
@@ -180,4 +266,5 @@ const s = StyleSheet.create({
   },
 
   footer: { width: 'auto', paddingHorizontal: space.lg },
+  footerSpacer: { height: layout.minTouch },
 });

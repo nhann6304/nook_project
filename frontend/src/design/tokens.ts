@@ -150,12 +150,16 @@ export const font = {
   body: 'BeVietnamPro_400Regular',
   bodyMedium: 'BeVietnamPro_500Medium',
   bodySemi: 'BeVietnamPro_600SemiBold',
-  /**
-   * Chữ trưng bày. CHỈ dùng cho wordmark "nook" ở màn Chào mừng.
-   * Không dùng cho chữ tiếng Việt có dấu — Fredoka vẽ dấu không đủ đẹp.
-   */
-  display: 'Fredoka_600SemiBold',
 } as const;
+
+/*
+ * Không có "phông trưng bày" riêng, và đó là chủ đích.
+ *
+ * Trước đây bậc `display` dùng Fredoka. Nhưng bậc đó chỉ dùng đúng một chỗ:
+ * tiêu đề màn Chào mừng — mà tiêu đề đó là tiếng Việt đầy dấu, đúng loại chữ
+ * Fredoka vẽ xấu nhất. Cái tên "nook" giờ vẽ bằng SVG (xem Wordmark) nên không
+ * còn ai cần Fredoka nữa; gói phông đã gỡ khỏi dự án.
+ */
 
 /**
  * Sáu bậc, không hơn. Thêm bậc thứ bảy là bắt đầu có hai thứ trông gần giống nhau.
@@ -164,7 +168,7 @@ export const font = {
  * nhưng vẫn cho phóng — không bao giờ khoá allowFontScaling.
  */
 export const type = {
-  display: { fontSize: 34, lineHeight: 40, fontFamily: font.display, maxScale: 1.25 },
+  display: { fontSize: 34, lineHeight: 40, fontFamily: font.bodySemi, maxScale: 1.25 },
   title: { fontSize: 22, lineHeight: 30, fontFamily: font.bodySemi, maxScale: 1.4 },
   section: { fontSize: 17, lineHeight: 24, fontFamily: font.bodyMedium, maxScale: 1.4 },
   body: { fontSize: 14, lineHeight: 21, fontFamily: font.body, maxScale: 1.6 },

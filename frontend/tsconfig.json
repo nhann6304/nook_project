@@ -9,7 +9,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@design": ["./src/design"],
-      "@ui": ["./src/components"]
+      "@ui": ["./src/components"],
+      "@i18n": ["./src/i18n"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],

@@ -57,24 +57,50 @@ một luồng. Nút nào bấm thì màn sau đổi tiêu đề và câu mô t�
 
 ## 3. Thư viện component
 
-Đã có trong `components/ui.tsx`:
+Cửa duy nhất là **`@ui`** (`src/components/index.ts`). Màn hình không bao giờ
+import thẳng đường dẫn con, và không bao giờ tự dựng lại một cái nút.
+
+**Mảnh cơ bản**
 
 | Component | Đặc tả |
 |---|---|
-| `Screen` | Nền `bg`, vùng an toàn trên/dưới, đệm ngang 16 |
 | `Txt` | Sáu cấp chữ, ba mức mờ, phóng to có giới hạn |
-| `Button` | Chính: dải màu `gradient.warm`, chữ `bg`, bo 24, cao **52**, bóng cùng màu. Phụ: viền `border`, nền trong suốt. Cần `expo-linear-gradient` |
-| `IconButton` | Vùng chạm 48 dù icon nhỏ |
-| `Field` | Ô nhập cao **52**, bo 20, viền luôn có sẵn, đổi màu khi focus / lỗi |
+| `Tap` | Phản hồi nhấn chạy trên luồng UI (Reanimated). Mọi thứ bấm được đều đi qua đây |
+| `Button` | Bốn dáng. Chính: dải màu `gradient.warm`, chữ **tối** `onAccent`, bo 24, cao **52**. **Mỗi màn đúng MỘT** |
+| `IconButton` | Vùng chạm 48 dù icon nhỏ. `label` bắt buộc |
+| `Field` | Ô nhập cao **52**, bo 20, viền luôn có sẵn, chỉ đổi màu khi focus / lỗi |
+| `CaptionField` | Ô nhập nổi **trên ảnh** — nền mờ, không viền, chữ căn giữa |
 | `HelperText` | Dòng phụ dưới ô nhập, **luôn chiếm chỗ** để lỗi không đẩy layout |
-| `Segmented` | Thanh chuyển hai chế độ, rãnh `surfaceSunken`, ô đang chọn `surface` |
 | `CodeInput` | Sáu ô mã, một ô nhập thật trong suốt phủ lên trên để giữ tự điền mã |
-| `Halo` | Hào quang ba vòng, không cần thư viện gradient |
-| `Pill`, `Card`, `StatCard` | Bề mặt `surface`, bo 20 / 12 |
+| `Segmented` | Thanh chuyển hai/ba chế độ, con trượt chạy bằng Reanimated |
+| `Img` | Bọc `expo-image`. Trong danh sách **bắt buộc** truyền `recyclingKey` |
+
+**Bố cục**
+
+| Component | Đặc tả |
+|---|---|
+| `Screen` | Nền `bg`, vùng an toàn, đệm ngang 16, tránh bàn phím |
+| `Row` `Col` `Spacer` `Flex` | Xếp khối. `gap` chỉ nhận tên trong thang khoảng cách, không nhận số |
+| `Card` `Pill` `Divider` | Ba bề mặt. `Pill onPhoto` = nền mờ khi đè lên ảnh |
+| `List` | Bọc **FlashList**, không bao giờ FlatList |
+| `Scroll` | Bọc ScrollView |
+
+**Thương hiệu**
+
+| Component | Đặc tả |
+|---|---|
+| `Rings` | Dấu hiệu "Ôm", dựng bằng **SVG**. `ghost` = vòng ngoài đứt nét |
+| `Wordmark` | Chữ "nook" **vẽ bằng SVG**, hai chữ "o" chính là hai vòng. Xem `01-brand.md` §1.3 |
+| `Halo` | Hào quang ba vòng lồng nhau, không cần gradient |
+| `GhostFrame` | Khung đứt nét (SVG — Android vẽ `dashed` + `borderRadius` thành nét **liền**) |
 | `Avatar` | Tròn, viền 2,5 theo thang độ thân, ngủ đông = viền đứt |
-| `EmptyState` | Khung đứt nét + một câu + một nút. Không bao giờ chỉ có chữ, không bao giờ có nhân vật |
-| `Rings` | Dấu hiệu "Ôm" dựng bằng viền View, không cần thư viện SVG. `ghost` = vòng ngoài đứt nét |
-| `GhostFrame` | Khung đứt nét, cùng độ bo với khung ngắm camera |
+
+**Phản hồi**
+
+| Component | Đặc tả |
+|---|---|
+| `EmptyState` | Hình + một câu + một nút. Không bao giờ chỉ có chữ, không bao giờ có nhân vật |
+| `Loading` | Vòng xoay, **trễ 220ms** — dưới ngưỡng đó không hiện gì |
 
 Còn thiếu, làm khi tới màn cần:
 
@@ -84,7 +110,12 @@ Còn thiếu, làm khi tới màn cần:
 | `Skeleton` | Khối `surface` sáng dần rồi tối lại, 1,2s — **thay cho mọi vòng xoay** |
 | `Sheet` | Nền `surfaceRaised`, bo trên 24, kéo xuống để đóng |
 | `Switch` | Công tắc cài đặt, bật = `accent` |
-| `Row` | Hàng cài đặt: icon + tiêu đề + mô tả + mũi tên |
+| `SettingRow` | Hàng cài đặt: icon + tiêu đề + mô tả + mũi tên |
+
+> **Component không biết kho chữ tồn tại.** Mọi chữ — kể cả nhãn trợ năng —
+> nhận qua props (`<Rings label={…}>`, `<CodeInput label={…}>`). ESLint chặn
+> chữ tiếng Việt trong `src/components/`. Nhờ vậy component xem trước được mà
+> không cần dựng cả app. Xem `09-i18n.md` §10.
 
 Bo góc: 12 (thẻ nhỏ) · 16 (ảnh, ô mã) · 20 (thẻ lớn, ô nhập) · 24 (nút) · 32 (khung
 camera) · tròn (avatar, pill, thanh chuyển).
@@ -165,6 +196,12 @@ không dấu chấm than.
 Ba từ cấm trong toàn app: **điểm, hạng, nhiệm vụ.** Thay bằng: ký ức, cấp độ, hành trình.
 Không dùng chữ kỹ thuật với người dùng: không "OTP", không "xác thực", không "hợp lệ" —
 viết là "mã", "kiểm tra", "trông chưa đúng".
+
+**Chữ không nằm trong màn hình.** Toàn bộ câu chữ ở `src/i18n/locales/vi.ts`,
+và mỗi câu phải có bản tiếng Anh ở `en.ts` — thiếu là không biên dịch được.
+Bảng trên áp cho **cả hai** thứ tiếng: tiếng Anh cũng cấm *points* / *rank* /
+*quest*, cũng không viết *verify* / *valid* / *session*. Cách thêm một câu:
+[`09-i18n.md`](09-i18n.md).
 
 ---
 

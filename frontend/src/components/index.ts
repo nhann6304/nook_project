@@ -14,6 +14,7 @@ export { Txt, type TxtProps } from './primitives/Txt';
 export { Tap, type TapProps } from './primitives/Tap';
 export { Button, type ButtonProps } from './primitives/Button';
 export { IconButton, type IconButtonProps } from './primitives/IconButton';
+export { CaptionField } from './primitives/CaptionField';
 export { Field, type FieldProps } from './primitives/Field';
 export { HelperText } from './primitives/HelperText';
 export { CodeInput, type CodeInputProps } from './primitives/CodeInput';
@@ -26,6 +27,7 @@ export { Row, Col, Spacer, Flex } from './layout/Stack';
 export { Card, Pill, Divider } from './layout/Surface';
 export { List, type ListProps } from './layout/List';
 export { Scroll } from './layout/Scroll';
+export { TopBar, type TopBarProps } from './layout/TopBar';
 
 /* — Thương hiệu — */
 export { Rings, type RingsProps } from './brand/Rings';

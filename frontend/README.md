@@ -81,9 +81,13 @@ Sau khi app mở lên:
 | 3 | **Màn đăng nhập** | Đổi qua lại **Email ⇄ Số điện thoại**: con trượt chạy mượt, và **bàn phím đổi theo** (chữ ↔ số). Gõ email sai → viền đỏ + câu nhắc, nút mờ đi |
 | 4 | Gõ email đúng, bấm **Tiếp tục** | Nút hiện vòng chờ 700ms |
 | 5 | **Màn nhập mã** — sáu ô | Gõ `123456` → **tự vào app**, không cần bấm nút nào. Gõ mã khác → rung một nhịp, ô tự xoá trắng |
-| 6 | **Màn camera** | Cho phép camera. Khung ngắm **vuông**, rộng 88% bề ngang máy. Bấm nút chụp: lõi co lại, máy rung một nhịp nặng |
-| 7 | Bấm **"Góc của bạn · 0"** ở trên | **Lưới mười chỗ**: một chỗ là bạn, chín chỗ viền đứt nét |
-| 8 | Bấm **"Khoảnh khắc"** ở đáy | Ba khung ảnh đứt nét, cùng dáng với màn chào mừng. Màn này trồi từ **dưới** lên |
+| 6 | **Xin quyền camera** | Bấm **Cho phép camera** → hộp thoại của máy. Thử bấm **Không cho phép**: màn đổi thành *"Camera đang tắt"* và nút thành *Mở Cài đặt máy*. Bật lại quyền rồi quay về app → màn **tự cập nhật**, không phải mở lại app |
+| 7 | **Màn camera** | Khung ngắm **vuông**, rộng 88% bề ngang máy. Bấm nút chụp: lõi co lại, máy rung một nhịp nặng |
+| 8 | **Vừa chụp xong** | Ảnh đè lên khung ngắm, thanh trên đổi thành `✕` + *"Gửi cho 6 người trong góc"*, nút chụp thành **nút gửi**. Gõ caption ngay trên ảnh. Bấm `✕` → về chụp lại **tức thì** (camera không bị tháo) |
+| 9 | Bấm **nút gửi** | Vào thẳng Khoảnh khắc, ảnh của bạn nằm **đầu danh sách** |
+| 10 | **Khoảnh khắc** | Bốn thẻ mẫu: avatar có vòng độ thân · tên · "3 phút trước" · ảnh · caption · ba icon cảm xúc + ô nhắn riêng. Bấm một icon → đổi thành *"Đã nhắn cho Yến"* |
+| 11 | Bấm **"Góc của bạn · 6"** ở trên | Sáu avatar có vòng độ thân + bốn chỗ viền đứt nét |
+| 12 | Bấm **bánh răng** ở trên phải | **Cài đặt** → đổi sang **English**. Cả app đổi ngay, không phải mở lại |
 
 ### Nhìn kỹ mấy chỗ này
 
@@ -93,8 +97,16 @@ Sau khi app mở lên:
 - **Bàn phím không che nút** "Tiếp tục".
 - Vặn cỡ chữ máy lên to nhất (Cài đặt → Màn hình) — **layout không vỡ**.
 
-Muốn xem góc **có người** thay vì trống: mở `src/mocks/friends.ts`, đổi
-`FRIENDS` thành `SAMPLE_FRIENDS`.
+- **Đổi sang English rồi đi lại một vòng.** Không câu nào còn tiếng Việt sót lại.
+- Nhìn chữ **nook** ở màn chào mừng: hai chữ "o" chính là hai vòng của logo,
+  một đậm một sáng, chồng lên nhau.
+
+Muốn xem **màn trống** thay vì có dữ liệu:
+
+| Màn | Sửa ở đâu |
+|---|---|
+| Góc trống | `app/(app)/circle.tsx` — đổi `FRIENDS` thành `NO_FRIENDS` |
+| Khoảnh khắc trống | `src/features/feed/store/momentsStore.ts` — đổi `SEED_MOMENTS` thành `NO_MOMENTS` |
 
 ## 4 · Lệnh
 
@@ -120,8 +132,9 @@ frontend/
 ├── app/                    ĐIỀU HƯỚNG. Chỉ điều hướng, không logic.
 ├── src/
 │   ├── design/             ⚠ NƠI DUY NHẤT ĐƯỢC VIẾT MÃ MÀU
-│   ├── components/         27 mảnh, xuất qua một cửa '@ui'
-│   ├── features/           theo tính năng: auth · camera · feed · circle
+│   ├── i18n/               ⚠ NƠI DUY NHẤT ĐƯỢC VIẾT CÂU TIẾNG VIỆT
+│   ├── components/         28 mảnh, xuất qua một cửa '@ui'
+│   ├── features/           theo tính năng: auth · camera · feed · circle · settings
 │   ├── hooks/  lib/        dùng chung
 │   └── mocks/              dữ liệu giả, xoá khi có server
 ├── docs/                   tài liệu frontend

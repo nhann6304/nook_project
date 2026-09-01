@@ -18,6 +18,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Button, CodeInput, Col, Flex, HelperText, Screen, Txt } from '@ui';
 import { layout, space } from '@design';
+import { useT } from '@i18n';
 import { useCountdown } from '@/hooks/useCountdown';
 import * as feel from '@/lib/haptics';
 import { displayTarget, type SignInMethod } from '../lib/identity';
@@ -43,6 +44,7 @@ export function VerifyCodeScreen({
   onResend: () => void;
   onChangeTarget: () => void;
 }) {
+  const t = useT();
   const [code, setCode] = useState('');
   const { left, running, start } = useCountdown(RESEND_SECONDS);
 
@@ -72,9 +74,9 @@ export function VerifyCodeScreen({
   return (
     <Screen keyboard>
       <Col gap="sm" style={s.head}>
-        <Txt variant="title">Mã đã gửi rồi nhé</Txt>
+        <Txt variant="title">{t('verify.title')}</Txt>
         <Txt variant="body" tone="muted">
-          Sáu số vừa được gửi tới {displayTarget(method, target)}.
+          {t('verify.sub', { target: displayTarget(method, target) })}
         </Txt>
       </Col>
 
@@ -86,20 +88,21 @@ export function VerifyCodeScreen({
           invalid={Boolean(error)}
           editable={!busy}
           autoFocus
+          label={t('verify.codeLabel', { count: CODE_LENGTH })}
         />
         <HelperText tone={error ? 'danger' : 'muted'}>
-          {error ?? (busy ? 'Đang kiểm tra…' : undefined)}
+          {error ?? (busy ? t('verify.checking') : undefined)}
         </HelperText>
 
         <Button
-          label={running ? `Gửi lại sau ${left} giây` : 'Gửi lại mã'}
+          label={running ? t('verify.resendIn', { seconds: left }) : t('verify.resend')}
           variant="ghost"
           onPress={resend}
           disabled={running || busy}
           block
         />
         <Button
-          label={method === 'email' ? 'Dùng email khác' : 'Dùng số khác'}
+          label={method === 'email' ? t('verify.otherEmail') : t('verify.otherPhone')}
           variant="ghost"
           onPress={onChangeTarget}
           disabled={busy}

@@ -14,6 +14,14 @@ const HEX = String.raw`^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`;
 /** rgb()/rgba()/hsl() viết tay */
 const CSSFN = String.raw`^(rgba?|hsla?)\(`;
 
+/**
+ * Ký tự CHỈ tiếng Việt mới có. Đủ để nhận ra một câu tiếng Việt lọt vào code
+ * mà không đụng tới chuỗi tiếng Anh ('email', 'primary'…) hay tên khoá.
+ * Chuỗi tiếng Việt không dấu ("Bao nhieu") lọt lưới — chấp nhận được: nó hiếm,
+ * và lưới quá chặt thì người ta tắt luật đi, lúc đó mất cả lưới.
+ */
+const VIET = String.raw`[àáâãèéêìíòóôõùúýăđĩũơưạ-ỹÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝĂĐĨŨƠƯẠ-Ỹ]`;
+
 module.exports = defineConfig([
   ...expo,
   { ignores: ['node_modules/**', '.expo/**', 'dist/**', '.doc/**', 'expo-env.d.ts'] },
@@ -33,6 +41,21 @@ module.exports = defineConfig([
           selector: `Literal[value=/${CSSFN}/]`,
           message:
             'Không viết rgba()/hsl() thẳng trong code. Lớp phủ trong suốt nằm ở src/design/tokens.ts (alpha).',
+        },
+        {
+          selector: `JSXText[value=/${VIET}/]`,
+          message:
+            'Chữ hiện cho người dùng phải nằm trong kho chữ. Thêm khoá vào src/i18n/locales/vi.ts (và en.ts) rồi gọi t(\'khoá\'). Xem src/i18n/index.ts.',
+        },
+        {
+          selector: `Literal[value=/${VIET}/]`,
+          message:
+            'Chữ hiện cho người dùng phải nằm trong kho chữ. Thêm khoá vào src/i18n/locales/vi.ts (và en.ts) rồi gọi t(\'khoá\'). Xem src/i18n/index.ts.',
+        },
+        {
+          selector: `TemplateElement[value.raw=/${VIET}/]`,
+          message:
+            'Chữ hiện cho người dùng phải nằm trong kho chữ. Chuỗi có chỗ trống thì viết "{tên}" trong kho chữ rồi t(\'khoá\', { tên }), đừng ghép bằng dấu ${}.',
         },
         {
           // Chỉ chặn style={{…}} thuần — object dựng lại mỗi lần vẽ mà KHÔNG có
@@ -78,6 +101,18 @@ module.exports = defineConfig([
         },
       ],
     },
+  },
+
+  /* ---------- Kho chữ là nơi DUY NHẤT được viết câu tiếng Việt ---------- */
+  {
+    files: ['src/i18n/**/*.ts'],
+    rules: { 'no-restricted-syntax': 'off' },
+  },
+
+  /* ---------- Dữ liệu giả: tên người, caption mẫu — sẽ xoá khi có server ---------- */
+  {
+    files: ['src/mocks/**/*.ts'],
+    rules: { 'no-restricted-syntax': 'off' },
   },
 
   /* ---------- src/design là gốc: nó ĐƯỢC phép viết hex ---------- */

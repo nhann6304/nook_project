@@ -83,6 +83,8 @@ thứ không ai hiểu.
 |---|---|---|---|
 | `expo-camera` | 17.0.10 | Màn chính của app. | |
 | `expo-secure-store` | 15.0.8 | Cất thẻ đăng nhập vào Keychain (iOS) / Keystore (Android). **Chưa dùng** — chờ backend. | |
+| `expo-localization` | 17.0.9 | Đọc ngôn ngữ máy để chọn tiếng Việt hay tiếng Anh lúc mở app lần đầu. | |
+| `@react-native-async-storage/async-storage` | 2.2.0 | Nhớ ngôn ngữ người dùng đã chọn. Một cửa duy nhất ở `src/lib/storage.ts`. **Không để bí mật vào đây** — đó là việc của `expo-secure-store`. | Đọc **bất đồng bộ**, nên lúc khởi động có một nhịp chờ. MMKV đọc đồng bộ và nhanh hơn nhiều nhưng cần development build. |
 | `zustand` | 5.0.15 | Kho trạng thái. Đọc bằng selector nên đổi một trường không làm cả app vẽ lại — Context thì có. | Thêm một khái niệm cho người mới. |
 
 ## 5 · Công cụ
@@ -128,6 +130,40 @@ ngắm camera. Tailwind không có mấy thứ đó và cũng không thay đư�
 > Về hiệu năng: NativeWind 4 dịch sẵn lớp **tĩnh** lúc build nên gần như không
 > tốn thêm gì; chỉ lớp **động/điều kiện** mới phải giải lúc chạy. Nên hiệu năng
 > **không** phải lý do chính để bỏ — ba lý do trên mới là.
+
+### i18next + react-i18next — **KHÔNG DÙNG**
+
+Là lựa chọn mặc định của phần lớn dự án React Native (6 triệu lượt tải mỗi
+tuần), nên bỏ nó thì phải nói rõ vì sao.
+
+**Đã đo trước khi quyết.** Chạy chính Hermes của dự án này lên
+(`node_modules/react-native/sdks/hermesc/osx-bin/hermes`):
+
+| Thứ | Kết quả |
+|---|---|
+| `Intl.NumberFormat('vi-VN').format(1234567.5)` | `1.234.567,5` ✔ |
+| `Intl.DateTimeFormat('vi-VN', …)` | `1 tháng 9` ✔ |
+| `Intl.PluralRules` | **ném lỗi** — `Cannot read property 'prototype' of undefined` |
+| `Intl.RelativeTimeFormat` · `Intl.ListFormat` | **ném lỗi** như trên |
+
+Cơ chế số nhiều của i18next chạy trên `Intl.PluralRules`. Thiếu nó thì i18next
+rơi về bộ luật tương thích riêng của nó — tức là thêm một tầng nữa để hiểu và
+để hỏng, đúng ở chỗ mình định nhờ thư viện lo hộ.
+
+Cộng thêm ba điều:
+
+- **Cân nặng.** i18next + react-i18next ≈ 55KB min, cho **hai** ngôn ngữ và
+  khoảng 130 câu. Bộ chữ của Nook cộng cả ruột i18n chưa tới 12KB.
+- **An toàn kiểu.** Muốn i18next kiểm được khoá thì phải khai thêm
+  `declare module 'i18next'`, và nó vẫn không kiểm được *tham số của từng câu*.
+  Bản tự viết kiểm cả ba: sai khoá, thiếu bản dịch, quên tham số — xem
+  `src/i18n/types.ts`.
+- **Số dạng số nhiều.** Tiếng Việt có **một** dạng, tiếng Anh có **hai**. Đó là
+  bốn dòng code, không phải một thư viện.
+
+**Đường lùi vẫn để mở.** Bộ chữ ở `src/i18n/locales/` là JSON lồng nhau đúng
+khuôn i18next. Ngày nào Nook thêm tiếng Nga (4 dạng số nhiều) hay tiếng Ả Rập
+(6 dạng), hoặc cần nối công cụ dịch như Crowdin, thì đổi sang là việc cơ học.
 
 ### Đã cân nhắc, để dành
 
@@ -226,8 +262,25 @@ npx expo-doctor    # 17/17 lúc viết dòng này
 ```
 
 Muốn tự thấy lưới chặn hoạt động: tạo một file trong `src/features/` có
-`style={{ backgroundColor: '#FF0000' }}` và `import { Text } from 'react-native'`,
-rồi chạy `npx eslint` lên nó. Phải ra bốn lỗi kèm chỉ dẫn thay bằng gì.
+`style={{ backgroundColor: '#FF0000' }}`, `import { Text } from 'react-native'`
+và một câu tiếng Việt viết thẳng trong JSX, rồi chạy `npx eslint` lên nó.
+Phải ra năm lỗi kèm chỉ dẫn thay bằng gì.
+
+### Tự đo lại `Intl` của Hermes
+
+Con số ở mục 6 lấy từ đây. Chạy lại khi nâng SDK — bộ `Intl` của Hermes có thêm
+bớt theo bản:
+
+```bash
+cat > /tmp/intl.js <<'EOF'
+const t = (n, f) => { try { print(n + ': ' + f()); } catch (e) { print(n + ': HỎNG'); } };
+t('NumberFormat', () => new Intl.NumberFormat('vi-VN').format(1234567.5));
+t('DateTimeFormat', () => new Intl.DateTimeFormat('vi-VN', {day:'numeric',month:'long'}).format(new Date(2026,8,1)));
+t('PluralRules', () => new Intl.PluralRules('en').select(2));
+t('RelativeTimeFormat', () => new Intl.RelativeTimeFormat('vi').format(-2, 'hour'));
+EOF
+node_modules/react-native/sdks/hermesc/osx-bin/hermes /tmp/intl.js
+```
 
 ## 9 · Yêu cầu môi trường
 

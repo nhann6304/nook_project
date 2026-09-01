@@ -1,34 +1,63 @@
 /**
  * Màn Khoảnh khắc — ảnh bạn bè gửi tới.
  *
- * Màn trống vẽ ba khung ảnh xoè ra ĐÚNG dáng chồng ảnh ở màn Chào mừng. Cùng
- * một ngôn ngữ hình, chỉ khác là chưa có gì trong đó — người dùng nhận ra ngay
- * chỗ này rồi sẽ chứa cái gì.
- *
  * Danh sách dùng <List> (FlashList), không dùng FlatList — xem chú thích trong
  * src/components/layout/List.tsx để biết vì sao đây là chỗ quyết định độ mượt.
+ *
+ * Ô của danh sách là `MomentCard`, một component ĐẶT TÊN nằm ở file khác. Viết
+ * hàm vô danh thẳng trong `renderItem` thì mỗi lần màn vẽ lại là một hàm mới →
+ * FlashList coi như ô mới → mất sạch cái lợi của tái dùng ô.
+ *
+ * Màn trống vẽ ba khung ảnh xoè ra ĐÚNG dáng chồng ảnh ở màn Chào mừng. Cùng
+ * một ngôn ngữ hình, chỉ khác là chưa có gì trong đó.
  */
+import { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Col, EmptyState, GhostFrame, Img, List, Screen, Txt } from '@ui';
+import { EmptyState, GhostFrame, List, Screen, TopBar, Txt } from '@ui';
 import { color, radius, space } from '@design';
-
-export type Moment = { id: string; uri: string; author: string; caption?: string };
+import { useAgo, useT } from '@i18n';
+import { MomentCard, type Quick } from '../components/MomentCard';
+import type { Moment } from '../types';
 
 export function FeedScreen({
   moments,
   onOpenCamera,
+  onReply,
 }: {
   moments: readonly Moment[];
   onOpenCamera: () => void;
+  onReply: (moment: Moment, emoji: Quick | null) => void;
 }) {
+  const t = useT();
+  const ago = useAgo();
+
+  const renderItem = useCallback(
+    ({ item }: { item: Moment }) => (
+      <MomentCard
+        moment={item}
+        ago={ago(new Date(item.at))}
+        replyHint={t('feed.replyTo', { name: item.author.name })}
+        repliedLabel={t('feed.replied', { name: item.author.name })}
+        onReply={onReply}
+      />
+    ),
+    [ago, onReply, t],
+  );
+
   if (moments.length === 0) {
     return (
       <Screen>
+        <TopBar
+          title={t('feed.title')}
+          closeLabel={t('common.closeScreen')}
+          closeIcon="down"
+          onClose={onOpenCamera}
+        />
         <EmptyState
           art={<GhostFan />}
-          title="Chưa có khoảnh khắc nào"
-          message="Khi bạn bè trong góc gửi ảnh, chúng hiện ở đây. Bạn gửi trước một tấm nhé?"
-          actionLabel="Chụp một tấm"
+          title={t('feed.emptyTitle')}
+          message={t('feed.emptyMessage')}
+          actionLabel={t('feed.openCamera')}
           onAction={onOpenCamera}
         />
       </Screen>
@@ -37,10 +66,22 @@ export function FeedScreen({
 
   return (
     <Screen padded={false}>
+      {/* Thanh trên nằm NGOÀI danh sách, không phải ListHeaderComponent: nút
+          đóng phải luôn ở đó, không được cuộn mất. */}
+      <View style={s.bar}>
+        <TopBar
+          title={t('feed.title')}
+          closeLabel={t('common.closeScreen')}
+          closeIcon="down"
+          onClose={onOpenCamera}
+        />
+      </View>
+
       <List
         data={moments}
-        renderItem={MomentRow}
+        renderItem={renderItem}
         keyExtractor={keyOf}
+        ListFooterComponent={<Footer note={t('feed.window')} />}
       />
     </Screen>
   );
@@ -48,30 +89,14 @@ export function FeedScreen({
 
 const keyOf = (m: Moment) => m.id;
 
-/**
- * Ô trong danh sách là component ĐẶT TÊN, không phải hàm vô danh viết thẳng
- * trong renderItem. Hàm vô danh dựng lại mỗi lần cha vẽ → FlashList coi như ô
- * mới → mất sạch cái lợi của tái dùng ô.
- */
-function MomentRow({ item }: { item: Moment }) {
+/** Nhắc luật 48 giờ ngay trong feed: người dùng không phải đi tìm trong Cài đặt. */
+function Footer({ note }: { note: string }) {
   return (
-    <Col gap="sm" style={s.row}>
-      <Img
-        source={{ uri: item.uri }}
-        // Bắt buộc trong danh sách tái dùng ô: thiếu thì cuộn nhanh sẽ thấy
-        // ảnh người này nhấp nháy ở ô người kia.
-        recyclingKey={item.id}
-        style={s.photo}
-      />
-      <View style={s.meta}>
-        <Txt variant="label">{item.author}</Txt>
-        {item.caption ? (
-          <Txt variant="body" tone="muted">
-            {item.caption}
-          </Txt>
-        ) : null}
-      </View>
-    </Col>
+    <View style={s.footer}>
+      <Txt variant="faint" tone="faint" center>
+        {note}
+      </Txt>
+    </View>
   );
 }
 
@@ -93,9 +118,8 @@ function GhostFan() {
 }
 
 const s = StyleSheet.create({
-  row: { paddingHorizontal: space.lg, paddingBottom: space.xxl },
-  photo: { width: '100%', aspectRatio: 1, borderRadius: radius.frame },
-  meta: { gap: space.xs, paddingHorizontal: space.xs },
+  bar: { paddingHorizontal: space.lg },
+  footer: { paddingHorizontal: space.lg, paddingTop: space.sm },
 
   fan: { width: 230, height: 160, alignItems: 'center', justifyContent: 'center' },
   fanCard: {

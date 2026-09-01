@@ -5,7 +5,7 @@
  * đã xuất hiện ở ít nhất ba màn. Dưới ba thì để tại chỗ; quá tay thì file này
  * thành cái sọt rác và không ai dám sửa gì trong đó nữa.
  */
-import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import { StyleSheet, type ImageStyle, type TextStyle, type ViewStyle } from 'react-native';
 import { color, layout, radius, space } from './tokens';
 
 /**
@@ -71,4 +71,17 @@ export const common = StyleSheet.create<Common>({
 });
 
 /** hitSlop mặc định cho những nút icon nhỏ hơn vùng chạm chuẩn. */
+/**
+ * Style cho ẢNH. Tách khỏi `common` vì `ImageStyle` không nhận `overflow:'scroll'`
+ * mà `ViewStyle` thì có — truyền một style của View vào <Img> là tsc báo đỏ.
+ */
+type Media = { fill: ImageStyle; cover: ImageStyle };
+
+export const media = StyleSheet.create<Media>({
+  /** Lấp kín cha. Dùng cho ảnh đè lên khung camera. */
+  fill: StyleSheet.absoluteFillObject,
+  /** Ô vuông tràn bề ngang — thẻ ảnh trong feed. */
+  cover: { width: '100%', aspectRatio: 1, borderRadius: radius.frame },
+});
+
 export const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 } as const;

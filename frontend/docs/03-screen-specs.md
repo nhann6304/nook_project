@@ -139,8 +139,16 @@ Bốn khối xếp dọc, `justifyContent: space-between`:
    (phải).
 4. **Chân màn**: mũi tên hướng lên + chữ "Khoảnh khắc" màu mờ.
 
+**Chưa cho quyền camera:** màn này thay bằng lời giải thích + nút xin quyền. Nếu
+người dùng đã từ chối một lần thì hệ thống **không hỏi lại nữa** — lúc đó phải đổi
+chữ ("Camera đang tắt") và đổi nút thành *Mở Cài đặt máy*, đồng thời nghe `AppState`
+để tự đọc lại quyền khi họ quay về. Luôn chừa một lối đi tiếp (xem Khoảnh khắc), vì
+Camera là màn mặc định — kẹt ở đây là kẹt cả app.
+
 ### 8. Vừa chụp xong
-Thay khối camera bằng ảnh vừa chụp. Thanh trên đổi: icon `x` (huỷ, trái) · pill xám
+**Không chuyển màn.** Ảnh vừa chụp đè lên chính khung ngắm, `CameraView` vẫn nằm
+nguyên bên dưới — tháo camera ra rồi lắp lại tốn 300–500ms nhìn thấy được bằng mắt
+trên máy tầm trung. Thay khối camera bằng ảnh vừa chụp. Thanh trên đổi: icon `x` (huỷ, trái) · pill xám
 "Gửi cho {n} người trong góc" (**chỉ để thông tin, không bấm được** — không có bước
 chọn người nhận) · khoảng trống (phải). Trong khung ảnh, pill caption giờ có con trỏ
 nhấp nháy, đang gõ được. Hàng dưới: icon tải xuống (trái) · **nút gửi** — vòng tròn
@@ -229,11 +237,19 @@ khoảnh khắc và ký ức"). **Bắt buộc phải có để qua duyệt App 
 ## Việc cần làm khi implement
 
 - [ ] Màn 1–6 (Nhóm A): stack điều hướng riêng, chỉ chạy một lần.
-      Màn 1–3 (Chào mừng, Đăng nhập, Nhập mã) đã code xong phần giao diện, chưa nối backend
-- [ ] Màn 7–10 (Nhóm B): đã có `CameraScreen.tsx` khởi động sẵn — làm tiếp Feed, Trò chuyện
-- [ ] Màn 11–14 (Nhóm C): màn 11–13 thuộc V0.1, màn 14 (Chi tiết tình bạn) hoãn sang V0.2
-- [ ] Màn 15–18 (Nhóm D): toàn bộ thuộc V0.1, ưu tiên màn 16 (Vị trí) và 18 (Tài khoản)
-  vì liên quan trực tiếp đến việc qua duyệt App Store
+      Màn 1–3 (Chào mừng, Đăng nhập, Nhập mã) **đã code xong giao diện**, chưa nối backend.
+      Còn màn 4 (Tên và ảnh), 5 (Mời người đầu tiên), 6 (Xin quyền)
+- [ ] Màn 7–10 (Nhóm B): màn 7 (Camera), 8 (Vừa chụp xong), 9 (Khoảnh khắc) **đã code xong**.
+      Còn **màn 10 (Trò chuyện)** — ô "Nhắn riêng cho…" trong feed đang trỏ tới hư không
+- [ ] Màn 11–14 (Nhóm C): màn 11 (Góc) **đã code xong**. Màn 12–13 thuộc V0.1,
+      màn 14 (Chi tiết tình bạn) hoãn sang V0.2
+- [ ] Màn 15–18 (Nhóm D): màn 15 (Cài đặt) mới có **hàng Ngôn ngữ**. Ưu tiên tiếp
+      màn 16 (Vị trí) và 18 (Tài khoản) vì liên quan trực tiếp đến việc qua duyệt App Store
+
+Hai nút trong đặc tả **chưa vẽ ra màn** vì chưa nối được: "Mở thư viện ảnh"
+(cần `expo-image-picker`) và "Lưu về máy" (cần `expo-media-library`). Chỗ của
+chúng đã chừa sẵn trong `CameraScreen` — vẽ một nút bấm không ăn thì tệ hơn là
+chưa vẽ.
 
 Chưa thiết kế (cố ý hoãn, xem lý do trong `../../.docs/01-product-system.md` mục 8 Roadmap):
 Album chung, Dòng thời gian, Nearby/WhereAreYou, Shared Places — tất cả thuộc V0.2–V0.3.

@@ -23,6 +23,11 @@ export type AvatarProps = {
   level?: number;
   dormant?: boolean;
   onPress?: () => void;
+  /**
+   * Chữ cho trình đọc màn hình. Component KHÔNG tự dịch: src/components không
+   * biết i18n tồn tại, để nó còn xem trước được mà không cần dựng cả kho chữ.
+   */
+  label?: string;
   /** Khoá dùng cho danh sách tái dùng ô — xem chú thích trong Img. */
   recyclingKey?: string;
 };
@@ -34,6 +39,7 @@ export const Avatar = memo(function Avatar({
   level = 1,
   dormant = false,
   onPress,
+  label,
   recyclingKey,
 }: AvatarProps) {
   const stroke = 2.5;
@@ -71,7 +77,7 @@ export const Avatar = memo(function Avatar({
   return (
     <Tap
       accessibilityRole="button"
-      accessibilityLabel={dormant ? `${name}, đang ngủ đông` : `${name}, cấp thân ${level}`}
+      accessibilityLabel={label ?? name}
       onPress={onPress}
       scaleTo={0.92}
       style={s.tap}

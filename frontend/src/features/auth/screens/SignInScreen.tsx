@@ -23,27 +23,26 @@ import {
   Txt,
 } from '@ui';
 import { color, layout, space } from '@design';
+import { useT, type T } from '@i18n';
 import { formatVnPhone, isValidTarget, type SignInMethod } from '../lib/identity';
 
 export type SignInIntent = 'signup' | 'signin';
 
+/**
+ * Chữ của hai cửa. Bảng tra tĩnh chứ không phải `t(\`signIn.${intent}Title\`)`:
+ * khoá ghép bằng chuỗi thì tsc không kiểm được nữa, mà kiểm được khoá chính là
+ * lý do module i18n này tồn tại.
+ */
 const COPY = {
-  signup: {
-    title: 'Tạo góc của bạn',
-    sub: 'Chúng mình gửi bạn một mã sáu số để xác nhận đây đúng là bạn.',
-    cta: 'Tiếp tục',
-  },
-  signin: {
-    title: 'Chào bạn quay lại',
-    sub: 'Nhập lại email hoặc số điện thoại bạn đã dùng lần trước.',
-    cta: 'Gửi mã cho mình',
-  },
+  signup: { title: 'signIn.signupTitle', sub: 'signIn.signupSub', cta: 'signIn.signupCta' },
+  signin: { title: 'signIn.signinTitle', sub: 'signIn.signinSub', cta: 'signIn.signinCta' },
 } as const;
 
-const METHODS = [
-  { value: 'email', label: 'Email' },
-  { value: 'phone', label: 'Số điện thoại' },
-] as const;
+const methodOptions = (t: T) =>
+  [
+    { value: 'email', label: t('signIn.email') },
+    { value: 'phone', label: t('signIn.phone') },
+  ] as const;
 
 export function SignInScreen({
   intent,
@@ -56,21 +55,21 @@ export function SignInScreen({
   error?: string | null;
   onSubmit: (method: SignInMethod, target: string) => void;
 }) {
+  const t = useT();
   const [method, setMethod] = useState<SignInMethod>('email');
   const [value, setValue] = useState('');
   const [touched, setTouched] = useState(false);
 
   const copy = COPY[intent];
+  const methods = useMemo(() => methodOptions(t), [t]);
   const valid = isValidTarget(method, value);
   const showError = touched && value.length > 0 && !valid;
 
   const hint = useMemo(() => {
     if (error) return error;
     if (!showError) return undefined;
-    return method === 'email'
-      ? 'Email này trông chưa đúng. Bạn xem lại giúp mình nhé.'
-      : 'Số này chưa đúng. Số di động Việt Nam có 10 chữ số.';
-  }, [error, method, showError]);
+    return method === 'email' ? t('signIn.badEmail') : t('signIn.badPhone');
+  }, [error, method, showError, t]);
 
   const changeMethod = useCallback((m: SignInMethod) => {
     setMethod(m);
@@ -86,18 +85,18 @@ export function SignInScreen({
   return (
     <Screen keyboard>
       <Col gap="sm" style={s.head}>
-        <Txt variant="title">{copy.title}</Txt>
+        <Txt variant="title">{t(copy.title)}</Txt>
         <Txt variant="body" tone="muted">
-          {copy.sub}
+          {t(copy.sub)}
         </Txt>
       </Col>
 
       <View style={s.form}>
         <Segmented
-          options={METHODS}
+          options={methods}
           value={method}
           onChange={changeMethod}
-          label="Cách nhận mã"
+          label={t('signIn.methodLabel')}
         />
 
         <Field
@@ -108,7 +107,9 @@ export function SignInScreen({
           onBlur={() => setTouched(true)}
           invalid={showError}
           autoFocus
-          placeholder={method === 'email' ? 'ban@gmail.com' : '912 345 678'}
+          placeholder={
+            method === 'email' ? t('signIn.emailPlaceholder') : t('signIn.phonePlaceholder')
+          }
           keyboardType={method === 'email' ? 'email-address' : 'number-pad'}
           inputMode={method === 'email' ? 'email' : 'numeric'}
           textContentType={method === 'email' ? 'emailAddress' : 'telephoneNumber'}
@@ -132,14 +133,14 @@ export function SignInScreen({
         {/* Nút nằm NGAY dưới ô nhập, không đẩy xuống đáy màn: khi bàn phím bật
             lên, nút ở đáy bị che mất và người dùng tưởng màn này không có nút. */}
         <Button
-          label={copy.cta}
+          label={t(copy.cta)}
           onPress={() => onSubmit(method, value)}
           disabled={!valid}
           loading={busy}
           block
         />
 
-        {intent === 'signup' ? <Terms /> : null}
+        {intent === 'signup' ? <Terms text={t('signIn.terms')} /> : null}
       </View>
 
       <Flex />
@@ -151,13 +152,12 @@ export function SignInScreen({
  * Hộp điều khoản — chỉ hiện ở cửa Tạo tài khoản.
  * Nội dung thật chưa có; chỗ này giữ đúng bố cục để sau thay chữ là xong.
  */
-function Terms() {
+function Terms({ text }: { text: string }) {
   return (
     <Row style={s.terms}>
       <View style={s.termsBar} />
       <Txt variant="faint" tone="faint" style={s.termsText}>
-        Chạm “Tiếp tục” là bạn đồng ý với Điều khoản dịch vụ và Chính sách riêng tư
-        của Nook.
+        {text}
       </Txt>
     </Row>
   );

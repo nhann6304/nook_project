@@ -7,6 +7,7 @@
  *
  * Mã giả để bấm thử: 123456. Mọi mã khác đều bị từ chối.
  */
+import { translate } from '@i18n';
 import type { SignInMethod } from './identity';
 
 export type SendResult = { ok: true } | { ok: false; message: string };
@@ -25,5 +26,7 @@ export async function sendCode(_method: SignInMethod, _target: string): Promise<
 export async function verifyCode(code: string): Promise<VerifyResult> {
   await wait(FAKE_DELAY);
   if (code === FAKE_CODE) return { ok: true };
-  return { ok: false, message: 'Mã không đúng. Bạn thử nhập lại nhé.' };
+  // Câu lỗi lấy từ kho chữ, không viết thẳng: khi backend thật trả mã lỗi thì
+  // chỗ này đổi thành tra bảng mã → khoá, còn màn hình không đụng gì.
+  return { ok: false, message: translate('verify.wrongCode') };
 }
