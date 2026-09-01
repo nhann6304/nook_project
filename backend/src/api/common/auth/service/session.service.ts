@@ -28,7 +28,7 @@ export class SessionService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService<Env, true>,
     private readonly tx: TransactionService,
-  ) {}
+  ) { }
 
   /** Mở phiên mới cho một máy. Gọi sau khi mã đã đúng. */
   @Transactional()
