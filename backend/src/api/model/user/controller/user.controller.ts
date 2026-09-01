@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { API, MSG } from '@nook/shared';
 import { CurrentUser, Message, ApiErrors, ApiResult } from '../../../common/decorator/index.js';
 import { UserProfileDto } from '../../../common/dto/index.js';
-import type { AuthUser } from '../../../common/auth/type/index.js';
+import type { IAuthUser } from '../../../common/auth/interface/index.js';
 import { UserService } from '../service/index.js';
 import { UpdateMeDto } from '../dto/index.js';
 
@@ -22,7 +22,7 @@ export class UserController {
   @ApiOperation({ summary: 'Lấy hồ sơ của tôi' })
   @ApiResult(UserProfileDto)
   @ApiErrors(401, 404)
-  getMe(@CurrentUser() me: AuthUser): Promise<UserProfileDto> {
+  getMe(@CurrentUser() me: IAuthUser): Promise<UserProfileDto> {
     return this.users.getProfile(me.id);
   }
 
@@ -31,7 +31,7 @@ export class UserController {
   @ApiOperation({ summary: 'Sửa hồ sơ của tôi' })
   @ApiResult(UserProfileDto)
   @ApiErrors(400, 401, 404)
-  updateMe(@CurrentUser() me: AuthUser, @Body() dto: UpdateMeDto): Promise<UserProfileDto> {
+  updateMe(@CurrentUser() me: IAuthUser, @Body() dto: UpdateMeDto): Promise<UserProfileDto> {
     return this.users.updateMe(me.id, dto);
   }
 }

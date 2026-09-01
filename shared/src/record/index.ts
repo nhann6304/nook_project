@@ -1,1 +1,1 @@
-export * from './record.type.js';
+export * from './interface/index.js';

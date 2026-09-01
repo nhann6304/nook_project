@@ -1,11 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { ApiError } from '@nook/shared';
+import type { IApiError } from '@nook/shared';
 
 /**
  * Hình dạng DUY NHẤT của một câu trả lời hỏng. Mọi lỗi đều ra dạng này, kể cả
  * lỗi do Nest tự ném — bộ lọc `AllExceptionFilter` gom hết lại.
  */
-export class ApiErrorDto implements ApiError {
+export class ApiErrorDto implements IApiError {
   @ApiProperty({ example: false, description: 'Chỗ rẽ nhánh duy nhất khi đọc câu trả lời' })
   ok!: false;
 

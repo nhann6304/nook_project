@@ -5,6 +5,11 @@
   "type": "module",
   "description": "Nook server — NestJS trên Fastify.",
   "scripts": {
+    "shared:build": "tsc -p ../shared/tsconfig.json",
+    "predev": "npm run shared:build",
+    "prebuild": "npm run shared:build",
+    "pretypecheck": "npm run shared:build",
+    "pretest": "npm run shared:build",
     "dev": "nest start --watch",
     "dev:debug": "nest start --debug --watch",
     "build": "nest build",

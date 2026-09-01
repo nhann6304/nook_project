@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import type { ErrCode } from '@nook/shared';
+import type { TErrCode } from '@nook/shared';
 
 /**
  * Lỗi của mình, ném ra bằng MÃ.
@@ -15,7 +15,7 @@ import type { ErrCode } from '@nook/shared';
  */
 export class AppException extends HttpException {
   constructor(
-    public readonly code: ErrCode,
+    public readonly code: TErrCode,
     status: HttpStatus = HttpStatus.BAD_REQUEST,
     public readonly detail?: Record<string, number | string | boolean>,
   ) {

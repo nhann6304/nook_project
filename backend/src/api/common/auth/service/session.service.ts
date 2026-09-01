@@ -3,12 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import argon2 from 'argon2';
-import { ERR, type AuthTokens, type TokenClaims } from '@nook/shared';
+import { ERR, type IAuthTokens, type ITokenClaims } from '@nook/shared';
 import { Env } from '../../../../config/env/index.js';
 import { TransactionService, Transactional } from '../../../../database/transaction/index.js';
 import { AppException } from '../../error/index.js';
 import { SessionRepository } from '../repository/index.js';
-import type { DeviceInfo } from '../type/index.js';
+import type { IDeviceInfo } from '../interface/index.js';
 
 /**
  * Phát thẻ, xoay thẻ, thu thẻ.
@@ -33,7 +33,7 @@ export class SessionService {
 
   /** Mở phiên mới cho một máy. Gọi sau khi mã đã đúng. */
   @Transactional()
-  async open(userId: string, device: DeviceInfo): Promise<AuthTokens> {
+  async open(userId: string, device: IDeviceInfo): Promise<IAuthTokens> {
     // Dựng dòng trước để có `id` — `id` đó chính là `sid` sẽ nằm trong thẻ.
     // Dấu vân điền ở bước hai; cả hai bước trong một giao dịch nên không ai
     // nhìn thấy khoảng giữa.
@@ -59,7 +59,7 @@ export class SessionService {
 
   /** Đổi thẻ dài hạn lấy cặp thẻ mới. Thẻ cũ chết ngay tại đây. */
   @Transactional()
-  async rotate(refreshToken: string): Promise<AuthTokens> {
+  async rotate(refreshToken: string): Promise<IAuthTokens> {
     const claims = this.verify(refreshToken, 'refresh');
 
     const session = await this.sessions.findById(claims.sid);
@@ -126,12 +126,12 @@ export class SessionService {
   /** Mở một thẻ ra xem có gì. Ném nếu chữ ký hỏng hoặc quá hạn. */
   verify(
     token: string,
-    kind: TokenClaims['typ'],
+    kind: ITokenClaims['typ'],
     options?: { ignoreExpiration?: boolean },
-  ): TokenClaims {
-    let claims: TokenClaims;
+  ): ITokenClaims {
+    let claims: ITokenClaims;
     try {
-      claims = this.jwt.verify<TokenClaims>(token, {
+      claims = this.jwt.verify<ITokenClaims>(token, {
         secret: this.secretFor(kind),
         ignoreExpiration: options?.ignoreExpiration ?? false,
       });
@@ -162,17 +162,17 @@ export class SessionService {
    * App vừa đăng nhập xong đã gọi làm mới thẻ là chuyện bình thường, nên đây
    * không phải trường hợp hiếm.
    */
-  private mint(userId: string, sessionId: string): AuthTokens {
+  private mint(userId: string, sessionId: string): IAuthTokens {
     const expiresInSeconds = this.config.get('JWT_ACCESS_TTL', { infer: true });
     const base = { sub: userId, sid: sessionId };
 
     return {
       accessToken: this.jwt.sign(
-        { ...base, typ: 'access', jti: randomUUID() } satisfies TokenClaims,
+        { ...base, typ: 'access', jti: randomUUID() } satisfies ITokenClaims,
         { secret: this.secretFor('access'), expiresIn: expiresInSeconds },
       ),
       refreshToken: this.jwt.sign(
-        { ...base, typ: 'refresh', jti: randomUUID() } satisfies TokenClaims,
+        { ...base, typ: 'refresh', jti: randomUUID() } satisfies ITokenClaims,
         {
           secret: this.secretFor('refresh'),
           expiresIn: this.config.get('JWT_REFRESH_TTL', { infer: true }),
@@ -182,7 +182,7 @@ export class SessionService {
     };
   }
 
-  private secretFor(kind: TokenClaims['typ']): string {
+  private secretFor(kind: ITokenClaims['typ']): string {
     return kind === 'access'
       ? this.config.get('JWT_ACCESS_SECRET', { infer: true })
       : this.config.get('JWT_REFRESH_SECRET', { infer: true });

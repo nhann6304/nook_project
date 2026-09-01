@@ -11,7 +11,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
  * là dòng đó có `created_by = null` — vẫn ghi được, vẫn không báo lỗi, và sáu
  * tháng sau không ai truy ra được ai đã tạo nó.
  */
-export interface RequestStore {
+export interface IRequestStore {
   /** Dấu vết của request. Có ngay từ đầu. */
   requestId: string;
   /**
@@ -24,15 +24,15 @@ export interface RequestStore {
   userId: string | null;
 }
 
-const storage = new AsyncLocalStorage<RequestStore>();
+const storage = new AsyncLocalStorage<IRequestStore>();
 
 export const RequestContext = {
   /** Mở một vùng cho một request. Gọi ở lớp giữa, sớm nhất có thể. */
-  run<T>(store: RequestStore, work: () => T): T {
+  run<T>(store: IRequestStore, work: () => T): T {
     return storage.run(store, work);
   },
 
-  current(): RequestStore | undefined {
+  current(): IRequestStore | undefined {
     return storage.getStore();
   },
 

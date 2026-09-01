@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { LIMITS, circleCapacity, type StatKey } from '@nook/shared';
+import { LIMITS, circleCapacity, type TStatKey } from '@nook/shared';
 import { Achievement, UserStat } from '../../../../database/entity/index.js';
 import { AchievementItemDto, CircleCapacityDto } from '../dto/index.js';
 
 /** Tên cột trong bảng đếm, tra theo tên con đếm bên `@nook/shared`. */
-const COLUMN: Record<StatKey, keyof UserStat> = {
+const COLUMN: Record<TStatKey, keyof UserStat> = {
   friend_count: 'friendCount',
   moment_count: 'momentCount',
   memory_total: 'memoryTotal',

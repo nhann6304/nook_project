@@ -4,10 +4,10 @@ import {
   ERR,
   isSignInMethodEnabled,
   looksLikeEmail,
-  type RefreshResult,
-  type SendCodeResult,
-  type SignInMethod,
-  type VerifyCodeResult,
+  type TRefreshResult,
+  type ISendCodeResult,
+  type TSignInMethod,
+  type IVerifyCodeResult,
 } from '@nook/shared';
 import { AppException } from '../../error/index.js';
 import { UserService } from '../../../model/user/service/index.js';
@@ -52,7 +52,7 @@ export class AuthService {
    * Chốt riêng tư: câu trả lời GIỐNG NHAU dù đích có tồn tại hay không. Trả lời
    * khác nhau là biến cửa này thành máy dò "email này có dùng Nook không".
    */
-  async sendCode(dto: SendCodeDto): Promise<SendCodeResult> {
+  async sendCode(dto: SendCodeDto): Promise<ISendCodeResult> {
     const target = this.normalize(dto.method, dto.target);
     const code = await this.codes.issue(dto.method, target);
 
@@ -69,11 +69,11 @@ export class AuthService {
       retryAfterSeconds: this.codes.limits.resendSeconds,
       expiresInSeconds: this.codes.limits.ttlSeconds,
       codeLength: this.codes.limits.length,
-    } satisfies SendCodeResult;
+    } satisfies ISendCodeResult;
   }
 
   /** Nộp mã, đổi lấy thẻ phiên. Chưa có tài khoản thì mở luôn tại đây. */
-  async verifyCode(dto: VerifyCodeDto, ip: string | null): Promise<VerifyCodeResult> {
+  async verifyCode(dto: VerifyCodeDto, ip: string | null): Promise<IVerifyCodeResult> {
     const target = this.normalize(dto.method, dto.target);
 
     // Mã đúng TRƯỚC, mở tài khoản SAU. Đảo thứ tự là ai gõ đại một email cũng
@@ -97,11 +97,11 @@ export class AuthService {
       ...tokens,
       isNew,
       user: this.userMapper.toDto(user),
-    } satisfies VerifyCodeResult;
+    } satisfies IVerifyCodeResult;
   }
 
   /** Đổi thẻ dài hạn lấy cặp thẻ mới. */
-  refresh(dto: RefreshDto): Promise<RefreshResult> {
+  refresh(dto: RefreshDto): Promise<TRefreshResult> {
     return this.sessions.rotate(dto.refreshToken);
   }
 
@@ -122,7 +122,7 @@ export class AuthService {
    * biết lúc nào cho bấm nút — nó không có `libphonenumber-js`, không biết đầu
    * số nào có thật.
    */
-  private normalize(method: SignInMethod, raw: string): string {
+  private normalize(method: TSignInMethod, raw: string): string {
     if (!isSignInMethodEnabled(method)) {
       // Không phải "sai" — là "chưa mở". App cần phân biệt để nói cho đúng.
       throw new AppException(ERR.METHOD_UNAVAILABLE, HttpStatus.BAD_REQUEST);

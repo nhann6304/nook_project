@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import type { UserProfile } from '@nook/shared';
+import type { IUserProfile } from '@nook/shared';
 
 /**
  * Hồ sơ của CHÍNH MÌNH.
@@ -10,7 +10,7 @@ import type { UserProfile } from '@nook/shared';
  * Chưa có "hồ sơ người khác". Tới chặng góc bạn bè mới có, và nó sẽ là một lớp
  * KHÁC, hẹp hơn: luật sản phẩm cấm trả cấp thân của người khác cho người thứ ba.
  */
-export class UserProfileDto implements UserProfile {
+export class UserProfileDto implements IUserProfile {
   @ApiProperty({ format: 'uuid', example: '6f1b7a2e-0c3d-4a1f-9d8e-2b5c7a9f1e34' })
   id!: string;
 

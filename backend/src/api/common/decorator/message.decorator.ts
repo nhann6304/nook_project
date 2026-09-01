@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import type { MsgCode } from '@nook/shared';
+import type { TMsgCode } from '@nook/shared';
 
 export const MESSAGE_CODE = 'nook:messageCode';
 
@@ -14,4 +14,4 @@ export const MESSAGE_CODE = 'nook:messageCode';
  *
  * Vẫn là MÃ, không phải câu. Câu chữ nằm ở kho chữ của app.
  */
-export const Message = (code: MsgCode) => SetMetadata(MESSAGE_CODE, code);
+export const Message = (code: TMsgCode) => SetMetadata(MESSAGE_CODE, code);

@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { randomInt } from 'node:crypto';
 import argon2 from 'argon2';
-import { ERR, LIMITS, type SignInMethod } from '@nook/shared';
+import { ERR, LIMITS, type TSignInMethod } from '@nook/shared';
 import { AppException } from '../../error/index.js';
 import { RedisService } from '../../../../infra/redis/service/index.js';
 
@@ -14,9 +14,9 @@ import { RedisService } from '../../../../infra/redis/service/index.js';
  *   auth:hour:<kind>:<target>     con đếm số mã trong một giờ    TTL 3600s
  */
 const KEY = {
-  code: (method: SignInMethod, target: string) => `auth:code:${method}:${target}`,
-  resend: (method: SignInMethod, target: string) => `auth:resend:${method}:${target}`,
-  hour: (method: SignInMethod, target: string) => `auth:hour:${method}:${target}`,
+  code: (method: TSignInMethod, target: string) => `auth:code:${method}:${target}`,
+  resend: (method: TSignInMethod, target: string) => `auth:resend:${method}:${target}`,
+  hour: (method: TSignInMethod, target: string) => `auth:hour:${method}:${target}`,
 } as const;
 
 const HOUR_SECONDS = 3_600;
@@ -53,7 +53,7 @@ export class CodeService {
    * Sinh mã mới và cất. Trả về mã ở dạng THÔ để bên gửi mang đi — đây là chỗ
    * duy nhất trong cả server nhìn thấy mã chưa băm.
    */
-  async issue(method: SignInMethod, target: string): Promise<string> {
+  async issue(method: TSignInMethod, target: string): Promise<string> {
     const resendKey = KEY.resend(method, target);
 
     // Chốt gửi lại. `SET … NX EX` là MỘT lệnh: kiểm và đặt không tách rời nhau,
@@ -95,7 +95,7 @@ export class CodeService {
   }
 
   /** Đối chiếu mã người dùng gõ. Đúng thì huỷ mã luôn — mỗi mã dùng một lần. */
-  async consume(method: SignInMethod, target: string, code: string): Promise<void> {
+  async consume(method: TSignInMethod, target: string, code: string): Promise<void> {
     const codeKey = KEY.code(method, target);
     const row = await this.redis.client.hgetall(codeKey);
 
@@ -126,12 +126,12 @@ export class CodeService {
    * Dùng khi GỬI HỎNG: người dùng không được ngồi chờ 60 giây cho một mã không
    * bao giờ tới nơi.
    */
-  async drop(method: SignInMethod, target: string): Promise<void> {
+  async drop(method: TSignInMethod, target: string): Promise<void> {
     await this.redis.del(KEY.code(method, target), KEY.resend(method, target));
   }
 
   /** Còn bao nhiêu giây nữa mới xin được mã lần sau. 0 nghĩa là xin được ngay. */
-  async retryAfterSeconds(method: SignInMethod, target: string): Promise<number> {
+  async retryAfterSeconds(method: TSignInMethod, target: string): Promise<number> {
     const ttl = await this.redis.ttl(KEY.resend(method, target));
     return ttl > 0 ? ttl : 0;
   }

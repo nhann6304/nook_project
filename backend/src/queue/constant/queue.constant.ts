@@ -12,4 +12,4 @@ export const QUEUE = {
   sweep: 'sweep',
 } as const;
 
-export type QueueName = (typeof QUEUE)[keyof typeof QUEUE];
+export type TQueueName = (typeof QUEUE)[keyof typeof QUEUE];

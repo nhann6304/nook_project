@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { ERR, type ApiError } from '@nook/shared';
+import { ERR, type IApiError } from '@nook/shared';
 import { AppException } from '../error/index.js';
 
 /**
@@ -50,7 +50,7 @@ export class AllExceptionFilter implements ExceptionFilter {
     void res.status(body.status).send(body);
   }
 
-  private shape(error: unknown, requestId: string): ApiError {
+  private shape(error: unknown, requestId: string): IApiError {
     // Lỗi của mình — đã có sẵn mã.
     if (error instanceof AppException) {
       return {
