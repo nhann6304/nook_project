@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "Nook",
+    "slug": "nook",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "nook",
+    "userInterfaceStyle": "dark",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "backgroundColor": "#0E0D0C",
+    "icon": "./assets/images/icon.png",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.nook.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Nook cần camera để bạn chụp khoảnh khắc gửi cho bạn bè trong góc của mình.",
+        "NSPhotoLibraryUsageDescription": "Nook cần thư viện ảnh để bạn chọn một tấm đã chụp sẵn.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.nook.app",
+      "softwareKeyboardLayoutMode": "resize",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon-foreground.png",
+        "backgroundColor": "#0E0D0C"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Nook cần camera để bạn chụp khoảnh khắc gửi cho bạn bè trong góc của mình."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#0E0D0C"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

@@ -1,0 +1,26 @@
+# Phụ thuộc
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+frontend/expo-env.d.ts
+
+# Bản gốc dựng ra từ prebuild — không commit
+ios/
+android/
+
+# Khoá ký, đừng bao giờ commit
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Môi trường
+.env*.local
+
+# Máy
+.DS_Store
+*.log

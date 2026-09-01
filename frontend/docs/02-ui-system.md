@@ -1,0 +1,189 @@
+# Nook — Hệ thống giao diện
+
+Nguyên tắc, điều hướng, component, chuyển động, chữ nghĩa, luật hai nền tảng, và cách
+làm cho app hút người dùng. Màu và chữ lấy từ [`01-brand.md`](01-brand.md); từng màn
+cụ thể xem [`03-screen-specs.md`](03-screen-specs.md).
+
+---
+
+## 1. Năm nguyên tắc
+
+1. **Tối và trầm, mặc định.** Nền gần đen ấm, một điểm nhấn đất nung. Không có chế độ sáng ở V0.1 — ảnh nổi lên trên nền tối, và app này hay được mở buổi tối.
+2. **Ảnh là ngôi sao, UI lùi lại.** Không viền dày, không bóng đổ, không icon rườm rà quanh ảnh.
+3. **Không có gì để so sánh.** Không số like công khai, không bảng xếp hạng, không đếm follower. Mọi con số chỉ hai người trong cặp thấy.
+4. **Tròn, mềm, không góc nhọn.** Bo góc lớn ở mọi nơi.
+5. **Mỗi màn đúng một điểm sáng.** Nút chụp, hào quang sau dấu hiệu, badge mật ong — mỗi màn chỉ một thứ được phép sáng nhất. Hai điểm sáng là không có điểm nào.
+
+---
+
+## 2. Điều hướng
+
+Không có tab bar. App mở thẳng vào camera như Locket, mọi thứ khác là một cử chỉ:
+
+```
+                    CAMERA
+        (mở app là thấy, không màn chờ)
+                       │
+   ┌───────────────────┼───────────────────┐
+   │                   │                   │
+chạm avatar        vuốt lên          chạm bánh răng
+   │                   │                   │
+Góc của bạn      Khoảnh khắc          Cài đặt
+   │                   │
+chạm 1 người      chạm 1 ảnh
+   │                   │
+Chi tiết          Trò chuyện
+tình bạn          (riêng tư)
+```
+
+Tab bar chiếm 80px dưới màn hình và ngầm nói "app này có nhiều chỗ để lượn". Nook chỉ
+có một hành động chính — chụp.
+
+**Onboarding là một chồng màn riêng, đi thẳng một chiều**, có nút quay lại ở góc trên
+trái và không cử chỉ nào khác. Xong rồi thì không bao giờ quay lại được — đó là chủ ý.
+
+Cửa vào app có đúng hai đường và cả hai dẫn về **một** ô nhập:
+
+```
+Chào mừng ──┬── "Tạo tài khoản"  ──┐
+            └── "Đăng nhập"      ──┴──► Nhập email / SĐT ──► Nhập mã ──► vào app
+                                                                    (người mới đi tiếp: Tên và ảnh)
+```
+
+Hai nút vì người dùng cần thấy đường của mình trên màn đầu tiên, dù bên dưới là cùng
+một luồng. Nút nào bấm thì màn sau đổi tiêu đề và câu mô tả theo, không đổi thao tác.
+
+---
+
+## 3. Thư viện component
+
+Đã có trong `components/ui.tsx`:
+
+| Component | Đặc tả |
+|---|---|
+| `Screen` | Nền `bg`, vùng an toàn trên/dưới, đệm ngang 16 |
+| `Txt` | Sáu cấp chữ, ba mức mờ, phóng to có giới hạn |
+| `Button` | Chính: dải màu `gradient.warm`, chữ `bg`, bo 24, cao **52**, bóng cùng màu. Phụ: viền `border`, nền trong suốt. Cần `expo-linear-gradient` |
+| `IconButton` | Vùng chạm 48 dù icon nhỏ |
+| `Field` | Ô nhập cao **52**, bo 20, viền luôn có sẵn, đổi màu khi focus / lỗi |
+| `HelperText` | Dòng phụ dưới ô nhập, **luôn chiếm chỗ** để lỗi không đẩy layout |
+| `Segmented` | Thanh chuyển hai chế độ, rãnh `surfaceSunken`, ô đang chọn `surface` |
+| `CodeInput` | Sáu ô mã, một ô nhập thật trong suốt phủ lên trên để giữ tự điền mã |
+| `Halo` | Hào quang ba vòng, không cần thư viện gradient |
+| `Pill`, `Card`, `StatCard` | Bề mặt `surface`, bo 20 / 12 |
+| `Avatar` | Tròn, viền 2,5 theo thang độ thân, ngủ đông = viền đứt |
+| `EmptyState` | Khung đứt nét + một câu + một nút. Không bao giờ chỉ có chữ, không bao giờ có nhân vật |
+| `Rings` | Dấu hiệu "Ôm" dựng bằng viền View, không cần thư viện SVG. `ghost` = vòng ngoài đứt nét |
+| `GhostFrame` | Khung đứt nét, cùng độ bo với khung ngắm camera |
+
+Còn thiếu, làm khi tới màn cần:
+
+| Component | Đặc tả |
+|---|---|
+| `Toast` | Trượt từ trên, nền mật ong (mở khoá) hoặc `surfaceRaised` (lỗi), tự ẩn sau 3s |
+| `Skeleton` | Khối `surface` sáng dần rồi tối lại, 1,2s — **thay cho mọi vòng xoay** |
+| `Sheet` | Nền `surfaceRaised`, bo trên 24, kéo xuống để đóng |
+| `Switch` | Công tắc cài đặt, bật = `accent` |
+| `Row` | Hàng cài đặt: icon + tiêu đề + mô tả + mũi tên |
+
+Bo góc: 12 (thẻ nhỏ) · 16 (ảnh, ô mã) · 20 (thẻ lớn, ô nhập) · 24 (nút) · 32 (khung
+camera) · tròn (avatar, pill, thanh chuyển).
+
+Vùng chạm tối thiểu **48**, không ngoại lệ. Chữ nhỏ bấm được thì bọc `hitSlop`.
+
+---
+
+## 4. Hai nền tảng
+
+Một bộ code, hai cái máy khác nhau. Sáu chỗ phải xử riêng:
+
+| Chỗ | iPhone | Samsung / Android |
+|---|---|---|
+| Chắn trên | Đảo động, chừa ~59px | Lỗ camera, chừa ~36px |
+| Chắn dưới | Vạch cử chỉ, chừa 34px | Vạch cử chỉ ~24px, hoặc ba nút ~48px |
+| Bàn phím | App tự đẩy nội dung (`KeyboardAvoidingView` với `behavior="padding"`) | Hệ điều hành co màn — cần `android:windowSoftInputMode="adjustResize"` |
+| Tự điền mã | `textContentType="oneTimeCode"` | `autoComplete="sms-otp"` |
+| Cỡ chữ hệ thống | Hay để mặc định | Hay để lớn hơn — thử mọi màn ở mức lớn nhất |
+| Bề ngang hẹp nhất | 375 (iPhone SE) | 360 (S24 và phần lớn máy phổ thông) |
+
+Hai luật rút ra từ bảng trên:
+
+- **Không đóng cứng con số theo chiều dọc.** Mọi kích thước tính theo chiều ngang máy
+  hoặc theo vùng an toàn. Khung ngắm camera là 88% chiều ngang, không phải 60% chiều dọc.
+- **Đổi kiểu bàn phím thì dựng lại ô nhập** (`key={method}`). Android không đổi kiểu
+  bàn phím trên một ô đang focus — người dùng chọn "Số điện thoại" mà vẫn thấy bàn phím chữ.
+
+---
+
+## 5. Chuyển động
+
+Ít nhưng đúng chỗ. Ease-out, 150–320ms (`motion` trong tokens).
+
+| Chỗ | Chuyển động | Rung |
+|---|---|---|
+| Nút chụp | Thu nhỏ còn 0,92 khi nhấn | medium |
+| Ảnh gửi đi | Bay lên, nhỏ dần về phía avatar góc trên, 320ms | success |
+| App icon màn chào mừng | Trôi lên xuống 8px, 1,7s một chiều | — |
+| Vòng lên cấp khi mở khoá | Vòng ngoài sáng dần lên một nấc, 600ms | success |
+| Hào quang màn chào mừng | Độ đục 0,55 ⇄ 1 · cỡ 0,94 ⇄ 1,08, 1,5s, lệch nhịp với icon | — |
+| Đổi Email ⇄ Số điện thoại | Ô sáng trượt ngang 200ms | selection |
+| Mã sai | Sáu ô rung ngang ±6px, 300ms, rồi xoá sạch | error |
+| Vòng lên cấp | Màu chuyển dần 600ms | success |
+| Mở khoá tính năng | Vòng độ thân sáng lên một nấc, toast mật ong, **đúng 3 hạt confetti** | success |
+| Chỗ mới trong góc | Vòng đứt nét nở từ 0,8 → 1 | light |
+
+Máy bật "giảm chuyển động" thì tắt hết chuyển động lặp vô hạn — kiểm bằng
+`AccessibilityInfo.isReduceMotionEnabled()`, không làm công tắc riêng trong app.
+
+Không dùng: vòng xoay chờ (dùng skeleton), nảy đàn hồi, hiệu ứng lò xo quá đà.
+
+---
+
+## 6. Chữ nghĩa
+
+Giọng: **bạn bè nhắn tin, không phải hệ thống thông báo.** Xưng "bạn", không "quý khách",
+không dấu chấm than.
+
+| Tình huống | Viết thế này | Đừng viết |
+|---|---|---|
+| Màn chào mừng | "Góc nhỏ của tụi mình" | "Kết nối bạn bè mọi lúc mọi nơi!" |
+| Đăng nhập | "Nook gửi bạn một mã 6 số. Không mật khẩu, không có gì để nhớ." | "Vui lòng nhập email để tiếp tục" |
+| Email sai định dạng | "Email này trông chưa đúng. Xem lại giúp nhé." | "Email không hợp lệ" |
+| Không gửi được mã | "Chưa gửi được mã. Thử lại nhé." | "Gửi OTP thất bại" |
+| Mã sai | "Mã không đúng. Thử lại nhé." | "Sai mã xác thực" |
+| Mã hết hạn | "Mã đã hết hạn. Gửi lại nhé." | "OTP expired" |
+| Đang kiểm tra | "Đang kiểm tra…" | "Loading..." |
+| Feed trống | "Hết rồi. Chụp gì đó đi." | "Không có bài viết nào." |
+| Góc trống | "Góc của bạn đang trống. Mời người đầu tiên." | "Bạn chưa có bạn bè." |
+| Widget chưa có ảnh | "Chưa có gì mới" | "Không có dữ liệu" |
+| Gửi xong | "Đã vào góc" | "Đăng thành công!" |
+| Lên cấp | "Bạn và Minh vừa mở Album chung." | "Chúc mừng! Bạn đã đạt Level 3!" |
+| Ngủ đông | "Lâu rồi chưa có gì mới với Minh." | "Tình bạn của bạn đang giảm!" |
+| Hết chỗ | "Góc đã đầy. Thân hơn với người đang có sẽ mở thêm chỗ." | "Nâng cấp để thêm bạn." |
+| Lỗi mạng | "Chưa gửi được. Thử lại nhé." | "Error 500." |
+
+Ba từ cấm trong toàn app: **điểm, hạng, nhiệm vụ.** Thay bằng: ký ức, cấp độ, hành trình.
+Không dùng chữ kỹ thuật với người dùng: không "OTP", không "xác thực", không "hợp lệ" —
+viết là "mã", "kiểm tra", "trông chưa đúng".
+
+---
+
+## 7. Làm sao để hút người dùng
+
+Mười đòn, xếp theo thứ tự ăn tiền. Mỗi đòn gắn với một chỗ cụ thể trong app.
+
+1. **Ba giây đầu phải có một thứ động đậy.** Màn chào mừng: app icon trôi lên xuống, hào quang thở lệch nhịp. Màn tĩnh hoàn toàn trông như ảnh chụp màn hình bị treo.
+2. **Đăng nhập gọn dưới 15 giây.** Một ô nhập, một nút, mã tự điền. Mỗi ô nhập thêm là một phần trăm người dùng rơi rụng.
+3. **Không bao giờ có màn rỗng câm.** Mọi danh sách trống đều là khung đứt nét + một câu + một nút. Khung đó đọc ra "chỗ này lẽ ra có một tấm ảnh" — nói đúng cái đang thiếu.
+4. **Skeleton thay vòng xoay.** Vòng xoay nói "chờ đi"; skeleton nói "sắp có rồi, hình dạng thế này".
+5. **Một điểm sáng mỗi màn.** Mắt người tìm điểm sáng nhất trước — cho nó đúng thứ mình muốn họ bấm.
+6. **Chuyển động có hướng thì kể được chuyện.** Ảnh gửi đi bay về phía avatar góc trên: người dùng *thấy* ảnh đi tới bạn bè.
+7. **Rung đúng năm chỗ:** bấm chụp (medium), gửi xong (success), đổi chế độ đăng nhập (selection), mã sai (error), mở khoá (success).
+8. **Gọi tên người dùng sớm.** Ngay sau khi đặt tên: *"Chào {tên}"*. Ô nhắn ghi *"Nhắn riêng cho Minh…"*.
+9. **Phần thưởng đến trước lời mời.** Cho chụp và lưu khoảnh khắc đầu tiên **trước khi** bắt mời bạn. Người ta bỏ app ở đúng chỗ bị đòi mời bạn mà chưa thấy app làm được gì.
+10. **Widget là đòn lan truyền mạnh nhất.** Mặt bạn bè hiện thẳng trên màn hình chủ, không cần mở app. Xem [`04-widget.md`](04-widget.md).
+
+Ba thứ **không** làm, dù thấy app khác làm:
+- Không màn hình chờ có logo 2 giây. Mở app là thấy camera.
+- Không hộp thoại xin đánh giá 5 sao trong 7 ngày đầu.
+- Không thông báo "bạn bè đang chờ bạn quay lại".
