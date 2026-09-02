@@ -50,8 +50,21 @@ export class TransactionService {
   /**
    * Mở một giao dịch MỚI kể cả khi đang ở trong một giao dịch khác.
    *
-   * Hiếm khi đúng. Dùng khi cần ghi một thứ phải ở lại dù việc chính bị huỷ —
-   * ví dụ một dòng sổ kiểm toán ghi lại chính lần thất bại đó.
+   * ⚠️ **Hiện KHÔNG chỗ nào dùng, và đó là kết quả của một lần treo thật.**
+   *
+   * Chỗ dùng duy nhất trước đây là lúc phát hiện thẻ dài hạn bị chép: thu hồi
+   * hết phiên rồi ném. Chạy được — cho tới hôm thêm `SELECT … FOR UPDATE` vào
+   * ngay phía trên. Từ lúc đó giao dịch ngoài GIỮ KHOÁ dòng phiên, còn giao
+   * dịch tách rời thì `UPDATE` chính dòng đó: nó đợi khoá, khoá chỉ nhả khi
+   * giao dịch ngoài xong, mà giao dịch ngoài đang đợi nó. Treo cứng, Postgres
+   * ghi `Lock/transactionid`.
+   *
+   * Cách đúng ở ca đó hoá ra đơn giản hơn: ném ra NGOÀI, để giao dịch cuộn lại
+   * và nhả khoá, rồi mới ghi. Xem `SessionService.rotate()`.
+   *
+   * Giữ lại vì nó vẫn là công cụ hợp lệ cho ca "phải ghi dù việc chính hỏng".
+   * Nhưng trước khi dùng, hỏi đúng một câu: **giao dịch ngoài có đang giữ khoá
+   * trên dòng mà mình sắp ghi không?** Có thì đừng dùng.
    */
   runIsolated<T>(work: () => Promise<T>, isolation?: TIsolationLevel): Promise<T> {
     this.log.debug('opening an isolated transaction');

@@ -83,13 +83,26 @@ R2=$(echo "$R" | field "['refreshToken']")
 if [ "$R1" != "$R2" ]; then PASS=$((PASS+1)); printf '%s  ✓%s thẻ mới KHÁC thẻ cũ (cùng một giây)\n' "$GREEN" "$OFF"
 else FAIL=$((FAIL+1)); printf '%s  ✗%s thẻ mới GIỐNG thẻ cũ — việc xoay thẻ không xảy ra\n' "$RED" "$OFF"; fi
 
-# ── 8. Thẻ cũ bị chép → thu hết phiên ───────────────────────────────────────
+# ── 8. Thẻ đời trước, NGAY sau khi xoay: coi là thử lại lành ────────────────
+#
+# Trên điện thoại đây là chuyện thường ngày: hai lệnh gọi cùng dính 401 rồi
+# cùng đi làm mới, hoặc mạng chập chờn nên app gửi lại đúng lệnh đó. Chấm nó là
+# "thẻ bị chép" rồi thu hết phiên là đá người dùng ra khỏi app vì sóng yếu.
 R=$(curl -s -X POST "$BASE/v1/auth/refresh" -H 'content-type: application/json' -d "{\"refreshToken\":\"$R1\"}")
-check "xài lại thẻ cũ bị chặn" "auth.session_revoked" "$(echo "$R" | code_of)"
-R=$(curl -s "$BASE/v1/me" -H "authorization: Bearer $A1")
-check "thẻ ngắn hạn chết theo phiên" "auth.session_revoked" "$(echo "$R" | code_of)"
-R=$(curl -s -X POST "$BASE/v1/auth/refresh" -H 'content-type: application/json' -d "{\"refreshToken\":\"$R2\"}")
-check "thẻ mới cũng chết theo" "auth.session_revoked" "$(echo "$R" | code_of)"
+check "thẻ đời trước trong khoảng ân hạn: nhận" "auth.token_refreshed" "$(echo "$R" | code_of)"
+check "phiên KHÔNG bị thu hồi oan" "ok" "$(curl -s "$BASE/v1/me" -H "authorization: Bearer $A1" | code_of)"
+
+# ── 9. Cùng thẻ đó, NGOÀI khoảng ân hạn: thẻ bị chép, thu hết phiên ─────────
+#
+# Lùi `rotated_at` cho quá khoảng ân hạn — đúng cảnh kẻ chép được thẻ rồi đem
+# dùng sau đó một lúc.
+PGPASSWORD=nook psql -h localhost -p 5432 -U nook -d nook -tAc \
+  "UPDATE sessions SET rotated_at = now() - interval '5 minutes' WHERE revoked_at IS NULL" >/dev/null 2>&1
+R=$(curl -s -X POST "$BASE/v1/auth/refresh" -H 'content-type: application/json' -d "{\"refreshToken\":\"$R1\"}")
+check "ngoài khoảng ân hạn: thu hết phiên" "auth.session_revoked" "$(echo "$R" | code_of)"
+check "thẻ ngắn hạn chết theo phiên" "auth.session_revoked" "$(curl -s "$BASE/v1/me" -H "authorization: Bearer $A1" | code_of)"
+check "thẻ mới cũng chết theo" "auth.session_revoked" \
+  "$(curl -s -X POST "$BASE/v1/auth/refresh" -H 'content-type: application/json' -d "{\"refreshToken\":\"$R2\"}" | code_of)"
 
 # ── 9. Đường chưa mở ────────────────────────────────────────────────────────
 R=$(curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \

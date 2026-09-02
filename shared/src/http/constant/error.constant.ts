@@ -8,6 +8,8 @@ export const COMMON_ERR = {
   BAD_REQUEST: 'common.bad_request',
   NOT_FOUND: 'common.not_found',
   RATE_LIMITED: 'common.rate_limited',
+  /** Thân yêu cầu vượt trần — ảnh thì đã có mã riêng ở miền media */
+  PAYLOAD_TOO_LARGE: 'common.payload_too_large',
   SERVER_ERROR: 'common.server_error',
   /** Đường đã khai nhưng ruột chưa viết. Chỉ có ở giai đoạn dựng khung. */
   NOT_IMPLEMENTED: 'common.not_implemented',

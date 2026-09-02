@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
-import { DOCS_PATH } from '@nook/shared';
+import { DOCS_PATH, ERR } from '@nook/shared';
 import { AppModule } from '../app.module.js';
 import { Env, NodeEnv } from '../config/env/index.js';
 import { buildLogger } from '../config/logger/index.js';
@@ -22,6 +22,36 @@ export async function bootstrap(): Promise<void> {
       // Đứng sau nginx thì `req.ip` phải là IP người dùng, không phải IP nginx.
       trustProxy: true,
       bodyLimit: 1_048_576,
+
+      /**
+       * Lỗi ở tầng SOCKET, xảy ra trước cả khi có một request để mà xử lý.
+       *
+       * Ví dụ thật: ký tự thô chưa mã hoá trong chuỗi truy vấn
+       * (`?username=ĐứcAnh`). Bộ đọc URL của Fastify ném ngay tại đó — chưa có
+       * route, chưa có controller, nên **bộ lọc lỗi của Nest không với tới**,
+       * và mặc định Fastify trả về hình dạng của riêng nó.
+       *
+       * Cả app chỉ có MỘT lớp đọc câu trả lời, nên chỗ này phải trả đúng vỏ
+       * chung như mọi chỗ khác. Viết thẳng vào socket vì ở tầng này chưa có
+       * đối tượng `reply` nào cả.
+       */
+      clientErrorHandler(_error, socket) {
+        const body = JSON.stringify({
+          ok: false,
+          code: ERR.BAD_REQUEST,
+          status: 400,
+          // Chưa có request thì chưa có mã dấu vết. Nói thẳng là không có, hơn
+          // là bịa ra một mã không tra được trong log.
+          requestId: '-',
+        });
+        socket.end(
+          'HTTP/1.1 400 Bad Request\r\n' +
+            'content-type: application/json; charset=utf-8\r\n' +
+            `content-length: ${Buffer.byteLength(body)}\r\n` +
+            'connection: close\r\n\r\n' +
+            body,
+        );
+      },
     }),
     // Gom log lúc khởi động lại, chờ tới khi bộ ghi log thật sẵn sàng — nếu
     // không thì mấy dòng đầu tiên, chính là mấy dòng hay hỏng nhất, bị mất.

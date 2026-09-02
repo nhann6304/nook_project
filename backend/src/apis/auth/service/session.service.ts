@@ -1,14 +1,40 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import argon2 from 'argon2';
 import { ERR, type IAuthTokens, type ITokenClaims } from '@nook/shared';
 import { Env } from '../../../config/env/index.js';
-import { TransactionService, Transactional } from '../../../core/transaction/index.js';
+import { Transactional } from '../../../core/transaction/index.js';
 import { AppException } from '../../../core/error/index.js';
 import { SessionRepository } from '../../../repository/session/index.js';
+import { Session } from '../../../database/entity/index.js';
 import type { IDeviceInfo } from '../interface/index.js';
+
+/**
+ * Sau khi xoay, thẻ ĐỜI TRƯỚC còn được nhận thêm ngần này.
+ *
+ * Không phải để nới lỏng bảo mật. Để chịu được một chuyện xảy ra thật trên
+ * điện thoại: hai lệnh gọi cùng dính 401 rồi cùng đi làm mới, hoặc mạng chập
+ * chờn nên app gửi lại đúng lệnh đó. Không có khoảng này thì người dùng bị đá
+ * ra khỏi app vì sóng yếu — và họ sẽ không bao giờ biết vì sao.
+ *
+ * Ngắn thôi. Ngoài khoảng này mà còn cầm thẻ cũ thì đó là chuyện đáng ngờ thật.
+ */
+const ROTATION_GRACE_MS = 30_000;
+
+/**
+ * Thẻ đã xoay bị dùng lại ngoài khoảng ân hạn.
+ *
+ * Là lỗi RIÊNG chứ không phải `AppException`, vì nó phải mang theo `userId` ra
+ * ngoài giao dịch — việc thu hồi toàn bộ phiên KHÔNG được chạy bên trong.
+ * Xem `rotate()` để biết vì sao.
+ */
+class RefreshReuseDetected extends Error {
+  constructor(readonly userId: string) {
+    super('refresh token reuse detected');
+  }
+}
 
 /**
  * Phát thẻ, xoay thẻ, thu thẻ.
@@ -24,11 +50,12 @@ import type { IDeviceInfo } from '../interface/index.js';
  */
 @Injectable()
 export class SessionService {
+  private readonly log = new Logger('Session');
+
   constructor(
     private readonly sessions: SessionRepository,
     private readonly jwt: JwtService,
     private readonly config: ConfigService<Env, true>,
-    private readonly tx: TransactionService,
   ) { }
 
   /** Mở phiên mới cho một máy. Gọi sau khi mã đã đúng. */
@@ -57,12 +84,44 @@ export class SessionService {
     return tokens;
   }
 
-  /** Đổi thẻ dài hạn lấy cặp thẻ mới. Thẻ cũ chết ngay tại đây. */
-  @Transactional()
+  /**
+   * Đổi thẻ dài hạn lấy cặp thẻ mới. Thẻ cũ chết ngay tại đây.
+   *
+   * ── Khoá dòng, không phải đọc thường ────────────────────────────────────
+   *
+   * `findForRotate` khoá dòng phiên (`SELECT … FOR UPDATE`). Không khoá thì
+   * hai lượt làm mới cùng lúc cùng ĐỌC dấu vân cũ trước khi ai kịp GHI, nên cả
+   * hai cùng thấy khớp và cả hai cùng xoay — bẫy "thẻ bị chép" không nổ trong
+   * đúng cái ca nó sinh ra để bắt, và chỉ một trong hai thẻ mới là thẻ thật.
+   * Đã đo và thấy đúng như vậy trước khi vá.
+   */
   async rotate(refreshToken: string): Promise<IAuthTokens> {
+    try {
+      return await this.rotateLocked(refreshToken);
+    } catch (error) {
+      if (!(error instanceof RefreshReuseDetected)) throw error;
+
+      // Thu hồi Ở NGOÀI giao dịch, sau khi nó đã cuộn lại và nhả khoá.
+      //
+      // Trước đây chỗ này gọi `tx.runIsolated()` ngay trong giao dịch, và nó
+      // TREO THẬT: giao dịch ngoài đang giữ khoá dòng (`SELECT … FOR UPDATE`),
+      // còn giao dịch tách rời thì `UPDATE sessions` — nó đợi khoá đó, mà khoá
+      // đó chỉ nhả khi giao dịch ngoài xong, mà giao dịch ngoài thì đang đợi
+      // nó. Postgres ghi rõ: `Lock/transactionid`.
+      //
+      // Ở đây thì giao dịch đã cuộn lại rồi — không giữ khoá nào nữa, và việc
+      // thu hồi vẫn được ghi vì nó nằm ngoài phần bị cuộn.
+      await this.sessions.revokeAllOf(error.userId);
+      this.log.warn(`refresh token reuse: revoked all sessions of user ${error.userId}`);
+      throw new AppException(ERR.SESSION_REVOKED, HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  @Transactional()
+  private async rotateLocked(refreshToken: string): Promise<IAuthTokens> {
     const claims = this.verify(refreshToken, 'refresh');
 
-    const session = await this.sessions.findById(claims.sid);
+    const session = await this.sessions.findForRotate(claims.sid);
     if (!session || session.revokedAt !== null) {
       throw new AppException(ERR.SESSION_REVOKED, HttpStatus.UNAUTHORIZED);
     }
@@ -70,33 +129,45 @@ export class SessionService {
       throw new AppException(ERR.SESSION_EXPIRED, HttpStatus.UNAUTHORIZED);
     }
 
-    // Thẻ ký đúng nhưng không khớp dấu vân = thẻ này đã bị xoay rồi mà vẫn có
-    // người cầm. Nghĩa là nó đã bị chép đi. Không biết máy nào là của chủ, nên
-    // thu hết rồi để họ đăng nhập lại — phiền một lần còn hơn mất tài khoản.
     if (!(await argon2.verify(session.refreshHash, refreshToken))) {
-      // Giao dịch TÁCH RỜI, và đây là chỗ duy nhất trong dự án cần nó.
-      //
-      // Ngay dưới là một cú ném. Ném thì giao dịch đang chạy cuộn lại — cuộn
-      // luôn cả việc thu hồi vừa ghi, và kẻ cầm thẻ chép được vẫn đi lại thoải
-      // mái. Việc thu hồi phải Ở LẠI kể cả khi việc chính hỏng.
-      //
-      // Trên đường này chưa có câu ghi nào chạm vào `sessions`, nên giao dịch
-      // tách rời không giành khoá với giao dịch ngoài. Thêm câu ghi nào phía
-      // TRÊN chỗ này thì phải nghĩ lại.
-      await this.tx.runIsolated(() => this.sessions.revokeAllOf(session.userId));
-      throw new AppException(ERR.SESSION_REVOKED, HttpStatus.UNAUTHORIZED);
+      // Chưa vội kết tội. Có thể đây chỉ là một lần thử lại lành: cùng một lệnh
+      // làm mới bị gửi hai lần vì mạng chập chờn, hoặc hai lệnh gọi cùng dính
+      // 401 rồi cùng đi làm mới. Thẻ ĐỜI TRƯỚC, trong khoảng ân hạn, thì nhận.
+      const withinGrace =
+        session.rotatedAt !== null &&
+        Date.now() - session.rotatedAt.getTime() <= ROTATION_GRACE_MS;
+
+      const isPrevious =
+        withinGrace &&
+        session.prevRefreshHash !== null &&
+        (await argon2.verify(session.prevRefreshHash, refreshToken));
+
+      if (isPrevious) {
+        this.log.debug(`refresh retried within grace window: session ${session.id}`);
+        return this.reissue(session);
+      }
+
+      // Ngoài khoảng ân hạn mà vẫn cầm thẻ đã xoay: thẻ này đã bị chép đi.
+      // Ném ra NGOÀI để thu hồi — không thu ở đây, xem ghi chú ở `rotate()`.
+      throw new RefreshReuseDetected(session.userId);
     }
 
+    return this.reissue(session);
+  }
+
+  /** Ký cặp thẻ mới và ghi lại, giữ dấu vân đời trước để chịu được thử lại. */
+  private async reissue(session: Session): Promise<IAuthTokens> {
     const tokens = this.mint(session.userId, session.id);
     await this.sessions.update(
       { id: session.id },
       {
         refreshHash: await argon2.hash(tokens.refreshToken),
+        prevRefreshHash: session.refreshHash,
+        rotatedAt: new Date(),
         lastUsedAt: new Date(),
         expiresAt: this.refreshExpiry(),
       },
     );
-
     return tokens;
   }
 

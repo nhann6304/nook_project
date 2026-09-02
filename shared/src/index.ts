@@ -34,6 +34,7 @@ export * from './record/index.js';
 export * from './http/index.js';
 export * from './auth/index.js';
 export * from './user/index.js';
+export * from './username/index.js';
 export * from './circle/index.js';
 export * from './achievement/index.js';
 export * from './memory/index.js';

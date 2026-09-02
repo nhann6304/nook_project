@@ -17,6 +17,9 @@ export class UserProfileDto implements IUserProfile {
   @ApiProperty({ enum: USER_ROLES, example: 'member', description: 'Chỉ trang quản trị dùng tới' })
   role!: TUserRole;
 
+  @ApiProperty({ nullable: true, example: 'namnguyen', description: 'Duy nhất cả hệ thống' })
+  username!: string | null;
+
   @ApiProperty({ nullable: true, maxLength: 24, example: 'Nam' })
   displayName!: string | null;
 
