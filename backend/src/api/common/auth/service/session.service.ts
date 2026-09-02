@@ -135,8 +135,15 @@ export class SessionService {
         secret: this.secretFor(kind),
         ignoreExpiration: options?.ignoreExpiration ?? false,
       });
-    } catch {
-      throw new AppException(ERR.SESSION_EXPIRED, HttpStatus.UNAUTHORIZED);
+    } catch (error) {
+      // Hai chuyện khác nhau, và app nói hai câu khác nhau: "phiên hết hạn,
+      // đăng nhập lại" khác hẳn "thẻ này không đọc được". Gộp làm một là bắt
+      // người dùng đoán.
+      const expired = error instanceof Error && error.name === 'TokenExpiredError';
+      throw new AppException(
+        expired ? ERR.SESSION_EXPIRED : ERR.UNAUTHORIZED,
+        HttpStatus.UNAUTHORIZED,
+      );
     }
 
     // Chốt quan trọng: thẻ dài hạn KHÔNG được dùng thay thẻ ngắn hạn. Không có
