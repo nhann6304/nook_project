@@ -113,6 +113,34 @@ check "thẻ ngắn hạn chết theo phiên" "auth.session_revoked" "$(curl -s 
 check "thẻ mới cũng chết theo" "auth.session_revoked" \
   "$(curl -s -X POST "$BASE/v1/auth/refresh" -H 'content-type: application/json' -d "{\"refreshToken\":\"$R2\"}" | code_of)"
 
+# ── 9b. Phiên tự gia hạn — "đăng nhập một lần rồi thôi" ────────────────────
+#
+# Hạn của thẻ dài hạn phải ĐẨY RA XA mỗi lần app làm mới thẻ. Không có chuyện
+# đó thì người dùng bị đá ra sau đúng JWT_REFRESH_TTL dù ngày nào cũng mở app —
+# đúng thứ mà cả thiết kế này sinh ra để tránh.
+psql_one() { PGPASSWORD=nook psql -h localhost -p 5432 -U nook -d nook -tAc "$1" 2>/dev/null; }
+
+SMAIL="slide$RANDOM@nook.test"
+curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \
+  -d "{\"method\":\"email\",\"target\":\"$SMAIL\"}" >/dev/null
+SCODE="$(read_code)"
+SOUT=$(curl -s -X POST "$BASE/v1/auth/verify" -H 'content-type: application/json' \
+  -d "{\"method\":\"email\",\"target\":\"$SMAIL\",\"code\":\"$SCODE\"}")
+SREF=$(echo "$SOUT" | field "['refreshToken']")
+
+# Lùi hạn về gần, giả cảnh phiên đã dùng được một thời gian dài.
+SID=$(psql_one "SELECT id FROM sessions WHERE revoked_at IS NULL ORDER BY created_at DESC LIMIT 1")
+psql_one "UPDATE sessions SET expires_at = now() + interval '3 days' WHERE id = '$SID'" >/dev/null
+BEFORE_EXP=$(psql_one "SELECT expires_at FROM sessions WHERE id = '$SID'")
+
+curl -s -X POST "$BASE/v1/auth/refresh" -H 'content-type: application/json' \
+  -d "{\"refreshToken\":\"$SREF\"}" >/dev/null
+AFTER_EXP=$(psql_one "SELECT expires_at FROM sessions WHERE id = '$SID'")
+
+MOVED=$(psql_one "SELECT CASE WHEN '$AFTER_EXP'::timestamptz > '$BEFORE_EXP'::timestamptz + interval '30 days' THEN 'xa hon' ELSE 'khong doi' END")
+check "mở app là hạn phiên đẩy ra xa" "xa hon" "$MOVED"
+printf '%s     %s  ->  %s%s\n' "$DIM" "${BEFORE_EXP:0:10}" "${AFTER_EXP:0:10}" "$OFF"
+
 # ── 10. Hai cửa của giao diện: "đã có tài khoản" và "tạo tài khoản mới" ────
 #
 # `intent` cho app biết người ta bấm vào từ đâu, để server nói được "email này

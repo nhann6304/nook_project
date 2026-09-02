@@ -61,6 +61,21 @@ gì đã có.**
 Nguyên tắc dựng màn: **màn nào cũng phải vẽ được từ dữ liệu ở máy trước, rồi mới
 đắp dữ liệu mới lên.** Không màn nào được bắt đầu bằng vòng xoay chờ mạng.
 
+### Giữ sẵn bao nhiêu, và lên mạng thì kéo gì
+
+App **không đợi có mạng mới tải**. Nó giữ sẵn một số bài ở máy, và biết mình
+đang giữ tới đâu. Có mạng thì chỉ kéo **phần mới hơn** chồng lên đầu, không kéo
+lại từ đầu.
+
+- Mở app → vẽ ngay từ cái đang có, không vòng xoay.
+- Có mạng → hỏi *"có gì mới hơn chỗ tôi đang giữ không"* (xem 4.4) → chèn lên đầu.
+- Ảnh của bài mới tải ngầm, xong tấm nào hiện tấm đó.
+
+Giữ sẵn bao nhiêu thì hợp: **feed 48 giờ đã là trần tự nhiên**, thường chỉ vài
+chục bài với góc 10 người. Cứ giữ trọn 48 giờ, cộng thêm bản `thumb` của lứa cũ
+hơn để cuộn xuống không bị trống. Không cần đặt con số cứng — trần thời gian
+làm hộ việc đó rồi.
+
 ---
 
 ## 3. Ghi — cái gì xếp hàng được
@@ -83,9 +98,20 @@ Nguyên tắc dựng màn: **màn nào cũng phải vẽ được từ dữ li�
 
 ### 4.1 Thẻ ngắn hạn hết hạn trong lúc offline → **không được đá về màn đăng nhập**
 
-Thẻ ngắn hạn sống 15 phút (`JWT_ACCESS_TTL=900`), thẻ dài hạn 30 ngày
-(`JWT_REFRESH_TTL=2592000`). Người ta lên máy bay, ba tiếng sau mở app: thẻ ngắn
-hạn chết, mà chưa gọi được server để đổi thẻ mới.
+Trên điện thoại, người ta đăng nhập **một lần rồi thôi**. Đó là kỳ vọng, và hệ
+thống phải chiều đúng nó.
+
+Cách làm: thẻ ngắn hạn sống 15 phút (`JWT_ACCESS_TTL=900`), thẻ dài hạn
+**180 ngày** (`JWT_REFRESH_TTL=15552000`) — nhưng con số 180 ngày đọc là
+**"bao lâu KHÔNG mở app"**, không phải "bao lâu thì bị đá ra". Mỗi lần app làm
+mới thẻ, hạn đẩy ra xa lại từ đầu. Nên người dùng thật, mở app dù chỉ vài tháng
+một lần, **không bao giờ phải gõ lại mã**.
+
+Chỗ gia hạn nằm ở `reissue()` trong `session.service.ts`, và có ca kiểm giữ nó
+trong `smoke-auth.sh` — bỏ dòng đó đi là 180 ngày biến thành hạn tử.
+
+Còn chuyện offline: người ta lên máy bay, ba tiếng sau mở app. Thẻ ngắn hạn
+chết, mà chưa gọi được server để đổi thẻ mới.
 
 **Đây là lỗi kinh điển và nó phá app:** đá về màn đăng nhập là người dùng mất
 sạch những gì đã tải, giữa lúc không có mạng để đăng nhập lại.
