@@ -137,7 +137,7 @@ src/
 ├── database/      KẾT NỐI THẬT. data-source · entity/ · migration/
 ├── repository/    KHO THEO BẢNG. user/ session/ achievement/ — dùng chung mọi khán giả
 │
-├── api/           TÍNH NĂNG, chia theo KHÁN GIẢ
+├── apis/          TÍNH NĂNG, chia theo KHÁN GIẢ
 │   ├── auth/         đăng nhập — CẢ HAI khán giả đi qua đây
 │   ├── app/          app React Native   → /v1/...
 │   │   ├── user/ achievement/ setting/
@@ -154,19 +154,23 @@ src/
 Trong mỗi module: `controller/` `service/` `mapper/` `dto/`, mỗi thư mục một
 `index.ts`, gốc module chỉ có `*.module.ts`.
 
-### Ba luật, và có bộ soi
+### Sáu luật, và có bộ soi
 
 ```bash
-npm run check:arch     # chạy luôn trong npm run check, nên push cũng chạy
+npm run check:arch     # chiều phụ thuộc giữa các tầng — 6 luật
+npm run check:public   # có ai vừa mở thêm cửa cho người chưa đăng nhập không
+node scripts/check-guard.mjs   # gõ THẬT vào từng cửa, không cầm thẻ
 ```
 
-1. **`core/` không được nhập từ `api/`.** Khung không biết nghiệp vụ. Bộ soi này
+Hai cái đầu chạy trong `npm run check`, nên **push cũng chạy**.
+
+1. **`core/` không được nhập từ `apis/`.** Khung không biết nghiệp vụ. Bộ soi này
    bắt được một chỗ ngay hôm dựng nó: `@CurrentUser()` nằm ở khung mà đi lấy
-   kiểu `IAuthUser` từ `api/auth/`. Nghĩ kỹ thì "ai đang gọi" đúng là chuyện của
+   kiểu `IAuthUser` từ `apis/auth/`. Nghĩ kỹ thì "ai đang gọi" đúng là chuyện của
    khung — `IAuthUser` chuyển sang `core/interface/`.
 2. **`repository/` không thuộc về khán giả nào.** App và web quản trị hỏi cùng
    bảng `users`. Nhét kho vào thư mục của một bên là để bên kia phải với sang.
-3. **`api/app/` và `api/admin/` không được với sang nhau.** Cái GIỐNG nhau là
+3. **`apis/app/` và `apis/admin/` không được với sang nhau.** Cái GIỐNG nhau là
    câu truy vấn, đã nằm ở `repository/`. Cái KHÁC nhau — controller, dto,
    mapper — mỗi bên giữ của mình.
 
@@ -742,7 +746,35 @@ nhận dấu hai chấm trong mã việc).
 **Node 22 hoặc 24, đừng dùng 23.** Vài thư viện khai `engines` là
 `^20.19 || ^22.13 || >=24`; bản lẻ nằm ngoài lời hứa đó.
 
-## 9. Ranh giới với frontend
+## 9. Cổng thẻ — chưa đăng nhập là không vào được gì
+
+**Mặc định là ĐÓNG.** `JwtAccessGuard` gắn toàn cục (`APP_GUARD`), nên đường mới
+viết ra đã có cổng; `@Public()` là cách duy nhất mở ra. Làm ngược lại — mở sẵn
+rồi nhớ mà đóng — thì cái quên đầu tiên là một lỗ hổng, chứ không phải một lỗi
+401 dễ thấy.
+
+Đúng **5 cửa mở**, và cả 5 đều có lý do: bốn cửa đăng nhập (chưa có thẻ thì lấy
+đâu ra thẻ) và `/health` (bộ cân bằng tải gõ, không cầm thẻ).
+
+Hai lớp soi, vì hai chuyện khác nhau:
+
+| Bộ soi | Đọc gì | Bắt được gì |
+|---|---|---|
+| `check:public` | **mã nguồn** | ai đó vừa dán thêm `@Public()` |
+| `check-guard.mjs` | **server đang chạy** | cổng bị hở vì lỗi nối dây ở chỗ khác |
+
+Cái thứ hai quan trọng hơn: mã nguồn có thể đúng mà cổng vẫn hở — dán
+`APP_GUARD` nhầm module, hay một controller quên nằm trong cây module. Nó gõ
+thật vào **từng cửa một** không cầm thẻ, và đòi đúng `401 auth.unauthorized`.
+
+Ống socket cũng là một cái cửa, và cũng bị soi: nối không thẻ và nối bằng thẻ
+bịa đều phải bị cắt.
+
+```
+DAT - 15/15   (13 cửa HTTP + 2 lối vào socket)
+```
+
+## 10. Ranh giới với frontend
 
 **Màn hình không biết server tồn tại.** Mọi lệnh gọi mạng của app nằm gọn trong
 `frontend/src/features/<tên>/lib/*Api.ts`. Hiện có đúng một file như vậy:

@@ -26,4 +26,4 @@ import { AdminModule } from './admin/index.js';
 @Module({
   imports: [HealthModule, AuthModule, AppApiModule, AdminModule],
 })
-export class ApiModule {}
+export class ApisModule {}

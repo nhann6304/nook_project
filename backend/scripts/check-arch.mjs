@@ -18,9 +18,12 @@ const SRC = new URL('../src/', import.meta.url).pathname;
 
 /** ai KHÔNG được nhập từ ai */
 const RULES = [
-  { from: 'core', banned: ['api/', 'realtime/', 'queue/'], why: 'core la khung, khong duoc biet nghiep vu' },
-  { from: 'database', banned: ['api/', 'core/service', 'realtime/'], why: 'database chi lo ket noi va bang' },
-  { from: 'infra', banned: ['api/', 'realtime/'], why: 'infra chi lo the gioi ben ngoai' },
+  { from: 'core',       banned: ['apis/', 'realtime/', 'queue/'],        why: 'core la khung, khong duoc biet nghiep vu' },
+  { from: 'database',   banned: ['apis/', 'core/service', 'realtime/'],  why: 'database chi lo ket noi va bang' },
+  { from: 'infra',      banned: ['apis/', 'realtime/'],                  why: 'infra chi lo the gioi ben ngoai' },
+  { from: 'repository', banned: ['apis/', 'realtime/'],                  why: 'kho du lieu khong thuoc ve khan gia nao' },
+  { from: 'apis/app',   banned: ['apis/admin/'],                         why: 'cua app khong duoc voi sang cua quan tri' },
+  { from: 'apis/admin', banned: ['apis/app/'],                           why: 'cua quan tri khong duoc voi sang cua app' },
 ];
 
 const walk = (dir) =>

@@ -20,7 +20,8 @@
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "check:arch": "node scripts/check-arch.mjs",
-    "check": "npm run check:arch && npm run typecheck && npm run lint && npm run test",
+    "check:public": "node scripts/check-public-routes.mjs",
+    "check": "npm run check:arch && npm run check:public && npm run typecheck && npm run lint && npm run test",
     "test": "vitest run",
     "test:watch": "vitest",
     "typeorm": "typeorm -d dist/database/data-source/data-source.js",
@@ -70,6 +71,7 @@
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.6",
+    "socket.io-client": "^4.8.3",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.69.0",
     "vitest": "^3.2.7"

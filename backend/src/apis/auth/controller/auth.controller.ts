@@ -1,10 +1,20 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 import { API, MSG } from '@nook/shared';
 import { Public, Message, ApiErrors, ApiNoData, ApiResult } from '../../../core/decorator/index.js';
 import { AuthService } from '../service/index.js';
-import { SendCodeDto, SendCodeResultDto, VerifyCodeDto, VerifyCodeResultDto, LogoutDto, RefreshDto, RefreshResultDto } from '../dto/index.js';
+import {
+  SEND_CODE_EXAMPLES,
+  VERIFY_CODE_EXAMPLES,
+  SendCodeDto,
+  SendCodeResultDto,
+  VerifyCodeDto,
+  VerifyCodeResultDto,
+  LogoutDto,
+  RefreshDto,
+  RefreshResultDto,
+} from '../dto/index.js';
 
 /**
  * Bốn cửa của việc đăng nhập.
@@ -29,6 +39,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Message(MSG.CODE_SENT)
   @ApiOperation({ summary: 'Gửi mã đăng nhập' })
+  @ApiBody({ type: SendCodeDto, examples: SEND_CODE_EXAMPLES })
   @ApiResult(SendCodeResultDto)
   @ApiErrors(400, 429, 502)
   sendCode(@Body() dto: SendCodeDto): Promise<SendCodeResultDto> {
@@ -40,6 +51,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Message(MSG.SIGNED_IN)
   @ApiOperation({ summary: 'Kiểm mã và phát thẻ' })
+  @ApiBody({ type: VerifyCodeDto, examples: VERIFY_CODE_EXAMPLES })
   @ApiResult(VerifyCodeResultDto)
   @ApiErrors(400, 410, 429)
   verify(@Body() dto: VerifyCodeDto, @Req() req: FastifyRequest): Promise<VerifyCodeResultDto> {

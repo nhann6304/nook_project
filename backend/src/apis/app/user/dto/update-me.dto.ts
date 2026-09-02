@@ -31,3 +31,15 @@ export class UpdateMeDto implements IUpdateMeBody {
   @IsUUID()
   avatarMediaId?: string;
 }
+
+export const UPDATE_ME_EXAMPLES = {
+  name: { summary: 'Chỉ đổi tên', value: { displayName: 'Nam' } },
+  avatar: {
+    summary: 'Chỉ đổi ảnh đại diện  (ảnh phải tải lên xong trước)',
+    value: { avatarMediaId: '6f1b7a2e-0c3d-4a1f-9d8e-2b5c7a9f1e34' },
+  },
+  both: {
+    summary: 'Đổi cả hai',
+    value: { displayName: 'Nam', avatarMediaId: '6f1b7a2e-0c3d-4a1f-9d8e-2b5c7a9f1e34' },
+  },
+} as const;

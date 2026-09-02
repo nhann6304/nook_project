@@ -55,3 +55,32 @@ export class VerifyCodeResultDto extends AuthTokensDto implements IVerifyCodeRes
   @ApiProperty({ type: UserProfileDto })
   user!: UserProfileDto;
 }
+
+export const VERIFY_CODE_EXAMPLES = {
+  iphone: {
+    summary: 'Từ iPhone  (có khai máy)',
+    value: {
+      method: 'email',
+      target: 'nam@gmail.com',
+      code: '123456',
+      deviceName: 'iPhone của Nam',
+      platform: 'ios',
+      appVersion: '0.1.0',
+    },
+  },
+  android: {
+    summary: 'Từ Android',
+    value: {
+      method: 'email',
+      target: 'nam@gmail.com',
+      code: '123456',
+      deviceName: 'Pixel 8',
+      platform: 'android',
+      appVersion: '0.1.0',
+    },
+  },
+  minimal: {
+    summary: 'Tối thiểu  (không khai máy — vẫn chạy)',
+    value: { method: 'email', target: 'nam@gmail.com', code: '123456' },
+  },
+} as const;

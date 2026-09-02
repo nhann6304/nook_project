@@ -48,4 +48,4 @@ export const API = {
 export const HEALTH_PATH = '/health';
 
 /** Trang Swagger. Chỉ bật ở máy dev. */
-export const DOCS_PATH = '/docs';
+export const DOCS_PATH = '/api/v1/docs';
