@@ -20,6 +20,20 @@ export class Session extends AuditEntity {
   @Column({ name: 'refresh_hash', type: 'varchar', length: 255 })
   refreshHash!: string;
 
+  /**
+   * Dấu vân của thẻ dài hạn ĐỜI TRƯỚC, cùng lúc xoay.
+   *
+   * Hai cột này để chịu được chuyện xảy ra thật trên điện thoại: hai lệnh gọi
+   * cùng dính 401 rồi cùng đi làm mới thẻ. Không có chúng thì lượt thứ hai cầm
+   * thẻ vừa bị xoay, bị chấm là "thẻ bị chép", và người dùng bị đá ra khỏi app
+   * chỉ vì mạng yếu.
+   */
+  @Column({ name: 'prev_refresh_hash', type: 'varchar', length: 255, nullable: true })
+  prevRefreshHash!: string | null;
+
+  @Column({ name: 'rotated_at', type: 'timestamptz', nullable: true })
+  rotatedAt!: Date | null;
+
   /** "iPhone của Nam". Người dùng đọc để biết nên thu hồi máy nào. */
   @Column({ name: 'device_name', type: 'varchar', length: 64, nullable: true })
   deviceName!: string | null;

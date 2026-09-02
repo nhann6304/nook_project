@@ -56,6 +56,54 @@ và email được chuẩn hoá (cắt khoảng trắng, hạ chữ thường) t
 đăng nhập lại bằng đúng email, bằng email viết HOA, bằng email có khoảng trắng
 hai đầu — cả ba đều vào **cùng một** tài khoản, `isNew: false`.
 
+### Giữ phiên trên điện thoại — KHÔNG dùng bánh quy
+
+React Native không giữ bánh quy một cách đáng tin: `fetch` trên iOS và Android
+xử lý khác nhau, và cái sai không hiện ra ở máy mình — nó hiện ra ở máy người
+dùng, dưới dạng thỉnh thoảng bị đăng xuất không rõ vì sao, và không dựng lại
+được để tìm. Nên **không có `@fastify/cookie` trong dự án này.**
+
+App nhận thẻ **trong thân câu trả lời** rồi tự cất:
+
+| | sống | cất ở đâu | dùng làm gì |
+|---|---|---|---|
+| `accessToken` | 15 phút | bộ nhớ (hoặc kho an toàn) | đính vào mỗi lần gọi: `Authorization: Bearer …` |
+| `refreshToken` | 30 ngày | **`expo-secure-store`** | CHỈ để đổi lấy cặp thẻ mới |
+
+`expo-secure-store` chứ không phải `AsyncStorage`: cái sau lưu chữ trần, ai mở
+được máy đã mở khoá là đọc được. Cái trước đi vào Keychain của iOS và Keystore
+của Android.
+
+Vòng đời trên app:
+
+```
+mở app        -> gọi /v1/me bằng access token đang có
+gặp 401       -> đọc `code`:
+                   auth.session_expired  -> làm mới thẻ rồi gọi lại
+                   auth.session_revoked  -> xoá thẻ, về màn đăng nhập
+                   auth.unauthorized     -> xoá thẻ, về màn đăng nhập
+```
+
+Hai mã đầu khác nhau và app phải phân biệt: một cái là "chờ chút" (tự làm mới,
+người dùng không thấy gì), cái kia là "đăng nhập lại đi".
+
+### ⚠️ App PHẢI gộp lệnh làm mới thẻ
+
+Thẻ dài hạn **xoay** mỗi lần làm mới. Nếu app để năm lệnh gọi cùng dính 401 rồi
+cùng đi làm mới, nó sẽ giữ nhầm một thẻ đã bị xoay, và **ngoài khoảng ân hạn thì
+mất phiên**. Phải có một cái khoá: lệnh đầu đi làm mới, mấy lệnh sau CHỜ kết quả
+của nó chứ không tự gọi.
+
+Server đã nới một khoảng để chịu được chuyện này, nhưng đó là lưới an toàn cho
+mạng chập chờn, **không phải giấy phép bắn song song**:
+
+| tình huống | server trả |
+|---|---|
+| dùng thẻ đời trước **trong 30 giây** sau khi xoay | nhận, phát cặp mới, KHÔNG thu phiên |
+| dùng thẻ đời trước **sau 30 giây** | `auth.session_revoked` + thu **hết** phiên của người đó |
+
+Cả hai đã đo, và có bài kiểm khoá lại (`smoke-auth.sh` bước 8 và 9).
+
 ### Chỉ mở đường EMAIL
 
 Số điện thoại còn chờ chọn nhà mạng gửi SMS. Xin mã qua số điện thoại thì bị
@@ -816,6 +864,23 @@ trả về hình dạng của riêng nó (`{error, message, statusCode}`). Vá b
 `clientErrorHandler` trong tuỳ chọn của `FastifyAdapter`, viết thẳng vào socket.
 Hiếm, nhưng "hiếm" với vài chục nghìn người là mỗi ngày vài lần — và app thì
 chỉ có MỘT lớp đọc câu trả lời.
+
+**Hai lượt làm mới thẻ cùng lúc: đọc thường thì cả hai cùng thắng.** Không có
+`SELECT … FOR UPDATE`, hai giao dịch cùng ĐỌC dấu vân cũ trước khi ai kịp GHI,
+nên cả hai cùng thấy khớp và cả hai cùng xoay — bẫy "thẻ bị chép" không nổ trong
+đúng cái ca nó sinh ra để bắt, và chỉ một trong hai thẻ mới là thẻ thật. Đã đo
+và thấy đúng như vậy trước khi vá.
+
+**Và ngay sau khi khoá dòng, giao dịch tách rời TREO.** Chỗ phát hiện thẻ bị
+chép gọi `tx.runIsolated()` để thu hồi phiên — chạy tốt cho tới hôm thêm khoá
+dòng ở ngay phía trên. Từ lúc đó giao dịch ngoài giữ khoá, giao dịch tách rời
+`UPDATE` đúng dòng đó nên đợi khoá, mà khoá chỉ nhả khi giao dịch ngoài xong —
+và giao dịch ngoài thì đang đợi nó. Postgres ghi `Lock/transactionid`.
+
+Chú thích cũ trong mã đã cảnh báo đúng chuyện này (*"thêm câu ghi nào phía TRÊN
+chỗ này thì phải nghĩ lại"*) — rồi chính tôi thêm vào mà quên đọc lại. Cách đúng
+hoá ra đơn giản hơn: **ném ra ngoài, để giao dịch cuộn lại và nhả khoá, rồi mới
+ghi.** Nay `runIsolated()` không còn chỗ nào dùng.
 
 **Gọi log kiểu pino thì Nest nuốt mất vết ngăn xếp.** `ConsoleLogger` có chữ ký
 `(message, stack)`; gọi `log.error({obj}, 'msg')` như pino thì đối tượng bị in
