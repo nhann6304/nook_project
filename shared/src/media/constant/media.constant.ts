@@ -15,7 +15,20 @@
  */
 export const MEDIA_KINDS = ['avatar', 'moment'] as const;
 
-export const MEDIA_STATUSES = ['pending', 'ready', 'failed'] as const;
+/** Trạng thái một tấm ảnh. Dùng tên, đừng gõ chuỗi trần trong mã. */
+export const MEDIA_STATUS = {
+  /** Đã xin đường tải lên, chưa xác nhận tải xong. */
+  PENDING: 'pending',
+  /** Đã lên server và soi xong — dùng được. */
+  READY: 'ready',
+  FAILED: 'failed',
+} as const;
+
+export const MEDIA_STATUSES = [
+  MEDIA_STATUS.PENDING,
+  MEDIA_STATUS.READY,
+  MEDIA_STATUS.FAILED,
+] as const;
 
 /** Định dạng máy ảnh điện thoại thật sự sinh ra. */
 export const MEDIA_CONTENT_TYPES = [

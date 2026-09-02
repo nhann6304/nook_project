@@ -1,8 +1,8 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ROLE, looksLikeEmail } from '@nook/shared';
-import { Env } from '../../../config/env/index.js';
-import { TransactionService } from '../../../core/transaction/index.js';
+import { Env } from '../../../config/env/env.validation.js';
+import { TransactionService } from '../../../core/transaction/transaction.service.js';
 import {
   UserIdentityRepository,
   UserRepository,

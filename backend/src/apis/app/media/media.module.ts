@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { QUEUE } from '../../../queue/index.js';
-import { MediaController } from './controller/index.js';
-import { MediaService } from './service/index.js';
-import { MediaMapper } from './mapper/index.js';
-import { MediaProcessor } from './processor/index.js';
+import { MediaController } from './media.controller.js';
+import { MediaService } from './media.service.js';
+import { MediaMapper } from './media.mapper.js';
+import { MediaProcessor } from './media.processor.js';
 
 /**
  * Ảnh: ba cửa cho app, một việc nền dựng bản nhẹ.

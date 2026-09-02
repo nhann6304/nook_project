@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from './user/index.js';
+import { UsernameModule } from './username/index.js';
 import { MediaModule } from './media/index.js';
 import { AchievementModule } from './achievement/index.js';
 import { SettingModule } from './setting/index.js';
@@ -14,6 +15,6 @@ import { SettingModule } from './setting/index.js';
  * Chặng sau thêm vào đây: circle · moment · thread · media · memory · push.
  */
 @Module({
-  imports: [UserModule, MediaModule, AchievementModule, SettingModule],
+  imports: [UserModule, UsernameModule, MediaModule, AchievementModule, SettingModule],
 })
 export class AppApiModule {}

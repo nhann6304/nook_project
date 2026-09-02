@@ -1,3 +1,3 @@
-export * from './controller/index.js';
-export * from './service/index.js';
-export * from './dto/index.js';
+export * from './stats.controller.js';
+export * from './stats.dto.js';
+export * from './stats.service.js';

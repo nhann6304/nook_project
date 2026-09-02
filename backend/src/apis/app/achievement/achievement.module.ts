@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AchievementController } from './controller/index.js';
-import { AchievementService } from './service/index.js';
-import { AchievementMapper } from './mapper/index.js';
+import { AchievementController } from './achievement.controller.js';
+import { AchievementService } from './achievement.service.js';
+import { AchievementMapper } from './achievement.mapper.js';
 
 @Module({
   controllers: [AchievementController],

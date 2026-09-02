@@ -39,9 +39,15 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
   `repository/` là kho theo bảng (không thuộc khán giả nào) · `api/` là tính
   năng, chia theo KHÁN GIẢ: `api/app/` cho React Native, `api/admin/` cho web
   quản trị, `api/auth/` dùng chung. Có `npm run check:arch` soi chiều phụ thuộc.
-- **Không tệp nào nằm lung tung.** Mỗi loại một thư mục, mỗi thư mục một
-  `index.ts`. Gốc một module chỉ có đúng `*.module.ts`. Import: cùng thư mục thì
-  thẳng tệp, qua thư mục khác thì đi qua `index.js`.
+- **Một thư mục là MỘT VIỆC; bên trong thư mục đó thì phẳng.**
+  `user/` và `username/` là hai việc nên là hai thư mục, mỗi cái ôm đủ đồ của
+  nó: `x.module.ts`, `x.controller.ts`, `x.service.ts`, `x.dto.ts`,
+  `x.mapper.ts`, `index.ts`. **Chỉ tách thư mục con khi một loại có từ 3 tệp
+  thật trở lên** (hiện chỉ `auth/` đạt: `service/` và `dto/`).
+  Hai lỗi ngược nhau, tránh cả hai: gộp sớm thì tìm code phải đi qua mấy tầng
+  rỗng — `apis/` từng có 39 `index.ts` trên tổng 84 tệp; phẳng quá thì hai việc
+  khác nhau nằm lẫn trong một thư mục.
+  Import: cùng thư mục thì thẳng tệp, qua thư mục khác thì đi qua `index.js`.
 - **`shared/` xếp theo MIỀN ở ngoài, LOẠI ở trong.** `auth/`, `user/`, `circle/`…
   để sau này tách được thành gói riêng; trong mỗi miền có `constant/`,
   `interface/`, `type/`, `util/`, mỗi thư mục một `index.ts`.
@@ -54,6 +60,13 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
   ràng buộc trong cơ sở dữ liệu), nhưng KHÔNG có `@ManyToOne` / `@OneToMany` /
   `@OneToOne` / `@JoinColumn`. Tham chiếu là cột `uuid`, cần bên kia thì hỏi kho
   bằng id. Lý do ở `backend/README.md` mục 3.
+- **Chú thích NGẮN.** Ghi cái mà đọc mã không suy ra được: một quyết định, một
+  cái bẫy đã cắn người. Đừng thuật lại việc mã đang làm, đừng viết bài giảng.
+  Vài dòng là đủ; dài hơn thì nó thuộc về `.docs/` hoặc `backend/README.md`.
+- **Đừng gõ chuỗi/số trần trong logic.** Hai bên cùng cần → `@nook/shared`.
+  Chỉ server cần (mã lỗi Postgres, đuôi tệp) → hằng số phía backend, **không**
+  nhét vào `shared` vì gói đó bị đóng vào bản app trên điện thoại. Mã HTTP dùng
+  `HttpStatus` của `@nestjs/common`.
 - **Log của server viết TIẾNG ANH và chỉ ASCII.** `cmd` trên Windows mặc định
   chạy bảng mã cũ, chữ tiếng Việt ra thành rác. Chú thích trong mã, tài liệu,
   chữ trên Swagger thì vẫn tiếng Việt — chúng không đi qua console.

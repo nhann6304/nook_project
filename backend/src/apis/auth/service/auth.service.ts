@@ -11,8 +11,8 @@ import {
   type IVerifyCodeResult,
 } from '@nook/shared';
 import { AppException } from '../../../core/error/index.js';
-import { UserService } from '../../app/user/service/index.js';
-import { UserMapper } from '../../app/user/mapper/index.js';
+import { UserService } from '../../app/user/user.service.js';
+import { UserMapper } from '../../app/user/user.mapper.js';
 import { CodeSenderService } from '../../../infra/notify/service/index.js';
 import { CodeService } from './code.service.js';
 import { SessionService } from './session.service.js';

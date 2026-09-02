@@ -5,37 +5,17 @@ import { SoftDeleteEntity } from '../base/index.js';
 /**
  * Người dùng.
  *
- * KHÔNG có cột `level` ở đây, và sẽ không bao giờ có. Cấp thân là chuyện của
- * một CẶP hai người, không phải thuộc tính của một người — nó nằm ở bảng
- * `friendships` (chặng sau). Luật sản phẩm: cấp thân chỉ hai người trong cặp
- * nhìn thấy.
- *
- * Cũng KHÔNG có email hay số điện thoại — chúng nằm ở `user_identities`, vì một
- * người có thể có cả hai, và sau này còn đổi được.
- *
- * Kế thừa `SoftDeleteEntity`: người tự xoá tài khoản thì đánh dấu chứ không
- * mất. TypeORM tự thêm `WHERE deleted_at IS NULL` vào mọi câu `find`, nên
- * không tầng nào phải nhớ mà lọc.
- *
- * Không có `@OneToMany` trỏ ngược về bốn bảng con — xem ghi chú "Không dùng
- * quan hệ ORM" ở `user-identity.entity.ts`. Cần danh sách phiên của một người
- * thì hỏi kho phiên bằng `userId`, và câu hỏi đó nhìn là thấy.
+ * KHÔNG bao giờ có cột `level`: cấp thân thuộc về một CẶP, không phải một
+ * người — nó ở bảng `friendships`. Email/số điện thoại ở `user_identities`,
+ * vì một người có thể có cả hai và còn đổi được.
  */
 @Entity('users')
 export class User extends SoftDeleteEntity {
-  /**
-   * Vai trong hệ thống — KHÔNG phải "hạng" của sản phẩm, và không bao giờ hiện
-   * ra ở app. Nó chỉ trả lời: người này có vào được trang quản trị không.
-   */
+  /** Vai trong hệ thống, không bao giờ hiện ra app. Chỉ gác cửa trang quản trị. */
   @Column({ name: 'role', type: 'varchar', length: 16, default: ROLE.member })
   role!: TUserRole;
 
-  /**
-   * Tên riêng, đúng như người ta gõ. Chỉ để HIỆN ra.
-   *
-   * `null` cho tới khi họ chọn. Không phải ai cũng cần có — tên riêng là để
-   * người khác tìm ra mình, mà Nook thì mời nhau chứ không tìm nhau.
-   */
+  /** Đúng như người ta gõ, chỉ để HIỆN. `null` cho tới khi họ chọn. */
   @Column({ name: 'username', type: 'varchar', length: 20, nullable: true })
   username!: string | null;
 

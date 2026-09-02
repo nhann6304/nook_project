@@ -5,19 +5,11 @@ import { BaseRepository } from './base.repository.js';
 import { GenericRepository } from './generic.repository.js';
 
 /**
- * Phát kho cho bất kỳ bảng nào.
+ * Phát kho cho bất kỳ bảng nào — `this.repos.for(Moment)`. Module không có câu
+ * truy vấn riêng thì khỏi viết tệp kho nào.
  *
- *   constructor(private readonly repos: RepositoryManager) {}
- *   private readonly moments = this.repos.for(Moment);
- *
- * Module không có câu truy vấn riêng thì **không cần viết tệp kho nào cả**.
- * Có câu riêng thì vẫn viết lớp kế thừa `BaseRepository` như thường — hai cách
- * dùng chung một lớp gốc nên hành vi giống hệt nhau: cùng bám giao dịch, cùng
- * tự điền sổ ghi việc.
- *
- * Kho được giữ lại theo bảng. Giữ lại được vì kho **không mang trạng thái** —
- * nó hỏi `TransactionContext` lúc dùng chứ không ôm sẵn một `Repository`. Nếu
- * nó ôm sẵn thì giữ lại chính là cách làm hỏng chuyện giao dịch.
+ * Giữ lại theo bảng được vì kho KHÔNG mang trạng thái: nó hỏi
+ * `TransactionContext` lúc dùng. Ôm sẵn một `Repository` là hỏng giao dịch.
  */
 @Injectable()
 export class RepositoryManager {
