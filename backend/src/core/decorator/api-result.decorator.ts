@@ -1,11 +1,11 @@
 import { applyDecorators, type Type } from '@nestjs/common';
 import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
-import { ApiEnvelopeDto, CursorPageDto } from '../dto/index.js';
+import { ApiEnvelopeDto } from '../dto/index.js';
 
 /**
  * Khai câu trả lời của một cửa, ĐÃ tính cả cái vỏ chung.
  *
- *   @ApiResult(UserProfileDto)          → { ok, code, requestId, data: {…} }
+ *   @ApiResult(UserProfileDto)          → { ok, code, status, data: {…}, metadata }
  *   @ApiResult(MomentDto, { list: true }) → data là mảng
  *   @ApiNoData()                        → data: null
  *
@@ -27,28 +27,15 @@ export function ApiResult<M extends Type<unknown>>(model: M, options?: { list?: 
   );
 }
 
-/** Cửa trả về một trang lật bằng con trỏ. */
+/**
+ * Cửa trả về một trang lật bằng con trỏ.
+ *
+ * `data` là CHÍNH cái danh sách, không phải một hộp bọc quanh nó — con trỏ và
+ * số đếm nằm ở `metadata` (`nextCursor`, `hasMore`, `count`). Việc dàn phẳng đó
+ * do `ResponseInterceptor` làm; cửa cứ trả `{items, nextCursor}` như thường.
+ */
 export function ApiCursorResult<M extends Type<unknown>>(model: M) {
-  return applyDecorators(
-    ApiExtraModels(ApiEnvelopeDto, CursorPageDto, model),
-    ApiOkResponse({
-      schema: {
-        allOf: [
-          { $ref: getSchemaPath(ApiEnvelopeDto) },
-          {
-            properties: {
-              data: {
-                allOf: [
-                  { $ref: getSchemaPath(CursorPageDto) },
-                  { properties: { items: { type: 'array', items: { $ref: getSchemaPath(model) } } } },
-                ],
-              },
-            },
-          },
-        ],
-      },
-    }),
-  );
+  return ApiResult(model, { list: true });
 }
 
 /** Cửa làm xong việc nhưng không có gì để trả về. */

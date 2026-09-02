@@ -1,7 +1,7 @@
-import { ApiHideProperty, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
-import type { ICursorPage, ICursorQuery } from '@nook/shared';
+import type { ICursorQuery } from '@nook/shared';
 
 /** Trần cứng. Không ai được xin 10.000 tấm ảnh trong một lần gọi. */
 const MAX_LIMIT = 50;
@@ -28,18 +28,4 @@ export class CursorQueryDto implements ICursorQuery {
   @Min(1)
   @Max(MAX_LIMIT)
   limit: number = DEFAULT_LIMIT;
-}
-
-/**
- * Chỉ để Swagger vẽ. Hình dạng thật do `@ApiCursorResult(Dto)` ghép vào.
- */
-export class CursorPageDto<T = unknown> implements ICursorPage<T> {
-  @ApiHideProperty()
-  items!: T[];
-
-  @ApiProperty({
-    nullable: true,
-    description: '`null` là hết. Có giá trị thì đưa lại vào `cursor` để lấy tiếp.',
-  })
-  nextCursor!: string | null;
 }

@@ -57,9 +57,17 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
 - **Log của server viết TIẾNG ANH và chỉ ASCII.** `cmd` trên Windows mặc định
   chạy bảng mã cũ, chữ tiếng Việt ra thành rác. Chú thích trong mã, tài liệu,
   chữ trên Swagger thì vẫn tiếng Việt — chúng không đi qua console.
-- **Mọi câu trả lời của server đều có cùng một cái vỏ:**
-  `{ ok, code, data, requestId }` khi trót lọt, `{ ok, code, status, requestId }`
-  khi hỏng. `code` LUÔN là khoá tra chữ, không bao giờ là câu tiếng Việt.
+- **Mọi câu trả lời của server đều có cùng một cái vỏ, và HAI NHÁNH CÙNG MỘT BỘ
+  TRƯỜNG:** `{ ok, code, status, data, metadata }`. Hỏng thì `data` là `null`
+  (không phải thiếu trường) và có thêm `detail` khi mã lỗi cần kèm số.
+  `ok` là chỗ rẽ nhánh duy nhất; `code` LUÔN là khoá tra chữ, không bao giờ là
+  câu tiếng Việt; `status` là mã HTTP dạng SỐ, có ở cả hai nhánh.
+  `metadata` gom thứ nói VỀ câu trả lời — `requestId`, `serverTime`, và khi trả
+  danh sách thì thêm `nextCursor` / `hasMore` / `count`. **Danh sách được dàn
+  phẳng:** `data` chính là mảng, app không phải với qua `data.items`. Cửa cứ trả
+  `{items, nextCursor}` như thường, `ResponseInterceptor` dàn hộ.
+  Mã HTTP viết bằng `HttpStatus` của `@nestjs/common`, đừng gõ số trần và đừng
+  cài thư viện mã trạng thái nào khác.
 
 ## Luật sản phẩm không được phá — cả hai bên
 

@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { ERR, type IApiError } from '@nook/shared';
+import { ERR, type IApiError, type IApiMeta } from '@nook/shared';
 import { AppException } from '../error/index.js';
 
 /**
@@ -54,13 +54,21 @@ export class AllExceptionFilter implements ExceptionFilter {
   }
 
   private shape(error: unknown, requestId: string): IApiError {
+    // `data: null` chứ không phải thiếu trường — hai nhánh phải cùng một bộ
+    // trường thì app mới đọc được bằng một lớp duy nhất.
+    //
+    // Dựng theo đúng THỨ TỰ của nhánh trót lọt (ok · code · status · data ·
+    // metadata). Trải một khối dùng chung vào đầu thì gọn hơn, nhưng nó đẩy
+    // `data` lên trước `code` và hai nhánh đọc ra hai kiểu khác nhau trong log.
+    const tail = { data: null, metadata: this.meta(requestId) };
+
     // Lỗi của mình — đã có sẵn mã.
     if (error instanceof AppException) {
       return {
         ok: false,
         code: error.code,
         status: error.getStatus(),
-        requestId,
+        ...tail,
         ...(error.detail ? { detail: error.detail } : {}),
       };
     }
@@ -68,7 +76,7 @@ export class AllExceptionFilter implements ExceptionFilter {
     // Lỗi Nest ném ra (404 không khớp đường, 401 từ guard, …). Đổi sang mã của mình.
     if (error instanceof HttpException) {
       const status = error.getStatus();
-      return { ok: false, code: this.codeForStatus(status), status, requestId };
+      return { ok: false, code: this.codeForStatus(status), status, ...tail };
     }
 
     // Còn lại là thứ không ai lường trước. Ra ngoài chỉ đúng một câu.
@@ -76,8 +84,12 @@ export class AllExceptionFilter implements ExceptionFilter {
       ok: false,
       code: ERR.SERVER_ERROR,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
-      requestId,
+      ...tail,
     };
+  }
+
+  private meta(requestId: string): IApiMeta {
+    return { requestId, serverTime: new Date().toISOString() };
   }
 
   private codeForStatus(status: number): string {

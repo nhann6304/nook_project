@@ -232,7 +232,8 @@ Việc rơi về phía server, xếp theo thứ tự cần:
    phải có **ngay từ đường ghi đầu tiên**, thêm sau là đau.
 2. **`GET /v1/sync?cursor=`** — một cửa cho mọi thay đổi, dùng chung với thông báo.
 3. **Ký một lượt nhiều đường ảnh** thay cho từng cái một.
-4. **Trả kèm giờ của server** để app khỏi tin đồng hồ của chính nó.
+4. **Trả kèm giờ của server** để app khỏi tin đồng hồ của chính nó — **đã có
+   rồi**, nằm ở `metadata.serverTime` của mọi câu trả lời.
 5. Bản nhẹ `feed` / `thumb` — **đã có rồi**.
 6. Khoảng ân hạn khi xoay thẻ — **đã có rồi** (30 giây).
 

@@ -40,9 +40,13 @@ export async function bootstrap(): Promise<void> {
           ok: false,
           code: ERR.BAD_REQUEST,
           status: 400,
-          // Chưa có request thì chưa có mã dấu vết. Nói thẳng là không có, hơn
-          // là bịa ra một mã không tra được trong log.
-          requestId: '-',
+          data: null,
+          metadata: {
+            // Chưa có request thì chưa có mã dấu vết. Nói thẳng là không có,
+            // hơn là bịa ra một mã không tra được trong log.
+            requestId: '-',
+            serverTime: new Date().toISOString(),
+          },
         });
         socket.end(
           'HTTP/1.1 400 Bad Request\r\n' +
