@@ -6,6 +6,11 @@ const FALLBACK = 'root@nook.local';
 /**
  * Tài khoản quản trị gốc: tạo sẵn, và **không xoá được**.
  *
+ * ── Đã có root thì KHÔNG tạo thêm ───────────────────────────────────────────
+ *
+ * Kiểm trước rồi mới chèn. Không kiểm thì chạy lại migration là đẻ thêm một tài
+ * khoản quyền cao nhất, và cái thứ hai đó không ai để ý tới.
+ *
  * ── Vì sao tạo ở migration ──────────────────────────────────────────────────
  *
  * Để cơ sở dữ liệu vừa dựng xong là đã có một `root`, không phải chờ ai bật
@@ -48,17 +53,32 @@ export class RootAdmin1788339600000 implements MigrationInterface {
       $fn$ LANGUAGE plpgsql
     `);
 
+    // `DROP IF EXISTS` trước: Postgres không có `CREATE TRIGGER IF NOT EXISTS`,
+    // nên không dọn trước là chạy lại migration lần hai sẽ nổ. Cùng một luật
+    // với chỗ tạo tài khoản gốc bên dưới — kiểm (hoặc dọn) trước khi tạo.
+    await q.query(`DROP TRIGGER IF EXISTS trg_protect_root_admin ON "users"`);
     await q.query(`
       CREATE TRIGGER trg_protect_root_admin
       BEFORE UPDATE OR DELETE ON "users"
       FOR EACH ROW EXECUTE FUNCTION nook_protect_root_admin()
     `);
 
+    // ĐÃ CÓ ROOT THÌ THÔI.
+    //
+    // Không kiểm trước thì chạy lại migration (sau một lần `down`, hay khi gộp
+    // hai nhánh) là đẻ thêm một tài khoản quyền cao nhất nữa — và cái thứ hai
+    // đó không ai để ý tới. Chuyện này đã xảy ra thật ở máy dev: migration tạo
+    // một cái giữ chỗ, rồi `ROOT_ADMIN_EMAIL` tạo thêm một cái, thành hai root
+    // mà trang thống kê đếm ra 2 không ai hiểu ở đâu ra.
+    const existing: { id: string }[] = await q.query(
+      `SELECT "id" FROM "users" WHERE "role" = 'root' LIMIT 1`,
+    );
+    if (existing.length > 0) return;
+
     const email = (process.env.ROOT_ADMIN_EMAIL ?? FALLBACK).trim().toLowerCase();
 
     // Chèn người trước, rồi đích đăng nhập, rồi dòng đếm — đúng thứ tự khoá
-    // ngoại. `ON CONFLICT DO NOTHING` để chạy lại migration trên kho đã có dữ
-    // liệu cũng không nổ.
+    // ngoại.
     const [user]: { id: string }[] = await q.query(
       `INSERT INTO "users" ("role", "display_name") VALUES ('root', 'Root') RETURNING "id"`,
     );

@@ -153,7 +153,7 @@ dẫn người dùng đi hai hướng ngược nhau.
 truy vấn, nhưng hạ một admin xong họ vẫn còn quyền tới khi thẻ hết hạn — mười
 lăm phút, đúng mười lăm phút mà người ta muốn chặn ngay.
 
-### Tài khoản gốc — tạo sẵn, không xoá được
+### Tài khoản gốc — tạo sẵn, KHÔNG XOÁ ĐƯỢC, và chỉ có MỘT
 
 Migration `RootAdmin` tạo sẵn một tài khoản vai `root` với email
 `root@nook.local` (hoặc `ROOT_ADMIN_EMAIL` nếu khai lúc chạy migration). Địa chỉ
@@ -164,6 +164,15 @@ Khai `ROOT_ADMIN_EMAIL` bằng email THẬT rồi bật server: `RootAdminServic
 vai `root` cho tài khoản đó (chưa có thì mở sẵn), nên lần đăng nhập đầu tiên đã
 là root. **Không có API nào phong `root`** — người đầu tiên phải tới từ bên
 ngoài hệ thống, nếu không thì gà và trứng.
+
+**Luôn chỉ có một.** Migration kiểm `SELECT … WHERE role='root'` trước rồi mới
+chèn, nên chạy lại migration không đẻ thêm. Và khi `ROOT_ADMIN_EMAIL` trỏ tới
+một email THẬT, `RootAdminService` **hạ vai cái giữ chỗ** xuống `member` —
+không thì hệ thống có hai `root`, trang thống kê đếm ra 2 và không ai hiểu cái
+thứ hai ở đâu ra. Một tài khoản quyền cao nhất mà không ai để ý tới là thứ
+không nên tồn tại.
+
+Hạ vai chứ không xoá — trigger chặn xoá `root`, và đúng ra là vậy.
 
 Không xoá được, và chặn bằng **trigger trong cơ sở dữ liệu** chứ không bằng mã:
 
@@ -856,6 +865,13 @@ phức tạp mới để tiết kiệm 0,9 giây thì không đáng.
 Hai bẫy trên cùng một triệu chứng — "cái này rõ ràng có mà nó bảo không có" —
 nay đều đã chặn sẵn: `incremental` tắt, và `shared` tự dịch lại trước mọi lệnh.
 Nếu vẫn gặp thì `rm -f backend/*.tsbuildinfo` rồi chạy lại.
+
+**Migration phải KIỂM TRƯỚC KHI TẠO.** `RootAdmin` từng `INSERT` thẳng một tài
+khoản `root`, và `CREATE TRIGGER` không dọn trước. Hậu quả: chạy lại migration
+(sau một lần `down`, hay khi gộp hai nhánh) là **nổ** ở trigger, hoặc **đẻ thêm
+một tài khoản quyền cao nhất** mà không ai để ý. Nay có `SELECT … LIMIT 1` trước
+khi chèn và `DROP TRIGGER IF EXISTS` trước khi tạo — đã thử chạy hai lần liền,
+vẫn đúng một `root`.
 
 **Có một loại lỗi mà bộ lọc của Nest KHÔNG với tới.** Ký tự thô chưa mã hoá
 trong chuỗi truy vấn (`?username=ĐứcAnh`) làm bộ đọc URL của Fastify ném ở tầng
