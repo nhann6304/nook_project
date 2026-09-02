@@ -410,10 +410,78 @@ thêm mà không nét thêm chút nào.
 **sharp đọc được HEIF/HEIC** — bản dựng sẵn 0.35 đã kèm libheif, nên nhận thẳng
 ảnh iPhone, không phải bắt app chuyển sang JPEG.
 
-### MinIO ở máy dev, R2 ở bản thật — và đổi kho không mất ảnh
+### Chọn kho nào: MinIO hay R2
+
+**MinIO chỉ để dev trên máy mình. Mọi thứ người dùng thật chạm vào thì R2.**
+
+Treo MinIO trên laptop để phục vụ người dùng thật là hỏng ở bốn chỗ, và chỗ nào
+cũng đủ để chết:
+
+- laptop ngủ, đổi wifi, mất điện — ảnh biến mất trong lúc đó
+- nhà mạng đổi IP liên tục, điện thoại ngoài mạng 4G không vào được nếu không
+  mở cổng hoặc dựng đường hầm
+- không HTTPS thì iOS chặn thẳng
+- **laptop hỏng là mất sạch ảnh gốc** — và ảnh gốc không dựng lại được
+
+Bậc miễn phí của R2 cho 10–20 người đầu: **10 GB chỗ chứa** (cỡ 3000 tấm ảnh
+3MB) và **không mất tiền băng thông ra** — mà băng thông ra mới là thứ tốn với
+một app xem ảnh. Thực tế là 0 đồng ở giai đoạn này.
+
+MinIO vẫn giữ, vì nó tốt cho đúng việc của nó: dev không cần mạng, không cần
+tài khoản, `docker compose down -v` là sạch bách làm lại.
+
+#### Chuyển sang R2 — đổi bốn dòng
+
+```bash
+STORAGE_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+STORAGE_BUCKET=nook-media
+STORAGE_KEY_ID=<R2 access key id>
+STORAGE_SECRET=<R2 secret>
+```
+
+Hết. Không đụng một dòng mã nào. Kiểu đường dẫn tự nhận ra từ tên miền, và
+`storage_provider` của từng tấm tự ghi theo kho đang dùng.
+
+Bên Cloudflare: **R2 → Create bucket** (đặt tên `nook-media`, để **private**) →
+**Manage R2 API Tokens → Create API token**, quyền *Object Read & Write*, giới
+hạn đúng thùng đó. Account ID nằm ngay trên trang R2.
+
+Bật server lên, `StorageCheck` **ghi thật một tệp bé rồi xoá** — sai khoá hay
+sai tên thùng là nó kêu ngay lúc bật, kèm câu chỉ rõ phải sửa biến nào:
+
+```
+ERROR [StorageCheck] Storage is not usable (minio): The request signature we
+calculated does not match the signature you provided.
+  Check STORAGE_ENDPOINT / STORAGE_BUCKET / STORAGE_KEY_ID / STORAGE_SECRET.
+```
+
+Bản thật thì hỏng là **chết luôn**, không bật. Server không chứa được ảnh thì
+nó không làm được việc của nó. Máy dev thì chỉ kêu, để còn ngồi làm được lúc
+không có mạng.
+
+#### Đã có ảnh ở kho cũ rồi thì sao
+
+```bash
+STORAGE_LEGACY_ENDPOINT=http://localhost:9000    # kho CŨ
+STORAGE_LEGACY_BUCKET=nook-media
+STORAGE_LEGACY_KEY_ID=nook
+STORAGE_LEGACY_SECRET=nook12345
+
+npm run storage:migrate -- --dry-run    # xem sẽ chép gì
+npm run storage:migrate                 # chép thật
+```
+
+Ảnh mới vào kho mới, ảnh cũ đọc ở kho cũ, chép dần lúc rảnh. **Không dừng dịch
+vụ, không mất tấm nào.** Lệnh chạy lại được nhiều lần — nó chỉ nhặt dòng còn ghi
+kho cũ, nên đứt giữa chừng thì chạy tiếp. Chép xong tệp mới đổi cột, không đảo
+ngược lại: đảo là có một khoảng dòng nói "tôi ở kho mới" mà tệp còn ở kho cũ.
+Bản cũ **không bị xoá** — xoá là việc riêng, làm khi đã yên tâm.
+
+### Vì sao code đã sẵn sàng để hoán đổi
 
 Cùng giao thức S3, nên đường tải lên ở máy dev là **đường thật** — không phải
-bản giả rồi lên thật mới phát hiện lệch.
+bản giả rồi lên thật mới phát hiện lệch. Ba thứ làm việc hoán đổi thành chuyện
+đổi biến môi trường:
 
 **Không phải khai kiểu đường dẫn.** MinIO cần `http://host/bucket/key`, R2 cần
 `https://bucket.host/key`; đặt sai thì mọi lần tải lên trả 403 hoặc 404 và câu

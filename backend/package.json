@@ -14,6 +14,7 @@
     "dev:debug": "nest start --debug --watch",
     "build": "nest build",
     "start": "node dist/main.js",
+    "storage:migrate": "npm run build && node dist/cli/storage-migrate.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint \"src/**/*.ts\" --max-warnings=0",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
