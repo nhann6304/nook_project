@@ -57,9 +57,17 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
 - **Log của server viết TIẾNG ANH và chỉ ASCII.** `cmd` trên Windows mặc định
   chạy bảng mã cũ, chữ tiếng Việt ra thành rác. Chú thích trong mã, tài liệu,
   chữ trên Swagger thì vẫn tiếng Việt — chúng không đi qua console.
-- **Mọi câu trả lời của server đều có cùng một cái vỏ:**
-  `{ ok, code, data, requestId }` khi trót lọt, `{ ok, code, status, requestId }`
-  khi hỏng. `code` LUÔN là khoá tra chữ, không bao giờ là câu tiếng Việt.
+- **Mọi câu trả lời của server đều có cùng một cái vỏ, và HAI NHÁNH CÙNG MỘT BỘ
+  TRƯỜNG:** `{ ok, code, status, data, metadata }`. Hỏng thì `data` là `null`
+  (không phải thiếu trường) và có thêm `detail` khi mã lỗi cần kèm số.
+  `ok` là chỗ rẽ nhánh duy nhất; `code` LUÔN là khoá tra chữ, không bao giờ là
+  câu tiếng Việt; `status` là mã HTTP dạng SỐ, có ở cả hai nhánh.
+  `metadata` gom thứ nói VỀ câu trả lời — `requestId`, `serverTime`, và khi trả
+  danh sách thì thêm `nextCursor` / `hasMore` / `count`. **Danh sách được dàn
+  phẳng:** `data` chính là mảng, app không phải với qua `data.items`. Cửa cứ trả
+  `{items, nextCursor}` như thường, `ResponseInterceptor` dàn hộ.
+  Mã HTTP viết bằng `HttpStatus` của `@nestjs/common`, đừng gõ số trần và đừng
+  cài thư viện mã trạng thái nào khác.
 
 ## Luật sản phẩm không được phá — cả hai bên
 
@@ -82,7 +90,7 @@ và mục 3 trước tiên**. Ba luật hay bị quên nhất:
 
 | Phần | Trạng thái |
 |---|---|
-| Backend | **Đăng nhập chạy được đầu-tới-cuối.** `./setup/mac/run.sh be` rồi mở <http://localhost:4000/docs>. Tám đường đều chạy; mã 6 số ở Redis, thẻ phiên xoay mỗi lần làm mới. Màn đăng nhập có **hai cửa**: gửi kèm `intent: 'signin' \| 'signup'` vào `/v1/auth/code` thì server soi trước và trả `auth.account_not_found` / `auth.account_exists` mà KHÔNG gửi thư, để app đổi màn ngay. Đi kèm nó là trần xin mã **theo máy gọi** (30/giờ) — không có trần đó thì cửa này thành máy dò "ai đang dùng Nook", nên đừng gỡ. **Chỉ mở đường email** — số điện thoại trả `auth.method_unavailable` cho tới khi chọn được nhà mạng gửi SMS. Khi dev thì mã **in ra log server** (`CODE_SENDER=console`). Postgres dùng bản **trên máy** ở cổng 5432, Redis ở Docker cổng 6380 |
+| Backend | **Đăng nhập chạy được đầu-tới-cuối.** `./setup/mac/run.sh be` rồi mở <http://localhost:4000/docs>. Tám đường đều chạy; mã 6 số ở Redis, thẻ phiên xoay mỗi lần làm mới và **hạn tự đẩy ra xa** — 180 ngày tính từ lần mở app gần nhất, nên người dùng đăng nhập đúng một lần rồi thôi. Màn đăng nhập có **hai cửa**: gửi kèm `intent: 'signin' \| 'signup'` vào `/v1/auth/code` thì server soi trước và trả `auth.account_not_found` / `auth.account_exists` mà KHÔNG gửi thư, để app đổi màn ngay. Đi kèm nó là trần xin mã **theo máy gọi** (30/giờ) — không có trần đó thì cửa này thành máy dò "ai đang dùng Nook", nên đừng gỡ. **Chỉ mở đường email** — số điện thoại trả `auth.method_unavailable` cho tới khi chọn được nhà mạng gửi SMS. Khi dev thì mã **in ra log server** (`CODE_SENDER=console`). Postgres dùng bản **trên máy** ở cổng 5432, Redis ở Docker cổng 6380 |
 | Frontend | **Chạy được.** `cd frontend && npm run dev` rồi quét QR bằng Expo Go. Nói **hai thứ tiếng** (Việt + Anh) và có **năm bảng màu** người dùng chọn được, cả hai đổi trong Cài đặt. Ghim **SDK 54** vì Expo Go trên App Store kẹt ở đó — đừng nâng, xem `frontend/docs/06-libraries.md` mục 7 |
 | Tài liệu | 15 file, đã chia theo hai bên |
 

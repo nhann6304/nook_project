@@ -58,7 +58,11 @@ export async function setupHttp(
         : status === 413 ? ERR.PAYLOAD_TOO_LARGE
         : ERR.BAD_REQUEST,
       status,
-      requestId: String(request.id ?? '-'),
+      data: null,
+      metadata: {
+        requestId: String(request.id ?? '-'),
+        serverTime: new Date().toISOString(),
+      },
     });
   });
 

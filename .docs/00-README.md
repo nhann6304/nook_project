@@ -18,6 +18,7 @@ nội dung sang cả hai.
 |---|---|---|
 | [`01-product-system.md`](01-product-system.md) | Hệ thống sản phẩm: đơn vị "ký ức", cấp thân 1–10, chống farm, quyền vị trí, roadmap V0.1→V0.4 | **Cả hai bên.** Backend hiện thực phần lớn luật trong này |
 | [`02-release-checklist.md`](02-release-checklist.md) | Việc phải xong trước khi lên App Store / Play Store | Cả hai bên |
+| [`03-offline.md`](03-offline.md) | Mất mạng thì xem được gì, làm được gì, lên mạng lại thì kéo về ra sao | **Cả hai bên.** Ghi trước khi code — chưa có dòng mã nào theo nó |
 
 **Đọc `01-product-system.md` mục 0 và mục 3 trước tiên** — đó là triết lý gốc
 quyết định mọi thứ khác.

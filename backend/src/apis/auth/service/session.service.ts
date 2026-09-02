@@ -154,7 +154,15 @@ export class SessionService {
     return this.reissue(session);
   }
 
-  /** Ký cặp thẻ mới và ghi lại, giữ dấu vân đời trước để chịu được thử lại. */
+  /**
+   * Ký cặp thẻ mới và ghi lại, giữ dấu vân đời trước để chịu được thử lại.
+   *
+   * `expiresAt` đẩy ra xa lại từ đầu ở đây — và đó là thứ DUY NHẤT khiến người
+   * dùng chỉ phải đăng nhập một lần. Bỏ dòng đó đi thì `JWT_REFRESH_TTL` biến
+   * từ "bao lâu không mở app" thành "bao lâu thì bị đá ra", và ai dùng app đều
+   * đặn cũng bị bắt gõ lại mã sau đúng 180 ngày. Có ca kiểm trong
+   * `smoke-auth.sh` giữ chỗ này.
+   */
   private async reissue(session: Session): Promise<IAuthTokens> {
     const tokens = this.mint(session.userId, session.id);
     await this.sessions.update(

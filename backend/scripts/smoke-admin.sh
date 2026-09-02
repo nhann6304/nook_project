@@ -53,7 +53,8 @@ printf '%s     %s%s\n' "$DIM" "$(echo "$STATS" | python3 -c "import sys,json;d=j
 
 USERS="$(curl -s "$BASE/v1/admin/users?limit=2" -H "authorization: Bearer $A_ROOT")"
 check "gốc xem được danh sách người dùng" "ok" "$(echo "$USERS" | code_of)"
-N="$(echo "$USERS" | python3 -c "import sys,json;print(len(json.load(sys.stdin)['data']['items']))" 2>/dev/null)"
+# `data` LÀ danh sách; con trỏ và số đếm nằm ở `metadata`.
+N="$(echo "$USERS" | python3 -c "import sys,json;print(len(json.load(sys.stdin)['data']))" 2>/dev/null)"
 check "lật trang: xin 2 thì nhận 2" "2" "$N"
 # Luật sản phẩm không có ngoại lệ cho quản trị: trang này được biết hệ thống
 # chạy ra sao, KHÔNG được biết ai thân với ai.

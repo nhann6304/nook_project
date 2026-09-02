@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import type { IApiError } from '@nook/shared';
+import { ApiMetaDto } from './envelope.dto.js';
 
 /**
  * Hình dạng DUY NHẤT của một câu trả lời hỏng. Mọi lỗi đều ra dạng này, kể cả
@@ -15,8 +16,24 @@ export class ApiErrorDto implements IApiError {
   @ApiProperty({ example: 400 })
   status!: number;
 
-  @ApiProperty({ example: 'req-9f2c', description: 'Dấu vết để dò lại trong log' })
-  requestId!: string;
+  /**
+   * Phải khai `type` tường minh. Để Swagger tự suy từ kiểu TypeScript `null`
+   * thì nó không map được sang kiểu lược đồ nào, quay ra trỏ về chính lớp này
+   * và báo phụ thuộc vòng tròn — server không bật lên được.
+   */
+  @ApiProperty({
+    type: 'object',
+    // Bắt buộc phải có khi khai `type: 'object'` bằng tay. `false` = không có
+    // trường nào cả, đúng với thứ luôn luôn là null.
+    additionalProperties: false,
+    nullable: true,
+    example: null,
+    description: 'Luôn null — giữ hai nhánh cùng bộ trường',
+  })
+  data!: null;
+
+  @ApiProperty({ type: () => ApiMetaDto })
+  metadata!: ApiMetaDto;
 
   @ApiPropertyOptional({
     example: { retryAfterSeconds: 43 },

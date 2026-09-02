@@ -66,7 +66,15 @@ export class Env {
   @IsString() @MinLength(16) JWT_ACCESS_SECRET!: string;
   @IsString() @MinLength(16) JWT_REFRESH_SECRET!: string;
   @Type(() => Number) @IsInt() @Min(60) JWT_ACCESS_TTL: number = 900;
-  @Type(() => Number) @IsInt() @Min(3600) JWT_REFRESH_TTL: number = 2_592_000;
+  /**
+   * Hạn thẻ dài hạn — nhưng đọc nó là "bao lâu KHÔNG mở app thì phải đăng nhập
+   * lại", chứ không phải "bao lâu thì đăng nhập lại".
+   *
+   * Mỗi lần app làm mới thẻ, `reissue()` đẩy hạn ra xa thêm bấy nhiêu nữa. Nên
+   * người dùng thật — mở app vài tháng một lần — không bao giờ phải gõ lại mã.
+   * Đúng như trên điện thoại người ta quen: đăng nhập một lần rồi thôi.
+   */
+  @Type(() => Number) @IsInt() @Min(3600) JWT_REFRESH_TTL: number = 15_552_000;
 
   // ── Gửi mã ─────────────────────────────────────────────────────────────────
   @IsEnum(CodeSenderKind) CODE_SENDER: CodeSenderKind = CodeSenderKind.console;
