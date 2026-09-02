@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import type { Namespace, Socket } from 'socket.io';
 import { SOCKET, SOCKET_IN, SOCKET_OUT } from '@nook/shared';
-import { SessionService } from '../../api/auth/service/index.js';
+import { SessionService } from '../../apis/auth/service/index.js';
 
 /** Mỗi người một phòng riêng. Bắn tin cho một người là bắn vào phòng của họ. */
 const room = (userId: string) => `user:${userId}`;
@@ -45,7 +45,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   async handleConnection(client: Socket): Promise<void> {
     try {
       const token = client.handshake.auth?.[SOCKET.authField] as string | undefined;
-      if (!token) throw new Error('no token');
+      if (!token) throw new Error('no token in handshake.auth');
 
       const claims = this.sessions.verify(token, 'access');
       if (!(await this.sessions.isLive(claims.sid))) throw new Error('session revoked');
@@ -54,15 +54,22 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
       client.data.sessionId = claims.sid;
       await client.join(room(claims.sub));
       client.emit(SOCKET_OUT.ready, { userId: claims.sub });
-    } catch {
-      // Không nói lý do qua ống. Ai chưa có thẻ hợp lệ thì cũng không có quyền
-      // biết vì sao mình bị từ chối.
+
+      this.log.log(`connected: user ${claims.sub} (${this.server.sockets.size} online)`);
+    } catch (error) {
+      // Log ĐỦ để biết vì sao không nối được — nhưng chỉ ở phía server. Qua ống
+      // thì cắt thẳng, không nói lý do: ai chưa có thẻ hợp lệ cũng không có
+      // quyền biết mình sai ở đâu.
+      this.log.warn(
+        `refused: ${error instanceof Error ? error.message : String(error)}`,
+      );
       client.disconnect(true);
     }
   }
 
   handleDisconnect(client: Socket): void {
-    this.log.debug(`disconnected: ${String(client.data?.userId ?? '-')}`);
+    const who = client.data?.userId ? `user ${String(client.data.userId)}` : 'unauthenticated client';
+    this.log.log(`disconnected: ${who} (${this.server.sockets.size} online)`);
   }
 
   @SubscribeMessage(SOCKET_IN.ping)

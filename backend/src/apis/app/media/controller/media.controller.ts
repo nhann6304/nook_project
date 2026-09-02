@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { FastifyReply } from 'fastify';
 import { API, MSG } from '@nook/shared';
 import { ApiErrors, ApiResult, CurrentUser, Message } from '../../../../core/decorator/index.js';
 import type { IAuthUser } from '../../../../core/interface/index.js';
 import { MediaService } from '../service/index.js';
 import {
+  CREATE_UPLOAD_EXAMPLES,
   CreateUploadDto,
   CreateUploadResultDto,
   MediaDto,
@@ -30,6 +31,7 @@ export class MediaController {
   @Post(API.media.uploadUrl)
   @Message(MSG.OK)
   @ApiOperation({ summary: 'Xin đường tải ảnh lên' })
+  @ApiBody({ type: CreateUploadDto, examples: CREATE_UPLOAD_EXAMPLES })
   @ApiResult(CreateUploadResultDto)
   @ApiErrors(400, 401)
   createUpload(

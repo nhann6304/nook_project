@@ -1,53 +1,38 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from './config/index.js';
+import { CoreModule } from './core/index.js';
 import { DatabaseModule } from './database/index.js';
+import { RepositoryModule } from './repository/index.js';
 import { InfraModule } from './infra/index.js';
-import { ApiModule } from './api/index.js';
+import { ApisModule } from './apis/index.js';
 import { RealtimeModule } from './realtime/index.js';
 import { QueueModule } from './queue/index.js';
-import { AllExceptionFilter } from './core/filter/index.js';
-import { ResponseInterceptor } from './core/interceptor/index.js';
-import { RequestContextMiddleware } from './core/middleware/index.js';
 
 /**
- * Gốc cây. Sáu mảng, mỗi mảng một việc:
+ * Gốc cây — chỉ là một BẢN MỤC LỤC. Không có cấu hình nào ở đây.
  *
- *   config/     đọc và KIỂM biến môi trường lúc bật
- *   database/   bảng, migration, kết nối
- *   infra/      thế giới bên ngoài — Redis, gửi thư, sau này là kho ảnh
- *   api/        mặt HTTP: common/ (cổng thẻ, lỗi, đăng nhập) + model/ (từng thứ một)
- *   realtime/   ống socket
- *   queue/      việc nền
+ *   config/      đọc và KIỂM biến môi trường lúc bật
+ *   core/        khung: bộ lọc lỗi, bộ bọc vỏ, lớp giữa
+ *   database/    kết nối, bảng, migration
+ *   repository/  kho theo bảng, dùng chung mọi khán giả
+ *   infra/       thế giới bên ngoài: Redis, gửi thư, kho ảnh
+ *   api/         tính năng, chia theo khán giả: auth · app · admin · health
+ *   realtime/    ống socket
+ *   queue/       việc nền
  *
- * Bộ lọc lỗi và bộ bọc vỏ gắn ở đây, một lần, cho cả server. Gắn ở từng
- * controller là chuẩn bị sẵn một chỗ để quên.
- *
- * Không có module ghi log: dùng thẳng `ConsoleLogger` của Nest, dựng ở `main.ts`.
+ * Muốn biết một thứ được cấu hình ra sao thì mở module của nó. Nhét cấu hình
+ * vào đây thì tệp này dài ra mãi, và nó là tệp ai cũng đọc đầu tiên.
  */
 @Module({
   imports: [
     ConfigModule,
+    CoreModule,
     DatabaseModule,
+    RepositoryModule,
     InfraModule,
-    ApiModule,
+    ApisModule,
     RealtimeModule,
     QueueModule,
   ],
-  providers: [
-    { provide: APP_FILTER, useClass: AllExceptionFilter },
-    { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
-  ],
 })
-export class AppModule implements NestModule {
-  /**
-   * Lớp giữa mở vùng `RequestContext` cho MỌI đường, trước cả cổng thẻ.
-   *
-   * Phải là lớp giữa chứ không phải bộ chặn: bộ chặn chạy SAU cổng thẻ, mà
-   * chính cổng thẻ là chỗ gọi `setActor()` — đặt sau thì lúc cần ghi, vùng
-   * còn chưa mở.
-   */
-  configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(RequestContextMiddleware).forRoutes('*');
-  }
-}
+export class AppModule {}

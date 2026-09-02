@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { API, MSG } from '@nook/shared';
 import { CurrentUser, Message, ApiErrors, ApiResult } from '../../../../core/decorator/index.js';
 import { UserProfileDto } from '../../../../core/dto/index.js';
 import type { IAuthUser } from '../../../../core/interface/index.js';
 import { UserService } from '../service/index.js';
-import { UpdateMeDto } from '../dto/index.js';
+import { UPDATE_ME_EXAMPLES, UpdateMeDto } from '../dto/index.js';
 
 /**
  * `@Controller()` để trống là cố ý: đường dẫn đầy đủ nằm ở `API` bên
@@ -29,6 +29,7 @@ export class UserController {
   @Patch(API.user.updateMe)
   @Message(MSG.PROFILE_UPDATED)
   @ApiOperation({ summary: 'Sửa hồ sơ của tôi' })
+  @ApiBody({ type: UpdateMeDto, examples: UPDATE_ME_EXAMPLES })
   @ApiResult(UserProfileDto)
   @ApiErrors(400, 401, 404)
   updateMe(@CurrentUser() me: IAuthUser, @Body() dto: UpdateMeDto): Promise<UserProfileDto> {

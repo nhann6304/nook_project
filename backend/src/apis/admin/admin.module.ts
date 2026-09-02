@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { RepositoryModule } from '../../repository/repository.module.js';
 import { AdminStatsController, AdminStatsService } from './stats/index.js';
 import {
   AdminUserController,
@@ -23,7 +22,6 @@ import { RootAdminService } from './bootstrap/index.js';
  * Chặng sau thêm vào đây: phong/hạ admin, khoá tài khoản, soi báo cáo vi phạm.
  */
 @Module({
-  imports: [RepositoryModule],
   controllers: [AdminStatsController, AdminUserController],
   providers: [AdminStatsService, AdminUserService, AdminUserMapper, RootAdminService],
 })

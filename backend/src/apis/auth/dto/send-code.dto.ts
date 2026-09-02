@@ -33,3 +33,21 @@ export class SendCodeResultDto implements ISendCodeResult {
   @ApiProperty({ example: LIMITS.codeLength })
   codeLength!: number;
 }
+
+/**
+ * Danh sách ví dụ có tên — Swagger vẽ ra một Ô CHỌN ngay trên ô soạn JSON.
+ *
+ * Thân JSON thì Swagger UI **không** vẽ ô chọn cho từng trường, dù trường đó có
+ * khai `enum`; nó chỉ vẽ một ô soạn JSON. Đây là thứ gần nhất, và thật ra tiện
+ * hơn: chọn một cái là cả thân điền sẵn, không phải gõ tay từng khoá.
+ */
+export const SEND_CODE_EXAMPLES = {
+  email: {
+    summary: 'Bằng email  (đang mở)',
+    value: { method: 'email', target: 'nam@gmail.com' },
+  },
+  phone: {
+    summary: 'Bằng số điện thoại  (chưa mở — trả auth.method_unavailable)',
+    value: { method: 'phone', target: '0901234567' },
+  },
+} as const;

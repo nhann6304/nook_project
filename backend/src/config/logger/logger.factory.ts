@@ -1,8 +1,9 @@
-import { ConsoleLogger, Logger, type LogLevel } from '@nestjs/common';
+import { Logger, type LogLevel } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { HEALTH_PATH } from '@nook/shared/http';
 import { Env, NodeEnv } from '../env/index.js';
+import { NookLogger } from './nook-logger.js';
 
 /** Đường nào chậm hơn ngần này thì nâng mức lên cho nó nổi. */
 const SLOW_MS = 500;
@@ -28,14 +29,18 @@ const LEVELS: Record<string, LogLevel[]> = {
  * 3. **Bản thật vẫn có JSON.** `json: true` là xong, không cần thư viện ngoài.
  * 4. Tốc độ của pino chỉ đáng kể ở lượng log rất lớn. Chưa tới lúc đó.
  *
+ * Ống socket được tô TÍM (xem `NookLogger`) — nó là thứ hoặc nối được hoặc
+ * không, và dòng của nó nằm lẫn giữa hàng trăm dòng HTTP cùng màu thì phải
+ * căng mắt ra tìm.
+ *
  * Log viết TIẾNG ANH và chỉ ASCII — `cmd` trên Windows chạy bảng mã cũ, chữ
  * tiếng Việt ra thành rác. Chú thích và tài liệu thì vẫn tiếng Việt.
  */
-export function buildLogger(config: ConfigService<Env, true>): ConsoleLogger {
+export function buildLogger(config: ConfigService<Env, true>): NookLogger {
   const isProd = config.get('NODE_ENV', { infer: true }) === NodeEnv.production;
   const level = config.get('LOG_LEVEL', { infer: true });
 
-  return new ConsoleLogger({
+  return new NookLogger({
     logLevels: LEVELS[level] ?? LEVELS.info,
     // Bản thật ra JSON một dòng cho MÁY đọc; máy dev ra màu cho MẮT NGƯỜI đọc.
     json: isProd,
