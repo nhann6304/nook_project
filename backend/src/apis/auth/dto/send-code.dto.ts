@@ -1,7 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { LIMITS, type ISendCodeBody, type ISendCodeResult, type TSignInMethod } from '@nook/shared';
+import {
+  LIMITS,
+  SIGNIN_INTENTS,
+  type ISendCodeBody,
+  type ISendCodeResult,
+  type TSignInIntent,
+  type TSignInMethod,
+} from '@nook/shared';
 
 /**
  * `implements ISendCodeBody` là chỗ mấu chốt.
@@ -21,6 +28,16 @@ export class SendCodeDto implements ISendCodeBody {
   @MinLength(3)
   @MaxLength(320)
   target!: string;
+
+  @ApiProperty({
+    enum: SIGNIN_INTENTS,
+    required: false,
+    example: 'signin',
+    description: 'Bấm từ cửa nào. Bỏ trống thì server không soi.',
+  })
+  @IsOptional()
+  @IsIn(SIGNIN_INTENTS)
+  intent?: TSignInIntent;
 }
 
 export class SendCodeResultDto implements ISendCodeResult {
@@ -42,8 +59,16 @@ export class SendCodeResultDto implements ISendCodeResult {
  * hơn: chọn một cái là cả thân điền sẵn, không phải gõ tay từng khoá.
  */
 export const SEND_CODE_EXAMPLES = {
-  email: {
-    summary: 'Bằng email  (đang mở)',
+  signin: {
+    summary: 'Cửa "đã có tài khoản"  (chưa có -> auth.account_not_found)',
+    value: { method: 'email', target: 'nam@gmail.com', intent: 'signin' },
+  },
+  signup: {
+    summary: 'Cửa "tạo tài khoản mới"  (đã có -> auth.account_exists)',
+    value: { method: 'email', target: 'nam@gmail.com', intent: 'signup' },
+  },
+  neutral: {
+    summary: 'Khong soi cua nao  (gui ma cho ca hai truong hop)',
     value: { method: 'email', target: 'nam@gmail.com' },
   },
   phone: {

@@ -94,6 +94,23 @@ export class UserService {
    * phải NHƯỜNG rồi đọc lại. Một lần thử lại là đủ: lần hai chắc chắn rơi vào
    * nhánh "đã có", vì bên kia đã ghi xong.
    */
+  /**
+   * Email/số này đã có tài khoản chưa.
+   *
+   * `withDeleted` khi soi lại dòng người dùng là cố ý, và phải khớp với luật
+   * bên `attachOrCreate`: người đã tự xoá tài khoản thì đăng nhập lại KHÔNG
+   * hồi sinh. Nếu ở đây trả "có" cho một tài khoản đã xoá, app sẽ đưa họ vào
+   * cửa đăng nhập rồi mới báo hỏng ở bước nộp mã — đúng cái vòng vo mà cả việc
+   * này sinh ra để tránh. Đã xoá thì coi như CHƯA CÓ, mở lại từ đầu.
+   */
+  async hasIdentity(kind: TSignInMethod, value: string): Promise<boolean> {
+    const identity = await this.identities.findByTarget(kind, value);
+    if (!identity) return false;
+
+    const user = await this.users.findById(identity.userId, { withDeleted: true });
+    return user !== null && user.deletedAt === null;
+  }
+
   async findOrCreateByIdentity(
     kind: TSignInMethod,
     value: string,

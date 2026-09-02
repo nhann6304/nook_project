@@ -8,14 +8,22 @@ export const AUTH_ERR = {
   CODE_LOCKED: 'auth.code_locked',
   /** Xin mã quá dày, phải chờ */
   CODE_TOO_SOON: 'auth.code_too_soon',
-  /** Xin mã quá nhiều trong một giờ */
+  /** Xin mã quá nhiều trong một giờ, tính theo email */
   CODE_TOO_MANY: 'auth.code_too_many',
+  /** Xin mã quá nhiều trong một giờ, tính theo máy gọi */
+  CODE_TOO_MANY_HERE: 'auth.code_too_many_here',
   /** Email hoặc số điện thoại không đúng dạng */
   TARGET_INVALID: 'auth.target_invalid',
   /** Không gửi được mã đi (nhà mạng / hộp thư từ chối) */
   SEND_FAILED: 'auth.send_failed',
   /** Đường đăng nhập này chưa mở — xem SIGNIN_METHODS_ENABLED */
   METHOD_UNAVAILABLE: 'auth.method_unavailable',
+
+  // — hai cửa vào —
+  /** Vào từ cửa "đã có tài khoản", nhưng email này chưa ai dùng */
+  ACCOUNT_NOT_FOUND: 'auth.account_not_found',
+  /** Vào từ cửa "tạo tài khoản", nhưng email này đã có tài khoản rồi */
+  ACCOUNT_EXISTS: 'auth.account_exists',
 
   // — phiên —
   /** Thẻ hết hạn */

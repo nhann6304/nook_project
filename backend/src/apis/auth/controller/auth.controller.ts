@@ -41,9 +41,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Gửi mã đăng nhập' })
   @ApiBody({ type: SendCodeDto, examples: SEND_CODE_EXAMPLES })
   @ApiResult(SendCodeResultDto)
-  @ApiErrors(400, 429, 502)
-  sendCode(@Body() dto: SendCodeDto): Promise<SendCodeResultDto> {
-    return this.auth.sendCode(dto);
+  @ApiErrors(400, 409, 429, 502)
+  sendCode(@Body() dto: SendCodeDto, @Req() req: FastifyRequest): Promise<SendCodeResultDto> {
+    return this.auth.sendCode(dto, req.ip ?? null);
   }
 
   @Public()

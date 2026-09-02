@@ -82,7 +82,7 @@ và mục 3 trước tiên**. Ba luật hay bị quên nhất:
 
 | Phần | Trạng thái |
 |---|---|
-| Backend | **Đăng nhập chạy được đầu-tới-cuối.** `./setup/mac/run.sh be` rồi mở <http://localhost:4000/docs>. Tám đường đều chạy; mã 6 số ở Redis, thẻ phiên xoay mỗi lần làm mới. **Chỉ mở đường email** — số điện thoại trả `auth.method_unavailable` cho tới khi chọn được nhà mạng gửi SMS. Khi dev thì mã **in ra log server** (`CODE_SENDER=console`). Postgres dùng bản **trên máy** ở cổng 5432, Redis ở Docker cổng 6380 |
+| Backend | **Đăng nhập chạy được đầu-tới-cuối.** `./setup/mac/run.sh be` rồi mở <http://localhost:4000/docs>. Tám đường đều chạy; mã 6 số ở Redis, thẻ phiên xoay mỗi lần làm mới. Màn đăng nhập có **hai cửa**: gửi kèm `intent: 'signin' \| 'signup'` vào `/v1/auth/code` thì server soi trước và trả `auth.account_not_found` / `auth.account_exists` mà KHÔNG gửi thư, để app đổi màn ngay. Đi kèm nó là trần xin mã **theo máy gọi** (30/giờ) — không có trần đó thì cửa này thành máy dò "ai đang dùng Nook", nên đừng gỡ. **Chỉ mở đường email** — số điện thoại trả `auth.method_unavailable` cho tới khi chọn được nhà mạng gửi SMS. Khi dev thì mã **in ra log server** (`CODE_SENDER=console`). Postgres dùng bản **trên máy** ở cổng 5432, Redis ở Docker cổng 6380 |
 | Frontend | **Chạy được.** `cd frontend && npm run dev` rồi quét QR bằng Expo Go. Nói **hai thứ tiếng** (Việt + Anh) và có **năm bảng màu** người dùng chọn được, cả hai đổi trong Cài đặt. Ghim **SDK 54** vì Expo Go trên App Store kẹt ở đó — đừng nâng, xem `frontend/docs/06-libraries.md` mục 7 |
 | Tài liệu | 15 file, đã chia theo hai bên |
 

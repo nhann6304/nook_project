@@ -16,6 +16,7 @@ import { RedisService } from '../../../infra/redis/service/index.js';
 const KEY = {
   code: (method: TSignInMethod, target: string) => `auth:code:${method}:${target}`,
   resend: (method: TSignInMethod, target: string) => `auth:resend:${method}:${target}`,
+  callerHour: (ip: string) => `auth:hour:ip:${ip}`,
   hour: (method: TSignInMethod, target: string) => `auth:hour:${method}:${target}`,
 } as const;
 
@@ -45,9 +46,34 @@ export class CodeService {
     maxTries: LIMITS.codeMaxTries,
     resendSeconds: LIMITS.codeResendSeconds,
     perHour: LIMITS.codesPerHour,
+    perHourPerIp: LIMITS.codesPerHourPerIp,
   } as const;
 
   constructor(private readonly redis: RedisService) {}
+
+  /**
+   * Trần theo MÁY GỌI, không theo email.
+   *
+   * Phải gọi TRƯỚC mọi việc có thể lộ ra "email này đã có tài khoản chưa".
+   * Mấy trần kia khoá theo email nên kẻ gõ mỗi lần một email khác đi qua thoải
+   * mái — mà đó đúng là hình dạng của việc quét danh sách. Cái này mới cản.
+   *
+   * Không biết IP (gọi từ trong máy, hoặc chạy thử) thì bỏ qua: thà không chặn
+   * còn hơn dồn cả thiên hạ vào chung một cái xô rồi khoá nhầm người thật.
+   */
+  async guardCaller(ip: string | null): Promise<void> {
+    if (!ip) return;
+
+    const key = KEY.callerHour(ip);
+    const used = await this.redis.client.incr(key);
+    if (used === 1) await this.redis.client.expire(key, HOUR_SECONDS);
+
+    if (used > this.limits.perHourPerIp) {
+      throw new AppException(ERR.CODE_TOO_MANY_HERE, HttpStatus.TOO_MANY_REQUESTS, {
+        retryAfterSeconds: Math.max(await this.redis.ttl(key), 1),
+      });
+    }
+  }
 
   /**
    * Sinh mã mới và cất. Trả về mã ở dạng THÔ để bên gửi mang đi — đây là chỗ
