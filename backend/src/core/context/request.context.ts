@@ -1,25 +1,18 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 
 /**
- * Ai đang thao tác, và request nào.
+ * Ai đang thao tác, và request nào. Giữ theo NHÁNH GỌI nên hai request song
+ * song không thấy của nhau.
  *
- * Cùng một cách làm với `TransactionContext`: `AsyncLocalStorage` giữ giá trị
- * theo NHÁNH GỌI, nên hai request chạy song song không thấy của nhau.
- *
- * Vì sao cần: không có nó thì mọi hàm muốn ghi `created_by` đều phải nhận thêm
- * một tham số `actorId` và chuyền tay qua bốn năm tầng. Quên chuyền ở một chỗ
- * là dòng đó có `created_by = null` — vẫn ghi được, vẫn không báo lỗi, và sáu
- * tháng sau không ai truy ra được ai đã tạo nó.
+ * Không có nó thì `actorId` phải chuyền tay qua bốn năm tầng, và quên một chỗ
+ * là `created_by = null` — vẫn ghi được, không ai báo lỗi.
  */
 export interface IRequestStore {
   /** Dấu vết của request. Có ngay từ đầu. */
   requestId: string;
   /**
-   * Người đang gọi. `null` trên đường `@Public()` — và null là ĐÚNG ở đó:
-   * lúc mở tài khoản thì chưa có ai để ghi vào `created_by`.
-   *
-   * Điền vào sau khi cổng thẻ chạy xong, bằng cách sửa thẳng vào đối tượng
-   * này — nó được cất trước khi có thẻ, nên phải sửa được về sau.
+   * `null` trên đường `@Public()`, và null là ĐÚNG ở đó. Điền sau khi cổng thẻ
+   * chạy xong bằng cách sửa thẳng đối tượng này — nó cất trước khi có thẻ.
    */
   userId: string | null;
 }

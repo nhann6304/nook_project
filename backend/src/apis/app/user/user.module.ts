@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
-import { UserController, UsernameController } from './controller/index.js';
-import { UserService, UsernameService } from './service/index.js';
-import { UserMapper } from './mapper/index.js';
+import { UserController } from './user.controller.js';
+import { UsernameController } from './username.controller.js';;
+import { UserService } from './user.service.js';
+import { UsernameService } from './username.service.js';;
+import { UserMapper } from './user.mapper.js';
 import { MediaModule } from '../media/index.js';
 
 /**

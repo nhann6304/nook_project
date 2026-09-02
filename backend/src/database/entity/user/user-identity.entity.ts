@@ -7,26 +7,12 @@ export type TIdentityKind = 'email' | 'phone';
 /**
  * Đích đăng nhập.
  *
- * ── Không dùng quan hệ ORM ──────────────────────────────────────────────────
+ * Không dùng `@ManyToOne` — cấu trúc nhiều-về-một vẫn giữ bằng khoá ngoại
+ * trong cơ sở dữ liệu, `userId` chỉ là cột `uuid`. Lý do đủ ở `backend/README`;
+ * cái đau nhất: hai entity nhập khẩu lẫn nhau, ở ESM là server chết lúc nạp.
  *
- * Cấu trúc vẫn là **nhiều-về-một**: nhiều dòng ở đây trỏ về một `users`, và
- * ràng buộc khoá ngoại vẫn nằm trong cơ sở dữ liệu (xem migration). Chỉ có
- * `@ManyToOne` là không dùng.
- *
- * Vì sao: decorator quan hệ kéo theo một đống thứ không nhìn thấy —
- *   · nạp thừa hay thiếu tuỳ chỗ gọi có nhớ khai `relations` hay không
- *   · sinh câu JOIN mà không ai đọc được nó ra sao cho tới lúc log SQL
- *   · buộc hai tệp entity nhập khẩu lẫn nhau, và ở ESM thì vòng tròn đó làm
- *     server chết ngay lúc nạp
- *   · đổi hành vi ngầm: từ khi `User` xoá mềm, phần nối bảng tự lọc bỏ người
- *     đã xoá, và một nhánh kiểm đang đúng bỗng ngã
- *
- * Thay vào đó: **`userId` là một cột `uuid` bình thường**, và ai cần người sở
- * hữu thì tự đi lấy — một câu hỏi nữa, nhưng là câu hỏi nhìn thấy được.
- *
- * `value` đã được CHUẨN HOÁ trước khi ghi: email hạ hết chữ thường, số điện
- * thoại đưa về E.164 (+84…). Chuẩn hoá là việc của service, không phải của
- * người dùng — họ gõ "  Nam@Gmail.Com " thì vẫn phải vào đúng một tài khoản.
+ * `value` đã CHUẨN HOÁ trước khi ghi (email hạ chữ thường, số về E.164) — gõ
+ * "  Nam@Gmail.Com " vẫn phải vào đúng một tài khoản.
  */
 @Entity('user_identities')
 @Unique('uq_identity_kind_value', ['kind', 'value'])
