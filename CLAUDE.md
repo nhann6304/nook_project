@@ -35,6 +35,10 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
 - **Đường dẫn API, mã lỗi, giới hạn: lấy từ `@nook/shared`, đừng gõ lại.** Gõ
   lại là mở đường cho hai bên lệch nhau mà không ai báo. Gói đó phải luôn
   `dependencies: {}` — nó bị nhét vào bản app trên điện thoại.
+- **Backend chia ba tầng:** `core/` là khung (không biết nghiệp vụ) ·
+  `repository/` là kho theo bảng (không thuộc khán giả nào) · `api/` là tính
+  năng, chia theo KHÁN GIẢ: `api/app/` cho React Native, `api/admin/` cho web
+  quản trị, `api/auth/` dùng chung. Có `npm run check:arch` soi chiều phụ thuộc.
 - **Không tệp nào nằm lung tung.** Mỗi loại một thư mục, mỗi thư mục một
   `index.ts`. Gốc một module chỉ có đúng `*.module.ts`. Import: cùng thư mục thì
   thẳng tệp, qua thư mục khác thì đi qua `index.js`.

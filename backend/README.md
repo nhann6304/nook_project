@@ -4,8 +4,10 @@ NestJS trên Fastify · PostgreSQL · Redis · TypeORM · Socket.IO · BullMQ.
 **Đăng nhập bằng email đã chạy được đầu-tới-cuối.**
 
 ```bash
-./setup/mac/run.sh be            # cửa sổ 1 — server
-./backend/scripts/smoke-auth.sh  # cửa sổ 2 — chạy thử toàn bộ luồng đăng nhập
+./setup/mac/run.sh be             # cửa sổ 1 — server
+./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 15 bước của luồng đăng nhập
+./backend/scripts/smoke-admin.sh  #            9 bước của đường quản trị
+./backend/scripts/smoke-media.sh  #           15 bước của đường ảnh, bằng ảnh THẬT
 ```
 
 Cần: **Postgres trên máy** (Homebrew, cổng 5432) và **Docker** cho Redis.
@@ -56,6 +58,59 @@ WARN [Mã đăng nhập] [CHỈ DÙNG KHI DEV] email → nam@gmail.com — mã: 
 Muốn gửi email thật thì đổi `CODE_SENDER=smtp` và điền `SMTP_URL`.
 `validateEnv` chặn không cho `console` đi cùng bản thật.
 
+### Ảnh
+
+| | Đường | |
+|---|---|---|
+| `POST` | `/v1/media/upload-url` | xin giấy phép tải lên đã ký |
+| `PUT` | *(đường đã ký)* | **app đẩy thẳng lên kho — không qua server** |
+| `POST` | `/v1/media/:id/complete` | server soi lại trong kho rồi mới nhận |
+| `GET` | `/v1/media/:id` | 302 sang đường xem đã ký |
+| `PATCH` | `/v1/me` | `{ avatarMediaId }` — trỏ hồ sơ vào ảnh đã tải xong |
+
+Xem mục 8.
+
+### Quản trị
+
+| | Đường | Vai |
+|---|---|---|
+| `GET` | `/v1/admin/stats` | `admin` `root` |
+| `GET` | `/v1/admin/users` | `admin` `root` |
+
+Hai cổng, đúng thứ tự: cổng thẻ hỏi *"anh có phải là ai đó không"* (401), cổng
+vai hỏi *"người đó vào được đây không"* (403). Gộp làm một thì app không phân
+biệt được "đăng nhập lại đi" với "tài khoản này không có quyền", mà hai câu đó
+dẫn người dùng đi hai hướng ngược nhau.
+
+**Vai đọc từ BẢNG, không đọc từ thẻ.** Nhét vai vào thẻ thì nhanh hơn một câu
+truy vấn, nhưng hạ một admin xong họ vẫn còn quyền tới khi thẻ hết hạn — mười
+lăm phút, đúng mười lăm phút mà người ta muốn chặn ngay.
+
+### Tài khoản gốc — tạo sẵn, không xoá được
+
+Migration `RootAdmin` tạo sẵn một tài khoản vai `root` với email
+`root@nook.local` (hoặc `ROOT_ADMIN_EMAIL` nếu khai lúc chạy migration). Địa chỉ
+mặc định đó không có thật nên **không ai đăng nhập vào nó được** — nó là chỗ giữ
+vai, không phải một lối vào.
+
+Khai `ROOT_ADMIN_EMAIL` bằng email THẬT rồi bật server: `RootAdminService` phong
+vai `root` cho tài khoản đó (chưa có thì mở sẵn), nên lần đăng nhập đầu tiên đã
+là root. **Không có API nào phong `root`** — người đầu tiên phải tới từ bên
+ngoài hệ thống, nếu không thì gà và trứng.
+
+Không xoá được, và chặn bằng **trigger trong cơ sở dữ liệu** chứ không bằng mã:
+
+```
+DELETE FROM users WHERE role='root';
+  ERROR:  root admin cannot be deleted (user f2c1b627-...)
+UPDATE users SET deleted_at = now() WHERE role='root';
+  ERROR:  root admin cannot be soft-deleted (user f2c1b627-...)
+```
+
+Chặn ở tầng mã thì chỉ chặn được đường đi qua mã — còn `psql`, còn lệnh dọn dữ
+liệu, còn một migration viết vội lúc nửa đêm. Hạ vai thì KHÔNG chặn: phải có
+đường bàn giao. Lỡ hạ hết thì lần bật server sau `ROOT_ADMIN_EMAIL` dựng lại.
+
 ### Chưa có
 
 `AchievementService.evaluate()` đã viết đủ nhưng **chưa ai gọi** — nó chỉ chạy
@@ -63,63 +118,70 @@ từ chặng 3, khi có góc bạn bè và ký ức thật làm con đếm nhúc
 `/v1/me/achievements` có thể hiện `value` đã vượt `threshold` mà `unlockedAt`
 vẫn `null`. Đúng, không phải lỗi.
 
-## 2. Cây thư mục
-
-**Luật: không tệp nào nằm lung tung.** Mỗi loại một thư mục, mỗi thư mục một
-`index.ts`. Ở gốc một module chỉ có đúng tệp `*.module.ts` — cái đặt tên cho
-thư mục.
+## 2. Cây thư mục — ba tầng, ba vai
 
 ```
-backend/
-├── docker/compose.dev.yml     Redis (+ Postgres và MinIO trong profile riêng)
-├── Dockerfile                 bản thật, nhiều chặng
-└── src/
-    ├── main.ts · app.module.ts
-    │
-    ├── config/                env/ · swagger/
-    ├── database/
-    │   ├── entity/            base/ (thang uuid → audit → soft-delete) · user/ · session/ · achievement/
-    │   ├── context/           RequestContext — ai đang thao tác
-    │   ├── migration/         SQL viết TAY (không có index — nạp bằng glob)
-    │   ├── repository/        BaseRepository · GenericRepository · RepositoryManager
-    │   ├── transaction/       TransactionContext · TransactionService · @Transactional
-    │   └── data-source/       cho bộ lệnh TypeORM
-    │
-    ├── api/
-    │   ├── common/            thứ mọi cửa đều dùng
-    │   │   ├── auth/          auth.module.ts + controller/ service/ repository/
-    │   │   │                  dto/ guard/ strategy/ type/
-    │   │   ├── health/        health.module.ts + controller/ dto/
-    │   │   ├── decorator/     @Public @CurrentUser @Message @ApiResult @ApiErrors
-    │   │   ├── dto/           vỏ câu trả lời · lỗi · lật trang · hồ sơ
-    │   │   ├── error/         AppException
-    │   │   ├── filter/        gom mọi thứ hỏng về một hình dạng
-    │   │   ├── interceptor/   bọc vỏ · đo chậm
-    │   │   ├── mapper/        BaseMapper
-    │   │   ├── middleware/    mở RequestContext, chạy trước cổng thẻ
-    │   │   ├── service/       BaseCrudService (+ bài kiểm)
-    │   │   └── pipe/          bộ kiểm đầu vào
-    │   └── model/             một thư mục cho một thứ có thật trong sản phẩm
-    │       ├── user/          user.module.ts + controller/ service/ repository/ mapper/ dto/
-    │       └── achievement/   achievement.module.ts + (như trên)
-    │
-    ├── infra/                 redis/service/ · notify/{sender,service}/
-    ├── realtime/              gateway/ · adapter/
-    └── queue/                 constant/
+src/
+├── core/          KHUNG. Không biết một chữ nào về nghiệp vụ Nook.
+│   ├── context/      RequestContext — ai đang thao tác
+│   ├── decorator/    @Public @CurrentUser @Message @Roles @ApiResult @ApiErrors
+│   ├── dto/          vỏ câu trả lời · lỗi · lật trang · hồ sơ
+│   ├── error/        AppException
+│   ├── filter/ interceptor/ middleware/ pipe/
+│   ├── interface/    IAuthUser
+│   ├── mapper/       BaseMapper
+│   ├── repository/   BaseRepository · GenericRepository · RepositoryManager
+│   ├── service/      BaseCrudService
+│   └── transaction/  TransactionService · @Transactional
+│
+├── database/      KẾT NỐI THẬT. data-source · entity/ · migration/
+├── repository/    KHO THEO BẢNG. user/ session/ achievement/ — dùng chung mọi khán giả
+│
+├── api/           TÍNH NĂNG, chia theo KHÁN GIẢ
+│   ├── auth/         đăng nhập — CẢ HAI khán giả đi qua đây
+│   ├── app/          app React Native   → /v1/...
+│   │   ├── user/ achievement/ setting/
+│   ├── admin/        web quản trị       → /v1/admin/...  (đều @Roles)
+│   │   ├── stats/ user/ bootstrap/
+│   └── health/
+│
+├── config/        env/ logger/ swagger/
+├── infra/         redis/ notify/
+├── realtime/      gateway/ adapter/
+└── queue/
 ```
 
-**Luật import, một câu:** *cùng thư mục thì import thẳng tệp; qua thư mục khác
-thì đi qua `index.js` của thư mục đó.* Nhờ vậy tệp module đọc được như một bản
-mục lục:
+Trong mỗi module: `controller/` `service/` `mapper/` `dto/`, mỗi thư mục một
+`index.ts`, gốc module chỉ có `*.module.ts`.
 
-```ts
-import { AuthController } from './controller/index.js';
-import { AuthService, CodeService, CookieService, SessionService } from './service/index.js';
-import { SessionRepository } from './repository/index.js';
+### Ba luật, và có bộ soi
+
+```bash
+npm run check:arch     # chạy luôn trong npm run check, nên push cũng chạy
 ```
 
-Chặng sau thêm vào `api/model/`: `circle` · `moment` · `thread` · `media` ·
-`memory` · `push`. Mỗi cái một thư mục đủ bộ, dựng theo đúng khuôn trên.
+1. **`core/` không được nhập từ `api/`.** Khung không biết nghiệp vụ. Bộ soi này
+   bắt được một chỗ ngay hôm dựng nó: `@CurrentUser()` nằm ở khung mà đi lấy
+   kiểu `IAuthUser` từ `api/auth/`. Nghĩ kỹ thì "ai đang gọi" đúng là chuyện của
+   khung — `IAuthUser` chuyển sang `core/interface/`.
+2. **`repository/` không thuộc về khán giả nào.** App và web quản trị hỏi cùng
+   bảng `users`. Nhét kho vào thư mục của một bên là để bên kia phải với sang.
+3. **`api/app/` và `api/admin/` không được với sang nhau.** Cái GIỐNG nhau là
+   câu truy vấn, đã nằm ở `repository/`. Cái KHÁC nhau — controller, dto,
+   mapper — mỗi bên giữ của mình.
+
+Luật chỉ nằm trong tài liệu thì mục. Luật có bộ soi thì không.
+
+### Vì sao chia theo khán giả
+
+App React Native và web quản trị nhìn cùng một bảng nhưng được thấy hai thứ
+khác nhau và làm được hai việc khác nhau. `UserProfileDto` (app) không có `role`
+hay `lastSeenAt`; `AdminUserDto` (web) có. Gộp chung một module rồi phân nhánh
+bằng `if (isAdmin)` là cách nhanh nhất để một hôm nào đó app trả ra thứ chỉ
+quản trị mới được thấy.
+
+Đăng nhập thì **dùng chung**: admin là một người dùng có vai khác, không phải
+một hệ thống tài khoản thứ hai. Dựng hai hệ thống tài khoản là dựng hai chỗ để hở.
 
 ## 3. Tầng dùng chung — đọc trước khi viết module thứ ba
 
@@ -250,7 +312,216 @@ câu tiếng Việt. Khai ở controller bằng ba decorator, không tả tay:
 @ApiErrors(400, 429, 502)      // các mã hỏng
 ```
 
-## 4. Bảng
+## 4. Ảnh — bản gốc giữ nguyên, mãi mãi
+
+**Không thu nhỏ, không nén lại, không đổi định dạng.** Không có `sharp`, không
+có `resize`, không có `quality` ở đâu trong mã. Bytes vào kho đúng bằng bytes
+máy ảnh chụp ra, và không có đường nào xoá bản gốc. Đó là sản phẩm — bóp ảnh
+của Nook thì Nook không còn là Nook.
+
+Bản nhẹ cho bảng tin và cho widget (chặng sau) là **dòng khác trong bảng**, trỏ
+tới bản sao dựng từ bản gốc. Bản sao xoá lúc nào cũng được vì dựng lại được.
+
+### Bytes không đi qua server
+
+```
+1. POST /v1/media/upload-url    server ghi dòng `pending`, ký một giấy phép PUT
+2. PUT  <đường đã ký>           app đẩy thẳng lên kho  ← không qua Node
+3. POST /v1/media/:id/complete  server tự soi trong kho rồi mới chuyển `ready`
+```
+
+Một tấm ảnh 12MB đi qua Node là tốn hai lần băng thông, chiếm bộ nhớ suốt lúc
+tải, và mười người tải cùng lúc là 120MB nằm trong một tiến trình một luồng.
+
+Bước 3 không thừa: không có nó thì ai cũng gọi `complete` cho một tấm ảnh chưa
+từng tồn tại, và bảng đầy dòng `ready` trỏ vào hư không. Server hỏi kho
+(`HeadObject`) rồi so dung lượng với lời khai — **kho là bên nói thật, không
+phải app.**
+
+`ContentType` và `ContentLength` nằm trong chữ ký, nên khai 2MB rồi đẩy 200MB
+là **kho** từ chối. Đó mới là chỗ chặn thật, không phải câu `if` ở tầng mã.
+
+### Ảnh này của ai, và ai được xem
+
+`media.owner_id` là người tải lên. Nhưng **quyền xem không nằm ở bảng `media`** —
+nó nằm ở chỗ tấm ảnh được gắn vào:
+
+| `kind` | Ai xem được |
+|---|---|
+| `avatar` | người trong góc của chủ ảnh *(chặng sau)* |
+| `moment` | chỉ những người khoảnh khắc đó gửi tới *(chặng sau)* |
+
+Cùng một tấm gắn vào hai khoảnh khắc là hai tập người xem khác nhau. Chép danh
+sách quyền vào bảng ảnh là chép lại một sự thật đã nằm chỗ khác, và hai bản chép
+thì sẽ có ngày lệch nhau.
+
+**Chặng này chưa có góc bạn bè nên luật tạm là: chỉ chủ ảnh xem được.** Luật đặt
+ở MỘT chỗ (`MediaService.readUrl`), không rải ở từng cửa gọi tới ảnh — rải ra thì
+sẽ có một cửa quên kiểm, và cửa đó là chỗ ảnh riêng tư rò ra ngoài.
+
+### Vì sao `GET /v1/media/:id` trả 302 chứ không trả đường ký trong JSON
+
+Đường đã ký sống vài phút, mà app thì lưu lại câu trả lời. Một đường hỏng sau
+năm phút nằm trong bộ nhớ đệm của app là thứ rất khó lần ra.
+
+`/v1/media/<id>` thì **ổn định** — dán vào thẻ ảnh, vào bộ nhớ đệm, vào đâu cũng
+được. Mỗi lần tải là một lần ký lại, và **quyền xem được kiểm đúng lúc xem**,
+không phải lúc câu trả lời được tạo ra. Cái chuyển hướng để `no-store`; tệp ảnh
+ở đầu kia thì cứ cho lưu thoải mái.
+
+### Bản nhẹ — bắt buộc phải có
+
+|  | rộng | nặng |
+|---|---|---|
+| bản gốc iPhone | 4032 px | ~3 MB |
+| màn hình cần | 1290 px | — |
+| `feed` | 1290 px | ~200 KB |
+| `thumb` (hàng mặt, ảnh đại diện) | 320 px | ~12 KB |
+
+Cuộn 20 tấm: bản gốc là **60 MB**, bản `feed` là **4 MB**. Trên 4G đó là khác
+biệt giữa 40 giây và 3 giây, cộng một hoá đơn dữ liệu.
+
+**Là bản sao THÊM, không thay bản gốc.** Bảng riêng (`media_variants`) chứ không
+phải cột `feed_key`, `thumb_key` trên `media` — hai thứ có vòng đời khác hẳn
+nhau: bản gốc giữ mãi mãi và không xoá được; bản nhẹ dựng ở việc nền, hỏng
+được, dựng lại được, và mai mốt đổi kích thước là dựng lại toàn bộ. Thêm một cỡ
+mới là thêm một DÒNG, không phải thêm một cột.
+
+Dựng ở **việc nền** (BullMQ + sharp), không dựng lúc tải xong: kéo 12MB về bộ
+nhớ rồi nén mất vài trăm mili giây và chiếm luồng duy nhất của Node — trong
+đường request thì đó là chặn mọi người khác. Ảnh dùng được ngay bằng bản gốc.
+
+Xin bản nhẹ chưa dựng xong thì server trả **bản gốc**, không trả lỗi: chậm một
+lần còn hơn một ô ảnh trống.
+
+```
+GET /v1/media/<id>                 bản gốc
+GET /v1/media/<id>?variant=feed    bản feed, chưa có thì rơi về bản gốc
+GET /v1/media/<id>?variant=thumb
+```
+
+`.rotate()` không tham số trong worker là **áp dụng hướng xoay ghi trong EXIF**.
+Thiếu nó thì ảnh chụp dọc ra bản nhẹ nằm ngang — bản gốc vẫn đúng vì nó còn thẻ
+EXIF, còn bản nhẹ thì đã mất thẻ đó.
+
+`withoutEnlargement`: ảnh vốn nhỏ hơn thì để yên. Phóng to chỉ làm tệp nặng
+thêm mà không nét thêm chút nào.
+
+**sharp đọc được HEIF/HEIC** — bản dựng sẵn 0.35 đã kèm libheif, nên nhận thẳng
+ảnh iPhone, không phải bắt app chuyển sang JPEG.
+
+### Chọn kho nào: MinIO hay R2
+
+**MinIO chỉ để dev trên máy mình. Mọi thứ người dùng thật chạm vào thì R2.**
+
+Treo MinIO trên laptop để phục vụ người dùng thật là hỏng ở bốn chỗ, và chỗ nào
+cũng đủ để chết:
+
+- laptop ngủ, đổi wifi, mất điện — ảnh biến mất trong lúc đó
+- nhà mạng đổi IP liên tục, điện thoại ngoài mạng 4G không vào được nếu không
+  mở cổng hoặc dựng đường hầm
+- không HTTPS thì iOS chặn thẳng
+- **laptop hỏng là mất sạch ảnh gốc** — và ảnh gốc không dựng lại được
+
+Bậc miễn phí của R2 cho 10–20 người đầu: **10 GB chỗ chứa** (cỡ 3000 tấm ảnh
+3MB) và **không mất tiền băng thông ra** — mà băng thông ra mới là thứ tốn với
+một app xem ảnh. Thực tế là 0 đồng ở giai đoạn này.
+
+MinIO vẫn giữ, vì nó tốt cho đúng việc của nó: dev không cần mạng, không cần
+tài khoản, `docker compose down -v` là sạch bách làm lại.
+
+#### Chuyển sang R2 — đổi bốn dòng
+
+```bash
+STORAGE_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+STORAGE_BUCKET=nook-media
+STORAGE_KEY_ID=<R2 access key id>
+STORAGE_SECRET=<R2 secret>
+```
+
+Hết. Không đụng một dòng mã nào. Kiểu đường dẫn tự nhận ra từ tên miền, và
+`storage_provider` của từng tấm tự ghi theo kho đang dùng.
+
+Bên Cloudflare: **R2 → Create bucket** (đặt tên `nook-media`, để **private**) →
+**Manage R2 API Tokens → Create API token**, quyền *Object Read & Write*, giới
+hạn đúng thùng đó. Account ID nằm ngay trên trang R2.
+
+Bật server lên, `StorageCheck` **ghi thật một tệp bé rồi xoá** — sai khoá hay
+sai tên thùng là nó kêu ngay lúc bật, kèm câu chỉ rõ phải sửa biến nào:
+
+```
+ERROR [StorageCheck] Storage is not usable (minio): The request signature we
+calculated does not match the signature you provided.
+  Check STORAGE_ENDPOINT / STORAGE_BUCKET / STORAGE_KEY_ID / STORAGE_SECRET.
+```
+
+Bản thật thì hỏng là **chết luôn**, không bật. Server không chứa được ảnh thì
+nó không làm được việc của nó. Máy dev thì chỉ kêu, để còn ngồi làm được lúc
+không có mạng.
+
+#### Đã có ảnh ở kho cũ rồi thì sao
+
+```bash
+STORAGE_LEGACY_ENDPOINT=http://localhost:9000    # kho CŨ
+STORAGE_LEGACY_BUCKET=nook-media
+STORAGE_LEGACY_KEY_ID=nook
+STORAGE_LEGACY_SECRET=nook12345
+
+npm run storage:migrate -- --dry-run    # xem sẽ chép gì
+npm run storage:migrate                 # chép thật
+```
+
+Ảnh mới vào kho mới, ảnh cũ đọc ở kho cũ, chép dần lúc rảnh. **Không dừng dịch
+vụ, không mất tấm nào.** Lệnh chạy lại được nhiều lần — nó chỉ nhặt dòng còn ghi
+kho cũ, nên đứt giữa chừng thì chạy tiếp. Chép xong tệp mới đổi cột, không đảo
+ngược lại: đảo là có một khoảng dòng nói "tôi ở kho mới" mà tệp còn ở kho cũ.
+Bản cũ **không bị xoá** — xoá là việc riêng, làm khi đã yên tâm.
+
+### Vì sao code đã sẵn sàng để hoán đổi
+
+Cùng giao thức S3, nên đường tải lên ở máy dev là **đường thật** — không phải
+bản giả rồi lên thật mới phát hiện lệch. Ba thứ làm việc hoán đổi thành chuyện
+đổi biến môi trường:
+
+**Không phải khai kiểu đường dẫn.** MinIO cần `http://host/bucket/key`, R2 cần
+`https://bucket.host/key`; đặt sai thì mọi lần tải lên trả 403 hoặc 404 và câu
+lỗi của S3 không hé một chữ nào. Server **tự nhận ra từ tên miền**
+(`detectProvider`), nên không ai đặt sai được nữa.
+
+**Ghi vào MỘT kho, đọc được NHIỀU kho.** Mỗi dòng ảnh nhớ nó nằm ở kho nào
+(`media.storage_provider`). Đây là cột quan trọng nhất của cả bảng: không có nó
+thì ngày đổi MinIO sang R2, server đi tìm ảnh cũ ở kho mới và không thấy — **mất
+sạch ảnh cũ**, mà mất ở đây là mất thật vì bản gốc không dựng lại được.
+
+Có nó thì đổi kho là: trỏ `STORAGE_*` sang kho mới, khai thêm `STORAGE_LEGACY_*`
+để đọc kho cũ, rồi chép dần sang lúc rảnh. Không dừng dịch vụ, không mất tấm nào.
+Chép xong thì bỏ khối `LEGACY` đi.
+
+Chọn R2 **không phải vì rẻ chỗ chứa** — chỗ chứa ở đâu cũng na ná. Vì R2 **không
+thu tiền băng thông ra**. Nook là app xem ảnh: mỗi tấm tải lên một lần, xem hàng
+trăm lần. Ở S3 thì chính cái "hàng trăm lần" đó là hoá đơn.
+
+### Đã đo
+
+`scripts/smoke-media.sh` tải lên một tấm PNG 1.4MB thật rồi tải về, so **sha256**:
+
+```
+Ảnh thử: 1471213 byte · sha256 d4af8f3575246bd5…
+  ✓ tải về nguyên vẹn — sha256 KHỚP
+  ✓ dung lượng tải về == lúc gửi
+```
+
+```
+feed:  700px  349728 byte   (4.2x nhẹ hơn)
+thumb: 320px   44072 byte  (33.4x nhẹ hơn)
+  ✓ bản GỐC vẫn nguyên sau khi dựng bản nhẹ
+```
+
+Cùng 20 bước: chưa tải mà báo xong thì chặn, người khác không xem được, không
+thẻ không xem được, ảnh người khác không đặt làm đại diện được, tệp quá to và
+định dạng lạ bị chặn ngay từ lúc xin đường, xin bản nhẹ không có tên thì chặn.
+
+## 5. Bảng
 
 Bảy bảng. Ba nhóm.
 
@@ -293,7 +564,7 @@ npm run migration:revert
 npm run migration:show
 ```
 
-## 5. Redis làm năm việc
+## 6. Redis làm năm việc
 
 1. Mã đăng nhập 6 số, tự chết sau 5 phút
 2. Con đếm chống gọi quá dày
@@ -306,7 +577,7 @@ npm run migration:show
 
 Việc gì cần **nhớ lâu** thì đi Postgres. Redis là chỗ của thứ được phép quên.
 
-## 6. Socket là đường tắt, không phải lời hứa giao hàng
+## 7. Socket là đường tắt, không phải lời hứa giao hàng
 
 App bị đẩy ra nền là ống đứt, và nó đứt thường xuyên hơn nhiều so với cảm giác
 lúc ngồi thử máy. Thứ bảo đảm tới nơi vẫn là **ghi vào cơ sở dữ liệu, rồi bắn
@@ -315,7 +586,7 @@ thông báo đẩy**. Socket chỉ làm người đang mở app thấy nhanh hơ
 Hệ quả: nối lại thì **hỏi lại bằng REST**, đừng phát lại qua ống. Ống không nhớ
 nó đã bỏ lỡ những gì.
 
-## 7. Sáu chỗ đã vấp — đừng vấp lại
+## 8. Sáu chỗ đã vấp — đừng vấp lại
 
 **NestJS 12 bỏ hẳn CommonJS.** `@nestjs/common`, `@nestjs/core`,
 `@nestjs/typeorm` đều là `"type": "module"`. Nên backend là ESM, và **mọi import
@@ -460,10 +731,18 @@ Hai bẫy trên cùng một triệu chứng — "cái này rõ ràng có mà nó
 nay đều đã chặn sẵn: `incremental` tắt, và `shared` tự dịch lại trước mọi lệnh.
 Nếu vẫn gặp thì `rm -f backend/*.tsbuildinfo` rồi chạy lại.
 
+**Gọi log kiểu pino thì Nest nuốt mất vết ngăn xếp.** `ConsoleLogger` có chữ ký
+`(message, stack)`; gọi `log.error({obj}, 'msg')` như pino thì đối tượng bị in
+thành câu chữ còn câu chữ bị coi là vết ngăn xếp, nên **vết ngăn xếp thật biến
+mất** — đúng thứ cần nhất lúc có lỗi 500. Đã xảy ra thật: một lỗi 500 ở
+`/v1/media/:id/complete` không cho biết gì cả cho tới khi sửa chỗ gọi log, rồi
+nguyên nhân hiện ra ngay dòng đầu (`Custom Id cannot contain :` — BullMQ không
+nhận dấu hai chấm trong mã việc).
+
 **Node 22 hoặc 24, đừng dùng 23.** Vài thư viện khai `engines` là
 `^20.19 || ^22.13 || >=24`; bản lẻ nằm ngoài lời hứa đó.
 
-## 8. Ranh giới với frontend
+## 9. Ranh giới với frontend
 
 **Màn hình không biết server tồn tại.** Mọi lệnh gọi mạng của app nằm gọn trong
 `frontend/src/features/<tên>/lib/*Api.ts`. Hiện có đúng một file như vậy:

@@ -34,7 +34,7 @@ export class RedisService implements OnModuleDestroy {
       lazyConnect: false,
     });
 
-    this.client.on('error', (err) => this.log.error({ err }, 'connection error'));
+    this.client.on('error', (err: Error) => this.log.error(`connection error: ${err.message}`, err.stack));
     this.client.on('connect', () => this.log.log('connected'));
   }
 

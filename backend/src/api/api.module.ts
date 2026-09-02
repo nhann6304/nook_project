@@ -1,21 +1,29 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './common/auth/index.js';
-import { HealthModule } from './common/health/index.js';
-import { UserModule } from './model/user/index.js';
-import { AchievementModule } from './model/achievement/index.js';
+import { AuthModule } from './auth/index.js';
+import { HealthModule } from './health/index.js';
+import { AppApiModule } from './app/index.js';
+import { AdminModule } from './admin/index.js';
 
 /**
- * Mặt API, gom một chỗ.
+ * Mặt API, chia theo **KHÁN GIẢ**.
  *
- *   common/  thứ mọi cửa đều dùng — cổng thẻ, bộ lọc lỗi, bộ kiểm đầu vào,
- *            decorator, và cả phần đăng nhập (nó không phải một "mô hình dữ
- *            liệu", nó là cái cửa ai cũng phải qua).
- *   model/   một thư mục cho một thứ có thật trong sản phẩm. Mỗi thư mục là
- *            một module đủ bộ: controller, service, dto/ — không đổ chung.
+ *   auth/   đăng nhập — CẢ HAI khán giả cùng đi qua đây
+ *   app/    app React Native  → /v1/...
+ *   admin/  web quản trị      → /v1/admin/...  (đều `@Roles`)
+ *   health/ dò sống chết
  *
- * Chặng sau thêm vào đây: circle · moment · thread · media · memory · push.
+ * Vì sao chia theo khán giả chứ không theo bảng: hai bên hỏi cùng một bảng
+ * `users` nhưng được thấy hai thứ khác nhau và làm được hai việc khác nhau.
+ * Gộp chung một module rồi phân nhánh bằng `if (isAdmin)` là cách nhanh nhất
+ * để một hôm nào đó app trả ra thứ chỉ quản trị mới được thấy.
+ *
+ * Cái GIỐNG nhau — câu truy vấn — nằm ở `src/repository/`, ngoài cả hai.
+ * Cái KHÁC nhau — controller, dto, mapper — nằm trong thư mục của từng khán giả.
+ *
+ * Đăng nhập thì dùng chung: admin là một người dùng có vai khác, không phải một
+ * hệ thống tài khoản thứ hai. Dựng hai hệ thống tài khoản là dựng hai chỗ để hở.
  */
 @Module({
-  imports: [HealthModule, AuthModule, UserModule, AchievementModule],
+  imports: [HealthModule, AuthModule, AppApiModule, AdminModule],
 })
 export class ApiModule {}

@@ -1,4 +1,5 @@
 import { Column, Entity } from 'typeorm';
+import { ROLE, type TUserRole } from '@nook/shared';
 import { SoftDeleteEntity } from '../base/index.js';
 
 /**
@@ -22,16 +23,25 @@ import { SoftDeleteEntity } from '../base/index.js';
  */
 @Entity('users')
 export class User extends SoftDeleteEntity {
+  /**
+   * Vai trong hệ thống — KHÔNG phải "hạng" của sản phẩm, và không bao giờ hiện
+   * ra ở app. Nó chỉ trả lời: người này có vào được trang quản trị không.
+   */
+  @Column({ name: 'role', type: 'varchar', length: 16, default: ROLE.member })
+  role!: TUserRole;
+
   @Column({ name: 'display_name', type: 'varchar', length: 24, nullable: true })
   displayName!: string | null;
 
   /**
-   * Khoá của ảnh trong kho, KHÔNG phải đường dẫn đầy đủ.
-   * Đường dẫn được ký lúc trả về và hết hạn sau vài phút — lưu sẵn là lưu một
-   * thứ hỏng trong vài phút nữa.
+   * Trỏ vào bảng `media`, KHÔNG phải một chuỗi đường dẫn.
+   *
+   * Chuỗi đường dẫn không nói được ảnh đã tải xong chưa, nặng bao nhiêu, ai tải
+   * lên. Và đường dẫn ĐÃ KÝ thì hết hạn sau vài phút — lưu sẵn là lưu một thứ
+   * hỏng trong vài phút nữa.
    */
-  @Column({ name: 'avatar_key', type: 'varchar', length: 255, nullable: true })
-  avatarKey!: string | null;
+  @Column({ name: 'avatar_media_id', type: 'uuid', nullable: true })
+  avatarMediaId!: string | null;
 
   /** Đã qua màn Tên + ảnh chưa. `null` là chưa. */
   @Column({ name: 'onboarded_at', type: 'timestamptz', nullable: true })

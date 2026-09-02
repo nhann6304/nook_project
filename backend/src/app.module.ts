@@ -6,9 +6,9 @@ import { InfraModule } from './infra/index.js';
 import { ApiModule } from './api/index.js';
 import { RealtimeModule } from './realtime/index.js';
 import { QueueModule } from './queue/index.js';
-import { AllExceptionFilter } from './api/common/filter/index.js';
-import { ResponseInterceptor } from './api/common/interceptor/index.js';
-import { RequestContextMiddleware } from './api/common/middleware/index.js';
+import { AllExceptionFilter } from './core/filter/index.js';
+import { ResponseInterceptor } from './core/interceptor/index.js';
+import { RequestContextMiddleware } from './core/middleware/index.js';
 
 /**
  * Gốc cây. Sáu mảng, mỗi mảng một việc:

@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import type { Namespace, Socket } from 'socket.io';
 import { SOCKET, SOCKET_IN, SOCKET_OUT } from '@nook/shared';
-import { SessionService } from '../../api/common/auth/service/index.js';
+import { SessionService } from '../../api/auth/service/index.js';
 
 /** Mỗi người một phòng riêng. Bắn tin cho một người là bắn vào phòng của họ. */
 const room = (userId: string) => `user:${userId}`;
@@ -62,7 +62,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   handleDisconnect(client: Socket): void {
-    this.log.debug({ userId: client.data?.userId }, 'disconnected');
+    this.log.debug(`disconnected: ${String(client.data?.userId ?? '-')}`);
   }
 
   @SubscribeMessage(SOCKET_IN.ping)
@@ -83,6 +83,6 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
         socket.disconnect(true);
       }
     }
-    this.log.debug({ userId }, 'session kicked off the socket');
+    this.log.debug(`session kicked off the socket: user ${userId}`);
   }
 }

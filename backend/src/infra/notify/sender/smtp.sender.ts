@@ -39,7 +39,7 @@ export class SmtpSender implements ICodeSender {
       text: `Mã của bạn là ${code}. Mã sống trong ${minutes} phút.\n\nKhông phải bạn xin mã này? Bỏ qua thư này là xong.`,
     });
 
-    this.log.debug({ to: target }, 'code sent');
+    this.log.debug(`code sent to ${target}`);
   }
 
   /** Dựng lúc cần chứ không lúc bật server: dev không có SMTP thì cũng chạy được. */

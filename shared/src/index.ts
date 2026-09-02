@@ -37,5 +37,6 @@ export * from './user/index.js';
 export * from './circle/index.js';
 export * from './achievement/index.js';
 export * from './memory/index.js';
+export * from './media/index.js';
 export * from './realtime/index.js';
 export * from './catalog/index.js';

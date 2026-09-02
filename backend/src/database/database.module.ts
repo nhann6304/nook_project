@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Env } from '../config/env/index.js';
 import { ENTITIES } from './entity/index.js';
-import { TransactionService } from './transaction/index.js';
-import { RepositoryManager } from './repository/index.js';
+import { TransactionService } from '../core/transaction/index.js';
+import { RepositoryManager } from '../core/repository/index.js';
 
 /**
  * Kết nối cơ sở dữ liệu.

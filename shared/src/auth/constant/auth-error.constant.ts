@@ -24,4 +24,6 @@ export const AUTH_ERR = {
   SESSION_REVOKED: 'auth.session_revoked',
   /** Không có thẻ, hoặc thẻ không đọc được */
   UNAUTHORIZED: 'auth.unauthorized',
+  /** Có thẻ, thẻ đúng, nhưng không đủ quyền cho cửa này */
+  FORBIDDEN: 'auth.forbidden',
 } as const;

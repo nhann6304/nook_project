@@ -73,6 +73,38 @@ export class Env {
   @IsOptional() @IsString() SMTP_URL?: string;
   @IsOptional() @IsString() SMTP_FROM?: string;
 
+  // ── Kho ảnh ────────────────────────────────────────────────────────────────
+  @IsString() STORAGE_ENDPOINT!: string;
+  @IsString() STORAGE_REGION: string = 'auto';
+  @IsString() STORAGE_BUCKET!: string;
+  @IsString() STORAGE_KEY_ID!: string;
+  @IsString() STORAGE_SECRET!: string;
+  /**
+   * Kho CŨ — chỉ khai khi đang chuyển từ kho này sang kho khác.
+   *
+   * Ảnh mới luôn ghi vào kho ở trên. Ảnh cũ vẫn nằm ở kho cũ, và mỗi dòng ảnh
+   * nhớ nó nằm đâu — nên khai bốn biến này là đọc được cả hai, không phải dừng
+   * dịch vụ, không mất tấm nào. Chép xong hết thì bỏ đi.
+   *
+   * `STORAGE_PATH_STYLE` không còn: suy ra từ tên miền (xem `detectProvider`).
+   */
+  @IsOptional() @IsString() STORAGE_LEGACY_ENDPOINT?: string;
+  @IsOptional() @IsString() STORAGE_LEGACY_BUCKET?: string;
+  @IsOptional() @IsString() STORAGE_LEGACY_KEY_ID?: string;
+  @IsOptional() @IsString() STORAGE_LEGACY_SECRET?: string;
+
+  // ── Quản trị ───────────────────────────────────────────────────────────────
+  /**
+   * Email của tài khoản quản trị gốc.
+   *
+   * Không có API nào phong `root` — người đầu tiên phải tới từ bên ngoài hệ
+   * thống, nếu không thì gà và trứng. Mỗi lần bật server, email này được bảo
+   * đảm là `root`: chưa có thì mở tài khoản, có rồi mà sai vai thì nắn lại.
+   *
+   * Bỏ trống cũng được — migration đã tạo sẵn một tài khoản gốc rồi.
+   */
+  @IsOptional() @IsString() ROOT_ADMIN_EMAIL?: string;
+
   // ── Log & tài liệu ─────────────────────────────────────────────────────────
   @IsString() LOG_LEVEL: string = 'info';
   @Transform(toBool) @IsBoolean() SWAGGER_ENABLED: boolean = false;
