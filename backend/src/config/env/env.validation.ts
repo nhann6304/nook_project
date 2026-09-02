@@ -73,6 +73,15 @@ export class Env {
   @IsOptional() @IsString() SMTP_URL?: string;
   @IsOptional() @IsString() SMTP_FROM?: string;
 
+  // ── Kho ảnh ────────────────────────────────────────────────────────────────
+  @IsString() STORAGE_ENDPOINT!: string;
+  @IsString() STORAGE_REGION: string = 'auto';
+  @IsString() STORAGE_BUCKET!: string;
+  @IsString() STORAGE_KEY_ID!: string;
+  @IsString() STORAGE_SECRET!: string;
+  /** true cho MinIO, false cho R2. Đặt sai thì mọi lần tải lên trả 403/404. */
+  @Transform(toBool) @IsBoolean() STORAGE_PATH_STYLE: boolean = false;
+
   // ── Quản trị ───────────────────────────────────────────────────────────────
   /**
    * Email của tài khoản quản trị gốc.

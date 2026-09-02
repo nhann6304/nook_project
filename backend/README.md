@@ -7,6 +7,7 @@ NestJS trên Fastify · PostgreSQL · Redis · TypeORM · Socket.IO · BullMQ.
 ./setup/mac/run.sh be             # cửa sổ 1 — server
 ./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 15 bước của luồng đăng nhập
 ./backend/scripts/smoke-admin.sh  #            9 bước của đường quản trị
+./backend/scripts/smoke-media.sh  #           15 bước của đường ảnh, bằng ảnh THẬT
 ```
 
 Cần: **Postgres trên máy** (Homebrew, cổng 5432) và **Docker** cho Redis.
@@ -56,6 +57,18 @@ WARN [Mã đăng nhập] [CHỈ DÙNG KHI DEV] email → nam@gmail.com — mã: 
 
 Muốn gửi email thật thì đổi `CODE_SENDER=smtp` và điền `SMTP_URL`.
 `validateEnv` chặn không cho `console` đi cùng bản thật.
+
+### Ảnh
+
+| | Đường | |
+|---|---|---|
+| `POST` | `/v1/media/upload-url` | xin giấy phép tải lên đã ký |
+| `PUT` | *(đường đã ký)* | **app đẩy thẳng lên kho — không qua server** |
+| `POST` | `/v1/media/:id/complete` | server soi lại trong kho rồi mới nhận |
+| `GET` | `/v1/media/:id` | 302 sang đường xem đã ký |
+| `PATCH` | `/v1/me` | `{ avatarMediaId }` — trỏ hồ sơ vào ảnh đã tải xong |
+
+Xem mục 8.
 
 ### Quản trị
 
@@ -299,7 +312,89 @@ câu tiếng Việt. Khai ở controller bằng ba decorator, không tả tay:
 @ApiErrors(400, 429, 502)      // các mã hỏng
 ```
 
-## 4. Bảng
+## 4. Ảnh — bản gốc giữ nguyên, mãi mãi
+
+**Không thu nhỏ, không nén lại, không đổi định dạng.** Không có `sharp`, không
+có `resize`, không có `quality` ở đâu trong mã. Bytes vào kho đúng bằng bytes
+máy ảnh chụp ra, và không có đường nào xoá bản gốc. Đó là sản phẩm — bóp ảnh
+của Nook thì Nook không còn là Nook.
+
+Bản nhẹ cho bảng tin và cho widget (chặng sau) là **dòng khác trong bảng**, trỏ
+tới bản sao dựng từ bản gốc. Bản sao xoá lúc nào cũng được vì dựng lại được.
+
+### Bytes không đi qua server
+
+```
+1. POST /v1/media/upload-url    server ghi dòng `pending`, ký một giấy phép PUT
+2. PUT  <đường đã ký>           app đẩy thẳng lên kho  ← không qua Node
+3. POST /v1/media/:id/complete  server tự soi trong kho rồi mới chuyển `ready`
+```
+
+Một tấm ảnh 12MB đi qua Node là tốn hai lần băng thông, chiếm bộ nhớ suốt lúc
+tải, và mười người tải cùng lúc là 120MB nằm trong một tiến trình một luồng.
+
+Bước 3 không thừa: không có nó thì ai cũng gọi `complete` cho một tấm ảnh chưa
+từng tồn tại, và bảng đầy dòng `ready` trỏ vào hư không. Server hỏi kho
+(`HeadObject`) rồi so dung lượng với lời khai — **kho là bên nói thật, không
+phải app.**
+
+`ContentType` và `ContentLength` nằm trong chữ ký, nên khai 2MB rồi đẩy 200MB
+là **kho** từ chối. Đó mới là chỗ chặn thật, không phải câu `if` ở tầng mã.
+
+### Ảnh này của ai, và ai được xem
+
+`media.owner_id` là người tải lên. Nhưng **quyền xem không nằm ở bảng `media`** —
+nó nằm ở chỗ tấm ảnh được gắn vào:
+
+| `kind` | Ai xem được |
+|---|---|
+| `avatar` | người trong góc của chủ ảnh *(chặng sau)* |
+| `moment` | chỉ những người khoảnh khắc đó gửi tới *(chặng sau)* |
+
+Cùng một tấm gắn vào hai khoảnh khắc là hai tập người xem khác nhau. Chép danh
+sách quyền vào bảng ảnh là chép lại một sự thật đã nằm chỗ khác, và hai bản chép
+thì sẽ có ngày lệch nhau.
+
+**Chặng này chưa có góc bạn bè nên luật tạm là: chỉ chủ ảnh xem được.** Luật đặt
+ở MỘT chỗ (`MediaService.readUrl`), không rải ở từng cửa gọi tới ảnh — rải ra thì
+sẽ có một cửa quên kiểm, và cửa đó là chỗ ảnh riêng tư rò ra ngoài.
+
+### Vì sao `GET /v1/media/:id` trả 302 chứ không trả đường ký trong JSON
+
+Đường đã ký sống vài phút, mà app thì lưu lại câu trả lời. Một đường hỏng sau
+năm phút nằm trong bộ nhớ đệm của app là thứ rất khó lần ra.
+
+`/v1/media/<id>` thì **ổn định** — dán vào thẻ ảnh, vào bộ nhớ đệm, vào đâu cũng
+được. Mỗi lần tải là một lần ký lại, và **quyền xem được kiểm đúng lúc xem**,
+không phải lúc câu trả lời được tạo ra. Cái chuyển hướng để `no-store`; tệp ảnh
+ở đầu kia thì cứ cho lưu thoải mái.
+
+### MinIO ở máy dev, R2 ở bản thật
+
+Cùng giao thức S3, nên đường tải lên ở máy dev là **đường thật** — không phải
+bản giả rồi lên thật mới phát hiện lệch. Khác nhau đúng một dòng:
+`STORAGE_PATH_STYLE` (`true` cho MinIO, `false` cho R2). Đặt sai thì mọi lần tải
+lên trả 403 hoặc 404, và câu lỗi không nói vì sao.
+
+Chọn R2 **không phải vì rẻ chỗ chứa** — chỗ chứa ở đâu cũng na ná. Vì R2 **không
+thu tiền băng thông ra**. Nook là app xem ảnh: mỗi tấm tải lên một lần, xem hàng
+trăm lần. Ở S3 thì chính cái "hàng trăm lần" đó là hoá đơn.
+
+### Đã đo
+
+`scripts/smoke-media.sh` tải lên một tấm PNG 1.4MB thật rồi tải về, so **sha256**:
+
+```
+Ảnh thử: 1471213 byte · sha256 d4af8f3575246bd5…
+  ✓ tải về nguyên vẹn — sha256 KHỚP
+  ✓ dung lượng tải về == lúc gửi
+```
+
+Cùng 15 bước: chưa tải mà báo xong thì chặn, người khác không xem được, không
+thẻ không xem được, ảnh người khác không đặt làm đại diện được, tệp quá to và
+định dạng lạ bị chặn ngay từ lúc xin đường.
+
+## 5. Bảng
 
 Bảy bảng. Ba nhóm.
 
@@ -342,7 +437,7 @@ npm run migration:revert
 npm run migration:show
 ```
 
-## 5. Redis làm năm việc
+## 6. Redis làm năm việc
 
 1. Mã đăng nhập 6 số, tự chết sau 5 phút
 2. Con đếm chống gọi quá dày
@@ -355,7 +450,7 @@ npm run migration:show
 
 Việc gì cần **nhớ lâu** thì đi Postgres. Redis là chỗ của thứ được phép quên.
 
-## 6. Socket là đường tắt, không phải lời hứa giao hàng
+## 7. Socket là đường tắt, không phải lời hứa giao hàng
 
 App bị đẩy ra nền là ống đứt, và nó đứt thường xuyên hơn nhiều so với cảm giác
 lúc ngồi thử máy. Thứ bảo đảm tới nơi vẫn là **ghi vào cơ sở dữ liệu, rồi bắn
@@ -364,7 +459,7 @@ thông báo đẩy**. Socket chỉ làm người đang mở app thấy nhanh hơ
 Hệ quả: nối lại thì **hỏi lại bằng REST**, đừng phát lại qua ống. Ống không nhớ
 nó đã bỏ lỡ những gì.
 
-## 7. Sáu chỗ đã vấp — đừng vấp lại
+## 8. Sáu chỗ đã vấp — đừng vấp lại
 
 **NestJS 12 bỏ hẳn CommonJS.** `@nestjs/common`, `@nestjs/core`,
 `@nestjs/typeorm` đều là `"type": "module"`. Nên backend là ESM, và **mọi import
@@ -512,7 +607,7 @@ Nếu vẫn gặp thì `rm -f backend/*.tsbuildinfo` rồi chạy lại.
 **Node 22 hoặc 24, đừng dùng 23.** Vài thư viện khai `engines` là
 `^20.19 || ^22.13 || >=24`; bản lẻ nằm ngoài lời hứa đó.
 
-## 8. Ranh giới với frontend
+## 9. Ranh giới với frontend
 
 **Màn hình không biết server tồn tại.** Mọi lệnh gọi mạng của app nằm gọn trong
 `frontend/src/features/<tên>/lib/*Api.ts`. Hiện có đúng một file như vậy:

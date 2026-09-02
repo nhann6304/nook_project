@@ -28,4 +28,12 @@ export interface IUserProfile extends IIdentified {
 export interface IUpdateMeBody {
   /** 1–24 ký tự sau khi cắt khoảng trắng hai đầu */
   displayName?: string;
+  /**
+   * Id một tấm ảnh đã tải lên xong (`kind: 'avatar'`, `status: 'ready'`).
+   *
+   * Là ID chứ không phải tệp: ảnh đi thẳng lên kho qua đường đã ký, cửa này chỉ
+   * TRỎ vào tấm đã có. Nhờ vậy `PATCH /v1/me` vẫn là một câu JSON vài trăm byte
+   * chứ không phải một lần tải lên 12MB.
+   */
+  avatarMediaId?: string;
 }

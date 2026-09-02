@@ -34,12 +34,14 @@ export class User extends SoftDeleteEntity {
   displayName!: string | null;
 
   /**
-   * Khoá của ảnh trong kho, KHÔNG phải đường dẫn đầy đủ.
-   * Đường dẫn được ký lúc trả về và hết hạn sau vài phút — lưu sẵn là lưu một
-   * thứ hỏng trong vài phút nữa.
+   * Trỏ vào bảng `media`, KHÔNG phải một chuỗi đường dẫn.
+   *
+   * Chuỗi đường dẫn không nói được ảnh đã tải xong chưa, nặng bao nhiêu, ai tải
+   * lên. Và đường dẫn ĐÃ KÝ thì hết hạn sau vài phút — lưu sẵn là lưu một thứ
+   * hỏng trong vài phút nữa.
    */
-  @Column({ name: 'avatar_key', type: 'varchar', length: 255, nullable: true })
-  avatarKey!: string | null;
+  @Column({ name: 'avatar_media_id', type: 'uuid', nullable: true })
+  avatarMediaId!: string | null;
 
   /** Đã qua màn Tên + ảnh chưa. `null` là chưa. */
   @Column({ name: 'onboarded_at', type: 'timestamptz', nullable: true })

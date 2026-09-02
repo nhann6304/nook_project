@@ -12,4 +12,5 @@
 export * from './user/index.js';
 export * from './session/index.js';
 export * from './achievement/index.js';
+export * from './media/index.js';
 export * from './repository.module.js';

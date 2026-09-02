@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { LIMITS, type IUpdateMeBody } from '@nook/shared';
 
 /**
@@ -22,4 +22,12 @@ export class UpdateMeDto implements IUpdateMeBody {
   @MinLength(LIMITS.displayNameMin)
   @MaxLength(LIMITS.displayNameMax)
   displayName?: string;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: 'Id ảnh đã tải lên xong. Ảnh đi thẳng lên kho, cửa này chỉ trỏ vào nó.',
+  })
+  @IsOptional()
+  @IsUUID()
+  avatarMediaId?: string;
 }

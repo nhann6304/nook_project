@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { API, path } from '@nook/shared';
 import { BaseMapper } from '../../../../core/mapper/index.js';
 import { UserProfileDto } from '../../../../core/dto/index.js';
 import { User } from '../../../../database/entity/index.js';
@@ -21,9 +22,11 @@ export class UserMapper extends BaseMapper<User, UserProfileDto> {
       id: user.id,
       role: user.role,
       displayName: user.displayName,
-      // TODO(chặng ảnh): ký đường dẫn từ `user.avatarKey`. Không lưu sẵn đường
-      // dẫn đã ký vào bảng — nó hết hạn sau vài phút, lưu là lưu một thứ hỏng.
-      avatarUrl: null,
+      // Đường của SERVER, không phải đường đã ký của kho. Đường ký hết hạn sau
+      // vài phút, nên để nó vào một câu trả lời mà app lưu lại là để một thứ
+      // hỏng sẵn. `/v1/media/<id>` thì ổn định, và mỗi lần tải là một lần ký
+      // lại — quyền xem được kiểm đúng lúc xem, không phải lúc tạo câu trả lời.
+      avatarUrl: user.avatarMediaId ? path(API.media.read, { id: user.avatarMediaId }) : null,
       onboarded: user.onboardedAt !== null,
       createdAt: user.createdAt.toISOString(),
     };

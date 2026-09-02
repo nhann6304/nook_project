@@ -6,6 +6,7 @@ import { Transactional } from '../../../../core/transaction/index.js';
 import { User } from '../../../../database/entity/index.js';
 import { UserRepository, UserIdentityRepository, UserStatRepository } from '../../../../repository/user/index.js';
 import { UserMapper } from '../mapper/index.js';
+import { MediaService } from '../../media/service/index.js';
 import type { UpdateMeDto } from '../dto/index.js';
 
 /** Ném ra khi thua cuộc đua mở tài khoản. Không rời khỏi file này. */
@@ -25,6 +26,7 @@ export class UserService {
     private readonly identities: UserIdentityRepository,
     private readonly stats: UserStatRepository,
     private readonly mapper: UserMapper,
+    private readonly media: MediaService,
   ) {}
 
   /** Hồ sơ của chính mình. */
@@ -47,6 +49,21 @@ export class UserService {
       const name = dto.displayName.trim();
       if (name.length === 0) throw new AppException(ERR.NAME_INVALID, HttpStatus.BAD_REQUEST);
       user.displayName = name;
+      user.onboardedAt ??= new Date();
+    }
+
+    if (dto.avatarMediaId !== undefined) {
+      // Ba câu hỏi, và cả ba đều cần: ảnh CÓ THẬT, ảnh CỦA NGƯỜI NÀY, và ảnh
+      // ĐÃ TẢI XONG. Thiếu câu cuối là hồ sơ trỏ vào một tấm chưa có trong kho,
+      // rồi app hiện ô trống mà không ai biết vì sao.
+      const media = await this.media.mine(userId, dto.avatarMediaId);
+      if (media.status !== 'ready') {
+        throw new AppException(ERR.MEDIA_NOT_UPLOADED, HttpStatus.CONFLICT);
+      }
+      if (media.kind !== 'avatar') {
+        throw new AppException(ERR.MEDIA_TYPE_UNSUPPORTED, HttpStatus.BAD_REQUEST);
+      }
+      user.avatarMediaId = media.id;
       user.onboardedAt ??= new Date();
     }
 
