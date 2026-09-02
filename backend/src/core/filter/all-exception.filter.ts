@@ -84,6 +84,7 @@ export class AllExceptionFilter implements ExceptionFilter {
     if (status === HttpStatus.UNAUTHORIZED) return ERR.UNAUTHORIZED;
     if (status === HttpStatus.NOT_FOUND) return ERR.NOT_FOUND;
     if (status === HttpStatus.TOO_MANY_REQUESTS) return ERR.RATE_LIMITED;
+    if (status === HttpStatus.PAYLOAD_TOO_LARGE) return ERR.PAYLOAD_TOO_LARGE;
     if (status === HttpStatus.NOT_IMPLEMENTED) return ERR.NOT_IMPLEMENTED;
     if (status < 500) return ERR.BAD_REQUEST;
     return ERR.SERVER_ERROR;

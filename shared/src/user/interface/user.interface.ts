@@ -9,6 +9,14 @@ import type { TUserRole } from '../type/index.js';
  * người thứ ba.
  */
 export interface IUserProfile extends IIdentified {
+  /**
+   * Tên riêng, DUY NHẤT cả hệ thống. `null` khi chưa chọn.
+   *
+   * Khác `displayName`: tên riêng để người khác gọi đúng một người, nên phải
+   * duy nhất và không dấu. `displayName` chỉ để hiện, trùng nhau thoải mái.
+   */
+  username: string | null;
+
   /** `null` khi vừa mở tài khoản, chưa qua màn đặt tên */
   displayName: string | null;
   /** Đường dẫn ảnh đầy đủ, đã ký sẵn. `null` khi chưa có ảnh */

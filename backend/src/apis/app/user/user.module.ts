@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { UserController } from './controller/index.js';
-import { UserService } from './service/index.js';
+import { UserController, UsernameController } from './controller/index.js';
+import { UserService, UsernameService } from './service/index.js';
 import { UserMapper } from './mapper/index.js';
 import { MediaModule } from '../media/index.js';
 
@@ -16,9 +16,9 @@ import { MediaModule } from '../media/index.js';
 @Module({
   // Đặt ảnh đại diện phải soi lại tấm ảnh: có thật, của mình, đã tải xong.
   imports: [MediaModule],
-  controllers: [UserController],
-  providers: [UserService, UserMapper],
+  controllers: [UserController, UsernameController],
+  providers: [UserService, UsernameService, UserMapper],
   // Cửa đăng nhập cần `findOrCreateByIdentity` và `toProfile`.
-  exports: [UserService, UserMapper],
+  exports: [UserService, UsernameService, UserMapper],
 })
 export class UserModule {}

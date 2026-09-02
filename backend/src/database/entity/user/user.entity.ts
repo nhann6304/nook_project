@@ -1,4 +1,4 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, Index } from 'typeorm';
 import { ROLE, type TUserRole } from '@nook/shared';
 import { SoftDeleteEntity } from '../base/index.js';
 
@@ -29,6 +29,26 @@ export class User extends SoftDeleteEntity {
    */
   @Column({ name: 'role', type: 'varchar', length: 16, default: ROLE.member })
   role!: TUserRole;
+
+  /**
+   * Tên riêng, đúng như người ta gõ. Chỉ để HIỆN ra.
+   *
+   * `null` cho tới khi họ chọn. Không phải ai cũng cần có — tên riêng là để
+   * người khác tìm ra mình, mà Nook thì mời nhau chứ không tìm nhau.
+   */
+  @Column({ name: 'username', type: 'varchar', length: 20, nullable: true })
+  username!: string | null;
+
+  /**
+   * Dạng chuẩn của tên riêng — cột MANG ràng buộc duy nhất.
+   *
+   * Hai cột chứ không phải một: nếu chỉ có `username` thì `Nam`, `nam` và `NAM`
+   * là ba tên khác nhau, và người ta lấy được tên của nhau chỉ bằng cách đổi
+   * chữ hoa chữ thường. Xem `normalizeUsername` bên `@nook/shared`.
+   */
+  @Index('uq_users_username_key', { unique: true })
+  @Column({ name: 'username_key', type: 'varchar', length: 20, nullable: true })
+  usernameKey!: string | null;
 
   @Column({ name: 'display_name', type: 'varchar', length: 24, nullable: true })
   displayName!: string | null;

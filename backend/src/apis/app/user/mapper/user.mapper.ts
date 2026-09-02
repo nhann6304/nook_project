@@ -21,6 +21,7 @@ export class UserMapper extends BaseMapper<User, UserProfileDto> {
     return {
       id: user.id,
       role: user.role,
+      username: user.username,
       displayName: user.displayName,
       // Đường của SERVER, không phải đường đã ký của kho. Đường ký hết hạn sau
       // vài phút, nên để nó vào một câu trả lời mà app lưu lại là để một thứ

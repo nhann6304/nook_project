@@ -23,6 +23,8 @@ export const API = {
     me: '/v1/me',
     /** PATCH — sửa hồ sơ của chính mình */
     updateMe: '/v1/me',
+    /** GET — tên riêng này còn trống không */
+    usernameCheck: '/v1/username/check',
   },
   media: {
     /** POST — xin đường tải lên đã ký */

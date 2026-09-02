@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
-import { LIMITS, type IUpdateMeBody } from '@nook/shared';
+import { LIMITS, USERNAME_LIMITS, type IUpdateMeBody } from '@nook/shared';
 
 /**
  * Sửa hồ sơ. Mọi trường đều tuỳ chọn — gửi cái nào thì sửa cái đó.
@@ -30,6 +30,19 @@ export class UpdateMeDto implements IUpdateMeBody {
   @IsOptional()
   @IsUUID()
   avatarMediaId?: string;
+
+  @ApiPropertyOptional({
+    example: 'namnguyen',
+    minLength: USERNAME_LIMITS.min,
+    maxLength: USERNAME_LIMITS.max,
+    description: 'Tên riêng, duy nhất cả hệ thống. Hỏi trước bằng /v1/username/check.',
+  })
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @MinLength(1)
+  @MaxLength(64)
+  username?: string;
 }
 
 export const UPDATE_ME_EXAMPLES = {

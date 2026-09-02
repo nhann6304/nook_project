@@ -6,6 +6,7 @@ import { Transactional } from '../../../../core/transaction/index.js';
 import { User } from '../../../../database/entity/index.js';
 import { UserRepository, UserIdentityRepository, UserStatRepository } from '../../../../repository/user/index.js';
 import { UserMapper } from '../mapper/index.js';
+import { UsernameService } from './username.service.js';
 import { MediaService } from '../../media/service/index.js';
 import type { UpdateMeDto } from '../dto/index.js';
 
@@ -27,6 +28,7 @@ export class UserService {
     private readonly stats: UserStatRepository,
     private readonly mapper: UserMapper,
     private readonly media: MediaService,
+    private readonly usernames: UsernameService,
   ) {}
 
   /** Hồ sơ của chính mình. */
@@ -64,6 +66,16 @@ export class UserService {
         throw new AppException(ERR.MEDIA_TYPE_UNSUPPORTED, HttpStatus.BAD_REQUEST);
       }
       user.avatarMediaId = media.id;
+      user.onboardedAt ??= new Date();
+    }
+
+    // Tên riêng đi đường riêng: nó phải GHI THẲNG rồi bắt lỗi trùng khoá, chứ
+    // không hỏi-rồi-ghi như mấy trường kia. Giữa hỏi và ghi có một khe, và hai
+    // người bấm chọn cùng lúc thì cả hai cùng nhận "còn trống".
+    if (dto.username !== undefined) {
+      const claimed = await this.usernames.claim(userId, dto.username);
+      user.username = claimed.username;
+      user.usernameKey = claimed.usernameKey;
       user.onboardedAt ??= new Date();
     }
 

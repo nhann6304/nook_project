@@ -7,7 +7,8 @@ NestJS trên Fastify · PostgreSQL · Redis · TypeORM · Socket.IO · BullMQ.
 ./setup/mac/run.sh be             # cửa sổ 1 — server
 ./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 15 bước của luồng đăng nhập
 ./backend/scripts/smoke-admin.sh  #            9 bước của đường quản trị
-./backend/scripts/smoke-media.sh  #           15 bước của đường ảnh, bằng ảnh THẬT
+./backend/scripts/smoke-media.sh  #           20 bước của đường ảnh, bằng ảnh THẬT
+./backend/scripts/smoke-username.sh  #        15 bước của tên riêng, có cả cuộc đua
 ```
 
 Cần: **Postgres trên máy** (Homebrew, cổng 5432) và **Docker** cho Redis.
@@ -36,6 +37,24 @@ Tám đường, **tất cả đã chạy được**:
 | `PATCH` | `/v1/me` | đặt tên |
 | `GET` | `/v1/me/achievements` | thành tích + sức chứa của góc |
 | `GET` | `/health` | dò sống chết |
+
+### Đăng nhập KHÔNG có mật khẩu
+
+Không có `POST /auth/login` với email + mật khẩu, và sẽ không có. Hai bước:
+
+```
+POST /v1/auth/code     { method:'email', target:'nam@gmail.com' }  -> mã 6 số về hộp thư
+POST /v1/auth/verify   { method:'email', target:..., code:'123456' } -> thẻ phiên
+```
+
+Không mật khẩu thì không có mật khẩu để quên, để dùng lại từ trang khác, để lộ
+khi cơ sở dữ liệu bị đọc trộm. Ai chiếm được hộp thư thì chiếm được tài khoản —
+nhưng với mật khẩu cũng vậy, vì nút "quên mật khẩu" cũng gửi về hộp thư đó.
+
+**Một email = một tài khoản.** `UNIQUE(kind, value)` trên `user_identities`,
+và email được chuẩn hoá (cắt khoảng trắng, hạ chữ thường) trước khi so. Đã đo:
+đăng nhập lại bằng đúng email, bằng email viết HOA, bằng email có khoảng trắng
+hai đầu — cả ba đều vào **cùng một** tài khoản, `isNew: false`.
 
 ### Chỉ mở đường EMAIL
 
@@ -525,7 +544,62 @@ Cùng 20 bước: chưa tải mà báo xong thì chặn, người khác không x
 thẻ không xem được, ảnh người khác không đặt làm đại diện được, tệp quá to và
 định dạng lạ bị chặn ngay từ lúc xin đường, xin bản nhẹ không có tên thì chặn.
 
-## 5. Bảng
+## 5. Tên riêng — và cái "mẹo check nhanh" hoá ra không cần
+
+Tên riêng (`username`) duy nhất cả hệ thống. **Hai cột, không phải một:**
+
+| cột | dùng để | ví dụ |
+|---|---|---|
+| `username` | HIỆN ra | `NamNguyen` |
+| `username_key` | SO SÁNH — mang ràng buộc duy nhất | `namnguyen` |
+
+Một cột thì `Nam`, `nam`, `NAM` là ba tên khác nhau, và người ta lấy tên của
+nhau chỉ bằng cách đổi chữ hoa chữ thường. Chuẩn hoá còn **bỏ dấu tiếng Việt**:
+`nám` và `nam` cùng ra `nam`, nên không ai lấy tên người khác bằng một dấu sắc.
+
+### Đo trước, rồi mới quyết
+
+Câu hỏi "có cách nào check nhanh mà không cần query" — đã đo trên **200.000 tên**:
+
+```
+Postgres, index duy nhất một phần      0,243 ms / lượt     <- Index Only Scan
+Redis SISMEMBER, cùng máy              0,380 ms / lượt
+```
+
+**Postgres nhanh hơn.** Cả hai đều là một vòng gọi qua mạng, mà `Index Only
+Scan` không hề đọc tới bảng — nó đọc thẳng trên index (0,09 ms ở tầng cơ sở dữ
+liệu, phần còn lại là đường truyền). Nhét thêm một lớp đệm vào đây là đổi một
+thứ ĐÚNG và NHANH lấy một thứ chậm hơn, có thể lệch, và phải nuôi.
+
+Bộ lọc Bloom — thứ hay được nhắc tới — chỉ ăn tiền khi số tên tới hàng **chục
+triệu** và bộ nhớ mới thành vấn đề: 10 triệu tên là ~700MB trong một tập Redis,
+Bloom thì ~12MB. Dưới vài triệu thì nó chỉ thêm việc và thêm một chỗ để sai.
+
+### Chỗ THẬT SỰ làm việc gõ tên thấy nhanh
+
+Không nằm ở server. Nằm ở chỗ **app tự soi trước khi gọi**:
+
+```ts
+import { checkUsernameShape } from '@nook/shared';
+checkUsernameShape('ad min')   // 'username.invalid'  — 0 ms, 0 vòng mạng
+checkUsernameShape('admin')    // 'username.reserved'
+checkUsernameShape('namnguyen')// null -> dạng ổn, giờ mới đáng hỏi server
+```
+
+Cùng một hàm chạy ở CẢ hai bên. Phần lớn cái sai là sai dạng và bắt được hết ở
+đây. Cộng thêm chờ ~300ms sau khi người ta ngừng gõ, một cái tên mười chữ tốn
+**một** lần gọi chứ không phải mười.
+
+### Giữ chỗ: ghi thẳng rồi bắt lỗi trùng, không hỏi-rồi-ghi
+
+Giữa lúc hỏi và lúc ghi có một khe. Hai người bấm chọn cùng lúc thì cả hai cùng
+nhận "còn trống" — chỉ ràng buộc của cơ sở dữ liệu mới phân được ai thắng.
+Mọi lớp đệm phía trước chỉ là **gợi ý**, không bao giờ là bảo đảm.
+
+Đã đo bằng hai lượt `PATCH /v1/me` bắn song song cùng một tên: **đúng một người
+thắng**, người kia nhận `username.taken`.
+
+## 6. Bảng
 
 Bảy bảng. Ba nhóm.
 
@@ -568,7 +642,7 @@ npm run migration:revert
 npm run migration:show
 ```
 
-## 6. Redis làm năm việc
+## 7. Redis làm năm việc
 
 1. Mã đăng nhập 6 số, tự chết sau 5 phút
 2. Con đếm chống gọi quá dày
@@ -581,7 +655,7 @@ npm run migration:show
 
 Việc gì cần **nhớ lâu** thì đi Postgres. Redis là chỗ của thứ được phép quên.
 
-## 7. Socket là đường tắt, không phải lời hứa giao hàng
+## 8. Socket là đường tắt, không phải lời hứa giao hàng
 
 App bị đẩy ra nền là ống đứt, và nó đứt thường xuyên hơn nhiều so với cảm giác
 lúc ngồi thử máy. Thứ bảo đảm tới nơi vẫn là **ghi vào cơ sở dữ liệu, rồi bắn
@@ -590,7 +664,7 @@ thông báo đẩy**. Socket chỉ làm người đang mở app thấy nhanh hơ
 Hệ quả: nối lại thì **hỏi lại bằng REST**, đừng phát lại qua ống. Ống không nhớ
 nó đã bỏ lỡ những gì.
 
-## 8. Sáu chỗ đã vấp — đừng vấp lại
+## 9. Sáu chỗ đã vấp — đừng vấp lại
 
 **NestJS 12 bỏ hẳn CommonJS.** `@nestjs/common`, `@nestjs/core`,
 `@nestjs/typeorm` đều là `"type": "module"`. Nên backend là ESM, và **mọi import
@@ -735,6 +809,14 @@ Hai bẫy trên cùng một triệu chứng — "cái này rõ ràng có mà nó
 nay đều đã chặn sẵn: `incremental` tắt, và `shared` tự dịch lại trước mọi lệnh.
 Nếu vẫn gặp thì `rm -f backend/*.tsbuildinfo` rồi chạy lại.
 
+**Có một loại lỗi mà bộ lọc của Nest KHÔNG với tới.** Ký tự thô chưa mã hoá
+trong chuỗi truy vấn (`?username=ĐứcAnh`) làm bộ đọc URL của Fastify ném ở tầng
+SOCKET — chưa có route, chưa có request, nên không bộ lọc nào chạy, và Fastify
+trả về hình dạng của riêng nó (`{error, message, statusCode}`). Vá bằng
+`clientErrorHandler` trong tuỳ chọn của `FastifyAdapter`, viết thẳng vào socket.
+Hiếm, nhưng "hiếm" với vài chục nghìn người là mỗi ngày vài lần — và app thì
+chỉ có MỘT lớp đọc câu trả lời.
+
 **Gọi log kiểu pino thì Nest nuốt mất vết ngăn xếp.** `ConsoleLogger` có chữ ký
 `(message, stack)`; gọi `log.error({obj}, 'msg')` như pino thì đối tượng bị in
 thành câu chữ còn câu chữ bị coi là vết ngăn xếp, nên **vết ngăn xếp thật biến
@@ -746,7 +828,7 @@ nhận dấu hai chấm trong mã việc).
 **Node 22 hoặc 24, đừng dùng 23.** Vài thư viện khai `engines` là
 `^20.19 || ^22.13 || >=24`; bản lẻ nằm ngoài lời hứa đó.
 
-## 9. Cổng thẻ — chưa đăng nhập là không vào được gì
+## 10. Cổng thẻ — chưa đăng nhập là không vào được gì
 
 **Mặc định là ĐÓNG.** `JwtAccessGuard` gắn toàn cục (`APP_GUARD`), nên đường mới
 viết ra đã có cổng; `@Public()` là cách duy nhất mở ra. Làm ngược lại — mở sẵn
@@ -774,7 +856,7 @@ bịa đều phải bị cắt.
 DAT - 15/15   (13 cửa HTTP + 2 lối vào socket)
 ```
 
-## 10. Ranh giới với frontend
+## 11. Ranh giới với frontend
 
 **Màn hình không biết server tồn tại.** Mọi lệnh gọi mạng của app nằm gọn trong
 `frontend/src/features/<tên>/lib/*Api.ts`. Hiện có đúng một file như vậy:
