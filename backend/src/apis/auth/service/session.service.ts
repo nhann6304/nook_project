@@ -132,7 +132,6 @@ export class SessionService {
     if (!(await argon2.verify(session.refreshHash, refreshToken))) {
       // Chưa vội kết tội. Có thể đây chỉ là một lần thử lại lành: cùng một lệnh
       // làm mới bị gửi hai lần vì mạng chập chờn, hoặc hai lệnh gọi cùng dính
-      // 401 rồi cùng đi làm mới. Thẻ ĐỜI TRƯỚC, trong khoảng ân hạn, thì nhận.
       const withinGrace =
         session.rotatedAt !== null &&
         Date.now() - session.rotatedAt.getTime() <= ROTATION_GRACE_MS;

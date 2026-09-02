@@ -11,12 +11,6 @@ import { AdminModule } from './admin/index.js';
  *   app/    app React Native  → /v1/...
  *   admin/  web quản trị      → /v1/admin/...  (đều `@Roles`)
  *   health/ dò sống chết
- *
- * Vì sao chia theo khán giả chứ không theo bảng: hai bên hỏi cùng một bảng
- * `users` nhưng được thấy hai thứ khác nhau và làm được hai việc khác nhau.
- * Gộp chung một module rồi phân nhánh bằng `if (isAdmin)` là cách nhanh nhất
- * để một hôm nào đó app trả ra thứ chỉ quản trị mới được thấy.
- *
  * Cái GIỐNG nhau — câu truy vấn — nằm ở `src/repository/`, ngoài cả hai.
  * Cái KHÁC nhau — controller, dto, mapper — nằm trong thư mục của từng khán giả.
  *
@@ -26,4 +20,4 @@ import { AdminModule } from './admin/index.js';
 @Module({
   imports: [HealthModule, AuthModule, AppApiModule, AdminModule],
 })
-export class ApisModule {}
+export class ApisModule { }
