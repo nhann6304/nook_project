@@ -1,4 +1,4 @@
-import type { TSignInMethod } from '../type/index.js';
+import type { TSignInIntent, TSignInMethod } from '../type/index.js';
 import type { IUserProfile } from '../../user/interface/index.js';
 
 // ── POST /v1/auth/code ──────────────────────────────────────────────────────
@@ -7,6 +7,16 @@ export interface ISendCodeBody {
   method: TSignInMethod;
   /** Email, hoặc số điện thoại. Server tự chuẩn hoá lại. */
   target: string;
+  /**
+   * Bấm vào từ cửa nào — `'signin'` (đã có tài khoản) hay `'signup'` (tạo mới).
+   *
+   * Có gửi thì server soi trước: vào nhầm cửa là trả `auth.account_not_found`
+   * / `auth.account_exists` và KHÔNG gửi mã đi, để app đổi màn ngay thay vì
+   * bắt người ta chờ một lá thư rồi mới báo hỏng.
+   *
+   * Bỏ trống thì server gửi mã cho cả hai trường hợp.
+   */
+  intent?: TSignInIntent;
 }
 
 export interface ISendCodeResult {

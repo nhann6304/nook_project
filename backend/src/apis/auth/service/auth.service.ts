@@ -6,6 +6,7 @@ import {
   looksLikeEmail,
   type TRefreshResult,
   type ISendCodeResult,
+  type TSignInIntent,
   type TSignInMethod,
   type IVerifyCodeResult,
 } from '@nook/shared';
@@ -49,11 +50,31 @@ export class AuthService {
   /**
    * Xin mã về email hoặc số điện thoại.
    *
-   * Chốt riêng tư: câu trả lời GIỐNG NHAU dù đích có tồn tại hay không. Trả lời
-   * khác nhau là biến cửa này thành máy dò "email này có dùng Nook không".
+   * Giao diện có hai cửa — "đã có tài khoản" và "tạo tài khoản mới" — nên cửa
+   * này phải nói được người ta vào nhầm cửa. Đó là một ĐÁNH ĐỔI có thật, ghi
+   * ra đây để sau này không ai lặng lẽ gỡ mất vế thứ hai:
+   *
+   *   được   người gõ email chưa đăng ký ở màn đăng nhập biết ngay tại chỗ,
+   *          thay vì chờ một lá thư không bao giờ tới rồi tự đoán vì sao
+   *   mất     ai cũng hỏi được "email này có dùng Nook không"
+   *   bịt     `guardCaller` — trần theo MÁY GỌI. Hỏi lẻ tẻ thì không sao; quét
+   *          cả danh sách thì đụng trần ngay. Không có nó thì việc nói thật ở
+   *          đây thành cái máy tra cứu, nên hai thứ đi liền nhau, đừng tách.
+   *
+   * `intent` bỏ trống thì không soi gì cả, gửi mã cho cả hai trường hợp — cửa
+   * cũ vẫn chạy y như trước.
    */
-  async sendCode(dto: SendCodeDto): Promise<ISendCodeResult> {
+  async sendCode(dto: SendCodeDto, ip: string | null): Promise<ISendCodeResult> {
     const target = this.normalize(dto.method, dto.target);
+
+    // TRƯỚC mọi thứ có thể lộ ra tài khoản có tồn tại hay không. Đặt sau là
+    // chốt vẫn còn nguyên trên giấy mà đã cho người ta hỏi xong rồi.
+    await this.codes.guardCaller(ip);
+
+    // Và trước `issue` nữa: vào nhầm cửa thì đừng đốt mất chốt 60 giây của
+    // người ta cho một mã ta sắp từ chối gửi.
+    if (dto.intent) await this.guardIntent(dto.intent, dto.method, target);
+
     const code = await this.codes.issue(dto.method, target);
 
     try {
@@ -70,6 +91,29 @@ export class AuthService {
       expiresInSeconds: this.codes.limits.ttlSeconds,
       codeLength: this.codes.limits.length,
     } satisfies ISendCodeResult;
+  }
+
+  /**
+   * Vào đúng cửa chưa.
+   *
+   * Hai mã trả về là hai màn khác nhau bên app, không phải hai kiểu "lỗi":
+   * `account_not_found` -> mời sang màn tạo tài khoản, giữ nguyên email vừa gõ;
+   * `account_exists`    -> mời sang màn đăng nhập, cũng giữ nguyên email.
+   * Cả hai đều 409: không phải người dùng gõ sai, chỉ là đứng nhầm chỗ.
+   */
+  private async guardIntent(
+    intent: TSignInIntent,
+    method: TSignInMethod,
+    target: string,
+  ): Promise<void> {
+    const exists = await this.users.hasIdentity(method, target);
+
+    if (intent === 'signin' && !exists) {
+      throw new AppException(ERR.ACCOUNT_NOT_FOUND, HttpStatus.CONFLICT);
+    }
+    if (intent === 'signup' && exists) {
+      throw new AppException(ERR.ACCOUNT_EXISTS, HttpStatus.CONFLICT);
+    }
   }
 
   /** Nộp mã, đổi lấy thẻ phiên. Chưa có tài khoản thì mở luôn tại đây. */

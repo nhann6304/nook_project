@@ -28,6 +28,15 @@ curl -sf "$BASE/health" >/dev/null || { echo "${RED}Server chưa chạy ở $BAS
 LOGFILE="${NOOK_LOG:-$ROOT/backend/.logs/server.log}"
 read_code() { grep -o 'code: [0-9]\{6\}' "$LOGFILE" 2>/dev/null | tail -1 | awk '{print $2}'; }
 
+# Trần "xin mã theo MÁY GỌI" là 30/giờ, mà chính script này gọi mấy chục lần.
+# Không dọn thì chạy hai lượt trong một giờ là lượt sau hỏng oan. Đây là script
+# ở máy dev nên xoá thẳng khoá trong Redis; server không có đường nào tự nới.
+clear_ip_budget() {
+  docker exec nook-redis sh -c \
+    "redis-cli --scan --pattern 'auth:hour:ip:*' | xargs -r redis-cli DEL" >/dev/null 2>&1 || true
+}
+clear_ip_budget
+
 MAIL="smoke$RANDOM@nook.test"
 printf '%s▸%s Đích thử: %s\n' "$BOLD" "$OFF" "$MAIL"
 
@@ -104,12 +113,58 @@ check "thẻ ngắn hạn chết theo phiên" "auth.session_revoked" "$(curl -s 
 check "thẻ mới cũng chết theo" "auth.session_revoked" \
   "$(curl -s -X POST "$BASE/v1/auth/refresh" -H 'content-type: application/json' -d "{\"refreshToken\":\"$R2\"}" | code_of)"
 
-# ── 9. Đường chưa mở ────────────────────────────────────────────────────────
+# ── 10. Hai cửa của giao diện: "đã có tài khoản" và "tạo tài khoản mới" ────
+#
+# `intent` cho app biết người ta bấm vào từ đâu, để server nói được "email này
+# chưa ai dùng" NGAY tại chỗ, thay vì bắt chờ một lá thư không bao giờ tới.
+#
+# `send` tự dựng thân JSON, cố ý. Viết thẳng `"$(send "{\"method\":...}")"` thì
+# bash ăn mất dấu ngoặc kép ở lớp ngoài rồi BUNG NGOẶC NHỌN cái còn lại thành
+# ba mảnh — server nhận rác và trả 400, mà nhìn dòng lệnh thì không thấy gì sai.
+send() { # send <đích> [cửa]
+  local body="{\"method\":\"email\",\"target\":\"$1\"}"
+  [ -n "${2:-}" ] && body="{\"method\":\"email\",\"target\":\"$1\",\"intent\":\"$2\"}"
+  curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' -d "$body"
+}
+send_code() { send "$@" | code_of; }
+
+CHUA="chuadk$RANDOM@nook.test"
+check "cửa đăng nhập + email chưa đăng ký" "auth.account_not_found" "$(send_code "$CHUA" signin)"
+check "cửa đăng nhập + email đã có"        "auth.code_sent"         "$(send_code "$MAIL" signin)"
+check "cửa tạo mới + email đã có"          "auth.account_exists"    "$(send_code "$MAIL" signup)"
+check "cửa tạo mới + email chưa có"        "auth.code_sent"         "$(send_code "$CHUA" signup)"
+check "không nói cửa nào thì không soi"    "auth.code_sent"         "$(send_code "tuido$RANDOM@nook.test")"
+
+# Bị từ chối thì phải KHÔNG gửi thư và KHÔNG đốt chốt 60 giây của người ta —
+# nếu không, gõ nhầm cửa một lần là bị treo cả phút mà không hiểu vì sao.
+SACH="sach$RANDOM@nook.test"
+BEFORE=$(grep -c 'code: [0-9]' "$LOGFILE" 2>/dev/null || echo 0)
+check "vào nhầm cửa bị từ chối" "auth.account_not_found" "$(send_code "$SACH" signin)"
+sleep 0.4
+AFTER=$(grep -c 'code: [0-9]' "$LOGFILE" 2>/dev/null || echo 0)
+check "vào nhầm cửa thì không gửi thư"      "$BEFORE"        "$AFTER"
+check "vào nhầm cửa không khoá mất 60 giây" "auth.code_sent" "$(send_code "$SACH")"
+
+# ── 11. Chốt chống quét danh sách email ────────────────────────────────────
+#
+# Từ lúc cửa này biết nói "email chưa có tài khoản", nó cũng thành máy tra cứu
+# "ai đang dùng Nook". Trần theo máy gọi là thứ DUY NHẤT cản việc đó — mất nó
+# là mất luôn quyền riêng tư của toàn bộ người dùng, nên ca này phải còn.
+clear_ip_budget
+HIT=""
+for i in $(seq 1 40); do
+  if [ "$(send_code "quet$i-$RANDOM@nook.test" signin)" = "auth.code_too_many_here" ]; then HIT="$i"; break; fi
+done
+check "quét nhiều email liên tiếp thì bị chặn" "chặn" "$([ -n "$HIT" ] && echo "chặn" || echo "lọt hết 40")"
+[ -n "$HIT" ] && printf '%s     chặn ở email thứ %s%s\n' "$DIM" "$HIT" "$OFF"
+clear_ip_budget
+
+# ── 12. Đường chưa mở ───────────────────────────────────────────────────────
 R=$(curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \
       -d '{"method":"phone","target":"0901234567"}')
 check "số điện thoại báo chưa mở" "auth.method_unavailable" "$(echo "$R" | code_of)"
 
-# ── 10. Cổng thẻ ────────────────────────────────────────────────────────────
+# ── 13. Cổng thẻ ────────────────────────────────────────────────────────────
 check "không thẻ thì không vào" "auth.unauthorized" "$(curl -s "$BASE/v1/me" | code_of)"
 check "đường không có" "common.not_found" "$(curl -s "$BASE/v1/khong-co" | code_of)"
 
