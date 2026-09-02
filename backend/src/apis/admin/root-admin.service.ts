@@ -1,13 +1,13 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ROLE, looksLikeEmail } from '@nook/shared';
-import { Env } from '../../../config/env/env.validation.js';
-import { TransactionService } from '../../../core/transaction/transaction.service.js';
+import { Env } from '../../config/env/env.validation.js';
+import { TransactionService } from '../../core/transaction/transaction.service.js';
 import {
   UserIdentityRepository,
   UserRepository,
   UserStatRepository,
-} from '../../../repository/index.js';
+} from '../../repository/index.js';
 
 /**
  * Dựng tài khoản quản trị gốc từ biến môi trường `ROOT_ADMIN_EMAIL`.

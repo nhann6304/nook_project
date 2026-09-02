@@ -1,0 +1,11 @@
+# `core.autocrlf=true` trên Windows biến mọi tệp thành CRLF khi lấy về, kể cả
+# script shell. Bash chạy được nhưng đủ thứ nhỏ hỏng theo: chuỗi có `\r` ở
+# đuôi, `mktemp` nhận tên rác, so sánh chuỗi lệch mà không thấy vì mắt không
+# nhìn ra ký tự đó. Ghim LF cho thứ nào MÁY đọc; còn lại để git tự lo.
+*.sh    text eol=lf
+*.mjs   text eol=lf
+
+# Batch cua Windows thi nguoc lai: `cmd` doi CRLF. Chung da nam trong kho
+# duoi dang CRLF roi, nen bao git dung dong vao — khoi viet lai ca tep chi de
+# doi ky tu xuong dong.
+*.bat   -text

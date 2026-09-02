@@ -10,6 +10,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOGFILE="${NOOK_LOG:-$ROOT/.logs/server.log}"
 GREEN=$'\033[32m'; RED=$'\033[31m'; BOLD=$'\033[1m'; DIM=$'\033[2m'; OFF=$'\033[0m'
 
+source "$(dirname "${BASH_SOURCE[0]}")/db.sh"
+
 PASS=0; FAIL=0
 check() { if [ "$2" = "$3" ]; then PASS=$((PASS+1)); printf '%s  ✓%s %s\n' "$GREEN" "$OFF" "$1"
           else FAIL=$((FAIL+1)); printf '%s  ✗%s %s %s(mong %s, nhận %s)%s\n' "$RED" "$OFF" "$1" "$DIM" "$2" "$3" "$OFF"; fi; }
@@ -19,7 +21,7 @@ field()   { python3 -c "import sys,json;print(json.load(sys.stdin)['data']$1)" 2
 curl -sf "$BASE/health" >/dev/null || { echo "${RED}Server chưa chạy${OFF}"; exit 1; }
 
 # ── một tấm ảnh thật, ~1.5MB, nhiều nhiễu nên nén lại là đổi byte ngay ──────
-IMG="$(mktemp -t nook).jpg"
+IMG="$(tmp_file nook).jpg"
 python3 - "$IMG" <<'PY'
 import sys, zlib, struct, os
 w = h = 700
@@ -70,7 +72,7 @@ check "trạng thái" "ready" "$(echo "$R" | field "['status']")"
 check "dung lượng kho báo == dung lượng thật" "$SIZE" "$(echo "$R" | field "['byteSize']")"
 
 # ── 5. tải về, so từng byte ─────────────────────────────────────────────────
-OUT="$(mktemp -t nookout)"
+OUT="$(tmp_file nookout)"
 curl -s -L "$BASE/v1/media/$MID" -H "authorization: Bearer $A" -o "$OUT"
 SHA_AFTER=$(shasum -a 256 "$OUT" | awk '{print $1}')
 check "tải về nguyên vẹn — sha256 KHỚP" "$SHA_BEFORE" "$SHA_AFTER"
@@ -107,19 +109,19 @@ check "định dạng lạ bị chặn" "common.bad_request" \
 # ── 9. bản nhẹ dựng ở việc nền ──────────────────────────────────────────────
 printf '%s     chờ việc nền dựng bản nhẹ…%s\n' "$DIM" "$OFF"
 for _ in $(seq 1 20); do
-  V=$(PGPASSWORD=nook psql -h localhost -p 5432 -U nook -d nook -tA -c \
+  V=$(db_one \
       "SELECT count(*) FROM media_variants WHERE media_id='$MID' AND status='ready'" 2>/dev/null | tr -d '[:space:]')
   [ "$V" = "2" ] && break
   sleep 1
 done
 check "dựng đủ 2 bản nhẹ" "2" "${V:-0}"
 
-PGPASSWORD=nook psql -h localhost -p 5432 -U nook -d nook -tA -c \
+db_one \
   "SELECT '     ' || variant || ': ' || width || 'px  ' || byte_size || ' byte  (' ||
           round((SELECT byte_size FROM media WHERE id='$MID')::numeric / byte_size, 1) || 'x nhẹ hơn)'
-   FROM media_variants WHERE media_id='$MID' ORDER BY width DESC" 2>/dev/null
+   FROM media_variants WHERE media_id='$MID' ORDER BY width DESC"
 
-FEED="$(mktemp -t nookfeed)"
+FEED="$(tmp_file nookfeed)"
 curl -s -L "$BASE/v1/media/$MID?variant=feed" -H "authorization: Bearer $A" -o "$FEED"
 FEED_SIZE=$(wc -c < "$FEED" | tr -d ' ')
 [ "$FEED_SIZE" -lt "$SIZE" ] && check "bản feed tải về NHẸ hơn bản gốc" "nhẹ hơn" "nhẹ hơn" \
@@ -127,7 +129,7 @@ FEED_SIZE=$(wc -c < "$FEED" | tr -d ' ')
 check "bản feed là WebP" "RIFF" "$(head -c 4 "$FEED")"
 
 # Bản GỐC vẫn phải nguyên vẹn sau khi dựng bản nhẹ
-ORIG2="$(mktemp -t nookorig2)"
+ORIG2="$(tmp_file nookorig2)"
 curl -s -L "$BASE/v1/media/$MID" -H "authorization: Bearer $A" -o "$ORIG2"
 check "bản GỐC vẫn nguyên sau khi dựng bản nhẹ" "$SHA_BEFORE" "$(shasum -a 256 "$ORIG2" | awk '{print $1}')"
 

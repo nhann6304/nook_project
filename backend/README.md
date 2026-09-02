@@ -3,19 +3,31 @@
 NestJS trên Fastify · PostgreSQL · Redis · TypeORM · Socket.IO · BullMQ.
 **Đăng nhập bằng email đã chạy được đầu-tới-cuối.**
 
+> File này dài 1000 dòng và không phải để đọc từ đầu. Cần luật viết mã, chỗ đặt
+> tệp, hay danh sách bẫy thì đọc skill
+> [`nook-backend`](../.claude/skills/nook-backend/SKILL.md) — nó là bản đồ, và
+> nó chỉ thẳng mục nào ở đây đáng mở.
+
 ```bash
-./setup/mac/run.sh be             # cửa sổ 1 — server
-./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 15 bước của luồng đăng nhập
-./backend/scripts/smoke-admin.sh  #            9 bước của đường quản trị
-./backend/scripts/smoke-media.sh  #           20 bước của đường ảnh, bằng ảnh THẬT
+./setup/mac/run.sh be             # cửa sổ 1 — server  (windows: setup/win/run.bat be)
+npm run migration:run             # LẦN ĐẦU — bảng không tự dựng
+./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 27 bước của luồng đăng nhập
 ./backend/scripts/smoke-username.sh  #        15 bước của tên riêng, có cả cuộc đua
+./backend/scripts/smoke-media.sh  #           20 bước của đường ảnh, bằng ảnh THẬT
+./backend/scripts/smoke-admin.sh  #            9 bước của đường quản trị
 ```
 
-Cần: **Postgres trên máy** (Homebrew, cổng 5432) và **Docker** cho Redis.
+Cần: **Postgres trên máy** (cổng 5432) và **Docker** cho Redis.
 
-`smoke-auth.sh` đi hết 15 bước — xin mã, chặn xin dồn, mã sai, mã đúng, mã dùng
-một lần, xoay thẻ, thẻ bị chép, cổng thẻ — rồi kết bằng một dòng ĐẠT/HỎNG. Nó
-đọc mã 6 số từ `backend/.logs/server.log`, tệp mà `run.sh` ghi ra.
+`smoke-auth.sh` đi hết 27 bước — xin mã, chặn xin dồn, mã sai, mã đúng, mã dùng
+một lần, xoay thẻ, thẻ bị chép, hạn phiên đẩy ra xa, hai cửa signin/signup, cổng
+thẻ — rồi kết bằng một dòng ĐẠT/HỎNG. Nó đọc mã 6 số từ
+`backend/.logs/server.log`, tệp mà `run.sh` ghi ra; log ở chỗ khác thì đặt
+`NOOK_LOG=<đường dẫn>`, server ở cổng khác thì `BASE=http://localhost:<cổng>`.
+
+Bốn bài hỏi cơ sở dữ liệu qua `scripts/db.sh` (dùng `pg` của Node, tài khoản đọc
+từ `.env`) chứ **không** qua `psql` — Windows không có `psql`, và tài khoản cắm
+cứng trong script thì sớm muộn lệch với `.env` của máy thật.
 
 - API — <http://localhost:4000>
 - Swagger — <http://localhost:4000/docs>
@@ -211,29 +223,90 @@ src/
 │   └── transaction/  TransactionService · @Transactional
 │
 ├── database/      KẾT NỐI THẬT. data-source · entity/ · migration/
-├── repository/    KHO THEO BẢNG. user/ session/ achievement/ — dùng chung mọi khán giả
+├── repository/    KHO THEO BẢNG. user/ session/ media/ achievement/ — dùng chung mọi khán giả
 │
 ├── apis/          TÍNH NĂNG, chia theo KHÁN GIẢ
 │   ├── auth/         đăng nhập — CẢ HAI khán giả đi qua đây
+│   │   ├── auth.controller.ts · auth.module.ts · auth.interface.ts
+│   │   ├── jwt-access.guard.ts · roles.guard.ts
+│   │   ├── dto/        3 tệp thật → đủ để thành thư mục
+│   │   └── service/    auth · code · session
 │   ├── app/          app React Native   → /v1/...
-│   │   ├── user/ achievement/ setting/
+│   │   └── media/ user/ setting/ achievement/
 │   ├── admin/        web quản trị       → /v1/admin/...  (đều @Roles)
-│   │   ├── stats/ user/ bootstrap/
+│   │   ├── root-admin.service.ts    không có cửa nào, chạy lúc bật server
+│   │   └── stats/ user/
 │   └── health/
 │
 ├── config/        env/ logger/ swagger/
-├── infra/         redis/ notify/
+├── infra/         redis/ notify/ storage/
 ├── realtime/      gateway/ adapter/
 └── queue/
 ```
 
-Trong mỗi module: `controller/` `service/` `mapper/` `dto/`, mỗi thư mục một
-`index.ts`, gốc module chỉ có `*.module.ts`.
+### Một thư mục là một BẢNG, không phải một cửa
 
-### Sáu luật, và có bộ soi
+`username/` từng là thư mục riêng, và đó là sai: nó là hai CỘT của bảng `users`.
+Tách ra thì được một module chỉ tồn tại để module kia nhập vào, và người sửa hồ
+sơ phải mở hai thư mục mới đọc hết một luật. Giờ nó nằm trong `user/`.
+
+Ba câu hỏi trước khi mở thư mục mới — **ít nhất hai câu "có" mới tách:**
+
+| câu hỏi | `username` |
+|---|---|
+| Nó có **bảng riêng** không? | không — hai cột của `users` |
+| Nó **sống tiếp** được khi cái kia bị xoá không? | không — xoá người là mất tên |
+| App có **màn hình riêng** cho nó không? | không — nó nằm trong màn Hồ sơ |
+
+`media/` trả lời "có" cả ba — bảng `media` riêng, tấm ảnh còn nguyên khi hồ sơ
+đổi, và có màn chọn ảnh riêng. Nên nó là thư mục, còn `username` thì không.
+
+**Trong một thư mục thì PHẲNG.** Tệp tách theo việc, thư mục thì không:
+
+```
+apis/app/user/
+  user.controller.ts   user.service.ts   user.mapper.ts   user.dto.ts
+  username.service.ts  username.dto.ts        <- viec khac, tep khac, cung thu muc
+  user.module.ts       index.ts
+```
+
+Chỉ mở thư mục con khi một loại có **từ 3 tệp thật** trở lên; hiện chỉ `auth/`
+đạt (`dto/` và `service/`). `index.ts` chỉ đặt ở **cửa** của thư mục tính năng,
+không rải xuống lá — cùng thư mục thì nhập thẳng tệp, qua thư mục khác thì đi
+qua `index.js`.
+
+### Tầng trong `apis/app/` — import chỉ đi XUỐNG
+
+Đây là thứ giữ cho `apis/app/` khỏi thành mạng nhện lúc có mười tính năng.
+
+| tầng | ai | |
+|---|---|---|
+| 0 | `media` | bytes và giấy phép. Không biết ai đang dùng |
+| 1 | `user` · `setting` | hồ sơ + tên riêng |
+| 2 | `circle` · `moment` · `thread` · `memory` | góc bạn bè và ký ức |
+| 3 | `achievement` · `notification` | PHÁI SINH: đọc kết quả của tầng 2 |
+
+**Cùng tầng thì CẤM gọi nhau**, và đó là chỗ đắt giá của luật này: hai tính năng
+ngang hàng cần gọi nhau nghĩa là một trong hai đang sai chỗ. Ba lối thoát, theo
+thứ tự nên thử:
+
+1. nó vốn là MỘT việc → **gộp lại** (đúng chuyện `username`)
+2. cái chung là câu truy vấn → **hạ xuống `repository/`**
+3. cái chung là một sự kiện → tầng dưới **PHÁT**, tầng trên **NGHE**
+
+Lối thứ ba là đường đi của `achievement`. Khi có góc bạn bè, `circle` **không**
+gọi `AchievementService.evaluate()`; nó phát ra "vừa có ký ức mới", và
+`achievement` nghe. Gọi thẳng thì tầng 2 phải biết tầng 3 tồn tại, và mỗi tính
+năng mới lại nhét thêm một dòng gọi vào chỗ chẳng liên quan gì tới nó.
+
+Thêm tính năng mới thì **phải khai tầng** trong `scripts/check-arch.mjs`. Một
+bước nhỏ, nhưng là một bước CÓ Ý: không khai được nó ở tầng nào là dấu hiệu
+chưa biết nó là việc gì.
+
+### Bảy luật, và có bộ soi
 
 ```bash
-npm run check:arch     # chiều phụ thuộc giữa các tầng — 6 luật
+npm run check:arch     # chiều phụ thuộc giữa các tầng
 npm run check:public   # có ai vừa mở thêm cửa cho người chưa đăng nhập không
 node scripts/check-guard.mjs   # gõ THẬT vào từng cửa, không cầm thẻ
 ```
@@ -249,8 +322,12 @@ Hai cái đầu chạy trong `npm run check`, nên **push cũng chạy**.
 3. **`apis/app/` và `apis/admin/` không được với sang nhau.** Cái GIỐNG nhau là
    câu truy vấn, đã nằm ở `repository/`. Cái KHÁC nhau — controller, dto,
    mapper — mỗi bên giữ của mình.
+4. **Trong `apis/app/`, import chỉ đi xuống tầng.** Cùng tầng là hỏng, và bộ soi
+   nói luôn ba lối thoát.
 
-Luật chỉ nằm trong tài liệu thì mục. Luật có bộ soi thì không.
+Luật chỉ nằm trong tài liệu thì mục. Luật có bộ soi thì không — và bộ soi phải
+CHẠY THẬT: `check-arch` từng nuốt lỗi đường dẫn rồi in "ok" trên Windows trong
+khi nó chưa đọc một tệp nào.
 
 ### Vì sao chia theo khán giả
 

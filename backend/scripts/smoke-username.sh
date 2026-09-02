@@ -7,6 +7,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOGFILE="${NOOK_LOG:-$ROOT/.logs/server.log}"
 GREEN=$'\033[32m'; RED=$'\033[31m'; BOLD=$'\033[1m'; DIM=$'\033[2m'; OFF=$'\033[0m'
 
+source "$(dirname "${BASH_SOURCE[0]}")/db.sh"
+
 PASS=0; FAIL=0
 check() { if [ "$2" = "$3" ]; then PASS=$((PASS+1)); printf '%s  ✓%s %s\n' "$GREEN" "$OFF" "$1"
           else FAIL=$((FAIL+1)); printf '%s  ✗%s %s %s(mong %s, nhận %s)%s\n' "$RED" "$OFF" "$1" "$DIM" "$2" "$3" "$OFF"; fi; }
@@ -22,7 +24,20 @@ login() {
 }
 # Mã hoá URL đàng hoàng — tên có dấu hay có ký tự lạ thì gửi thô là hỏng, và
 # hỏng ở phía TEST chứ không phải phía server.
-avail() { curl -s -G "$BASE/v1/username/check" --data-urlencode "username=$1" -H "authorization: Bearer $2"; }
+# `curl` tren Windows nhan tham so qua BANG MA cua console: chu co dau bien
+# thanh '?' truoc khi ra khoi may, va bai kiem bo dau that bai oan. Tu ma hoa
+# thanh %XX bang bash thi duong gui di chi con ASCII, dung o ca ba he.
+urlenc() (
+  LC_ALL=C                      # dem theo BYTE, khong theo ky tu
+  local s=$1 out= i c
+  for ((i = 0; i < ${#s}; i++)); do
+    c=${s:i:1}
+    case $c in [a-zA-Z0-9.~_-]) out+=$c ;; *) out+=$(printf '%%%02X' "'$c") ;; esac
+  done
+  printf '%s' "$out"
+)
+
+avail() { curl -s "$BASE/v1/username/check?username=$(urlenc "$1")" -H "authorization: Bearer $2"; }
 
 curl -sf "$BASE/health" >/dev/null || { echo "${RED}Server chưa chạy${OFF}"; exit 1; }
 A="$(login "u1-$RANDOM@nook.test")"; B="$(login "u2-$RANDOM@nook.test")"

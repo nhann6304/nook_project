@@ -13,8 +13,11 @@
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const SRC = new URL('../src/', import.meta.url).pathname;
+// `new URL().pathname` tra ve `/D:/...` tren Windows -> scandir hong. `fileURLToPath`
+// tra ve duong dan that cua tung he. Truoc khi sua, bo soi nay im lang bo qua sach.
+const SRC = fileURLToPath(new URL('../src/', import.meta.url));
 
 /**
  * Duong duoc phep mo. Moi dong phai co ly do dung mot cau.

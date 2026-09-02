@@ -6,7 +6,7 @@ import { Transactional } from '../../../core/transaction/transactional.decorator
 import { User } from '../../../database/entity/user/user.entity.js';
 import { UserRepository, UserIdentityRepository, UserStatRepository } from '../../../repository/user/index.js';
 import { UserMapper } from './user.mapper.js';
-import { UsernameService } from '../username/index.js';
+import { UsernameService } from './username.service.js';
 import { MediaService } from '../media/media.service.js';
 import type { UpdateMeDto } from './user.dto.js';
 

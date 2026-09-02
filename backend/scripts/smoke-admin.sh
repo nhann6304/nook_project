@@ -10,6 +10,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOGFILE="${NOOK_LOG:-$ROOT/.logs/server.log}"
 GREEN=$'\033[32m'; RED=$'\033[31m'; BOLD=$'\033[1m'; DIM=$'\033[2m'; OFF=$'\033[0m'
 
+source "$(dirname "${BASH_SOURCE[0]}")/db.sh"
+
 PASS=0; FAIL=0
 check() { if [ "$2" = "$3" ]; then PASS=$((PASS+1)); printf '%s  ✓%s %s\n' "$GREEN" "$OFF" "$1"
           else FAIL=$((FAIL+1)); printf '%s  ✗%s %s %s(mong %s, nhận %s)%s\n' "$RED" "$OFF" "$1" "$DIM" "$2" "$3" "$OFF"; fi; }
@@ -27,8 +29,8 @@ login() { # login <email>  -> in ra thẻ ngắn hạn
 
 curl -sf "$BASE/health" >/dev/null || { echo "${RED}Server chưa chạy ở $BASE${OFF}"; exit 1; }
 
-ROOT_MAIL="$(PGPASSWORD=nook psql -h localhost -p 5432 -U nook -d nook -tA -c \
-  "SELECT i.value FROM users u JOIN user_identities i ON i.user_id=u.id WHERE u.role='root' LIMIT 1" 2>/dev/null | tr -d '[:space:]')"
+ROOT_MAIL="$(db_one \
+  "SELECT i.value FROM users u JOIN user_identities i ON i.user_id=u.id WHERE u.role='root' LIMIT 1" | tr -d '[:space:]')"
 printf '%s▸%s Tài khoản gốc: %s\n' "$BOLD" "$OFF" "${ROOT_MAIL:-(không thấy)}"
 
 # ── người thường không được vào ─────────────────────────────────────────────

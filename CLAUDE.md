@@ -14,13 +14,16 @@ nook_project/
 ├── backend/      server NestJS trên Fastify. Khung chạy được. Có README riêng.
 ├── setup/        script `run` và `push`, mỗi cái một bản mac (.sh) và win (.bat)
 ├── package.json  workspace gom shared + backend. Frontend đứng riêng (Expo có luật gói riêng).
-└── .claude/skills/nook-ui/   luật dựng giao diện
+├── .claude/skills/nook-ui/        luật dựng giao diện (frontend)
+└── .claude/skills/nook-backend/   luật viết server — ĐỌC TRƯỚC khi đụng backend/
 ```
 
 **Đang sửa app?** Đọc [`frontend/CLAUDE.md`](frontend/CLAUDE.md) — mọi luật kỹ
 thuật và giao diện nằm ở đó, không nằm ở file này.
 
-**Đang bắt đầu backend?** Đọc [`backend/README.md`](backend/README.md) trước.
+**Đang sửa backend?** Đọc skill [`nook-backend`](.claude/skills/nook-backend/SKILL.md)
+trước — nó là bản đồ, và nó chỉ bạn đọc ĐÚNG mục nào trong
+[`backend/README.md`](backend/README.md) (1000 dòng, đừng nạp cả).
 
 ## Luật chung cho cả hai bên
 
@@ -39,15 +42,25 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
   `repository/` là kho theo bảng (không thuộc khán giả nào) · `api/` là tính
   năng, chia theo KHÁN GIẢ: `api/app/` cho React Native, `api/admin/` cho web
   quản trị, `api/auth/` dùng chung. Có `npm run check:arch` soi chiều phụ thuộc.
-- **Một thư mục là MỘT VIỆC; bên trong thư mục đó thì phẳng.**
-  `user/` và `username/` là hai việc nên là hai thư mục, mỗi cái ôm đủ đồ của
-  nó: `x.module.ts`, `x.controller.ts`, `x.service.ts`, `x.dto.ts`,
-  `x.mapper.ts`, `index.ts`. **Chỉ tách thư mục con khi một loại có từ 3 tệp
-  thật trở lên** (hiện chỉ `auth/` đạt: `service/` và `dto/`).
+- **Một thư mục là một BẢNG, không phải một cửa; bên trong thì phẳng.**
+  Ba câu hỏi, ít nhất hai câu "có" mới mở thư mục mới: nó có **bảng riêng**
+  không · nó **sống tiếp** được khi cái kia bị xoá không · app có **màn hình
+  riêng** cho nó không. `username` trả lời "không" cả ba (hai cột của `users`)
+  nên nó nằm TRONG `user/` — tách ra thì được một module chỉ tồn tại để module
+  kia nhập vào. `media` trả lời "có" cả ba nên nó là thư mục.
+  Tệp tách theo việc, thư mục thì không: `user/` ôm `user.service.ts` lẫn
+  `username.service.ts`. **Chỉ tách thư mục con khi một loại có từ 3 tệp thật
+  trở lên** (hiện chỉ `auth/` đạt: `service/` và `dto/`).
   Hai lỗi ngược nhau, tránh cả hai: gộp sớm thì tìm code phải đi qua mấy tầng
   rỗng — `apis/` từng có 39 `index.ts` trên tổng 84 tệp; phẳng quá thì hai việc
   khác nhau nằm lẫn trong một thư mục.
   Import: cùng thư mục thì thẳng tệp, qua thư mục khác thì đi qua `index.js`.
+- **Trong `apis/app/`, import chỉ đi XUỐNG tầng.** `media`(0) ← `user`,
+  `setting`(1) ← `circle`, `moment`, `thread`, `memory`(2) ← `achievement`,
+  `notification`(3). **Cùng tầng thì cấm gọi nhau** — gặp là một trong hai đang
+  sai chỗ, và có ba lối thoát theo thứ tự: gộp lại · hạ câu truy vấn xuống
+  `repository/` · tầng dưới phát sự kiện cho tầng trên nghe. Tính năng mới phải
+  khai tầng trong `backend/scripts/check-arch.mjs`, `npm run check` soi.
 - **`shared/` xếp theo MIỀN ở ngoài, LOẠI ở trong.** `auth/`, `user/`, `circle/`…
   để sau này tách được thành gói riêng; trong mỗi miền có `constant/`,
   `interface/`, `type/`, `util/`, mỗi thư mục một `index.ts`.

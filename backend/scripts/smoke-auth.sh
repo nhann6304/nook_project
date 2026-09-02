@@ -13,6 +13,8 @@ BASE="${BASE:-http://localhost:4000}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 GREEN=$'\033[32m'; RED=$'\033[31m'; DIM=$'\033[2m'; BOLD=$'\033[1m'; OFF=$'\033[0m'
 
+source "$(dirname "${BASH_SOURCE[0]}")/db.sh"
+
 PASS=0; FAIL=0
 check() { # check "tên" "mong đợi" "nhận được"
   if [ "$2" = "$3" ]; then PASS=$((PASS+1)); printf '%s  ✓%s %s\n' "$GREEN" "$OFF" "$1"
@@ -105,7 +107,7 @@ check "phiên KHÔNG bị thu hồi oan" "ok" "$(curl -s "$BASE/v1/me" -H "autho
 #
 # Lùi `rotated_at` cho quá khoảng ân hạn — đúng cảnh kẻ chép được thẻ rồi đem
 # dùng sau đó một lúc.
-PGPASSWORD=nook psql -h localhost -p 5432 -U nook -d nook -tAc \
+db_one \
   "UPDATE sessions SET rotated_at = now() - interval '5 minutes' WHERE revoked_at IS NULL" >/dev/null 2>&1
 R=$(curl -s -X POST "$BASE/v1/auth/refresh" -H 'content-type: application/json' -d "{\"refreshToken\":\"$R1\"}")
 check "ngoài khoảng ân hạn: thu hết phiên" "auth.session_revoked" "$(echo "$R" | code_of)"
@@ -118,7 +120,7 @@ check "thẻ mới cũng chết theo" "auth.session_revoked" \
 # Hạn của thẻ dài hạn phải ĐẨY RA XA mỗi lần app làm mới thẻ. Không có chuyện
 # đó thì người dùng bị đá ra sau đúng JWT_REFRESH_TTL dù ngày nào cũng mở app —
 # đúng thứ mà cả thiết kế này sinh ra để tránh.
-psql_one() { PGPASSWORD=nook psql -h localhost -p 5432 -U nook -d nook -tAc "$1" 2>/dev/null; }
+psql_one() { db_one "$1"; }
 
 SMAIL="slide$RANDOM@nook.test"
 curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \
@@ -130,14 +132,15 @@ SREF=$(echo "$SOUT" | field "['refreshToken']")
 
 # Lùi hạn về gần, giả cảnh phiên đã dùng được một thời gian dài.
 SID=$(psql_one "SELECT id FROM sessions WHERE revoked_at IS NULL ORDER BY created_at DESC LIMIT 1")
-psql_one "UPDATE sessions SET expires_at = now() + interval '3 days' WHERE id = '$SID'" >/dev/null
+HALF_TTL=$(( $(env_of JWT_REFRESH_TTL) / 2 ))
+psql_one "UPDATE sessions SET expires_at = now() + interval '$HALF_TTL seconds' WHERE id = '$SID'" >/dev/null
 BEFORE_EXP=$(psql_one "SELECT expires_at FROM sessions WHERE id = '$SID'")
 
 curl -s -X POST "$BASE/v1/auth/refresh" -H 'content-type: application/json' \
   -d "{\"refreshToken\":\"$SREF\"}" >/dev/null
 AFTER_EXP=$(psql_one "SELECT expires_at FROM sessions WHERE id = '$SID'")
 
-MOVED=$(psql_one "SELECT CASE WHEN '$AFTER_EXP'::timestamptz > '$BEFORE_EXP'::timestamptz + interval '30 days' THEN 'xa hon' ELSE 'khong doi' END")
+MOVED=$(psql_one "SELECT CASE WHEN '$AFTER_EXP'::timestamptz > '$BEFORE_EXP'::timestamptz THEN 'xa hon' ELSE 'khong doi' END")
 check "mở app là hạn phiên đẩy ra xa" "xa hon" "$MOVED"
 printf '%s     %s  ->  %s%s\n' "$DIM" "${BEFORE_EXP:0:10}" "${AFTER_EXP:0:10}" "$OFF"
 

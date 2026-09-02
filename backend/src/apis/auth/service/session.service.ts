@@ -9,7 +9,7 @@ import { Transactional } from '../../../core/transaction/index.js';
 import { AppException } from '../../../core/error/index.js';
 import { SessionRepository } from '../../../repository/session/index.js';
 import { Session } from '../../../database/entity/index.js';
-import type { IDeviceInfo } from '../interface/index.js';
+import type { IDeviceInfo } from '../auth.interface.js';
 
 /**
  * Sau khi xoay, thẻ ĐỜI TRƯỚC còn được nhận thêm ngần này.
