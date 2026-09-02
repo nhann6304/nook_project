@@ -39,13 +39,15 @@ thuật và giao diện nằm ở đó, không nằm ở file này.
   `repository/` là kho theo bảng (không thuộc khán giả nào) · `api/` là tính
   năng, chia theo KHÁN GIẢ: `api/app/` cho React Native, `api/admin/` cho web
   quản trị, `api/auth/` dùng chung. Có `npm run check:arch` soi chiều phụ thuộc.
-- **Module để PHẲNG.** Một module là một thư mục chứa thẳng mấy tệp của nó:
-  `x.module.ts`, `x.controller.ts`, `x.service.ts`, `x.dto.ts`, `x.mapper.ts`.
-  **Chỉ tách thư mục con khi một loại có từ 3 tệp thật trở lên** (hiện chỉ
-  `auth/` đạt: `service/` và `dto/`). Gộp thư mục sớm là mỗi lần tìm code phải
-  đi qua mấy tầng rỗng — trước đây `apis/` có 39 tệp `index.ts` trên tổng 84,
-  gần một nửa số tệp không chứa dòng mã nào. Import: cùng thư mục thì thẳng
-  tệp, qua module khác thì đi qua `index.js` của module đó.
+- **Một thư mục là MỘT VIỆC; bên trong thư mục đó thì phẳng.**
+  `user/` và `username/` là hai việc nên là hai thư mục, mỗi cái ôm đủ đồ của
+  nó: `x.module.ts`, `x.controller.ts`, `x.service.ts`, `x.dto.ts`,
+  `x.mapper.ts`, `index.ts`. **Chỉ tách thư mục con khi một loại có từ 3 tệp
+  thật trở lên** (hiện chỉ `auth/` đạt: `service/` và `dto/`).
+  Hai lỗi ngược nhau, tránh cả hai: gộp sớm thì tìm code phải đi qua mấy tầng
+  rỗng — `apis/` từng có 39 `index.ts` trên tổng 84 tệp; phẳng quá thì hai việc
+  khác nhau nằm lẫn trong một thư mục.
+  Import: cùng thư mục thì thẳng tệp, qua thư mục khác thì đi qua `index.js`.
 - **`shared/` xếp theo MIỀN ở ngoài, LOẠI ở trong.** `auth/`, `user/`, `circle/`…
   để sau này tách được thành gói riêng; trong mỗi miền có `constant/`,
   `interface/`, `type/`, `util/`, mỗi thư mục một `index.ts`.

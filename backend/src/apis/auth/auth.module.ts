@@ -5,7 +5,7 @@ import { UserModule } from '../app/user/index.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService, CodeService, SessionService } from './service/index.js';
 import { JwtAccessGuard } from './jwt-access.guard.js';
-import { RolesGuard } from './roles.guard.js';;
+import { RolesGuard } from './roles.guard.js';
 
 /**
  * `JwtModule.register({})` để trống là cố ý: có HAI chuỗi ký khác nhau (thẻ

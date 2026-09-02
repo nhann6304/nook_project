@@ -5,7 +5,7 @@ import {
   AdminUserMapper,
   AdminUserService,
 } from './user/index.js';
-import { RootAdminService } from './root-admin.service.js';
+import { RootAdminService } from './bootstrap/index.js';
 
 /**
  * Cửa cho **web quản trị**. Không phải cho app.

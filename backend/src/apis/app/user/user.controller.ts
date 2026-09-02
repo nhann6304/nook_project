@@ -5,7 +5,7 @@ import { CurrentUser, Message, ApiErrors, ApiResult } from '../../../core/decora
 import { UserProfileDto } from '../../../core/dto/user-profile.dto.js';
 import type { IAuthUser } from '../../../core/interface/auth-user.interface.js';
 import { UserService } from './user.service.js';
-import { UPDATE_ME_EXAMPLES, UpdateMeDto } from './update-me.dto.js';
+import { UPDATE_ME_EXAMPLES, UpdateMeDto } from './user.dto.js';
 
 /**
  * `@Controller()` để trống là cố ý: đường dẫn đầy đủ nằm ở `API` bên
