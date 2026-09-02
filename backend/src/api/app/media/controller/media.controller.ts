@@ -1,11 +1,16 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { FastifyReply } from 'fastify';
 import { API, MSG } from '@nook/shared';
 import { ApiErrors, ApiResult, CurrentUser, Message } from '../../../../core/decorator/index.js';
 import type { IAuthUser } from '../../../../core/interface/index.js';
 import { MediaService } from '../service/index.js';
-import { CreateUploadDto, CreateUploadResultDto, MediaDto } from '../dto/index.js';
+import {
+  CreateUploadDto,
+  CreateUploadResultDto,
+  MediaDto,
+  ReadMediaQueryDto,
+} from '../dto/index.js';
 
 /**
  * Ảnh — ba cửa, và bytes **không đi qua cửa nào cả**.
@@ -57,15 +62,16 @@ export class MediaController {
    * đúng lúc đó chứ không phải lúc câu trả lời được tạo ra.
    */
   @Get(API.media.read)
-  @ApiOperation({ summary: 'Xem ảnh' })
+  @ApiOperation({ summary: 'Xem ảnh (thêm ?variant=feed|thumb cho bản nhẹ)' })
   @ApiResponse({ status: 302, description: 'Chuyển sang đường đã ký của kho' })
   @ApiErrors(401, 403, 404, 409)
   async read(
     @CurrentUser() me: IAuthUser,
     @Param('id', ParseUUIDPipe) id: string,
+    @Query() q: ReadMediaQueryDto,
     @Res() reply: FastifyReply,
   ): Promise<void> {
-    const url = await this.media.readUrl(me.id, id);
+    const url = await this.media.readUrl(me.id, id, q.variant);
     // `no-store`: chính cái CHUYỂN HƯỚNG không được lưu, vì đích của nó hết
     // hạn. Tệp ảnh ở đầu kia thì trình duyệt và CDN cứ lưu thoải mái.
     await reply.header('cache-control', 'no-store').redirect(url, 302);

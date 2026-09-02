@@ -6,11 +6,13 @@ import {
   MEDIA_KINDS,
   MEDIA_LIMITS,
   MEDIA_STATUSES,
+  MEDIA_VARIANTS,
   type ICreateUploadBody,
   type ICreateUploadResult,
   type IMedia,
   type TMediaKind,
   type TMediaStatus,
+  type TMediaVariant,
 } from '@nook/shared';
 
 export class CreateUploadDto implements ICreateUploadBody {
@@ -76,4 +78,19 @@ export class MediaDto implements IMedia {
   url!: string;
 
   @ApiProperty({ format: 'date-time' }) createdAt!: string;
+
+  @ApiProperty({
+    example: { feed: '/v1/media/6f1b…?variant=feed', thumb: '/v1/media/6f1b…?variant=thumb' },
+    description:
+      'Bản nhẹ đã dựng xong. Thiếu bản nào thì cứ dùng `url` (bản gốc) — chậm hơn nhưng không bao giờ trống.',
+  })
+  variants!: Partial<Record<TMediaVariant, string>>;
+}
+
+/** Xin bản nào. Bỏ trống là bản gốc. */
+export class ReadMediaQueryDto {
+  @ApiPropertyOptional({ enum: MEDIA_VARIANTS })
+  @IsOptional()
+  @IsIn(MEDIA_VARIANTS)
+  variant?: TMediaVariant;
 }

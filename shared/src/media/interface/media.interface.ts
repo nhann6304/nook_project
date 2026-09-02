@@ -1,4 +1,4 @@
-import type { TMediaKind, TMediaStatus } from '../type/index.js';
+import type { TMediaKind, TMediaStatus, TMediaVariant } from '../type/index.js';
 
 // ── POST /v1/media/upload-url ───────────────────────────────────────────────
 
@@ -61,4 +61,12 @@ export interface IMedia {
    */
   url: string;
   createdAt: string;
+
+  /**
+   * Mấy bản nhẹ đã dựng xong. Thiếu bản nào thì app cứ dùng `url` (bản gốc) —
+   * chậm hơn nhưng không bao giờ trống.
+   *
+   *   { feed: '/v1/media/<id>?variant=feed', thumb: '/v1/media/<id>?variant=thumb' }
+   */
+  variants: Partial<Record<TMediaVariant, string>>;
 }

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { Redis } from 'ioredis';
 import { Env } from '../config/env/index.js';
+import { QUEUE } from './constant/index.js';
 
 /**
  * Hàng đợi việc nền.
@@ -31,6 +32,7 @@ import { Env } from '../config/env/index.js';
         },
       }),
     }),
+    BullModule.registerQueue({ name: QUEUE.media }),
   ],
   exports: [BullModule],
 })

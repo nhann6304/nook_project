@@ -1,4 +1,4 @@
-import type { MEDIA_KINDS, MEDIA_STATUSES } from '../constant/index.js';
+import type { MEDIA_KINDS, MEDIA_STATUSES, MEDIA_VARIANTS } from '../constant/index.js';
 
 /** Ảnh này dùng vào việc gì. Quyết định ai được xem, xem mục `IMedia`. */
 export type TMediaKind = (typeof MEDIA_KINDS)[number];
@@ -14,3 +14,12 @@ export type TMediaKind = (typeof MEDIA_KINDS)[number];
  * lúc xin đường và lúc tệp có thật là một khoảng mà server không biết gì.
  */
 export type TMediaStatus = (typeof MEDIA_STATUSES)[number];
+
+/**
+ * Bản nào của một tấm ảnh.
+ *
+ * `undefined` nghĩa là **bản gốc** — và bản gốc luôn có, luôn nguyên vẹn. Bản
+ * nhẹ có thể chưa dựng xong (dựng ở việc nền), lúc đó server trả bản gốc thay
+ * vì trả lỗi: chậm một lần còn hơn ô ảnh trống.
+ */
+export type TMediaVariant = (typeof MEDIA_VARIANTS)[number];

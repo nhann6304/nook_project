@@ -79,8 +79,19 @@ export class Env {
   @IsString() STORAGE_BUCKET!: string;
   @IsString() STORAGE_KEY_ID!: string;
   @IsString() STORAGE_SECRET!: string;
-  /** true cho MinIO, false cho R2. Đặt sai thì mọi lần tải lên trả 403/404. */
-  @Transform(toBool) @IsBoolean() STORAGE_PATH_STYLE: boolean = false;
+  /**
+   * Kho CŨ — chỉ khai khi đang chuyển từ kho này sang kho khác.
+   *
+   * Ảnh mới luôn ghi vào kho ở trên. Ảnh cũ vẫn nằm ở kho cũ, và mỗi dòng ảnh
+   * nhớ nó nằm đâu — nên khai bốn biến này là đọc được cả hai, không phải dừng
+   * dịch vụ, không mất tấm nào. Chép xong hết thì bỏ đi.
+   *
+   * `STORAGE_PATH_STYLE` không còn: suy ra từ tên miền (xem `detectProvider`).
+   */
+  @IsOptional() @IsString() STORAGE_LEGACY_ENDPOINT?: string;
+  @IsOptional() @IsString() STORAGE_LEGACY_BUCKET?: string;
+  @IsOptional() @IsString() STORAGE_LEGACY_KEY_ID?: string;
+  @IsOptional() @IsString() STORAGE_LEGACY_SECRET?: string;
 
   // ── Quản trị ───────────────────────────────────────────────────────────────
   /**

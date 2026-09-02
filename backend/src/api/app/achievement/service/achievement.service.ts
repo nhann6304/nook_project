@@ -86,7 +86,7 @@ export class AchievementService {
     const opened = await this.unlocked.unlockMany(userId, reached);
     if (opened.length > 0) await this.unlocked.recomputeExtraSlots(userId);
 
-    this.log.debug({ userId, opened }, 'achievements unlocked');
+    this.log.debug(`achievements unlocked for ${userId}: ${opened.join(', ')}`);
     return opened;
   }
 }

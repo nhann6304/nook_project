@@ -10,57 +10,132 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Env } from '../../../config/env/index.js';
 
+/** Kho nào. Ghi vào từng dòng ảnh để sau này đổi kho không mất ảnh cũ. */
+export type TStorageProvider = 'minio' | 'r2' | 's3';
+
 /**
- * Kho ảnh. MinIO ở máy dev, Cloudflare R2 ở bản thật — **cùng một giao thức**,
+ * Nhận ra kho từ chính đường dẫn, thay vì bắt người ta khai đúng.
+ *
+ * `forcePathStyle` là cái bẫy đắt nhất của S3: MinIO cần `true`
+ * (`http://host/bucket/key`), R2 và AWS cần `false` (`https://bucket.host/key`).
+ * Đặt sai thì **mọi** lần tải lên trả 403 hoặc 404, và câu lỗi của S3 không hé
+ * một chữ nào về nguyên nhân. Suy ra từ tên miền thì không ai đặt sai được nữa.
+ */
+export function detectProvider(endpoint: string): TStorageProvider {
+  let host = '';
+  try {
+    host = new URL(endpoint).hostname;
+  } catch {
+    return 'minio';
+  }
+  if (host.endsWith('r2.cloudflarestorage.com')) return 'r2';
+  if (host.endsWith('amazonaws.com')) return 's3';
+  return 'minio';
+}
+
+interface IBucket {
+  client: S3Client;
+  bucket: string;
+}
+
+/**
+ * Kho ảnh. MinIO ở máy dev, Cloudflare R2 ở bản thật — **cùng giao thức S3**,
  * nên đường tải lên ở máy dev là đường thật, không phải bản giả rồi lên thật
  * mới phát hiện lệch.
  *
- * ── Bytes KHÔNG đi qua server ───────────────────────────────────────────────
+ * ── Ghi vào MỘT kho, đọc được NHIỀU kho ─────────────────────────────────────
  *
- * Lớp này chỉ **ký giấy phép**, không cầm dữ liệu. App tải thẳng lên kho bằng
- * đường đã ký. Một tấm ảnh 12MB đi qua Node là tốn hai lần băng thông, chiếm
- * bộ nhớ suốt lúc tải, và mười người tải cùng lúc là 120MB nằm trong một tiến
- * trình chỉ có một luồng.
+ * Ảnh mới luôn ghi vào kho đang khai (`current`). Nhưng mỗi dòng ảnh **nhớ nó
+ * nằm ở kho nào**, và lúc đọc thì đọc đúng kho đó. Nhờ vậy ngày đổi MinIO sang
+ * R2 không phải dừng dịch vụ và không mất tấm nào: ghi mới vào R2, đọc cũ ở
+ * MinIO, chép dần sang lúc rảnh.
  *
- * ── Vì sao R2 chứ không phải S3 ─────────────────────────────────────────────
+ * Khai `STORAGE_LEGACY_*` để mở đường đọc kho cũ. Không khai mà gặp ảnh của kho
+ * cũ thì ném ra một câu nói thẳng phải làm gì — chứ không phải một lỗi S3 mù mờ.
  *
- * **Không phải vì rẻ chỗ chứa** — chỗ chứa ở đâu cũng na ná. Vì R2 **không thu
- * tiền băng thông ra**. Nook là app xem ảnh: mỗi tấm tải lên một lần, xem hàng
- * trăm lần. Ở S3 thì chính cái "hàng trăm lần" đó là hoá đơn.
+ * ── Bytes không đi qua server, trừ một chỗ ──────────────────────────────────
+ *
+ * Đường của người dùng chỉ **ký giấy phép**; app tải thẳng lên kho. Chỗ duy
+ * nhất bytes đi qua Node là việc nền dựng bản nhẹ (`getBuffer`/`put`) — và ở đó
+ * thì đúng, vì nó chạy ngoài đường request, không ai đang chờ.
  */
 @Injectable()
 export class StorageService implements OnModuleDestroy {
   private readonly log = new Logger('Storage');
-  private readonly bucket: string;
-  private readonly s3: S3Client;
+  private readonly buckets = new Map<TStorageProvider, IBucket>();
+
+  /** Kho mà ảnh MỚI đi vào. */
+  readonly current: TStorageProvider;
 
   constructor(config: ConfigService<Env, true>) {
-    this.bucket = config.get('STORAGE_BUCKET', { infer: true });
-    this.s3 = new S3Client({
-      endpoint: config.get('STORAGE_ENDPOINT', { infer: true }),
-      region: config.get('STORAGE_REGION', { infer: true }),
-      credentials: {
-        accessKeyId: config.get('STORAGE_KEY_ID', { infer: true }),
-        secretAccessKey: config.get('STORAGE_SECRET', { infer: true }),
-      },
-      // MinIO: http://host/bucket/key   ·   R2: https://bucket.host/key
-      // Đặt sai thì mọi lần tải lên trả 403 hoặc 404, và câu lỗi không nói vì sao.
-      forcePathStyle: config.get('STORAGE_PATH_STYLE', { infer: true }),
+    const endpoint = config.get('STORAGE_ENDPOINT', { infer: true });
+    this.current = detectProvider(endpoint);
+
+    this.buckets.set(this.current, {
+      bucket: config.get('STORAGE_BUCKET', { infer: true }),
+      client: this.build(
+        endpoint,
+        config.get('STORAGE_REGION', { infer: true }),
+        config.get('STORAGE_KEY_ID', { infer: true }),
+        config.get('STORAGE_SECRET', { infer: true }),
+      ),
+    });
+
+    const legacyEndpoint = config.get('STORAGE_LEGACY_ENDPOINT', { infer: true });
+    if (legacyEndpoint) {
+      const legacy = detectProvider(legacyEndpoint);
+      this.buckets.set(legacy, {
+        bucket: config.get('STORAGE_LEGACY_BUCKET', { infer: true }) ?? '',
+        client: this.build(
+          legacyEndpoint,
+          config.get('STORAGE_REGION', { infer: true }),
+          config.get('STORAGE_LEGACY_KEY_ID', { infer: true }) ?? '',
+          config.get('STORAGE_LEGACY_SECRET', { infer: true }) ?? '',
+        ),
+      });
+      this.log.log(`storage: writing to ${this.current}, also reading ${legacy}`);
+    } else {
+      this.log.log(`storage: ${this.current}`);
+    }
+  }
+
+  private build(endpoint: string, region: string, keyId: string, secret: string): S3Client {
+    return new S3Client({
+      endpoint,
+      region,
+      credentials: { accessKeyId: keyId, secretAccessKey: secret },
+      // Suy ra, không hỏi. Xem `detectProvider`.
+      forcePathStyle: detectProvider(endpoint) === 'minio',
     });
   }
+
+  private at(provider: string): IBucket {
+    const found = this.buckets.get(provider as TStorageProvider);
+    if (!found) {
+      throw new Error(
+        `No credentials for storage provider "${provider}". ` +
+          `Currently writing to "${this.current}". ` +
+          `Set STORAGE_LEGACY_ENDPOINT / _BUCKET / _KEY_ID / _SECRET to read the old one.`,
+      );
+    }
+    return found;
+  }
+
+  // ── Đường của người dùng: chỉ ký, không cầm dữ liệu ────────────────────────
 
   /**
    * Giấy phép TẢI LÊN, sống trong ít phút.
    *
    * `ContentType` và `ContentLength` nằm trong chữ ký, nên app phải gửi đúng
-   * hai thứ đã khai — khai 2MB rồi đẩy 200MB là kho từ chối, không cần server
-   * can thiệp. Đó là chỗ chặn thật, chứ không phải câu `if` ở tầng mã.
+   * hai thứ đã khai — khai 2MB rồi đẩy 200MB là **kho** từ chối. Đó là chỗ chặn
+   * thật, không phải câu `if` ở tầng mã.
    */
   presignPut(key: string, contentType: string, byteSize: number, ttlSeconds: number) {
+    const { client, bucket } = this.at(this.current);
     return getSignedUrl(
-      this.s3,
+      client,
       new PutObjectCommand({
-        Bucket: this.bucket,
+        Bucket: bucket,
         Key: key,
         ContentType: contentType,
         ContentLength: byteSize,
@@ -70,8 +145,9 @@ export class StorageService implements OnModuleDestroy {
   }
 
   /** Giấy phép XEM, sống ngắn. Ký lại thì rẻ; để nó sống lâu thì rò. */
-  presignGet(key: string, ttlSeconds: number) {
-    return getSignedUrl(this.s3, new GetObjectCommand({ Bucket: this.bucket, Key: key }), {
+  presignGet(provider: string, key: string, ttlSeconds: number) {
+    const { client, bucket } = this.at(provider);
+    return getSignedUrl(client, new GetObjectCommand({ Bucket: bucket, Key: key }), {
       expiresIn: ttlSeconds,
     });
   }
@@ -82,9 +158,13 @@ export class StorageService implements OnModuleDestroy {
    * Đây là chỗ server **soi lại lời khai của app**. Không có bước này thì ai
    * cũng gọi được `complete` cho một tấm ảnh chưa từng tồn tại.
    */
-  async head(key: string): Promise<{ byteSize: number; contentType: string } | null> {
+  async head(
+    provider: string,
+    key: string,
+  ): Promise<{ byteSize: number; contentType: string } | null> {
+    const { client, bucket } = this.at(provider);
     try {
-      const out = await this.s3.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }));
+      const out = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
       return {
         byteSize: Number(out.ContentLength ?? 0),
         contentType: out.ContentType ?? 'application/octet-stream',
@@ -94,18 +174,36 @@ export class StorageService implements OnModuleDestroy {
     }
   }
 
+  // ── Đường của việc nền: bytes ĐI QUA Node, và ở đây thì đúng ───────────────
+
+  /** Kéo cả tệp về bộ nhớ. CHỈ dùng ở việc nền — đừng gọi trong đường request. */
+  async getBuffer(provider: string, key: string): Promise<Buffer> {
+    const { client, bucket } = this.at(provider);
+    const out = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+    return Buffer.from(await out.Body!.transformToByteArray());
+  }
+
+  /** Đẩy một tệp đã dựng sẵn lên kho đang dùng. */
+  async put(key: string, body: Buffer, contentType: string): Promise<void> {
+    const { client, bucket } = this.at(this.current);
+    await client.send(
+      new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentType: contentType }),
+    );
+  }
+
   /**
    * Xoá một đối tượng.
    *
-   * ⚠️ CHỈ dùng cho bản phái sinh và cho dòng tải lên treo giữa chừng.
+   * ⚠️ CHỈ dùng cho bản nhẹ và cho dòng tải lên treo giữa chừng.
    * **Không bao giờ gọi cho ảnh gốc.** Ảnh gốc không dựng lại được.
    */
-  async remove(key: string): Promise<void> {
-    await this.s3.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
-    this.log.debug({ key }, 'object removed');
+  async remove(provider: string, key: string): Promise<void> {
+    const { client, bucket } = this.at(provider);
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+    this.log.debug(`object removed: ${key}`);
   }
 
   onModuleDestroy(): void {
-    this.s3.destroy();
+    for (const { client } of this.buckets.values()) client.destroy();
   }
 }

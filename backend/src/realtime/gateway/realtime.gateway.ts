@@ -62,7 +62,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   handleDisconnect(client: Socket): void {
-    this.log.debug({ userId: client.data?.userId }, 'disconnected');
+    this.log.debug(`disconnected: ${String(client.data?.userId ?? '-')}`);
   }
 
   @SubscribeMessage(SOCKET_IN.ping)
@@ -83,6 +83,6 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
         socket.disconnect(true);
       }
     }
-    this.log.debug({ userId }, 'session kicked off the socket');
+    this.log.debug(`session kicked off the socket: user ${userId}`);
   }
 }

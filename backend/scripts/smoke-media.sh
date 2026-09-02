@@ -104,7 +104,37 @@ check "định dạng lạ bị chặn" "common.bad_request" \
       "$(curl -s -X POST "$BASE/v1/media/upload-url" -H "authorization: Bearer $A" -H 'content-type: application/json' \
           -d '{"kind":"avatar","contentType":"application/zip","byteSize":1000}' | code_of)"
 
-rm -f "$IMG" "$OUT"
+# ── 9. bản nhẹ dựng ở việc nền ──────────────────────────────────────────────
+printf '%s     chờ việc nền dựng bản nhẹ…%s\n' "$DIM" "$OFF"
+for _ in $(seq 1 20); do
+  V=$(PGPASSWORD=nook psql -h localhost -p 5432 -U nook -d nook -tA -c \
+      "SELECT count(*) FROM media_variants WHERE media_id='$MID' AND status='ready'" 2>/dev/null | tr -d '[:space:]')
+  [ "$V" = "2" ] && break
+  sleep 1
+done
+check "dựng đủ 2 bản nhẹ" "2" "${V:-0}"
+
+PGPASSWORD=nook psql -h localhost -p 5432 -U nook -d nook -tA -c \
+  "SELECT '     ' || variant || ': ' || width || 'px  ' || byte_size || ' byte  (' ||
+          round((SELECT byte_size FROM media WHERE id='$MID')::numeric / byte_size, 1) || 'x nhẹ hơn)'
+   FROM media_variants WHERE media_id='$MID' ORDER BY width DESC" 2>/dev/null
+
+FEED="$(mktemp -t nookfeed)"
+curl -s -L "$BASE/v1/media/$MID?variant=feed" -H "authorization: Bearer $A" -o "$FEED"
+FEED_SIZE=$(wc -c < "$FEED" | tr -d ' ')
+[ "$FEED_SIZE" -lt "$SIZE" ] && check "bản feed tải về NHẸ hơn bản gốc" "nhẹ hơn" "nhẹ hơn" \
+  || check "bản feed tải về NHẸ hơn bản gốc" "nhẹ hơn" "$FEED_SIZE >= $SIZE"
+check "bản feed là WebP" "RIFF" "$(head -c 4 "$FEED")"
+
+# Bản GỐC vẫn phải nguyên vẹn sau khi dựng bản nhẹ
+ORIG2="$(mktemp -t nookorig2)"
+curl -s -L "$BASE/v1/media/$MID" -H "authorization: Bearer $A" -o "$ORIG2"
+check "bản GỐC vẫn nguyên sau khi dựng bản nhẹ" "$SHA_BEFORE" "$(shasum -a 256 "$ORIG2" | awk '{print $1}')"
+
+check "xin bản không có tên thì bị chặn" "common.bad_request" \
+      "$(curl -s "$BASE/v1/media/$MID?variant=khongco" -H "authorization: Bearer $A" | code_of)"
+
+rm -f "$IMG" "$OUT" "$FEED" "$ORIG2"
 echo
 if [ "$FAIL" -eq 0 ]; then printf '%s%sĐẠT — %d/%d%s\n' "$BOLD" "$GREEN" "$PASS" "$((PASS+FAIL))" "$OFF"; exit 0
 else printf '%s%sHỎNG — %d/%d%s\n' "$BOLD" "$RED" "$PASS" "$((PASS+FAIL))" "$OFF"; exit 1; fi

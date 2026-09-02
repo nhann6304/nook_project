@@ -1,14 +1,19 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { extname } from 'node:path';
+import { InjectQueue } from '@nestjs/bullmq';
+import type { Queue } from 'bullmq';
 import {
   ERR,
   MEDIA_LIMITS,
+  MEDIA_VARIANTS,
   type ICreateUploadResult,
+  type TMediaVariant,
 } from '@nook/shared';
 import { AppException } from '../../../../core/error/index.js';
 import { Transactional } from '../../../../core/transaction/index.js';
 import { StorageService } from '../../../../infra/storage/index.js';
-import { MediaRepository } from '../../../../repository/index.js';
+import { MediaRepository, MediaVariantRepository } from '../../../../repository/index.js';
+import { QUEUE, type IBuildVariantsJob } from '../../../../queue/index.js';
 import { Media } from '../../../../database/entity/index.js';
 import { MediaMapper } from '../mapper/index.js';
 import { MediaDto, type CreateUploadDto } from '../dto/index.js';
@@ -49,8 +54,10 @@ export class MediaService {
 
   constructor(
     private readonly media: MediaRepository,
+    private readonly variants: MediaVariantRepository,
     private readonly storage: StorageService,
     private readonly mapper: MediaMapper,
+    @InjectQueue(QUEUE.media) private readonly queue: Queue<IBuildVariantsJob>,
   ) {}
 
   /** Bước 1 — ghi dòng chờ và ký giấy phép tải lên. */
@@ -64,6 +71,8 @@ export class MediaService {
       byteSize: dto.byteSize,
       width: dto.width ?? null,
       height: dto.height ?? null,
+      // Ghi lại kho NGAY lúc tạo. Đổi kho sau này thì ảnh cũ vẫn tìm được.
+      storageProvider: this.storage.current,
       // Chỗ giữ chỗ; đường thật cần `id` nên phải ghi rồi mới đặt được.
       storageKey: 'pending',
     });
@@ -91,13 +100,15 @@ export class MediaService {
     };
   }
 
-  /** Bước 3 — soi lại trong kho rồi mới nhận. */
+  /** Bước 3 — soi lại trong kho rồi mới nhận, và xếp việc dựng bản nhẹ. */
   @Transactional()
   async complete(ownerId: string, mediaId: string): Promise<MediaDto> {
     const row = await this.mine(ownerId, mediaId);
-    if (row.status === 'ready') return this.mapper.toDto(row);
+    if (row.status === 'ready') {
+      return this.mapper.toDto(row, await this.variants.readyOf(row.id));
+    }
 
-    const object = await this.storage.head(row.storageKey);
+    const object = await this.storage.head(row.storageProvider, row.storageKey);
     if (!object) {
       throw new AppException(ERR.MEDIA_NOT_UPLOADED, HttpStatus.CONFLICT);
     }
@@ -116,8 +127,18 @@ export class MediaService {
     row.byteSize = object.byteSize;
     const saved = await this.media.save(row);
 
-    this.log.debug({ mediaId, ownerId }, 'media ready');
-    return this.mapper.toDto(saved);
+    // Dựng bản nhẹ ở VIỆC NỀN, không dựng ngay tại đây. Kéo 12MB về bộ nhớ rồi
+    // nén lại mất vài trăm mili giây và chiếm một luồng — người dùng không có
+    // lý do gì phải chờ chuyện đó. Ảnh dùng được ngay bằng bản gốc.
+    await this.queue.add(QUEUE.job.buildVariants, { mediaId: saved.id }, {
+      // Cùng một mã việc: hàng đợi giao lại lần hai cũng không dựng lại lần hai.
+      // Dấu gạch chứ không phải dấu hai chấm — BullMQ từ chối `:` trong mã việc
+      // (nó dùng `:` làm dấu ngăn cho khoá Redis của chính nó).
+      jobId: `variants-${saved.id}`,
+    });
+
+    this.log.debug(`media ready, variants queued: ${mediaId}`);
+    return this.mapper.toDto(saved, []);
   }
 
   /**
@@ -134,7 +155,11 @@ export class MediaService {
    * Đặt luật ở đây — MỘT chỗ — chứ không rải ở từng cửa gọi tới ảnh. Rải ra thì
    * sẽ có một cửa quên kiểm, và cửa đó là chỗ ảnh riêng tư rò ra ngoài.
    */
-  async readUrl(viewerId: string, mediaId: string): Promise<string> {
+  async readUrl(
+    viewerId: string,
+    mediaId: string,
+    variant?: TMediaVariant,
+  ): Promise<string> {
     const row = await this.media.findById(mediaId);
     if (!row) throw new AppException(ERR.MEDIA_NOT_FOUND, HttpStatus.NOT_FOUND);
     if (row.status !== 'ready') {
@@ -143,7 +168,35 @@ export class MediaService {
     if (row.ownerId !== viewerId) {
       throw new AppException(ERR.MEDIA_FORBIDDEN, HttpStatus.FORBIDDEN);
     }
-    return this.storage.presignGet(row.storageKey, MEDIA_LIMITS.readUrlTtlSeconds);
+
+    // Xin bản nhẹ mà chưa dựng xong thì trả BẢN GỐC, không trả lỗi. Chậm một
+    // lần còn hơn một ô ảnh trống — và bản nhẹ sẽ có ở lần xem sau.
+    if (variant) {
+      const built = await this.variants.findOneOf(mediaId, variant);
+      if (built?.status === 'ready') {
+        return this.storage.presignGet(
+          built.storageProvider,
+          built.storageKey,
+          MEDIA_LIMITS.readUrlTtlSeconds,
+        );
+      }
+    }
+
+    return this.storage.presignGet(
+      row.storageProvider,
+      row.storageKey,
+      MEDIA_LIMITS.readUrlTtlSeconds,
+    );
+  }
+
+  /** Mấy bản nhẹ đã dựng xong của một tấm. Cho bên gọi nắn ra DTO. */
+  readyVariants(mediaId: string) {
+    return this.variants.readyOf(mediaId);
+  }
+
+  /** Danh sách bản nhẹ mà hệ thống dựng. */
+  static get wanted(): readonly TMediaVariant[] {
+    return MEDIA_VARIANTS;
   }
 
   /** Ảnh này có phải của người đang gọi không. */

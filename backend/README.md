@@ -369,12 +369,65 @@ năm phút nằm trong bộ nhớ đệm của app là thứ rất khó lần ra
 không phải lúc câu trả lời được tạo ra. Cái chuyển hướng để `no-store`; tệp ảnh
 ở đầu kia thì cứ cho lưu thoải mái.
 
-### MinIO ở máy dev, R2 ở bản thật
+### Bản nhẹ — bắt buộc phải có
+
+|  | rộng | nặng |
+|---|---|---|
+| bản gốc iPhone | 4032 px | ~3 MB |
+| màn hình cần | 1290 px | — |
+| `feed` | 1290 px | ~200 KB |
+| `thumb` (hàng mặt, ảnh đại diện) | 320 px | ~12 KB |
+
+Cuộn 20 tấm: bản gốc là **60 MB**, bản `feed` là **4 MB**. Trên 4G đó là khác
+biệt giữa 40 giây và 3 giây, cộng một hoá đơn dữ liệu.
+
+**Là bản sao THÊM, không thay bản gốc.** Bảng riêng (`media_variants`) chứ không
+phải cột `feed_key`, `thumb_key` trên `media` — hai thứ có vòng đời khác hẳn
+nhau: bản gốc giữ mãi mãi và không xoá được; bản nhẹ dựng ở việc nền, hỏng
+được, dựng lại được, và mai mốt đổi kích thước là dựng lại toàn bộ. Thêm một cỡ
+mới là thêm một DÒNG, không phải thêm một cột.
+
+Dựng ở **việc nền** (BullMQ + sharp), không dựng lúc tải xong: kéo 12MB về bộ
+nhớ rồi nén mất vài trăm mili giây và chiếm luồng duy nhất của Node — trong
+đường request thì đó là chặn mọi người khác. Ảnh dùng được ngay bằng bản gốc.
+
+Xin bản nhẹ chưa dựng xong thì server trả **bản gốc**, không trả lỗi: chậm một
+lần còn hơn một ô ảnh trống.
+
+```
+GET /v1/media/<id>                 bản gốc
+GET /v1/media/<id>?variant=feed    bản feed, chưa có thì rơi về bản gốc
+GET /v1/media/<id>?variant=thumb
+```
+
+`.rotate()` không tham số trong worker là **áp dụng hướng xoay ghi trong EXIF**.
+Thiếu nó thì ảnh chụp dọc ra bản nhẹ nằm ngang — bản gốc vẫn đúng vì nó còn thẻ
+EXIF, còn bản nhẹ thì đã mất thẻ đó.
+
+`withoutEnlargement`: ảnh vốn nhỏ hơn thì để yên. Phóng to chỉ làm tệp nặng
+thêm mà không nét thêm chút nào.
+
+**sharp đọc được HEIF/HEIC** — bản dựng sẵn 0.35 đã kèm libheif, nên nhận thẳng
+ảnh iPhone, không phải bắt app chuyển sang JPEG.
+
+### MinIO ở máy dev, R2 ở bản thật — và đổi kho không mất ảnh
 
 Cùng giao thức S3, nên đường tải lên ở máy dev là **đường thật** — không phải
-bản giả rồi lên thật mới phát hiện lệch. Khác nhau đúng một dòng:
-`STORAGE_PATH_STYLE` (`true` cho MinIO, `false` cho R2). Đặt sai thì mọi lần tải
-lên trả 403 hoặc 404, và câu lỗi không nói vì sao.
+bản giả rồi lên thật mới phát hiện lệch.
+
+**Không phải khai kiểu đường dẫn.** MinIO cần `http://host/bucket/key`, R2 cần
+`https://bucket.host/key`; đặt sai thì mọi lần tải lên trả 403 hoặc 404 và câu
+lỗi của S3 không hé một chữ nào. Server **tự nhận ra từ tên miền**
+(`detectProvider`), nên không ai đặt sai được nữa.
+
+**Ghi vào MỘT kho, đọc được NHIỀU kho.** Mỗi dòng ảnh nhớ nó nằm ở kho nào
+(`media.storage_provider`). Đây là cột quan trọng nhất của cả bảng: không có nó
+thì ngày đổi MinIO sang R2, server đi tìm ảnh cũ ở kho mới và không thấy — **mất
+sạch ảnh cũ**, mà mất ở đây là mất thật vì bản gốc không dựng lại được.
+
+Có nó thì đổi kho là: trỏ `STORAGE_*` sang kho mới, khai thêm `STORAGE_LEGACY_*`
+để đọc kho cũ, rồi chép dần sang lúc rảnh. Không dừng dịch vụ, không mất tấm nào.
+Chép xong thì bỏ khối `LEGACY` đi.
 
 Chọn R2 **không phải vì rẻ chỗ chứa** — chỗ chứa ở đâu cũng na ná. Vì R2 **không
 thu tiền băng thông ra**. Nook là app xem ảnh: mỗi tấm tải lên một lần, xem hàng
@@ -390,9 +443,15 @@ trăm lần. Ở S3 thì chính cái "hàng trăm lần" đó là hoá đơn.
   ✓ dung lượng tải về == lúc gửi
 ```
 
-Cùng 15 bước: chưa tải mà báo xong thì chặn, người khác không xem được, không
+```
+feed:  700px  349728 byte   (4.2x nhẹ hơn)
+thumb: 320px   44072 byte  (33.4x nhẹ hơn)
+  ✓ bản GỐC vẫn nguyên sau khi dựng bản nhẹ
+```
+
+Cùng 20 bước: chưa tải mà báo xong thì chặn, người khác không xem được, không
 thẻ không xem được, ảnh người khác không đặt làm đại diện được, tệp quá to và
-định dạng lạ bị chặn ngay từ lúc xin đường.
+định dạng lạ bị chặn ngay từ lúc xin đường, xin bản nhẹ không có tên thì chặn.
 
 ## 5. Bảng
 
@@ -603,6 +662,14 @@ phức tạp mới để tiết kiệm 0,9 giây thì không đáng.
 Hai bẫy trên cùng một triệu chứng — "cái này rõ ràng có mà nó bảo không có" —
 nay đều đã chặn sẵn: `incremental` tắt, và `shared` tự dịch lại trước mọi lệnh.
 Nếu vẫn gặp thì `rm -f backend/*.tsbuildinfo` rồi chạy lại.
+
+**Gọi log kiểu pino thì Nest nuốt mất vết ngăn xếp.** `ConsoleLogger` có chữ ký
+`(message, stack)`; gọi `log.error({obj}, 'msg')` như pino thì đối tượng bị in
+thành câu chữ còn câu chữ bị coi là vết ngăn xếp, nên **vết ngăn xếp thật biến
+mất** — đúng thứ cần nhất lúc có lỗi 500. Đã xảy ra thật: một lỗi 500 ở
+`/v1/media/:id/complete` không cho biết gì cả cho tới khi sửa chỗ gọi log, rồi
+nguyên nhân hiện ra ngay dòng đầu (`Custom Id cannot contain :` — BullMQ không
+nhận dấu hai chấm trong mã việc).
 
 **Node 22 hoặc 24, đừng dùng 23.** Vài thư viện khai `engines` là
 `^20.19 || ^22.13 || >=24`; bản lẻ nằm ngoài lời hứa đó.

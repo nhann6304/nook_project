@@ -41,9 +41,12 @@ export class AllExceptionFilter implements ExceptionFilter {
     // ngăn xếp chỉ có ở đây. Lỗi 4xx là chuyện thường ngày, đã nằm gọn trong
     // dòng của request rồi.
     if (body.status >= 500) {
+      // Chữ ký của Nest là `(message, stack)`. Gọi kiểu pino — `({obj}, msg)` —
+      // thì đối tượng bị in thành câu chữ và câu chữ bị coi là vết ngăn xếp,
+      // nên vết ngăn xếp THẬT biến mất. Đúng thứ mình cần nhất lúc có lỗi 500.
       this.log.error(
-        { requestId, path: req?.url, err: error },
-        `${body.status} ${req?.method ?? '?'} ${req?.url ?? '?'} - ${body.code}`,
+        `${body.status} ${req?.method ?? '?'} ${req?.url ?? '?'} - ${body.code} [${requestId}]`,
+        error instanceof Error ? error.stack : String(error),
       );
     }
 

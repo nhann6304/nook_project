@@ -6,7 +6,7 @@ import {
 } from './user/index.js';
 import { SessionRepository } from './session/index.js';
 import { AchievementRepository, UserAchievementRepository } from './achievement/index.js';
-import { MediaRepository } from './media/index.js';
+import { MediaRepository, MediaVariantRepository } from './media/index.js';
 
 const REPOSITORIES = [
   UserRepository,
@@ -16,6 +16,7 @@ const REPOSITORIES = [
   AchievementRepository,
   UserAchievementRepository,
   MediaRepository,
+  MediaVariantRepository,
 ];
 
 /**

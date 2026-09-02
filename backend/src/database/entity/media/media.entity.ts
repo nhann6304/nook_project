@@ -47,6 +47,21 @@ export class Media extends AuditEntity {
   @Column({ name: 'storage_key', type: 'varchar', length: 255 })
   storageKey!: string;
 
+  /**
+   * Tấm này nằm ở kho NÀO: `minio` khi dev, `r2` khi thật.
+   *
+   * Ghi lại chứ không suy ra từ cấu hình hiện tại, và đây là chỗ đáng nói nhất
+   * của cả bảng: ngày nào đổi kho, mọi ảnh cũ vẫn nằm ở kho cũ. Không có cột
+   * này thì sau lần đổi đó server đi tìm ảnh cũ ở kho mới và không thấy —
+   * **mất toàn bộ ảnh cũ**, mà mất ở đây là mất thật vì bản gốc không dựng lại
+   * được.
+   *
+   * Có cột này thì đổi kho là: ghi mới vào kho mới, đọc cũ ở kho cũ, chép dần
+   * sang lúc rảnh. Không phải dừng dịch vụ, không mất gì.
+   */
+  @Column({ name: 'storage_provider', type: 'varchar', length: 16 })
+  storageProvider!: string;
+
   @Column({ name: 'content_type', type: 'varchar', length: 64 })
   contentType!: string;
 
