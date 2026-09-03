@@ -248,7 +248,9 @@ src/
 
 `username/` từng là thư mục riêng, và đó là sai: nó là hai CỘT của bảng `users`.
 Tách ra thì được một module chỉ tồn tại để module kia nhập vào, và người sửa hồ
-sơ phải mở hai thư mục mới đọc hết một luật. Giờ nó nằm trong `user/`.
+sơ phải mở hai thư mục mới đọc hết một luật. Giờ nó nằm trong `user/` — **cả
+hai bên**: `apis/app/user/username.service.ts` bên này, và
+`model/constant/user/username.constant.ts` bên `@nook/shared`.
 
 Ba câu hỏi trước khi mở thư mục mới — **ít nhất hai câu "có" mới tách:**
 
@@ -826,7 +828,7 @@ dò migration phải là `${import.meta.dirname}/../migration/*` — thiếu `..
 **Gộp bảng hằng số thì trùng khoá là đè im lặng.** `ERR` bên `@nook/shared` gộp
 từ bốn miền; `USER_ERR.NOT_FOUND` từng đè `COMMON_ERR.NOT_FOUND` mà không ai
 báo. Nay khoá của từng miền mang tiền tố (`USER_NOT_FOUND`, `CIRCLE_FULL`) và
-có chốt biên dịch bắt trùng — xem `shared/src/catalog/error.catalog.ts`.
+có chốt biên dịch bắt trùng — xem `shared/src/model/constant/catalog/error.constant.ts`.
 
 **Ném trong giao dịch thì cuộn luôn thứ vừa ghi.** Chỗ `rotate()` phát hiện thẻ
 dài hạn bị chép: nó thu hồi hết phiên rồi ném. Viết thẳng thì việc thu hồi bị

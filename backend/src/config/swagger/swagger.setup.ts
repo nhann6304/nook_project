@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { DOCS_PATH } from '@nook/shared/http';
+import { DOCS_PATH } from '@nook/shared/common/constant';
 
 /**
  * Trang Swagger. Chỉ mở ở máy dev — `validateEnv` chặn không cho bật ở bản thật.
