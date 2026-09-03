@@ -1,9 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { isEmail } from 'class-validator';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import {
   ERR,
   isSignInMethodEnabled,
-  looksLikeEmail,
   type TRefreshResult,
   type ISendCodeResult,
   type TSignInIntent,
@@ -162,9 +162,15 @@ export class AuthService {
    * "090 123 4567". Không chuẩn hoá ở đây là để dữ liệu tự chẻ thành ba tài
    * khoản mà không ai hiểu vì sao.
    *
-   * Đây là bộ kiểm THẬT. Bộ kiểm bên `@nook/shared` chỉ soi hình dạng để app
-   * biết lúc nào cho bấm nút — nó không có `libphonenumber-js`, không biết đầu
-   * số nào có thật.
+   * Đây là bộ kiểm THẬT, và "thật" nghĩa là dùng thư viện của backend chứ
+   * không gọi lại hàm bên `@nook/shared`. Hàm bên đó chỉ soi HÌNH DẠNG để app
+   * biết lúc nào cho bấm nút; gói ấy `dependencies` rỗng nên nó không thể có
+   * `libphonenumber-js`, không biết đầu số nào có thật, và regex email của nó
+   * cho lọt `nam@b..com`, `nam@-.com`, `nam..h@gmail.com`.
+   *
+   * Từng có lúc nhánh email ở đây gọi `looksLikeEmail` — chú thích ghi "bộ
+   * kiểm thật" còn mã thì chạy bộ kiểm lịch sự. Hậu quả không phải một lỗi
+   * thấy ngay: địa chỉ hỏng vẫn mở được tài khoản, rồi thư không tới nơi.
    */
   private normalize(method: TSignInMethod, raw: string): string {
     if (!isSignInMethodEnabled(method)) {
@@ -174,7 +180,7 @@ export class AuthService {
 
     if (method === 'email') {
       const value = raw.trim().toLowerCase();
-      if (!looksLikeEmail(value)) {
+      if (!isEmail(value)) {
         throw new AppException(ERR.TARGET_INVALID, HttpStatus.BAD_REQUEST);
       }
       return value;
