@@ -61,9 +61,32 @@ trước — nó là bản đồ, và nó chỉ bạn đọc ĐÚNG mục nào t
   sai chỗ, và có ba lối thoát theo thứ tự: gộp lại · hạ câu truy vấn xuống
   `repository/` · tầng dưới phát sự kiện cho tầng trên nghe. Tính năng mới phải
   khai tầng trong `backend/scripts/check-arch.mjs`, `npm run check` soi.
-- **`shared/` xếp theo MIỀN ở ngoài, LOẠI ở trong.** `auth/`, `user/`, `circle/`…
-  để sau này tách được thành gói riêng; trong mỗi miền có `constant/`,
-  `interface/`, `type/`, `util/`, mỗi thư mục một `index.ts`.
+- **`shared/` xếp TẦNG ở ngoài, LOẠI ở giữa, MIỀN ở trong** — theo kiến trúc,
+  không theo miền. Hai tầng: `common/` là thứ không thuộc bảng nào (`http`,
+  `record`, `realtime`) — xoá sạch nghiệp vụ Nook đi nó vẫn còn nghĩa;
+  `model/` là nghiệp vụ (`auth`, `user`, `circle`, `media`, `memory`,
+  `achievement`, và `catalog` — bản gộp `ERR`/`MSG`/`LIMITS`, nằm ở `model/`
+  vì nó nhập từ mọi miền). Trong mỗi tầng có ĐÚNG bốn loại đứng ngang cấp:
+  `constant/` · `interface/` · `type/` · `util/`. Miền là thư mục con bên
+  trong loại: `model/interface/auth/`, `model/type/auth/` — không phải
+  `model/auth/interface/`. Đặt tệp mới chỉ còn hai câu hỏi: xoá Nook đi nó còn
+  nghĩa không (→ tầng), và nó là loại gì (→ loại).
+  Ba luật, `npm run check` soi bằng `shared/scripts/check-layer.mjs`:
+  **`common/` cấm nhập từ `model/`** · **cùng loại thì nhập thẳng tệp, đổi loại
+  thì đi qua `index.js` của loại** (đi qua barrel cùng loại là tự nhập vào chính
+  mình — `catalog` gộp `{...AUTH_ERR}` sẽ chạy lúc `AUTH_ERR` chưa có giá trị) ·
+  **barrel chỉ có ở tầng loại**, 11 `index.ts` cho 43 tệp.
+  Đường nhập đúng bằng đường thư mục: `@nook/shared/common/constant`,
+  `@nook/shared/model/util`.
+- **`util/` bên `shared` chỉ chứa hàm DÙNG CHUNG, bài toán thật thì backend tự
+  code.** Được: hàm thuần vài dòng mà hai bên phải ra cùng một kết quả, soi hình
+  dạng để app biết lúc nào sáng cái nút, chuẩn hoá để hai bên so sánh giống
+  nhau. Không được: bộ kiểm thật, thứ cần thư viện / cơ sở dữ liệu / bí mật,
+  luật tính toán của sản phẩm. `looksLikeEmail` bên đó cho lọt `nam@b..com`;
+  bộ kiểm thật là `isEmail` của `class-validator` bên backend. Chặn chặn của
+  luật là **`dependencies` của `shared` phải RỖNG** — `npm run check` soi.
+  Hai bên cùng gọi một hàm thì ĐÚNG, miễn backend **gọi lại** chứ không tin app
+  đã gọi.
 - **Quy ước đặt tên, bắt buộc, cả hai bên:** `interface` → thư mục `interface/`,
   tệp `*.interface.ts`, tên bắt đầu bằng **`I`**. `type` → thư mục `type/`, tệp
   `*.type.ts`, tên bắt đầu bằng **`T`**. DTO → thư mục `dto/`, tệp `*.dto.ts`,

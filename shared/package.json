@@ -16,41 +16,45 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./record": {
-      "types": "./dist/record/index.d.ts",
-      "default": "./dist/record/index.js"
+    "./common": {
+      "types": "./dist/common/index.d.ts",
+      "default": "./dist/common/index.js"
     },
-    "./http": {
-      "types": "./dist/http/index.d.ts",
-      "default": "./dist/http/index.js"
+    "./common/constant": {
+      "types": "./dist/common/constant/index.d.ts",
+      "default": "./dist/common/constant/index.js"
     },
-    "./auth": {
-      "types": "./dist/auth/index.d.ts",
-      "default": "./dist/auth/index.js"
+    "./common/interface": {
+      "types": "./dist/common/interface/index.d.ts",
+      "default": "./dist/common/interface/index.js"
     },
-    "./user": {
-      "types": "./dist/user/index.d.ts",
-      "default": "./dist/user/index.js"
+    "./common/type": {
+      "types": "./dist/common/type/index.d.ts",
+      "default": "./dist/common/type/index.js"
     },
-    "./circle": {
-      "types": "./dist/circle/index.d.ts",
-      "default": "./dist/circle/index.js"
+    "./common/util": {
+      "types": "./dist/common/util/index.d.ts",
+      "default": "./dist/common/util/index.js"
     },
-    "./achievement": {
-      "types": "./dist/achievement/index.d.ts",
-      "default": "./dist/achievement/index.js"
+    "./model": {
+      "types": "./dist/model/index.d.ts",
+      "default": "./dist/model/index.js"
     },
-    "./memory": {
-      "types": "./dist/memory/index.d.ts",
-      "default": "./dist/memory/index.js"
+    "./model/constant": {
+      "types": "./dist/model/constant/index.d.ts",
+      "default": "./dist/model/constant/index.js"
     },
-    "./realtime": {
-      "types": "./dist/realtime/index.d.ts",
-      "default": "./dist/realtime/index.js"
+    "./model/interface": {
+      "types": "./dist/model/interface/index.d.ts",
+      "default": "./dist/model/interface/index.js"
     },
-    "./catalog": {
-      "types": "./dist/catalog/index.d.ts",
-      "default": "./dist/catalog/index.js"
+    "./model/type": {
+      "types": "./dist/model/type/index.d.ts",
+      "default": "./dist/model/type/index.js"
+    },
+    "./model/util": {
+      "types": "./dist/model/util/index.d.ts",
+      "default": "./dist/model/util/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -59,8 +63,9 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "check:layer": "node scripts/check-layer.mjs",
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "node scripts/check-layer.mjs && tsc -p tsconfig.json --noEmit",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build"
   },

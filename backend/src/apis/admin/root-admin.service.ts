@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ROLE, looksLikeEmail } from '@nook/shared';
+import { isEmail } from 'class-validator';
+import { ROLE } from '@nook/shared';
 import { Env } from '../../config/env/env.validation.js';
 import { TransactionService } from '../../core/transaction/transaction.service.js';
 import {
@@ -53,8 +54,11 @@ export class RootAdminService implements OnApplicationBootstrap {
     const raw = this.config.get('ROOT_ADMIN_EMAIL', { infer: true });
     if (!raw) return;
 
+    // `isEmail` cua class-validator, khong phai `looksLikeEmail` ben
+    // `@nook/shared` — ham do chi soi hinh dang cho app, no cho lot
+    // `nam@b..com`. Bo kiem that thi dung thu vien cua backend.
     const email = raw.trim().toLowerCase();
-    if (!looksLikeEmail(email)) {
+    if (!isEmail(email)) {
       this.log.error(`ROOT_ADMIN_EMAIL is not an email: ${raw}`);
       return;
     }

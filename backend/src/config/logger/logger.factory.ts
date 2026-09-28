@@ -1,7 +1,7 @@
 import { Logger, type LogLevel } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { HEALTH_PATH } from '@nook/shared/http';
+import { HEALTH_PATH } from '@nook/shared/common/constant';
 import { Env, NodeEnv } from '../env/index.js';
 import { NookLogger } from './nook-logger.js';
 

@@ -33,8 +33,8 @@ export class UpdateMeDto implements IUpdateMeBody {
 
   @ApiPropertyOptional({
     example: 'namnguyen',
-    minLength: USERNAME_LIMITS.min,
-    maxLength: USERNAME_LIMITS.max,
+    minLength: USERNAME_LIMITS.usernameMin,
+    maxLength: USERNAME_LIMITS.usernameMax,
     description: 'Tên riêng, duy nhất cả hệ thống. Hỏi trước bằng /v1/username/check.',
   })
   @IsOptional()

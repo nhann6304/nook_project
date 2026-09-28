@@ -10,8 +10,8 @@ import {
 export class UsernameQueryDto {
   @ApiProperty({
     example: 'namnguyen',
-    minLength: USERNAME_LIMITS.min,
-    maxLength: USERNAME_LIMITS.max,
+    minLength: USERNAME_LIMITS.usernameMin,
+    maxLength: USERNAME_LIMITS.usernameMax,
     description: 'Chữ thường, số, dấu chấm và gạch dưới. Chữ có dấu sẽ được bỏ dấu.',
   })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
