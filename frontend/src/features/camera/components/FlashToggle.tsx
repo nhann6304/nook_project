@@ -41,7 +41,7 @@ export const FlashToggle = memo(function FlashToggle({
       <Ionicons
         name={on ? 'flash' : 'flash-off'}
         size={18}
-        color={on ? c.onAccent : c.text}
+        color={on ? c.onAccent : c.onPhotoText}
       />
     </Tap>
   );
@@ -49,13 +49,13 @@ export const FlashToggle = memo(function FlashToggle({
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  box: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: c.onPhoto,
-  },
-  on: { backgroundColor: c.accentBright },
-});
+    box: {
+      width: 36,
+      height: 36,
+      borderRadius: radius.full,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: c.onPhoto,
+    },
+    on: { backgroundColor: c.accentBright },
+  });

@@ -54,7 +54,7 @@ export const CaptionField = forwardRef<TextInput, CaptionFieldProps>(function Ca
       style={[s.pill, focused && s.pillFocused]}
     >
       {showIcon ? (
-        <Ionicons name="create-outline" size={16} color={c.text} style={s.icon} />
+        <Ionicons name="create-outline" size={16} color={c.onPhotoText} style={s.icon} />
       ) : null}
 
       <View style={s.inputBox}>
@@ -63,7 +63,7 @@ export const CaptionField = forwardRef<TextInput, CaptionFieldProps>(function Ca
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={c.text}
+          placeholderTextColor={c.onPhotoText}
           selectionColor={c.accent}
           cursorColor={c.accent}
           maxLength={CAPTION_MAX}
@@ -83,31 +83,31 @@ export const CaptionField = forwardRef<TextInput, CaptionFieldProps>(function Ca
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  pill: {
-    maxWidth: '86%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    backgroundColor: c.onPhoto,
-    borderRadius: radius.lg,
-    paddingHorizontal: space.lg,
-    paddingVertical: space.sm,
-    // Viền LUÔN có, chỉ đổi màu khi focus — cộng viền lúc focus làm viên thuốc
-    // cao thêm 2px và cả khối nhích một nấc ngay lúc bàn phím đang bật lên.
-    borderWidth: 1,
-    borderColor: c.hairlineOnPhoto,
-  },
-  pillFocused: { borderColor: c.accent },
-  icon: { opacity: 0.8 },
-  inputBox: { flexShrink: 1 },
-  input: {
-    color: c.text,
-    fontSize: type.body.fontSize,
-    lineHeight: type.body.lineHeight,
-    fontFamily: type.body.fontFamily,
-    // Android cộng thêm đệm dọc riêng cho multiline; không tắt thì viên thuốc
-    // cao hơn hẳn so với iOS.
-    paddingVertical: 0,
-    textAlignVertical: 'center',
-  },
-});
+    pill: {
+      maxWidth: '86%',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: space.sm,
+      backgroundColor: c.onPhoto,
+      borderRadius: radius.lg,
+      paddingHorizontal: space.lg,
+      paddingVertical: space.sm,
+      // Viền LUÔN có, chỉ đổi màu khi focus — cộng viền lúc focus làm viên thuốc
+      // cao thêm 2px và cả khối nhích một nấc ngay lúc bàn phím đang bật lên.
+      borderWidth: 1,
+      borderColor: c.hairlineOnPhoto,
+    },
+    pillFocused: { borderColor: c.accent },
+    icon: { opacity: 0.8 },
+    inputBox: { flexShrink: 1 },
+    input: {
+      color: c.onPhotoText,
+      fontSize: type.body.fontSize,
+      lineHeight: type.body.lineHeight,
+      fontFamily: type.label.fontFamily,
+      // Android cộng thêm đệm dọc riêng cho multiline; không tắt thì viên thuốc
+      // cao hơn hẳn so với iOS.
+      paddingVertical: 0,
+      textAlignVertical: 'center',
+    },
+  });

@@ -21,6 +21,8 @@ export type ScreenProps = {
   edges?: readonly Edge[];
   /** Bật khi màn có ô nhập. */
   keyboard?: boolean;
+  /** Nền trong suốt — khi màn tự vẽ nền riêng phía sau (ảnh tràn ở Chào mừng). */
+  clear?: boolean;
 };
 
 export function Screen({
@@ -28,12 +30,13 @@ export function Screen({
   padded = true,
   edges = ['top', 'bottom'],
   keyboard = false,
+  clear = false,
 }: ScreenProps) {
   const s = useStyles(make);
   const body = <View style={[s.body, padded && s.padded]}>{children}</View>;
 
   return (
-    <SafeAreaView style={s.root} edges={edges}>
+    <SafeAreaView style={[s.root, clear && s.clear]} edges={edges}>
       {keyboard ? (
         <KeyboardAvoidingView
           style={s.body}
@@ -52,7 +55,8 @@ export function Screen({
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  root: { flex: 1, backgroundColor: c.bg },
-  body: { flex: 1 },
-  padded: { paddingHorizontal: layout.screenPadding },
-});
+    root: { flex: 1, backgroundColor: c.bg },
+    clear: { backgroundColor: 'transparent' },
+    body: { flex: 1 },
+    padded: { paddingHorizontal: layout.screenPadding },
+  });

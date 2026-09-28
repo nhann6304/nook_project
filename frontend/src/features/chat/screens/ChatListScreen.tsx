@@ -1,31 +1,29 @@
 /**
- * Danh sách trò chuyện — tab thứ ba.
+ * Tin nhắn — mỗi người một cuộc. Ảnh nhỏ bên phải là khoảnh khắc cuộc đó đang
+ * nói tới: nhìn là nhớ ra "à, vụ cái biển".
  *
- * Mỗi hàng là MỘT NGƯỜI, không phải một chủ đề: Nook không có nhóm, và một
- * người đúng một cuộc trò chuyện. Xem chú thích ở `../types.ts` để biết vì sao
- * đó là luật sản phẩm chứ không phải giới hạn kỹ thuật.
- *
- * Hàng hiện tin CUỐI chứ không hiện số tin chưa đọc. Con số chưa đọc là thứ
- * kéo người ta mở app vì áy náy; Nook không làm loại đó.
+ * Tin cuối chưa đọc (của bạn kia gửi) thì chữ sáng và đậm; không có con số đếm.
  */
-import { useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Avatar, Col, EmptyState, GhostFrame, List, Row, Screen, TopBar, Txt } from '@ui';
-import { space, useStyles, type Palette } from '@design';
+import { Ionicons } from '@expo/vector-icons';
+import { Avatar, EmptyState, IconButton, Img, List, Screen, Tap, Txt } from '@ui';
+import { radius, space, useColors, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
-import { lastMessage, type Conversation } from '../types';
+import { lastAbout, lastMessage, type Conversation } from '../types';
 
 export function ChatListScreen({
   conversations,
   onOpen,
-  onOpenFeed,
+  onClose,
 }: {
   conversations: readonly Conversation[];
   onOpen: (id: string) => void;
-  onOpenFeed: () => void;
+  onClose: () => void;
 }) {
   const t = useT();
   const s = useStyles(make);
+  const c = useColors();
   const ago = useAgo();
 
   const renderItem = useCallback(
@@ -35,6 +33,7 @@ export function ChatListScreen({
         <ChatRow
           conversation={item}
           when={last ? ago(new Date(last.at)) : ''}
+          fresh={last?.mine === false}
           line={
             last?.mine === true
               ? t('chat.mineSaid', { text: last.text })
@@ -47,81 +46,102 @@ export function ChatListScreen({
     [ago, onOpen, t],
   );
 
-  if (conversations.length === 0) {
-    return (
-      <Screen edges={['top']}>
-        <TopBar title={t('chat.title')} />
-        <EmptyState
-          art={<GhostFrame size={140} ratio={0.72} />}
-          title={t('chat.emptyTitle')}
-          message={t('chat.emptyMessage')}
-          actionLabel={t('chat.openFeed')}
-          onAction={onOpenFeed}
-        />
-      </Screen>
-    );
-  }
-
   return (
     <Screen padded={false} edges={['top']}>
       <View style={s.bar}>
-        <TopBar title={t('chat.title')} />
+        <IconButton label={t('home.backToCamera')} onPress={onClose} style={s.back}>
+          <Ionicons name="chevron-back" size={22} color={c.text} />
+        </IconButton>
+        <Txt variant="title" style={s.title}>
+          {t('chat.title')}
+        </Txt>
       </View>
-      <List data={conversations} renderItem={renderItem} keyExtractor={keyOf} />
+
+      {conversations.length === 0 ? (
+        <EmptyState title={t('chat.emptyTitle')} message={t('chat.emptyMessage')} />
+      ) : (
+        <List data={conversations} renderItem={renderItem} keyExtractor={keyOf} />
+      )}
     </Screen>
   );
 }
 
 const keyOf = (c: Conversation) => c.id;
 
-function ChatRow({
+const ChatRow = memo(function ChatRow({
   conversation,
   when,
   line,
+  fresh,
   onOpen,
 }: {
   conversation: Conversation;
   when: string;
-  /** Tin cuối, đã ghép sẵn tiền tố "Bạn:" nếu là tin của mình. */
   line: string;
+  fresh: boolean;
   onOpen: (id: string) => void;
 }) {
   const s = useStyles(make);
+  const { friend } = conversation;
+  const about = lastAbout(conversation);
   return (
-    <Row gap="md" align="center" style={s.row}>
+    <Tap
+      onPress={() => onOpen(conversation.id)}
+      scaleTo={0.98}
+      style={s.row}
+      accessibilityLabel={friend.name}
+    >
       <Avatar
-        name={conversation.friend.name}
-        level={conversation.friend.level}
-        dormant={conversation.friend.dormant}
-        size={48}
-        onPress={() => onOpen(conversation.id)}
-        label={conversation.friend.name}
-        recyclingKey={conversation.id}
+        name={friend.name}
+        level={friend.level}
+        dormant={friend.dormant}
+        size={56}
+        recyclingKey={friend.id}
       />
-
-      <Col gap="xs" grow>
-        <Row justify="between" align="center" gap="sm">
-          <Txt variant="label" numberOfLines={1}>
-            {conversation.friend.name}
+      <View style={s.text}>
+        <View style={s.head}>
+          <Txt variant="section" numberOfLines={1} style={s.name}>
+            {friend.name}
           </Txt>
           <Txt variant="faint" tone="faint">
             {when}
           </Txt>
-        </Row>
-        <Txt variant="body" tone="muted" numberOfLines={1}>
+        </View>
+        <Txt
+          variant={fresh ? 'label' : 'body'}
+          tone={fresh ? 'default' : 'muted'}
+          numberOfLines={1}
+        >
           {line}
         </Txt>
-      </Col>
-    </Row>
+      </View>
+      {about ? (
+        <Img source={about.photo} recyclingKey={`${conversation.id}-about`} style={s.thumb} />
+      ) : null}
+    </Tap>
   );
-}
+});
 
 const make = (c: Palette) =>
   StyleSheet.create({
-    bar: { paddingHorizontal: space.lg },
-    row: {
+    bar: {
+      height: 52,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: space.md,
       paddingHorizontal: space.lg,
-      paddingVertical: space.md,
-      backgroundColor: c.bg,
     },
+    back: { width: 44, height: 44, borderRadius: radius.full, backgroundColor: c.surface },
+    title: { fontSize: 20, lineHeight: 26 },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: space.md + 2,
+      paddingHorizontal: space.lg,
+      paddingVertical: space.sm + 2,
+    },
+    text: { flex: 1, minWidth: 0, gap: 2 },
+    head: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+    name: { flexShrink: 1 },
+    thumb: { width: 40, height: 53, borderRadius: radius.xs + 3 },
   });

@@ -15,7 +15,7 @@ export type TIdentityKind = 'email' | 'phone';
  * "  Nam@Gmail.Com " vẫn phải vào đúng một tài khoản.
  */
 @Entity('user_identities')
-@Unique('uq_identity_kind_value', ['kind', 'value'])
+@Unique('uq_identity_kind_value_key', ['kind', 'valueKey'])
 export class UserIdentity extends AuditEntity {
   @Index('idx_identity_user')
   @Column({ name: 'user_id', type: 'uuid' })
@@ -24,9 +24,17 @@ export class UserIdentity extends AuditEntity {
   @Column({ name: 'kind', type: 'varchar', length: 8 })
   kind!: TIdentityKind;
 
-  /** Đã chuẩn hoá. 320 là trần độ dài email theo RFC. */
+  /** Đã chuẩn hoá. 320 là trần độ dài email theo RFC. Đây là chỗ GỬI THƯ TỚI. */
   @Column({ name: 'value', type: 'varchar', length: 320 })
   value!: string;
+
+  /**
+   * `value` rút về dạng khoá — xem `identityKey()`. Khoá duy nhất đặt ở ĐÂY,
+   * không đặt ở `value`: `nam@gmail.com` và `nam+1@gmail.com` là hai `value`
+   * khác nhau nhưng cùng một hộp thư, nên phải là cùng một tài khoản.
+   */
+  @Column({ name: 'value_key', type: 'varchar', length: 320 })
+  valueKey!: string;
 
   /** Lần cuối nhập đúng mã gửi tới đích này. */
   @Column({ name: 'verified_at', type: 'timestamptz', nullable: true })

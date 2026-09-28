@@ -12,8 +12,11 @@ source "$(dirname "${BASH_SOURCE[0]}")/db.sh"
 PASS=0; FAIL=0
 check() { if [ "$2" = "$3" ]; then PASS=$((PASS+1)); printf '%s  ✓%s %s\n' "$GREEN" "$OFF" "$1"
           else FAIL=$((FAIL+1)); printf '%s  ✗%s %s %s(mong %s, nhận %s)%s\n' "$RED" "$OFF" "$1" "$DIM" "$2" "$3" "$OFF"; fi; }
-code_of() { python3 -c "import sys,json;print(json.load(sys.stdin).get('code',''))" 2>/dev/null; }
-field()   { python3 -c "import sys,json;print(json.load(sys.stdin)['data']$1)" 2>/dev/null; }
+# Node, KHÔNG python3 — xem ghi chú ở `smoke-auth.sh`: `python3` trên Windows
+# là cái stub của Microsoft Store, chạy nó là cả bộ đỏ oan.
+json() { node -e "let s='';process.stdin.on('data',c=>s+=c).on('end',()=>{try{const d=JSON.parse(s);console.log($1)}catch{}})" 2>/dev/null; }
+code_of() { json "d.code ?? ''"; }
+field()   { json "d['data']$1"; }
 
 login() {
   curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' -d "{\"method\":\"email\",\"target\":\"$1\"}" >/dev/null
@@ -55,11 +58,11 @@ check "chữ hoa về chữ thường"  "namnguyen" "$(avail "NamNguyen" "$A" | 
 check "bỏ dấu tiếng Việt"      "ducanh"    "$(avail "ĐứcAnh" "$A" | field "['key']")"
 
 # ── con trong -> giu cho -> khong con trong ────────────────────────────────
-check "chưa ai lấy thì còn trống" "True" "$(avail "$NAME" "$A" | field "['available']")"
+check "chưa ai lấy thì còn trống" "true" "$(avail "$NAME" "$A" | field "['available']")"
 R=$(curl -s -X PATCH "$BASE/v1/me" -H "authorization: Bearer $A" -H 'content-type: application/json' -d "{\"username\":\"$NAME\"}")
 check "giữ chỗ được"           "user.profile_updated" "$(echo "$R" | code_of)"
 check "hồ sơ hiện tên riêng"   "$NAME" "$(echo "$R" | field "['username']")"
-check "sau khi giữ thì hết trống" "False" "$(avail "$NAME" "$B" | field "['available']")"
+check "sau khi giữ thì hết trống" "false" "$(avail "$NAME" "$B" | field "['available']")"
 check "lý do là đã có người lấy"  "username.taken" "$(avail "$NAME" "$B" | field "['problem']")"
 
 # ── nguoi khac lay ten do -> bi chan ───────────────────────────────────────

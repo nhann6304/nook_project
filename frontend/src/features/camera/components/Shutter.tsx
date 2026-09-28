@@ -1,35 +1,35 @@
 /**
- * Nút chụp.
+ * Nút chụp — vòng màu nhấn, lõi sáng PHẲNG. Theo bảng thiết kế: không dải màu
+ * trong lõi (dải màu làm nút trông như kẹo), lõi trơn thì trông như máy ảnh.
  *
- * Vòng ngoài đứng yên, LÕI trong co lại khi nhấn — giống cửa trập máy ảnh thật.
- * Cả hai chạy trên luồng UI bằng Reanimated: lúc bấm chụp thì luồng JS đang
- * bận nhất trong cả app (mã hoá ảnh), và nếu phản hồi nhấn chạy bằng JS thì
- * đúng khoảnh khắc quan trọng nhất lại là khoảnh khắc nút đơ.
+ * Vòng ngoài đứng yên, LÕI co lại khi nhấn — giống cửa trập thật. Chạy trên
+ * luồng UI: lúc chụp là lúc luồng JS bận nhất cả app (mã hoá ảnh).
+ *
+ * `size` nhỏ dùng cho nút "về camera" ở hàng dưới khi đang xem ảnh bạn bè.
  */
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { GRADIENT_END, GRADIENT_START, radius, spring, useColors, useStyles, type Palette } from '@design';
+import { radius, spring, useStyles, type Palette } from '@design';
 import { Tap } from '@ui';
-
-const RING = 84;
-const CORE = 68;
 
 export function Shutter({
   onPress,
   busy,
   label,
+  size = 84,
 }: {
   onPress: () => void;
   busy?: boolean;
   label: string;
+  size?: number;
 }) {
   const s = useStyles(make);
-  const c = useColors();
   const p = useSharedValue(0);
+  const ring = Math.max(3, Math.round(size / 21));
+  const core = size - ring * 2 - Math.round(size / 10.5);
 
-  const core = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 - p.value * 0.18 }],
+  const coreAnim = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 - p.value * 0.08 }],
   }));
 
   return (
@@ -38,45 +38,30 @@ export function Shutter({
       accessibilityLabel={label}
       accessibilityState={{ busy: Boolean(busy) }}
       disabled={busy}
-      feedback={null} /* Shutter tự rung nhịp 'capture' trong màn Camera */
+      feedback={null} /* nhịp rung 'capture' do màn gọi, đúng lúc ảnh chụp xong */
       scaleTo={1}
       onPressIn={() => {
-        p.value = withSpring(1, spring.press);
+        p.set(withSpring(1, spring.press));
       }}
       onPressOut={() => {
-        p.value = withSpring(0, spring.press);
+        p.set(withSpring(0, spring.press));
       }}
       onPress={onPress}
-      style={s.ring}
+      style={[s.box, { width: size, height: size }]}
     >
-      <Animated.View style={[s.core, core]}>
-        <LinearGradient
-          colors={c.gradient}
-          start={GRADIENT_START}
-          end={GRADIENT_END}
-          style={s.fill}
-        />
-      </Animated.View>
-      <View pointerEvents="none" style={s.ringLine} />
+      <View pointerEvents="none" style={[s.ring, { borderWidth: ring }]} />
+      <Animated.View style={[s.core, { width: core, height: core }, coreAnim]} />
     </Tap>
   );
 }
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  ring: { width: RING, height: RING, alignItems: 'center', justifyContent: 'center' },
-  ringLine: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: radius.full,
-    borderWidth: 3.5,
-    borderColor: c.accent,
-  },
-  core: {
-    width: CORE,
-    height: CORE,
-    borderRadius: radius.full,
-    overflow: 'hidden',
-    backgroundColor: c.accent,
-  },
-  fill: StyleSheet.absoluteFillObject,
-});
+    box: { alignItems: 'center', justifyContent: 'center' },
+    ring: {
+      ...StyleSheet.absoluteFill,
+      borderRadius: radius.full,
+      borderColor: c.accent,
+    },
+    core: { borderRadius: radius.full, backgroundColor: c.core },
+  });

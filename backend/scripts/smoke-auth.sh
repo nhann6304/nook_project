@@ -20,8 +20,13 @@ check() { # check "tên" "mong đợi" "nhận được"
   if [ "$2" = "$3" ]; then PASS=$((PASS+1)); printf '%s  ✓%s %s\n' "$GREEN" "$OFF" "$1"
   else FAIL=$((FAIL+1)); printf '%s  ✗%s %s %s(mong %s, nhận %s)%s\n' "$RED" "$OFF" "$1" "$DIM" "$2" "$3" "$OFF"; fi
 }
-code_of() { python3 -c "import sys,json;print(json.load(sys.stdin).get('code',''))" 2>/dev/null; }
-field()   { python3 -c "import sys,json;d=json.load(sys.stdin);print(d['data']$1)" 2>/dev/null; }
+# Node, KHÔNG python3. Trên Windows `python3` trên PATH là cái stub của
+# Microsoft Store: nó không chạy gì cả, chỉ in một câu mời cài đặt — nên mọi
+# hàm này trả về chuỗi rỗng và CẢ BỘ khẳng định đỏ hết, trông như server hỏng.
+# Node thì máy nào chạy được dự án này cũng có sẵn.
+json() { node -e "let s='';process.stdin.on('data',c=>s+=c).on('end',()=>{try{const d=JSON.parse(s);console.log($1)}catch{}})" 2>/dev/null; }
+code_of() { json "d.code ?? ''"; }
+field()   { json "d['data']$1"; }
 
 curl -sf "$BASE/health" >/dev/null || { echo "${RED}Server chưa chạy ở $BASE${OFF}"; exit 1; }
 
@@ -69,7 +74,7 @@ check "mã sai bị từ chối" "auth.code_invalid" "$(echo "$R" | code_of)"
 R=$(curl -s -X POST "$BASE/v1/auth/verify" -H 'content-type: application/json' \
       -d "{\"method\":\"email\",\"target\":\"$MAIL\",\"code\":\"$CODE\"}")
 check "mã đúng thì vào được" "auth.signed_in" "$(echo "$R" | code_of)"
-check "tài khoản mở mới" "True" "$(echo "$R" | field "['isNew']")"
+check "tài khoản mở mới" "true" "$(echo "$R" | field "['isNew']")"
 A1=$(echo "$R" | field "['accessToken']"); R1=$(echo "$R" | field "['refreshToken']")
 
 # ── 5. Mã dùng một lần ──────────────────────────────────────────────────────

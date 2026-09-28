@@ -15,6 +15,7 @@ import { UserService } from '../../app/user/user.service.js';
 import { UserMapper } from '../../app/user/user.mapper.js';
 import { CodeSenderService } from '../../../infra/notify/service/index.js';
 import { CodeService } from './code.service.js';
+import { EmailGuardService } from './email-guard.service.js';
 import { SessionService } from './session.service.js';
 import type { SendCodeDto, VerifyCodeDto, LogoutDto, RefreshDto } from '../dto/index.js';
 
@@ -41,6 +42,7 @@ const DEFAULT_REGION = 'VN';
 export class AuthService {
   constructor(
     private readonly codes: CodeService,
+    private readonly emails: EmailGuardService,
     private readonly sessions: SessionService,
     private readonly users: UserService,
     private readonly userMapper: UserMapper,
@@ -70,6 +72,10 @@ export class AuthService {
     // TRƯỚC mọi thứ có thể lộ ra tài khoản có tồn tại hay không. Đặt sau là
     // chốt vẫn còn nguyên trên giấy mà đã cho người ta hỏi xong rồi.
     await this.codes.guardCaller(ip);
+
+    // Sau trần nhưng trước `guardIntent`: hộp thư dùng một lần thì đuổi ngay,
+    // đừng để nó hỏi được "email này có tài khoản chưa".
+    if (dto.method === 'email') await this.emails.assertUsable(target);
 
     // Và trước `issue` nữa: vào nhầm cửa thì đừng đốt mất chốt 60 giây của
     // người ta cho một mã ta sắp từ chối gửi.
@@ -119,6 +125,10 @@ export class AuthService {
   /** Nộp mã, đổi lấy thẻ phiên. Chưa có tài khoản thì mở luôn tại đây. */
   async verifyCode(dto: VerifyCodeDto, ip: string | null): Promise<IVerifyCodeResult> {
     const target = this.normalize(dto.method, dto.target);
+
+    // Trần theo máy gọi ở CẢ cửa này, không chỉ cửa xin mã. Thiếu nó thì
+    // `/auth/verify` là cửa duy nhất bắn được bao nhiêu tuỳ thích.
+    await this.codes.guardVerifyCaller(ip);
 
     // Mã đúng TRƯỚC, mở tài khoản SAU. Đảo thứ tự là ai gõ đại một email cũng
     // đẻ ra được một tài khoản rỗng trong bảng.

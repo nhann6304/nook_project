@@ -12,14 +12,14 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Txt } from '@ui';
-import { radius, space, useStyles, type Palette } from '@design';
+import { font, radius, space, useStyles, type Palette } from '@design';
 
 export const Bubble = memo(function Bubble({ text, mine }: { text: string; mine: boolean }) {
   const s = useStyles(make);
   return (
     <View style={[s.row, mine ? s.rowMine : s.rowTheirs]}>
       <View style={[s.bubble, mine ? s.mine : s.theirs]}>
-        <Txt variant="body" tone={mine ? 'onAccent' : 'default'}>
+        <Txt variant="body" tone={mine ? 'onAccent' : 'default'} style={mine ? s.mineText : null}>
           {text}
         </Txt>
       </View>
@@ -29,16 +29,17 @@ export const Bubble = memo(function Bubble({ text, mine }: { text: string; mine:
 
 const make = (c: Palette) =>
   StyleSheet.create({
-    row: { paddingHorizontal: space.lg, paddingVertical: space.xs },
+    row: { paddingHorizontal: space.lg, paddingVertical: 3 },
     rowMine: { alignItems: 'flex-end' },
     rowTheirs: { alignItems: 'flex-start' },
 
     bubble: {
       maxWidth: '78%',
-      paddingHorizontal: space.lg,
-      paddingVertical: space.md,
+      paddingHorizontal: space.md + 2,
+      paddingVertical: space.sm + 2,
       borderRadius: radius.lg,
     },
     mine: { backgroundColor: c.accent, borderBottomRightRadius: radius.xs },
-    theirs: { backgroundColor: c.surface, borderBottomLeftRadius: radius.xs },
+    theirs: { backgroundColor: c.surfaceRaised, borderBottomLeftRadius: radius.xs },
+    mineText: { fontFamily: font.bodyMedium },
   });

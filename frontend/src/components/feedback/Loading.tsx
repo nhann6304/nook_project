@@ -6,13 +6,13 @@
  * người dùng thậm chí không nhận ra là đã có một lượt chờ.
  */
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { common, duration, space, useColors, useStyles } from '@design';
+import { StyleSheet, View } from 'react-native';
+import { common, duration, space, useStyles } from '@design';
 import { Txt } from '../primitives/Txt';
+import { Spinner } from './Spinner';
 
 export function Loading({ label, delay = duration.base }: { label?: string; delay?: number }) {
   const s = useStyles(make);
-  const c = useColors();
   const [show, setShow] = useState(delay === 0);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export function Loading({ label, delay = duration.base }: { label?: string; dela
 
   return (
     <View style={s.box}>
-      <ActivityIndicator color={c.accent} />
+      <Spinner size={28} label={label} />
       {label ? (
         <Txt variant="label" tone="muted" center>
           {label}

@@ -13,7 +13,19 @@
  */
 import { StyleSheet, View } from 'react-native';
 import { Avatar, Button, Card, Col, Row, Screen, Scroll, Segmented, TopBar, Txt } from '@ui';
-import { layout, space, useStyles, type PaletteKey } from '@design';
+import { LinearGradient } from 'expo-linear-gradient';
+import {
+  SKIES,
+  SKY_KEYS,
+  layout,
+  radius,
+  space,
+  useStyles,
+  type Palette,
+  type PaletteKey,
+  type SkyKey,
+  type ThemeMode,
+} from '@design';
 import {
   LOCALES,
   LOCALE_NAMES,
@@ -34,6 +46,10 @@ export function SettingsScreen({
   palette,
   paletteNames,
   onPickPalette,
+  mode,
+  sky,
+  skyNames,
+  onPickMode,
   onClose,
 }: {
   name: string;
@@ -41,6 +57,10 @@ export function SettingsScreen({
   palette: PaletteKey;
   paletteNames: Readonly<Record<PaletteKey, string>>;
   onPickPalette: (key: PaletteKey) => void;
+  mode: ThemeMode;
+  sky: SkyKey | null;
+  skyNames: Readonly<Record<SkyKey, string>>;
+  onPickMode: (mode: ThemeMode) => void;
   onClose: () => void;
 }) {
   const t = useT();
@@ -52,11 +72,7 @@ export function SettingsScreen({
 
   return (
     <Screen>
-      <TopBar
-        title={t('common.settings')}
-        closeLabel={t('common.closeScreen')}
-        onClose={onClose}
-      />
+      <TopBar title={t('common.settings')} closeLabel={t('common.closeScreen')} onClose={onClose} />
 
       <Scroll>
         <Card style={s.profile}>
@@ -73,15 +89,44 @@ export function SettingsScreen({
 
         <Group title={t('theme.title')}>
           <Card style={s.card}>
-            <PalettePicker
-              current={palette}
-              names={paletteNames}
-              label={t('theme.label')}
-              onPick={onPickPalette}
+            <Segmented<ThemeMode>
+              options={[
+                { value: 'auto', label: t('theme.auto') },
+                { value: 'fixed', label: t('theme.fixed') },
+              ]}
+              value={mode}
+              onChange={onPickMode}
+              label={t('theme.mode')}
             />
-            <Txt variant="faint" tone="muted">
-              {t('theme.note')}
-            </Txt>
+            {mode === 'auto' ? (
+              <>
+                <View style={s.skies}>
+                  {SKY_KEYS.map((k) => (
+                    <SkyCard
+                      key={k}
+                      palette={SKIES[k]}
+                      name={skyNames[k]}
+                      now={k === sky ? t('theme.now') : null}
+                    />
+                  ))}
+                </View>
+                <Txt variant="faint" tone="muted">
+                  {t('theme.autoNote')}
+                </Txt>
+              </>
+            ) : (
+              <>
+                <PalettePicker
+                  current={palette}
+                  names={paletteNames}
+                  label={t('theme.label')}
+                  onPick={onPickPalette}
+                />
+                <Txt variant="faint" tone="muted">
+                  {t('theme.fixedNote')}
+                </Txt>
+              </>
+            )}
           </Card>
         </Group>
 
@@ -108,6 +153,27 @@ export function SettingsScreen({
   );
 }
 
+/** Một chặng trời, vẽ bằng chính màu của chặng đó. */
+function SkyCard({ palette, name, now }: { palette: Palette; name: string; now: string | null }) {
+  const s = useStyles(make);
+  return (
+    <View style={[s.sky, now !== null && s.skyNow]}>
+      <LinearGradient
+        colors={palette.sky ?? [palette.bg, palette.bg]}
+        style={StyleSheet.absoluteFill}
+      />
+      <Txt variant="label" style={[s.skyText, { color: palette.text }]}>
+        {name}
+      </Txt>
+      {now ? (
+        <Txt variant="faint" style={[s.skyText, { color: palette.textMuted }]}>
+          {now}
+        </Txt>
+      ) : null}
+    </View>
+  );
+}
+
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   const s = useStyles(make);
   return (
@@ -120,8 +186,21 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-const make = () =>
+const make = (c: Palette) =>
   StyleSheet.create({
+    skies: { flexDirection: 'row', gap: space.sm - 2 },
+    sky: {
+      flex: 1,
+      height: 84,
+      borderRadius: radius.sm + 2,
+      overflow: 'hidden',
+      padding: space.sm,
+      justifyContent: 'flex-end',
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    skyNow: { borderColor: c.accent },
+    skyText: { fontSize: 12, lineHeight: 16 },
     profile: { marginTop: space.lg, maxWidth: layout.maxTextWidth, width: '100%' },
     group: { marginTop: space.xxl, gap: space.sm, maxWidth: layout.maxTextWidth, width: '100%' },
     groupTitle: { paddingHorizontal: space.xs },

@@ -5,7 +5,7 @@ hệ thống sản phẩm ở [`../.docs/01-product-system.md`](../.docs/01-prod
 
 Mọi lệnh trong file này chạy từ thư mục `frontend/`.
 
-**Stack:** Expo SDK **54** + React Native 0.81.5 + TypeScript 5.9. Chưa có backend;
+**Stack:** Expo SDK **57** + React Native 0.86.3 + TypeScript 6.0. Chưa có backend;
 `src/features/auth/lib/authApi.ts` là hàng giả (mã đúng: `123456`).
 
 ---
@@ -63,26 +63,26 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - Ảnh: `<Img>` (expo-image), không bao giờ `<Image>`.
 - Không `style={{…}}` viết thẳng trong JSX.
 - Đọc kho trạng thái bằng selector: `useAuth((s) => s.phase)`.
-- **Đừng nâng SDK.** Expo Go trên App Store kẹt ở 54.0.2 — nâng là app không mở
-  được trên iPhone nữa. Lý do đầy đủ + ba chỗ code phải đảo ngược: mục 7 của
-  `docs/06-libraries.md`.
+- **SDK đi theo Expo Go trên App Store.** 27/09/2026 Expo Go iPhone đã lên 57
+  nên dự án nâng lên 57. Expo Go đổi SDK thì dự án phải đổi theo, không thì
+  "Project is incompatible". Xem mục 7 của `docs/06-libraries.md`.
+- Ghi shared value bằng `sv.set(x)`, không `sv.value = x` — luật
+  `react-hooks/immutability` của SDK 57 chặn cách gán.
 - Chạy `npm run check` trước khi coi là xong. Phải sạch cả tsc lẫn eslint.
 
 **Giao diện**
 
-- Nền tối mặc định, **năm bảng màu** cho người dùng chọn. Không làm chế độ sáng ở V0.1.
+- Màu **Tự động theo trời** là mặc định (bảng thiết kế F1/15b): sáng + trưa là nền SÁNG, chiều tối + đêm là nền tối (`skyAt` trong `palettes.ts`). Hoặc giữ cố định một trong **năm bảng** tối. Chữ trên ảnh dùng `tone="onPhoto"` (luôn sáng), đừng dùng màu chữ thường.
 - **Mỗi màn đúng MỘT** nút `variant="primary"`.
 - Chữ trên nút primary là màu **tối** (`c.onAccent`), không phải trắng — chữ
   trắng trên dải màu chỉ đạt 1.9–2.5:1 ở mọi bảng.
-- Khung ngắm camera lấy cạnh bằng số **nhỏ hơn** của hai thứ: **100%** bề ngang
-  máy, và chiều cao thật đo bằng `onLayout`. Đừng tính tay từ chắn tai thỏ.
-  Đo trên ảnh Locket: khung của họ 413/414pt — tràn mép, và **vuông**.
-- **Có thanh tab ba chỗ** (Khoảnh khắc · Camera · Trò chuyện), tự vẽ, không
-  dùng thanh mặc định của navigator. Luật cũ "không thanh tab, điều hướng bằng
-  cử chỉ" đã bỏ 01/09/2026: cử chỉ vuốt lên **chưa bao giờ tồn tại trong code**,
-  nên trên thực tế không có cử chỉ nào để học, chỉ có nút nằm rải ba góc.
-- **Tab thì `navigate`, màn chồng thì `push`.** Chuyển giữa ba tab không được
-  đẻ ra lịch sử — không ai "quay lại" khỏi màn camera.
+- Khung ảnh **đứng 3:4** (`layout.cameraFrameRatio`), CHUNG cho camera và mọi
+  khoảnh khắc; bề ngang = máy trừ 2×`frameInset`, máy ngắn thì chiều cao (đo
+  bằng `onLayout`) chặn trước. Theo bảng thiết kế bản 7 (27/09/2026).
+- **Không thanh tab** (bảng thiết kế bản 7, thay luật 01/09/2026). Màn chính
+  `app/(app)/home.tsx` là camera ở trang 0 + ảnh bạn bè từng trang bên dưới,
+  **vuốt lên** là tới (`<Pager>`). Góc trái → bạn bè (trượt từ trái), góc phải
+  → tin nhắn (trượt từ phải). Chữ: **Plus Jakarta Sans**, tiêu đề nét 800.
 - **Không có linh vật** (bỏ 31/08/2026). Chỗ trống dùng `<GhostFrame>` hoặc
   lưới mười chỗ.
 - Wordmark **chỉ** ở màn Chào mừng; dấu hiệu `<Rings>` thì dùng trong app.
@@ -114,7 +114,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] **Hai thứ tiếng** (vi + en), an toàn kiểu, đổi trong Cài đặt — `docs/09-i18n.md`
 - [x] **Năm bảng màu** người dùng chọn được, mọi cặp đã đo WCAG — `docs/10-theme.md`
 - [x] Camera: khung TRÀN MÉP, đèn (camera trước dùng đèn màn hình), chọn ảnh có sẵn
-- [x] **Thanh tab ba chỗ** + **Trò chuyện** (danh sách + một cuộc), nối từ feed
+- [x] Màn chính lướt dọc camera → ảnh bạn bè, lưới "Tất cả ảnh" mở kiểu cửa sổ, ảnh gửi bay về góc
+- [x] **Tin nhắn** (danh sách + một cuộc), nối từ ảnh bạn bè
 - [x] Caption nằm TRONG ảnh ở cả lúc gửi lẫn trong feed
 - [x] Xin quyền camera: có nhánh "đã từ chối" mở Cài đặt máy + tự đọc lại khi quay về
 - [x] Điều hướng expo-router có kiểu, kho trạng thái Zustand

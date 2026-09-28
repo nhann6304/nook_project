@@ -50,7 +50,9 @@ Trước khi viết một component mới, tra bảng này. Cột phải là th�
 | Màn trống | `<EmptyState>` | một dòng chữ giữa màn |
 | Vòng chờ | `<Loading>` | `<ActivityIndicator>` |
 | Thanh trên màn con | `<TopBar>` | tự dựng hàng nút + tiêu đề |
-| Thanh tab đáy màn | `<TabBar>` | thanh mặc định của navigator |
+| Lướt dọc từng trang (camera → ảnh) | `<Pager>` | `ScrollView` + `pagingEnabled` (Android không lướt dọc được) |
+| Viên chữ báo xong việc | `<Toast>` | `Alert` |
+| Cụm chữ cái chồng nhau | `<AvatarStack>` | ba `<Avatar>` tự xếp |
 | Ô soạn tin có nút gửi | `<ComposerField>` | `<Field>` + nút rời |
 | Ô nhập nổi trên ảnh | `<CaptionField>` | `<Field>` (có viền, dán đè lên ảnh) |
 | **Bất kỳ chữ nào hiện ra** | `t('khoá')` từ `@i18n` | viết thẳng câu vào JSX — **ESLint chặn** |
@@ -174,17 +176,14 @@ Cuộn, kéo thả, và phản hồi nhấn. Cả ba đều phải là Reanimate
 
 Lấy từ `frontend/docs/02-ui-system.md`, nhắc lại ở đây vì hay bị quên nhất:
 
-- Nền tối `color.bg` mặc định. **Không làm chế độ sáng ở V0.1.**
+- Màu mặc định **đổi theo giờ** — ban ngày nền SÁNG. Chữ nằm trên ảnh phải là `tone="onPhoto"`, icon trên ảnh là `c.onPhotoText`; dùng `c.text` trên ảnh là ban ngày chữ tối chìm vào ảnh.
 - **Mỗi màn đúng MỘT nút `variant="primary"`.** Hai cái là không màn nào nổi.
 - Chữ trên nút primary là màu **tối** (`color.onAccent`), không phải trắng.
   Chữ trắng trên dải cam–hồng chỉ đạt 2.3:1 — không đọc được ngoài nắng.
-- Khung ngắm camera tính theo **chiều ngang** máy (88%), không theo chiều dọc.
-- **Thanh tab ba chỗ**: Khoảnh khắc · Camera · Trò chuyện. Camera ở GIỮA vì nó
-  là việc chính — chỗ ngón cái rơi vào. Tự vẽ (`<TabBar>`), không dùng thanh
-  mặc định của navigator.
-- **Tab thì `navigate`, màn chồng thì `push`.**
-- Màn nằm trong tab dùng `<Screen edges={['top']}>` — cạnh dưới là việc của
-  thanh tab. Chừa hai lần là mất thêm một khoảng bằng vạch home.
+- Khung ảnh **đứng 3:4**, chung cho camera và khoảnh khắc — xem `layout.cameraFrameRatio`.
+- **Không thanh tab.** Màn chính là camera + ảnh bạn bè lướt dọc; màn khác
+  đều `push` chồng lên, hướng trượt nói nó nằm ở đâu (bạn bè trái, tin nhắn phải).
+- Chuyển cảnh lớn dùng `duration.scene` + `ease.out`; phản hồi nhấn vẫn ≤ 320ms.
 - **Không có linh vật.** Chỗ trống dùng `<GhostFrame>` hoặc lưới mười chỗ.
 - Logo và wordmark **chỉ** ở màn Chào mừng. Trong app không tự giới thiệu nữa.
 - Vùng chạm tối thiểu `layout.minTouch` (48). Icon nhỏ vẫn phải có vùng chạm to.

@@ -5,36 +5,41 @@
  */
 import type { Author, PhotoSource } from '@/features/feed/types';
 
+/** Khoảnh khắc mà một tin nhắn đang trả lời. */
+export type About = { photo: PhotoSource; caption?: string };
+
 export type Message = {
   id: string;
   text: string;
   /** epoch ms */
   at: number;
-  /** Tin của chính mình — căn phải, nền màu nhấn. */
   mine: boolean;
+  /**
+   * Tin này trả lời tấm ảnh nào. Gắn vào TỪNG TIN chứ không vào cả cuộc: một
+   * cuộc trò chuyện đi qua nhiều tấm ảnh, và cuộn lên phải thấy mỗi câu đang
+   * nói về tấm nào.
+   */
+  about?: About;
 };
 
-/**
- * Một cuộc trò chuyện = một người bạn. KHÔNG có nhóm.
- *
- * Đây là luật sản phẩm, không phải giới hạn kỹ thuật: Nook đo độ thân theo
- * từng CẶP, mà trong một nhóm thì không ai biết ai đang nói với ai. Thêm nhóm
- * là bỏ cả hệ "ký ức".
- */
 export type Conversation = {
-  /** Trùng id người bạn — một người đúng một cuộc trò chuyện. */
   id: string;
   friend: Author;
   messages: readonly Message[];
-  /**
-   * Khoảnh khắc đã mở ra cuộc trò chuyện này, ghim ở đầu màn làm ngữ cảnh.
-   * Mở lại từ một khoảnh khắc khác thì cái ghim đổi theo — cuộc trò chuyện thì
-   * vẫn là một.
-   */
-  about?: { photo: PhotoSource; caption?: string };
+  /** Ảnh đang chờ được trả lời — hiện trên ô soạn, gắn vào tin kế tiếp. */
+  replyTo?: About;
 };
 
-/** Tin cuối, cho danh sách. `undefined` khi chưa ai nói gì. */
 export function lastMessage(c: Conversation): Message | undefined {
   return c.messages[c.messages.length - 1];
+}
+
+/** Tấm ảnh gần nhất cuộc này nói tới — cho ảnh nhỏ ở danh sách tin nhắn. */
+export function lastAbout(c: Conversation): About | undefined {
+  if (c.replyTo) return c.replyTo;
+  for (let i = c.messages.length - 1; i >= 0; i--) {
+    const about = c.messages[i]?.about;
+    if (about) return about;
+  }
+  return undefined;
 }

@@ -34,7 +34,7 @@ soi — đó là lý do file này tồn tại.
 | Cột nào kiểu gì · migration viết tay | 6 |
 | Redis đang làm năm việc gì | 7 |
 | Socket là đường tắt, không phải lời hứa giao hàng | 8 |
-| **Sáu chỗ đã vấp — đừng vấp lại** | 9 |
+| **Bảy chỗ đã vấp — đừng vấp lại** | 9 |
 | Cổng thẻ, `@Public`, ai vào được gì | 10 |
 | Ranh giới với frontend | 11 |
 
@@ -168,18 +168,29 @@ npm run migration:run        # bảng KHÔNG tự dựng, phải chạy tay
 Cần: **Postgres trên máy cổng 5432** · **Redis Docker cổng 6380** · MinIO cổng
 9000 (chỉ cho đường ảnh).
 
-Bốn bài smoke gõ vào server đang chạy, mỗi bài kết bằng một dòng ĐẠT/HỎNG:
+Năm bài smoke gõ vào server đang chạy, mỗi bài kết bằng một dòng ĐẠT/HỎNG:
 
 ```bash
 backend/scripts/smoke-auth.sh          27 bước — xin mã, xoay thẻ, thẻ bị chép, hai cửa
+backend/scripts/smoke-antibot.sh       14 bước — IP giả, gộp hộp thư, mail rác, dấu vân, trần nộp
 backend/scripts/smoke-username.sh      15 bước — có cả cuộc đua hai người cùng chọn
 backend/scripts/smoke-media.sh         20 bước — bằng ảnh THẬT, so sha256
 backend/scripts/smoke-admin.sh          9 bước — cổng vai
 node backend/scripts/check-guard.mjs   16 cửa — gõ thật, không cầm thẻ
 ```
 
-Cả bốn đọc mã 6 số từ log server. Log ở chỗ khác thì `NOOK_LOG=<đường dẫn>`,
+Cả năm đọc mã 6 số từ log server. Log ở chỗ khác thì `NOOK_LOG=<đường dẫn>`,
 server ở cổng khác thì `BASE=http://localhost:<cổng>`.
+
+**Chỉ được có MỘT bản server chạy.** Hai bản `nest start --watch` cùng bật là
+chúng giành cổng 4000: bản thắng phục vụ, bản thua chết — và log thì thuộc về
+bản thua, nên script đọc mã ra mã CŨ và cả bộ đỏ oan trong khi server vẫn khoẻ.
+Soi trước khi nghi ngờ mã: `Get-CimInstance Win32_Process -Filter "Name='node.exe'"`.
+
+`smoke-auth.sh` và `smoke-username.sh` dùng **node** để đọc JSON, không dùng
+`python3`: trên Windows `python3` trên PATH là cái stub của Microsoft Store, nó
+không chạy gì cả nên mọi khẳng định nhận chuỗi rỗng. `smoke-media.sh` và
+`smoke-admin.sh` thì vẫn còn dính `python3`, chưa chạy được trên Windows.
 
 ---
 

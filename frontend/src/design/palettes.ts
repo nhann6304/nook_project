@@ -32,7 +32,9 @@
 
 /** Một bảng màu đầy đủ. Thêm khoá ở đây là cả năm bảng phải khai. */
 export type Palette = {
-  key: PaletteKey;
+  key: ThemeKey;
+  /** Nền sáng — thanh trạng thái phải đổi sang chữ tối. */
+  light: boolean;
 
   /* — Nền, xếp từ sâu nhất lên trên — */
   bg: string;
@@ -82,14 +84,32 @@ export type Palette = {
 
   /** Vòng độ thân, cấp 1 → 10. */
   ring: readonly string[];
+
+  /** Lõi nút chụp. */
+  core: string;
+  /**
+   * Chữ NẰM TRÊN ảnh (tên người gửi, caption). Luôn sáng, kể cả ở bảng sáng —
+   * ảnh không bao giờ bị nhuộm theo bảng, và dưới chữ luôn có lớp `onPhoto` tối.
+   */
+  onPhotoText: string;
+  /** Vệt trời ở đầu màn chính. `null` = bảng cố định, không có trời. */
+  sky: readonly [string, string] | null;
+  stars: boolean;
 };
+
+type Fixed = Omit<Palette, 'light' | 'core' | 'onPhotoText' | 'sky' | 'stars'>;
+
+/** Năm bảng cố định đều là nền tối: lõi nút chụp và chữ trên ảnh = màu chữ. */
+function dark(p: Fixed): Palette {
+  return { ...p, light: false, core: p.text, onPhotoText: p.text, sky: null, stars: false };
+}
 
 export const PALETTE_KEYS = ['terracotta', 'moss', 'deepsea', 'dusk', 'neutral'] as const;
 export type PaletteKey = (typeof PALETTE_KEYS)[number];
 
 
 /** Đất nung — ấm, mặc định. */
-const terracotta: Palette = {
+const terracotta = dark({
   key: 'terracotta',
 
   bg: '#151312',
@@ -129,10 +149,10 @@ const terracotta: Palette = {
   gradientPressed: ['#C96A38', '#C05A48', '#BE5477'],
 
   ring: ['#8A6A52', '#9A7150', '#AC784E', '#BE7F4D', '#CF864C', '#DD8A50', '#E8834F', '#E8785F', '#E67078', '#E86E93'],
-};
+});
 
 /** Rêu — xanh lá trầm. */
-const moss: Palette = {
+const moss = dark({
   key: 'moss',
 
   bg: '#131614',
@@ -172,10 +192,10 @@ const moss: Palette = {
   gradientPressed: ['#4C935A', '#4D883F', '#5F7E37'],
 
   ring: ['#507A58', '#4E8154', '#4C884E', '#4D8D4A', '#519247', '#569843', '#5C9C40', '#63A03C', '#6CA338', '#75A734'],
-};
+});
 
 /** Biển đêm — lam sâu. */
-const deepsea: Palette = {
+const deepsea = dark({
   key: 'deepsea',
 
   bg: '#121416',
@@ -215,10 +235,10 @@ const deepsea: Palette = {
   gradientPressed: ['#4B8BA3', '#527CB3', '#626EBA'],
 
   ring: ['#527581', '#537A8E', '#547E9B', '#5582AA', '#5C86B5', '#6589BE', '#6D8BC7', '#768DCF', '#7E90D6', '#8692DC'],
-};
+});
 
 /** Hoàng hôn — tím khói ngả hồng. */
-const dusk: Palette = {
+const dusk = dark({
   key: 'dusk',
 
   bg: '#151316',
@@ -258,10 +278,10 @@ const dusk: Palette = {
   gradientPressed: ['#A46CC5', '#C247B5', '#C64179'],
 
   ring: ['#8B5DA5', '#995DAE', '#A85BB6', '#B858BD', '#C458BE', '#CD5CBA', '#D460B5', '#DB66AF', '#E16AA9', '#E76FA1'],
-};
+});
 
 /** Trung tính — gần như không màu. */
-const neutral: Palette = {
+const neutral = dark({
   key: 'neutral',
 
   bg: '#151414',
@@ -301,7 +321,7 @@ const neutral: Palette = {
   gradientPressed: ['#9C7F4E', '#9B724E', '#9B6851'],
 
   ring: ['#7D6E54', '#867355', '#8F7555', '#997855', '#A47C55', '#AE7E56', '#B5805B', '#BD8260', '#C48565', '#CA876B'],
-};
+});
 
 export const PALETTES: Readonly<Record<PaletteKey, Palette>> = {
   terracotta,
@@ -322,3 +342,130 @@ export function ringColor(c: Palette, level: number): string {
   const i = Math.min(Math.max(Math.round(level), 1), c.ring.length) - 1;
   return c.ring[i] ?? c.ring[0]!;
 }
+
+/* ══════════════ MÀU SỐNG THEO TRỜI ══════════════ */
+
+/**
+ * Chế độ "Tự động" (bảng thiết kế F1 + 15b): màu app đi theo giờ trong ngày
+ * như bầu trời ngoài cửa sổ. Sáng và trưa là nền SÁNG, chiều tối và đêm là nền
+ * tối. Ảnh không bao giờ bị nhuộm — chỉ nền, khung, nút đổi.
+ *
+ * Mốc giờ tính theo đồng hồ máy, không cần vị trí.
+ */
+export const SKY_KEYS = ['skyDawn', 'skyNoon', 'skyDusk', 'skyNight'] as const;
+export type SkyKey = (typeof SKY_KEYS)[number];
+export type ThemeKey = PaletteKey | SkyKey;
+
+/** Giờ bắt đầu của từng chặng. Ngoài ba mốc này là đêm. */
+export function skyAt(hour: number): SkyKey {
+  if (hour >= 5 && hour < 10) return 'skyDawn';
+  if (hour >= 10 && hour < 16) return 'skyNoon';
+  if (hour >= 16 && hour < 19) return 'skyDusk';
+  return 'skyNight';
+}
+
+/** Phần dùng chung của hai bảng sáng: lớp phủ trên ảnh vẫn TỐI. */
+const LIGHT_PHOTO = {
+  scrim: 'rgba(24,16,12,0.55)',
+  scrimSoft: 'rgba(24,16,12,0.3)',
+  onPhoto: 'rgba(24,16,12,0.5)',
+  hairlineOnPhoto: 'rgba(255,255,255,0.22)',
+  onPhotoText: '#FFFFFF',
+  core: '#FFFFFF',
+  light: true,
+  stars: false,
+} as const;
+
+const skyDawn: Palette = {
+  ...LIGHT_PHOTO,
+  key: 'skyDawn',
+  bg: '#F6EEE6',
+  surfaceSunken: '#F1E7DD',
+  surface: '#EDE2D7',
+  surfaceRaised: '#E4D6C8',
+  border: '#D8C7B7',
+  borderSoft: '#E6D9CC',
+  accent: '#C25E2A',
+  accent2: '#C24F74',
+  accentBright: '#D9703A',
+  accentDeep: '#A64D1F',
+  onAccent: '#1A0E08',
+  text: '#2A1E18',
+  textMuted: '#6E5E52',
+  textFaint: '#7A6A5E',
+  textDisabled: '#B9A999',
+  honey: '#B8860B',
+  mint: '#2F8F6B',
+  violet: '#7456B8',
+  danger: '#B83A3A',
+  glowStrong: 'rgba(217,112,58,0.12)',
+  glowSoft: 'rgba(217,112,58,0.08)',
+  glowFaint: 'rgba(217,112,58,0.05)',
+  glowPink: 'rgba(194,79,116,0.08)',
+  gradient: ['#D9703A', '#CF5F4A', '#C24F74'],
+  gradientPressed: ['#B85C2E', '#AE4F3D', '#A3425F'],
+  ring: ['#C9A88E', '#C99F80', '#C99573', '#CA8B65', '#CB8058', '#CC754B', '#C9683F', '#C65F4B', '#C3575F', '#C24F74'],
+  sky: ['#F5BF98', '#F7DCC4'],
+};
+
+const skyNoon: Palette = {
+  ...LIGHT_PHOTO,
+  key: 'skyNoon',
+  bg: '#FFF8EC',
+  surfaceSunken: '#FAF0DF',
+  surface: '#F5EAD6',
+  surfaceRaised: '#EDDDC2',
+  border: '#E0CCAA',
+  borderSoft: '#EEE0C8',
+  accent: '#B8700F',
+  accent2: '#C0563A',
+  accentBright: '#D98A1E',
+  accentDeep: '#96590A',
+  onAccent: '#2B1A05',
+  text: '#2B2113',
+  textMuted: '#6C5B43',
+  textFaint: '#7C6B52',
+  textDisabled: '#BFAE92',
+  honey: '#A87A0A',
+  mint: '#2F8F6B',
+  violet: '#7456B8',
+  danger: '#B83A3A',
+  glowStrong: 'rgba(217,138,30,0.12)',
+  glowSoft: 'rgba(217,138,30,0.08)',
+  glowFaint: 'rgba(217,138,30,0.05)',
+  glowPink: 'rgba(192,86,58,0.08)',
+  gradient: ['#D98A1E', '#CC7422', '#C0563A'],
+  gradientPressed: ['#B87418', '#AD611C', '#A2482F'],
+  ring: ['#CDB48A', '#CCAB78', '#CBA267', '#CA9856', '#C98E45', '#C88434', '#C07826', '#BC6C2C', '#BE6133', '#C0563A'],
+  sky: ['#FFE08A', '#FFF0CC'],
+};
+
+const skyDusk: Palette = {
+  ...terracotta,
+  key: 'skyDusk',
+  bg: '#1F1518',
+  surfaceSunken: '#241A1D',
+  surface: '#2E2025',
+  surfaceRaised: '#38282E',
+  border: '#46343A',
+  borderSoft: '#33252A',
+  accent: '#EE8A5A',
+  text: '#F2E4DE',
+  textMuted: '#B39A95',
+  textFaint: '#9A827D',
+  core: '#F2E4DE',
+  onPhotoText: '#F2E4DE',
+  scrim: 'rgba(31,21,24,0.6)',
+  scrimSoft: 'rgba(31,21,24,0.35)',
+  onPhoto: 'rgba(31,21,24,0.55)',
+  sky: ['#9A5462', '#5A3039'],
+};
+
+const skyNight: Palette = {
+  ...terracotta,
+  key: 'skyNight',
+  sky: ['#1F2238', '#181624'],
+  stars: true,
+};
+
+export const SKIES: Readonly<Record<SkyKey, Palette>> = { skyDawn, skyNoon, skyDusk, skyNight };

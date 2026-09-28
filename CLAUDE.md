@@ -8,7 +8,7 @@ nhất là **"ký ức"** — tương tác hai chiều thật giữa hai ngườ
 
 ```
 nook_project/
-├── .docs/        tài liệu CHUNG (sản phẩm, danh sách trước khi lên store) — thư mục ẩn
+├── .docs/        tài liệu CHUNG (sản phẩm, offline, danh sách trước khi lên store) — thư mục ẩn
 ├── shared/       @nook/shared — hợp đồng giữa app và server. KHÔNG PHỤ THUỘC.
 ├── frontend/     app React Native (Expo). Có CLAUDE.md riêng.
 ├── backend/      server NestJS trên Fastify. Khung chạy được. Có README riêng.
@@ -116,9 +116,9 @@ và mục 3 trước tiên**. Ba luật hay bị quên nhất:
 
 | Phần | Trạng thái |
 |---|---|
-| Backend | **Đăng nhập chạy được đầu-tới-cuối.** `./setup/mac/run.sh be` rồi mở <http://localhost:4000/docs>. Tám đường đều chạy; mã 6 số ở Redis, thẻ phiên xoay mỗi lần làm mới và **hạn tự đẩy ra xa** — 180 ngày tính từ lần mở app gần nhất, nên người dùng đăng nhập đúng một lần rồi thôi. Màn đăng nhập có **hai cửa**: gửi kèm `intent: 'signin' \| 'signup'` vào `/v1/auth/code` thì server soi trước và trả `auth.account_not_found` / `auth.account_exists` mà KHÔNG gửi thư, để app đổi màn ngay. Đi kèm nó là trần xin mã **theo máy gọi** (30/giờ) — không có trần đó thì cửa này thành máy dò "ai đang dùng Nook", nên đừng gỡ. **Chỉ mở đường email** — số điện thoại trả `auth.method_unavailable` cho tới khi chọn được nhà mạng gửi SMS. Khi dev thì mã **in ra log server** (`CODE_SENDER=console`). Postgres dùng bản **trên máy** ở cổng 5432, Redis ở Docker cổng 6380 |
-| Frontend | **Chạy được.** `cd frontend && npm run dev` rồi quét QR bằng Expo Go. Nói **hai thứ tiếng** (Việt + Anh) và có **năm bảng màu** người dùng chọn được, cả hai đổi trong Cài đặt. Ghim **SDK 54** vì Expo Go trên App Store kẹt ở đó — đừng nâng, xem `frontend/docs/06-libraries.md` mục 7 |
-| Tài liệu | 15 file, đã chia theo hai bên |
+| Backend | **Đăng nhập chạy được đầu-tới-cuối.** `./setup/mac/run.sh be` rồi mở <http://localhost:4000/docs>. Tám đường đều chạy; mã 6 số ở Redis, thẻ phiên xoay mỗi lần làm mới và **hạn tự đẩy ra xa** — 180 ngày tính từ lần mở app gần nhất, nên người dùng đăng nhập đúng một lần rồi thôi. Màn đăng nhập có **hai cửa**: gửi kèm `intent: 'signin' \| 'signup'` vào `/v1/auth/code` thì server soi trước và trả `auth.account_not_found` / `auth.account_exists` mà KHÔNG gửi thư, để app đổi màn ngay. Đi kèm nó là trần xin mã **theo máy gọi** (30/giờ) — không có trần đó thì cửa này thành máy dò "ai đang dùng Nook", nên đừng gỡ; cửa **nộp** mã cũng có trần riêng (60/giờ). Mọi trần đó chỉ có nghĩa khi `req.ip` là thật, nên `TRUST_PROXY` phải khai **địa chỉ** proxy (`127.0.0.1`, `10.0.0.0/8`), tuyệt đối không `true` — xem `backend/README.md` mục 9. **Một HỘP THƯ là một tài khoản**: khoá duy nhất đặt trên `value_key` (cắt nhãn sau `+`, Gmail thì bỏ luôn dấu chấm), không đặt trên chuỗi email — nếu không thì một hộp Gmail đẻ ra vô hạn tài khoản. Hộp thư dùng một lần bị chặn thẳng; bật `EMAIL_MX_CHECK` thì hỏi thêm bản ghi MX. **Chỉ mở đường email** — số điện thoại trả `auth.method_unavailable` cho tới khi chọn được nhà mạng gửi SMS. Khi dev thì mã **in ra log server** (`CODE_SENDER=console`). Postgres dùng bản **trên máy** ở cổng 5432, Redis ở Docker cổng 6380 |
+| Frontend | **Chạy được.** `cd frontend && npm run dev` rồi quét QR bằng Expo Go. Nói **hai thứ tiếng** (Việt + Anh) và có **năm bảng màu** người dùng chọn được, cả hai đổi trong Cài đặt. **SDK 57** — đi theo bản Expo Go trên App Store, xem `frontend/docs/06-libraries.md` mục 7 |
+| Tài liệu | 16 file, đã chia theo hai bên |
 
 Việc tiếp theo của BE: **góc bạn bè** (mời, chấp nhận, luật chặn người thứ 11)
 — và đó cũng là thứ đầu tiên làm con đếm nhúc nhích, nên `AchievementService

@@ -1,132 +1,181 @@
 /**
- * Màn Góc của bạn — mười chỗ, không hơn.
+ * Bạn bè — theo bảng thiết kế C12. Mở từ nút góc trái / viên "N bạn" ở camera.
  *
- * Màn trống ở đây KHÔNG dùng khung đứt nét mặc định. Nó vẽ thẳng ra mười ô:
- * một ô là bạn, chín ô còn trống. Nhìn phát là hiểu góc này chứa mười người và
- * mới có một — không cần đọc chữ, và con số 10 trở thành thứ nhìn thấy được
- * chứ không phải một luật giấu trong tài liệu.
+ * Trên cùng là thẻ mời (còn bao nhiêu chỗ), dưới là từng người với việc gần
+ * nhất giữa hai người. Chạm một người → trang riêng của hai người. Người lâu
+ * không có gì mới thì vòng đứt nét, và dòng phụ rủ gửi một tấm — không trách.
+ *
+ * Vòng màu là cấp thân — chỉ mình thấy, nên dòng chân màn nói rõ điều đó.
  */
+import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Avatar, Col, EmptyState, Rings, Screen, TopBar, Txt } from '@ui';
-import { radius, space, useStyles, type Palette } from '@design';
-import { useT } from '@i18n';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Avatar, Button, EmptyState, IconButton, Scroll, Screen, Tap, Txt } from '@ui';
+import { radius, space, spring, useColors, useStyles, type Palette } from '@design';
+import { useAgo, useT } from '@i18n';
+import { CIRCLE_SIZE, type Friend } from '../types';
 
-const CIRCLE_SIZE = 10;
-
-export type Friend = { id: string; name: string; uri?: string; level: number; dormant?: boolean };
+const STAGGER = 45;
 
 export function CircleScreen({
   friends,
   onInvite,
+  onOpenFriend,
   onClose,
 }: {
   friends: readonly Friend[];
   onInvite: () => void;
+  onOpenFriend: (id: string) => void;
   onClose: () => void;
 }) {
   const s = useStyles(make);
+  const c = useColors();
   const t = useT();
-  const empty = friends.length === 0;
+  const ago = useAgo();
+  const left = CIRCLE_SIZE - friends.length;
+
+  const sub = (f: Friend) => {
+    if (f.dormant || f.lastAt === undefined) return t('friends.dormant');
+    const when = ago(new Date(f.lastAt));
+    return f.lastKind === 'message'
+      ? t('friends.messaged', { ago: when })
+      : t('friends.sentPhoto', { ago: when });
+  };
 
   return (
-    <Screen>
-      <TopBar
-        title={t('circle.title')}
-        closeLabel={t('common.closeScreen')}
-        onClose={onClose}
-      />
-
-      <Col align="center" style={s.head}>
-        <Txt variant="body" tone="muted">
-          {t('circle.slots', { filled: friends.length, total: CIRCLE_SIZE })}
+    <Screen padded={false}>
+      <View style={s.bar}>
+        <IconButton label={t('home.backToCamera')} onPress={onClose} style={s.round}>
+          <Ionicons name="chevron-back" size={22} color={c.text} />
+        </IconButton>
+        <Txt variant="title" style={s.title}>
+          {t('friends.title')}
         </Txt>
-      </Col>
+        <Txt variant="label" tone="faint">
+          {t('friends.slots', { filled: friends.length, total: CIRCLE_SIZE })}
+        </Txt>
+      </View>
 
-      {empty ? (
-        <EmptyState
-          art={<SlotGrid filled={1} emptyLabel={t('circle.emptySlot')} />}
-          title={t('circle.waitingTitle', { count: CIRCLE_SIZE - 1 })}
-          message={t('circle.waitingMessage')}
-          actionLabel={t('circle.invite')}
-          onAction={onInvite}
-        />
-      ) : (
-        <View style={s.grid}>
-          {friends.map((f) => (
-            <Col key={f.id} align="center" gap="sm" style={s.slot}>
-              <Avatar name={f.name} uri={f.uri} level={f.level} dormant={f.dormant} size={58} />
-              <Txt variant="faint" tone="muted" numberOfLines={1}>
-                {f.name}
-              </Txt>
-            </Col>
-          ))}
-          {Array.from({ length: CIRCLE_SIZE - friends.length }, (_, i) => (
-            <Col key={`empty-${i}`} align="center" gap="sm" style={s.slot}>
-              <EmptySlot label={t('circle.emptySlot')} />
-            </Col>
-          ))}
+      <Scroll>
+        <View style={s.invite}>
+          <View style={s.inviteText}>
+            <Txt variant="label">{t('friends.inviteTitle')}</Txt>
+            <Txt variant="faint" tone="muted">
+              {left > 0 ? t('friends.inviteLeft', { count: left }) : t('friends.full')}
+            </Txt>
+          </View>
+          <Button
+            label={t('friends.sendLink')}
+            onPress={onInvite}
+            disabled={left <= 0}
+            style={s.inviteBtn}
+          />
         </View>
-      )}
+
+        {friends.length === 0 ? (
+          <EmptyState
+            title={t('circle.waitingTitle', { count: CIRCLE_SIZE })}
+            message={t('circle.waitingMessage')}
+          />
+        ) : (
+          <View style={s.list}>
+            {friends.map((f, i) => (
+              <Animated.View
+                key={f.id}
+                entering={FadeInDown.delay(i * STAGGER)
+                  .springify()
+                  .damping(spring.enter.damping)}
+              >
+                <FriendRow friend={f} sub={sub(f)} onOpen={onOpenFriend} />
+              </Animated.View>
+            ))}
+          </View>
+        )}
+
+        <Txt variant="faint" tone="faint" center style={s.note}>
+          {t('friends.ringNote')}
+        </Txt>
+      </Scroll>
     </Screen>
   );
 }
 
-/** Lưới 5×2 — hình cho màn trống. Ô đầu là bạn, chín ô sau còn trống. */
-function SlotGrid({ filled, emptyLabel }: { filled: number; emptyLabel: string }) {
+const FriendRow = memo(function FriendRow({
+  friend,
+  sub,
+  onOpen,
+}: {
+  friend: Friend;
+  sub: string;
+  onOpen: (id: string) => void;
+}) {
   const s = useStyles(make);
+  const c = useColors();
   return (
-    <View style={s.artGrid}>
-      {Array.from({ length: CIRCLE_SIZE }, (_, i) =>
-        i < filled ? (
-          <View key={i} style={s.artMe}>
-            <Rings size={26} />
-          </View>
-        ) : (
-          <EmptySlot key={i} size={44} label={emptyLabel} />
-        ),
-      )}
-    </View>
+    <Tap
+      onPress={() => onOpen(friend.id)}
+      scaleTo={0.98}
+      style={s.row}
+      accessibilityLabel={friend.name}
+    >
+      <View style={friend.dormant ? s.faded : null}>
+        <Avatar
+          name={friend.name}
+          uri={friend.uri}
+          level={friend.level}
+          dormant={friend.dormant}
+          size={52}
+          recyclingKey={friend.id}
+        />
+      </View>
+      <View style={s.rowText}>
+        <Txt variant="section" tone={friend.dormant ? 'muted' : 'default'} numberOfLines={1}>
+          {friend.name}
+        </Txt>
+        <Txt variant="faint" tone="faint" numberOfLines={1}>
+          {sub}
+        </Txt>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={c.textFaint} />
+    </Tap>
   );
-}
-
-/** Một chỗ trống: vòng đứt nét, không có chữ. */
-function EmptySlot({ size = 58, label }: { size?: number; label: string }) {
-  const s = useStyles(make);
-  return (
-    <View
-      accessible
-      accessibilityRole="image"
-      accessibilityLabel={label}
-      style={[s.emptySlot, { width: size, height: size, borderRadius: size / 2 }]}
-    />
-  );
-}
+});
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  head: { paddingTop: space.md, paddingBottom: space.xl },
+    bar: {
+      height: 52,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: space.md,
+      paddingHorizontal: space.lg,
+    },
+    round: { width: 44, height: 44, borderRadius: radius.full, backgroundColor: c.surface },
+    title: { flex: 1, fontSize: 20, lineHeight: 26 },
 
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.lg, justifyContent: 'center' },
-  slot: { width: 76 },
+    invite: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: space.md,
+      marginHorizontal: space.lg,
+      marginTop: space.md,
+      padding: space.lg,
+      borderRadius: radius.lg,
+      backgroundColor: c.surface,
+    },
+    inviteText: { flex: 1, gap: 2 },
+    inviteBtn: { minHeight: 44, paddingHorizontal: space.lg, borderRadius: radius.sm + 2 },
 
-  artGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: space.md,
-    width: 5 * 44 + 4 * space.md,
-    justifyContent: 'center',
-  },
-  artMe: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.full,
-    backgroundColor: c.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptySlot: {
-    borderWidth: 1.5,
-    borderColor: c.borderSoft,
-    backgroundColor: c.surfaceSunken,
-  },
-});
+    list: { marginTop: space.md },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: space.md + 2,
+      paddingHorizontal: space.lg,
+      paddingVertical: space.sm + 1,
+    },
+    faded: { opacity: 0.55 },
+    rowText: { flex: 1, gap: 2 },
+    note: { paddingHorizontal: space.huge - space.sm, paddingTop: space.xxl },
+  });

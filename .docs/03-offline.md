@@ -2,6 +2,10 @@
 
 Ghi trước khi code, để lúc code làm một hơi. Chưa có dòng mã nào theo tài liệu này.
 
+File này là **luật**: mất mạng thì xem được gì, làm được gì, nói với người dùng
+thế nào. **Cách làm** — kho nào, bảng nào, cửa nào, theo thứ tự nào — nằm ở
+[`04-offline-design.md`](04-offline-design.md).
+
 Đọc kèm: [`01-product-system.md`](01-product-system.md) mục 0 và mục 2.
 
 ---
@@ -226,29 +230,20 @@ Và: **ảnh vừa chụp phải hiện trong feed ngay lập tức**, kèm dấ
 
 ## 6. Backend phải chuẩn bị gì
 
-Việc rơi về phía server, xếp theo thứ tự cần:
+Danh sách việc, kèm cái nào **đã có rồi**, nằm ở
+[`04-offline-design.md`](04-offline-design.md) mục 9. Không chép lại ở đây — hai
+bản của cùng một danh sách thì sớm muộn lệch nhau.
 
-1. **`clientId` chống trùng** trên mọi đường ghi (khoảnh khắc, tim, tin nhắn) —
-   phải có **ngay từ đường ghi đầu tiên**, thêm sau là đau.
-2. **`GET /v1/sync?cursor=`** — một cửa cho mọi thay đổi, dùng chung với thông báo.
-3. **Ký một lượt nhiều đường ảnh** thay cho từng cái một.
-4. **Trả kèm giờ của server** để app khỏi tin đồng hồ của chính nó — **đã có
-   rồi**, nằm ở `metadata.serverTime` của mọi câu trả lời.
-5. Bản nhẹ `feed` / `thumb` — **đã có rồi**.
-6. Khoảng ân hạn khi xoay thẻ — **đã có rồi** (30 giây).
+Một chỗ đã sửa so với bản đầu của file này: chống trùng **không** cần gắn vào
+mọi đường ghi. Cửa nào *đặt trạng thái* (thả tim, sửa hồ sơ) thì gửi lại hai lần
+vốn đã vô hại; chỉ cửa nào **tạo dòng mới** (đăng khoảnh khắc, gửi tin nhắn) mới
+cần `clientId`. Lý do đầy đủ ở mục 5.1 của file đó.
 
 ---
 
-## 7. Chờ chốt
+## 7. Bốn câu từng treo — đã chốt
 
-1. **Offline quá 48 giờ rồi mở app** — feed vốn chỉ hiện 48h. Xoá cho đúng luật,
-   hay cứ hiện cái đã tải? *Nghiêng về: cứ hiện* — thà thấy cũ còn hơn màn hình
-   trống, và moment không bị xoá ở server.
-2. **Trần dung lượng ảnh ở máy là bao nhiêu** — 300MB? 500MB? Cho người dùng
-   chỉnh trong Cài đặt không?
-3. **Việc xếp hàng để bao lâu thì bỏ** — ảnh chụp một tuần trước chưa gửi được,
-   còn gửi nữa không, hay hỏi lại người dùng?
-4. **Bấm đăng xuất lúc không có mạng** — xoá dữ liệu ở máy ngay (đúng về riêng
-   tư, nhưng chưa thu hồi được thẻ), hay chặn không cho tới khi có mạng?
-   *Nghiêng về: xoá ngay, thu hồi thẻ sau* — điện thoại đang cầm trong tay quan
-   trọng hơn cái thẻ trên server.
+Chốt ngày 06/09/2026, kèm lý do, ở [`04-offline-design.md`](04-offline-design.md)
+mục 11: offline quá 48 giờ thì **cứ hiện** · **không** đặt trần dung lượng ảnh ·
+việc xếp hàng **không bao giờ tự bỏ** · đăng xuất lúc mất mạng thì **xoá ở máy
+ngay**, thu hồi thẻ sau.

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { SettingsScreen } from '@/features/settings/screens/SettingsScreen';
-import { PALETTE_KEYS, useTheme, type PaletteKey } from '@design';
+import { PALETTE_KEYS, SKY_KEYS, useTheme, type PaletteKey, type SkyKey } from '@design';
 import { useT } from '@i18n';
 import { FRIENDS } from '@/mocks/friends';
 import { ME } from '@/mocks/moments';
@@ -9,8 +9,12 @@ import { ME } from '@/mocks/moments';
 export default function Settings() {
   const router = useRouter();
   const t = useT();
-  const palette = useTheme((s) => s.palette.key);
+  const current = useTheme((s) => s.palette.key);
+  const fixed = useTheme((s) => s.fixed);
+  const mode = useTheme((s) => s.mode);
   const setPalette = useTheme((s) => s.setPalette);
+  const setMode = useTheme((s) => s.setMode);
+  const sky = (SKY_KEYS as readonly string[]).includes(current) ? (current as SkyKey) : null;
 
   // Tên bảng màu nằm ở kho chữ chứ không ở bảng màu: "Đất nung" là chữ hiện cho
   // người dùng, mà chữ thì phải dịch được.
@@ -22,14 +26,22 @@ export default function Settings() {
       >,
     [t],
   );
+  const skyNames = useMemo(
+    () => Object.fromEntries(SKY_KEYS.map((k) => [k, t(`theme.${k}`)])) as Record<SkyKey, string>,
+    [t],
+  );
 
   return (
     <SettingsScreen
       name={ME.name}
       friendCount={FRIENDS.length}
-      palette={palette}
+      palette={fixed}
       paletteNames={names}
       onPickPalette={setPalette}
+      mode={mode}
+      sky={sky}
+      skyNames={skyNames}
+      onPickMode={setMode}
       onClose={() => router.back()}
     />
   );

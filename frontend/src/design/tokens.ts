@@ -36,35 +36,27 @@ export const radius = {
   /** Thẻ ảnh trong feed. */
   frame: 24,
   /**
-   * Khung ngắm camera. To hơn hẳn `frame` vì khối này to hơn hẳn: cùng một độ
-   * bo, đặt trên một ô 360pt thì trông vuông vức, đặt trên ô 160pt thì trông
-   * tròn. Độ bo phải đi theo kích thước mới giữ được cùng một cảm giác.
-   *
-   * Con số 56 đo từ ảnh chụp màn hình Locket (máy 414pt): mép trái của khung
-   * chạm x=0 ở khoảng 56pt tính từ mép trên. Đó là dáng "squircle" chứ không
-   * còn là hình vuông bo góc.
+   * Khung ảnh chính (camera + khoảnh khắc). Theo bảng thiết kế: 36 trên khung
+   * 374pt. Khung đứng 3:4 nên bo vừa phải, bo 56 như trước trông thành viên thuốc.
    */
-  viewfinder: 56,
+  viewfinder: 36,
   full: 999,
 } as const;
 
 /* ══════════════ CHỮ ══════════════ */
 
 export const font = {
-  /** Chữ thân. Be Vietnam Pro là bộ vẽ dấu tiếng Việt tử tế nhất trong tầm miễn phí. */
-  body: 'BeVietnamPro_400Regular',
-  bodyMedium: 'BeVietnamPro_500Medium',
-  bodySemi: 'BeVietnamPro_600SemiBold',
+  /**
+   * Plus Jakarta Sans — theo bảng thiết kế. Hình chữ gọn, hiện đại, đủ dấu
+   * tiếng Việt. Tiêu đề dùng nét 800 và khít chữ: đó là giọng Gen Z của app,
+   * đừng hạ về 600 cho "an toàn" — nhìn lại thành app văn phòng.
+   */
+  body: 'PlusJakartaSans_400Regular',
+  bodyMedium: 'PlusJakartaSans_500Medium',
+  bodySemi: 'PlusJakartaSans_600SemiBold',
+  bodyBold: 'PlusJakartaSans_700Bold',
+  heavy: 'PlusJakartaSans_800ExtraBold',
 } as const;
-
-/*
- * Không có "phông trưng bày" riêng, và đó là chủ đích.
- *
- * Trước đây bậc `display` dùng Fredoka. Nhưng bậc đó chỉ dùng đúng một chỗ:
- * tiêu đề màn Chào mừng — mà tiêu đề đó là tiếng Việt đầy dấu, đúng loại chữ
- * Fredoka vẽ xấu nhất. Cái tên "nook" giờ vẽ bằng SVG (xem Wordmark) nên không
- * còn ai cần Fredoka nữa; gói phông đã gỡ khỏi dự án.
- */
 
 /**
  * Sáu bậc, không hơn. Thêm bậc thứ bảy là bắt đầu có hai thứ trông gần giống nhau.
@@ -73,32 +65,25 @@ export const font = {
  * nhưng vẫn cho phóng — không bao giờ khoá allowFontScaling.
  */
 export const type = {
-  display: { fontSize: 34, lineHeight: 40, fontFamily: font.bodySemi, maxScale: 1.25 },
-  title: { fontSize: 22, lineHeight: 30, fontFamily: font.bodySemi, maxScale: 1.4 },
-  section: { fontSize: 17, lineHeight: 24, fontFamily: font.bodyMedium, maxScale: 1.4 },
-  body: { fontSize: 14, lineHeight: 21, fontFamily: font.body, maxScale: 1.6 },
-  label: { fontSize: 12, lineHeight: 17, fontFamily: font.bodyMedium, maxScale: 1.5 },
-  faint: { fontSize: 11, lineHeight: 16, fontFamily: font.body, maxScale: 1.5 },
+  display: { fontSize: 34, lineHeight: 40, fontFamily: font.heavy, letterSpacing: -1, maxScale: 1.25 },
+  title: { fontSize: 24, lineHeight: 30, fontFamily: font.heavy, letterSpacing: -0.6, maxScale: 1.4 },
+  section: { fontSize: 17, lineHeight: 22, fontFamily: font.bodyBold, letterSpacing: -0.2, maxScale: 1.4 },
+  body: { fontSize: 15, lineHeight: 22, fontFamily: font.body, letterSpacing: 0, maxScale: 1.6 },
+  label: { fontSize: 14, lineHeight: 19, fontFamily: font.bodyBold, letterSpacing: 0, maxScale: 1.5 },
+  faint: { fontSize: 12, lineHeight: 17, fontFamily: font.bodyMedium, letterSpacing: 0, maxScale: 1.5 },
 } as const;
 
 /* ══════════════ BỐ CỤC ══════════════ */
 
 export const layout = {
   /**
-   * Khung ngắm camera = 100% CHIỀU NGANG máy — TRẦN, không phải số cố định.
-   *
-   * Khung là hình vuông và nó lấy cạnh bằng số NHỎ HƠN giữa hai thứ: 94% bề
-   * ngang máy, và chiều cao thật còn lại sau khi trừ thanh trên / hàng chụp /
-   * chân màn. Nhờ vậy máy dài thì khung to hết cỡ ngang, máy ngắn thì khung tự
-   * co lại cho vừa chứ không tràn ra ngoài.
-   *
-   * Đo trên ảnh Locket (máy 414pt): khung của họ rộng 413pt — lề trái 0pt, lề
-   * phải 1pt. Tức là TRÀN SÁT MÉP. Và nó VUÔNG (tỉ lệ 0.999), không phải hình
-   * đứng — cảm giác "cao" mà người ta thấy đến từ việc nó tràn mép, không phải
-   * từ tỉ lệ. Đây là lý do Nook giữ hình vuông: widget và thẻ ảnh trong feed
-   * đều vuông, đổi tỉ lệ là phải cắt ảnh ở hai chỗ đó.
+   * Khung ảnh = ĐỨNG 3:4 (rộng / cao), theo bảng thiết kế bản 7. Bề ngang là
+   * máy trừ 2×`frameInset`; máy ngắn thì chiều cao chặn trước rồi suy ra ngang.
+   * Camera và khoảnh khắc dùng CHUNG khung này, nên lướt từ camera sang ảnh bạn
+   * bè thì khung đứng yên, chỉ có ảnh trong nó đổi.
    */
-  cameraFrameRatio: 1,
+  cameraFrameRatio: 3 / 4,
+  frameInset: 8,
   /** Vùng chạm tối thiểu. Apple khuyến nghị 44pt, Android 48dp — lấy số lớn hơn. */
   minTouch: 48,
   screenPadding: 16,
@@ -108,7 +93,7 @@ export const layout = {
    */
   maxTextWidth: 480,
   /** Chiều cao ô nhập và nút chính. Ngón cái phải bấm trúng ngay lần đầu. */
-  controlHeight: 52,
+  controlHeight: 54,
 } as const;
 
 /* ══════════════ CHUYỂN ĐỘNG ══════════════ */
@@ -125,6 +110,17 @@ export const duration = {
   fast: 150,
   base: 220,
   slow: 320,
+  /** Chuyển cảnh lớn ("mở cửa sổ", ảnh bay về góc). Không phải phản hồi nhấn. */
+  scene: 480,
+} as const;
+
+/**
+ * Đường cong cho chuyển cảnh: vào nhanh, dừng mềm. Là bộ số, không phải hàm —
+ * `Easing.bezier(...ease.out)` dựng ở chỗ dùng.
+ */
+export const ease = {
+  out: [0.22, 1, 0.36, 1],
+  inOut: [0.4, 0, 0.2, 1],
 } as const;
 
 /** Độ nảy cho Reanimated. Damping cao = dừng dứt khoát, không rung lắc. */

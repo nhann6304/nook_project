@@ -3,7 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '../app/user/index.js';
 import { AuthController } from './auth.controller.js';
-import { AuthService, CodeService, SessionService } from './service/index.js';
+import { AuthService, CodeService, EmailGuardService, SessionService } from './service/index.js';
 import { JwtAccessGuard } from './jwt-access.guard.js';
 import { RolesGuard } from './roles.guard.js';
 
@@ -22,6 +22,7 @@ import { RolesGuard } from './roles.guard.js';
     AuthService,
     SessionService,
     CodeService,
+    EmailGuardService,
     // Hai cổng, đúng thứ tự này. Nest chạy theo thứ tự khai.
     //   1. có phải là ai đó không  -> 401
     //   2. người đó vào được đây không -> 403

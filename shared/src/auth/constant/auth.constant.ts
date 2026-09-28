@@ -48,4 +48,13 @@ export const AUTH_LIMITS = {
    * thường; kẻ quét thì vượt xa con số này.
    */
   codesPerHourPerIp: 30,
+  /**
+   * Trần số lần NỘP mã trong một giờ, tính theo một địa chỉ máy.
+   *
+   * Không phải để chống đoán mã — 5 lần sai là mã chết, đoán trúng 6 số trong
+   * 5 lần là chuyện không xảy ra. Cái này bịt chỗ khác: `/auth/verify` là cửa
+   * duy nhất không có trần nào, nên nó là chỗ bắn thoải mái. Rộng hơn trần xin
+   * mã vì người thật gõ sai mã là bình thường.
+   */
+  verifyPerHourPerIp: 60,
 } as const;

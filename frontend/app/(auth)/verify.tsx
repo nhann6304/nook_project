@@ -23,7 +23,7 @@ export default function Verify() {
         return false;
       }
       codeAccepted();
-      router.replace('/(app)/(tabs)/camera');
+      router.replace('/(app)/home');
       return true;
     },
     [codeAccepted, router],

@@ -17,7 +17,17 @@ import { StyleSheet, Text, type TextProps } from 'react-native';
 import { type, useStyles, type Palette } from '@design';
 
 type Variant = keyof typeof type;
-type Tone = 'default' | 'muted' | 'faint' | 'accent' | 'onAccent' | 'danger' | 'mint' | 'honey';
+type Tone =
+  | 'default'
+  | 'muted'
+  | 'faint'
+  | 'accent'
+  | 'onAccent'
+  | 'danger'
+  | 'mint'
+  | 'honey'
+  /** Chữ nằm trên ảnh — luôn sáng, kể cả ở bảng nền sáng. */
+  | 'onPhoto';
 
 const VARIANTS = Object.keys(type) as Variant[];
 const TONES: Tone[] = [
@@ -29,6 +39,7 @@ const TONES: Tone[] = [
   'danger',
   'mint',
   'honey',
+  'onPhoto',
 ];
 
 const toneColor = (c: Palette, tone: Tone): string =>
@@ -46,7 +57,9 @@ const toneColor = (c: Palette, tone: Tone): string =>
               ? c.danger
               : tone === 'mint'
                 ? c.mint
-                : c.honey;
+                : tone === 'onPhoto'
+                  ? c.onPhotoText
+                  : c.honey;
 
 const make = (c: Palette) => {
   const sheet: Record<string, object> = { center: { textAlign: 'center' } };
@@ -57,6 +70,7 @@ const make = (c: Palette) => {
         fontSize: t.fontSize,
         lineHeight: t.lineHeight,
         fontFamily: t.fontFamily,
+        letterSpacing: t.letterSpacing,
         color: toneColor(c, tone),
       };
     }
@@ -70,13 +84,7 @@ export type TxtProps = TextProps & {
   center?: boolean;
 };
 
-export function Txt({
-  variant = 'body',
-  tone = 'default',
-  center,
-  style,
-  ...rest
-}: TxtProps) {
+export function Txt({ variant = 'body', tone = 'default', center, style, ...rest }: TxtProps) {
   const s = useStyles(make);
   return (
     <Text

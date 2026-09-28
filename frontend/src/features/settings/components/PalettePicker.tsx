@@ -52,6 +52,7 @@ export const PalettePicker = memo(function PalettePicker({
       {PALETTE_KEYS.map((key) => (
         <Swatch
           key={key}
+          id={key}
           palette={PALETTES[key]}
           name={names[key]}
           selected={key === current}
@@ -63,11 +64,13 @@ export const PalettePicker = memo(function PalettePicker({
 });
 
 const Swatch = memo(function Swatch({
+  id,
   palette,
   name,
   selected,
   onPick,
 }: {
+  id: PaletteKey;
   palette: Palette;
   name: string;
   selected: boolean;
@@ -81,7 +84,7 @@ const Swatch = memo(function Swatch({
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       accessibilityLabel={name}
-      onPress={() => onPick(palette.key)}
+      onPress={() => onPick(id)}
       feedback="select"
       scaleTo={0.94}
       style={s.item}

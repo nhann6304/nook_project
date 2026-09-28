@@ -50,6 +50,30 @@ export class Env {
   @IsString()
   APP_ORIGIN: string = 'http://localhost:8081';
 
+  /**
+   * ĐỊA CHỈ của mấy cái proxy đứng trước server. Ngăn bằng dấu phẩy.
+   *
+   * `req.ip` là thứ mọi cái trần chống bot đếm theo, mà Fastify lấy nó từ
+   * header `X-Forwarded-For` — header do CLIENT tự gõ. Nên câu hỏi duy nhất
+   * đáng hỏi là: cái máy vừa mở kết nối tới đây, có phải proxy của mình không.
+   *
+   *   ''                  không tin ai, lấy IP của socket (đúng khi chạy máy)
+   *   '127.0.0.1'         nginx chạy cùng máy
+   *   '10.0.0.0/8'        nginx trong mạng nội bộ
+   *   'loopback'          tên gọi sẵn của proxy-addr, tương đương 127.0.0.1/::1
+   *
+   * ĐỪNG bao giờ đặt `true` hay một con số. `true` là tin mọi hop, và khi đó
+   * Fastify lấy giá trị TRÁI NHẤT của `X-Forwarded-For` — tức là giá trị client
+   * tự bịa; mọi trần theo IP thành đồ trang trí. Còn số hop thì bản Fastify này
+   * đã bỏ hẳn (trả về "không tin gì cả"), vì đếm hop không soi được cái máy
+   * đang nối tới mình là ai.
+   *
+   * Đọc THẲNG từ `process.env` trong `bootstrap.ts` — adapter Fastify phải
+   * dựng xong trước khi có `ConfigService`. Khai ở đây để vẫn có chỗ ghi lý do.
+   */
+  @IsString()
+  TRUST_PROXY: string = '';
+
   // ── Cơ sở dữ liệu ──────────────────────────────────────────────────────────
   @IsString() DB_HOST!: string;
   @Type(() => Number) @IsInt() DB_PORT!: number;
@@ -80,6 +104,24 @@ export class Env {
   @IsEnum(CodeSenderKind) CODE_SENDER: CodeSenderKind = CodeSenderKind.console;
   @IsOptional() @IsString() SMTP_URL?: string;
   @IsOptional() @IsString() SMTP_FROM?: string;
+
+  /**
+   * Khoá ký mã 6 số trước khi cất vào Redis.
+   *
+   * Khoá RIÊNG, không xài lại khoá thẻ phiên: hai thứ khác vòng đời, khoá thẻ
+   * đổi thì mọi người bị đăng xuất, còn khoá này đổi thì cùng lắm mất mấy cái
+   * mã đang treo 5 phút.
+   */
+  @IsString() @MinLength(16) AUTH_CODE_SECRET!: string;
+
+  /**
+   * Có hỏi bản ghi MX của tên miền email không.
+   *
+   * Mặc định TẮT, và đó là chủ ý: bốn bài smoke dùng `@nook.test` — tên miền
+   * không có thật, không có MX, bật cái này lên là cả bốn bài đỏ. Production
+   * thì bật, nó chặn sạch tên miền bịa.
+   */
+  @Transform(toBool) @IsBoolean() EMAIL_MX_CHECK: boolean = false;
 
   // ── Kho ảnh ────────────────────────────────────────────────────────────────
   @IsString() STORAGE_ENDPOINT!: string;

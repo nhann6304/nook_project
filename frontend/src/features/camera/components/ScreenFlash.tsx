@@ -32,10 +32,10 @@ export const ScreenFlash = forwardRef<ScreenFlashHandle>(function ScreenFlash(_p
 
   useImperativeHandle(ref, () => ({
     on: () => {
-      v.value = withTiming(1, { duration: duration.instant });
+      v.set(withTiming(1, { duration: duration.instant }));
     },
     off: () => {
-      v.value = withTiming(0, { duration: duration.base });
+      v.set(withTiming(0, { duration: duration.base }));
     },
   }));
 
@@ -47,5 +47,5 @@ export const ScreenFlash = forwardRef<ScreenFlashHandle>(function ScreenFlash(_p
 const s = StyleSheet.create({
   // Không lấy từ token: đây không phải "một màu của thương hiệu", nó là ÁNH
   // SÁNG. Phải là trắng cao nhất máy vẽ được, thấp hơn là mất tác dụng soi.
-  sheet: { ...StyleSheet.absoluteFillObject, backgroundColor: 'white' },
+  sheet: { ...StyleSheet.absoluteFill, backgroundColor: 'white' },
 });

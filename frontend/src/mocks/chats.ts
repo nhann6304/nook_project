@@ -12,18 +12,30 @@ export const SEED_CHATS: readonly Conversation[] = [
   {
     id: yen.author.id,
     friend: yen.author,
-    about: { photo: yen.photo, caption: yen.caption },
     messages: [
       { id: 'y1', text: 'Trời hôm nay đẹp ghê 🥺', at: now - 3 * MINUTE, mine: false },
-      { id: 'y2', text: 'Chỗ đó gần nhà bạn hả', at: now - 2 * MINUTE, mine: true },
+      {
+        id: 'y2',
+        text: 'Chỗ đó gần nhà bạn hả',
+        at: now - 2 * MINUTE,
+        mine: true,
+        about: { photo: yen.photo, caption: yen.caption },
+      },
       { id: 'y3', text: 'Ừ đi bộ ra chừng năm phút', at: now - MINUTE, mine: false },
     ],
   },
   {
     id: hung.author.id,
     friend: hung.author,
-    about: { photo: hung.photo, caption: hung.caption },
-    messages: [{ id: 'h1', text: '🔥', at: now - 40 * MINUTE, mine: true }],
+    messages: [
+      {
+        id: 'h1',
+        text: '🔥',
+        at: now - 40 * MINUTE,
+        mine: true,
+        about: { photo: hung.photo, caption: hung.caption },
+      },
+    ],
   },
 ];
 

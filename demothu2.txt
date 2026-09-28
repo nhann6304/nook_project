@@ -1,0 +1,242 @@
+========================================================================
+DEMO THỨ 2 — CHUẨN BỊ & KỊCH BẢN CHẠY
+Người demo: Huỳnh Thành Nhân   ·   Người xem: Trưởng phòng, anh Hoà, QC
+Chỗ nào có dấu ___ thì điền trước, đừng để tới lúc demo mới đi tìm.
+========================================================================
+
+
+PHẦN 0 — CHUẨN BỊ TRƯỚC (làm sáng thứ 2, trước giờ demo 30 phút)
+------------------------------------------------------------------------
+[X] Backend chạy              http://localhost:3000     (npm run dev)
+[X] Frontend chạy             http://localhost:5173     (npm run dev)
+[X] Postgres chạy             port 5432
+[X] Máy tool (worker) ONLINE  màn Máy tool phải thấy chấm xanh
+    Tên máy sẽ demo: MacMini_Bo
+[X] Proxy còn trống           màn Proxy, số proxy "Chưa gán" > 0
+[X] Kho bài viết có sẵn bài   ít nhất 2 bài có ảnh, 2 bài chỉ chữ
+[X] Mở sẵn 6 tab:  Tổng quan · Lịch sử chạy · Kho tài khoản · Đăng bài ·
+                   Máy tool · Proxy
+[ ] Mở sẵn 1 cửa sổ Facebook/X đăng nhập tay để soi kết quả thật
+[ ] Tắt Telegram thông báo riêng, để nguyên nhóm cảnh báo cho QC thấy bắn tin
+
+TÀI KHOẢN DÙNG ĐỂ DEMO (chọn tài khoản đang "sống", đừng lấy checkpoint)
+    Facebook chính   : 61553914417902
+    Facebook dự phòng: 61589625530180
+    X chính          : KevinBakerjxbb
+    TikTok chính     : ______________________
+    Threads          : ______________________
+
+
+PHẦN 1 — MỤC 1 CHECKLIST: NUÔI DƯỠNG & SIẾT BẢO MẬT
+------------------------------------------------------------------------
+
+[ ] 1.1a  Tham gia nhóm                    /fb/join-group
+          Tài khoản : 61553914417902
+          Link nhóm : https://www.facebook.com/groups/1057407063743388
+          Chờ thấy  : lượt Xong 1/1, nhóm hiện trong "Nhóm đã tham gia"
+
+[ ] 1.1b  Cào nhóm theo từ khoá            /fb/groups
+          Tài khoản : ______________________
+          Từ khoá   : ______________________
+          Chờ thấy  : ra danh sách nhóm kèm số thành viên
+
+[ ] 1.1c  Chia sẻ bài vào nhóm             /fb/share
+          Tài khoản : ______________________
+          Link bài  : ______________________________________________
+          Link nhóm : ______________________________________________
+          Chờ thấy  : trả về link bài đã chia sẻ, mở ra xem được
+
+[ ] 1.1d  Chia sẻ bài lên tường            /fb/share  (tab Trang cá nhân)
+          Tài khoản : ______________________
+          Link bài  : ______________________________________________
+
+[ ] 1.1e  Kết bạn — 4 nguồn                /fb/friends
+          Tài khoản : ______________________
+          Nguồn 1: tài khoản chỉ định → UID đích: ______________________
+          Nguồn 2: gợi ý của Facebook  (không cần nhập gì)
+          Nguồn 3: thành viên hội nhóm → link nhóm: ____________________
+          Nguồn 4: theo địa điểm/lĩnh vực → tỉnh/lĩnh vực: _____________
+          NÓI TRƯỚC : chưa lọc được theo độ tuổi
+
+[ ] 1.1f  Duyệt lời mời kết bạn            /fb/friends
+          Tài khoản : ______________________  (phải có lời mời đang chờ)
+
+[ ] 1.1g  Tương tác bảng tin               /fb/engage
+          Tài khoản : ______________________
+
+[ ] 1.1h  Tương tác bài chỉ định           /fb/engage
+          Link bài  : ______________________________________________
+          Bình luận : ______________________________________________
+          Cảm xúc   : LIKE / LOVE / CARE / HAHA / WOW / SAD / ANGRY
+
+[ ] 1.2a  X — tương tác bảng tin           /x/engage
+          Tài khoản : ______________________
+[ ] 1.2b  X — theo dõi tài khoản           /x/engage
+          Handle đích: @____________________
+[ ] 1.2c  X — vào cộng đồng                /x/engage
+          Link cộng đồng: __________________________________________
+[ ] 1.2d  TikTok — lướt video              /tk/feed
+          Tài khoản : ______________________
+[ ] 1.2e  TikTok — theo dõi                /tk/engage
+          Tài khoản đích: __________________
+          NHỚ NÓI    : TikTok gỡ tim sau vài giây, phần follow thì ăn.
+                       Đọc cột liked_reverted trong log, đừng đọc mỗi "ok".
+
+[ ] 1.3a  Đổi mật khẩu Facebook            /fb/secure  (tab Đổi mật khẩu)
+          Tài khoản : ______________________
+          NÓI TRƯỚC : mật khẩu cũ được lưu lại để đối chiếu
+[ ] 1.3b  Đổi email khôi phục Facebook     /fb/secure  (tab Đổi email)
+          Tài khoản : ______________________
+          Email mới : ______________________
+[ ] 1.3c  Bật/đổi 2FA                      /fb/secure  (tab Đổi 2FA)
+[ ] 1.3d  Đổi mật khẩu X                   /x/secure
+          Tài khoản : ______________________
+          CHỖ ĐẮT GIÁ: mở luôn màn đọc OTP — 3 đường (Microsoft Graph,
+                       IMAP, đọc thẳng giao diện Outlook)
+
+[ ] 1.4   Chạy song song nhiều profile     /fb/engage hoặc /warming
+          Chọn      : ___ tài khoản cùng lúc  (đề nghị 5)
+          Chỉ vào   : ô "Đang chạy" góc trái dưới + Máy tool đếm slot
+          NÓI TRƯỚC : mặc định 10 profile/máy, cấu hình MAX_CONCURRENT_PROFILES;
+                      demo để 5 cho nhẹ máy
+
+[ ] 1.5   Kiểm tra sống/chết               /fb/checks  (và /x, /tk)
+          Chọn 3 tài khoản, trong đó cố ý lấy 1 tài khoản đã chết:
+          sống: ____________  chết: ____________  checkpoint: ____________
+          Chỉ vào   : 5 mức sống/checkpoint/khoá/chết/chưa rõ + mã lý do
+          NÓI TRƯỚC : phải kiểm lần 2 mới dám kết luận chết
+
+[ ] 1.6   Xoay proxy                       /proxies
+          Chỉ vào   : cột "Xoay gần nhất", cách 1 giờ giữa 2 lần xoay,
+                      hết proxy trống thì bắn Telegram
+
+[ ] 1.7   Captcha / checkpoint             mở lượt chạy cũ có ảnh captcha
+          Lượt chạy để mở: ______________________
+          NÓI TRƯỚC : có 2 nhà giải (HM captcha, 2Captcha), không hardcode
+                      toạ độ — tự đo từng lượt
+
+[ ] 1.8   Mô phỏng người thật              /settings  (Cài đặt chạy)
+          Chỉ vào   : nghỉ ngẫu nhiên, giãn cách giữa các lần, nhịp lượt
+
+
+PHẦN 2 — MỤC 2 CHECKLIST: ĐĂNG BÀI & TƯƠNG TÁC
+------------------------------------------------------------------------
+
+[ ] 2.1   Đăng bài Facebook — tường        /fb/publish  (Trang cá nhân)
+          Tài khoản : ______________________
+          Bài trong kho: ______________________
+          Chờ thấy  : trả link bài, mở link ra xem được
+
+[ ] 2.2   Đăng bài Facebook — nhóm         /fb/publish  (Nhóm)
+          Link nhóm : ______________________________________________
+          NÓI TRƯỚC : nhóm duyệt bài thì trả "chờ duyệt", KHÔNG báo thành công
+
+[ ] 2.3   Đăng bài kèm ảnh / phông nền     /fb/publish
+          Bài có ảnh: ______________________
+
+[ ] 2.4   Đăng bài X                       /x/publish
+          Tài khoản : ______________________
+          NÓI TRƯỚC : đếm độ dài theo trọng số ký tự, không phải đếm chữ
+
+[ ] 2.5   Bình luận bài viết               /fb/engage
+          Link bài  : ______________________________________________
+
+[ ] 2.6   KIỂM CHỨNG SAU ĐĂNG  ← ĐIỂM MẠNH NHẤT, ĐỪNG BỎ
+          Mở lượt chạy: ______________________
+          Chỉ vào   : ảnh "đã xong · đăng bài" + ảnh "kiểm chứng · tự mở lại"
+          Nói       : mở lại link bằng CHÍNH profile vừa đăng để phân biệt
+                      đã lên / bị ẩn / chờ duyệt; đối chiếu activity log;
+                      chưa kiểm chứng được thì KHÔNG báo thành công
+          Nói thêm  : có cả bước kiểm chéo — tài khoản khác vào xem có
+                      thấy bài không, không thấy thì báo động
+
+[ ] 2.7   Hẹn giờ                          /fb/publish  → nút Hẹn giờ
+          Đặt giờ   : ______  (đặt lệch 3–5 phút để chạy ngay trong buổi)
+
+[ ] 2.8   Nhận diện tài khoản hỏng giữa chừng
+          Chỉ vào   : lượt chạy có tài khoản bị khoá → dừng chuỗi, đổi
+                      trạng thái, không chạy tiếp các bước sau
+
+[ ] 2.9   Cảnh báo Telegram
+          Mở nhóm Telegram cho mọi người thấy tin đã bắn
+
+[ ] 2.10  Dashboard thống kê               /  (Tổng quan)
+          Chỉ vào   : tỷ lệ thành công theo nền tảng / theo việc / theo
+                      tài khoản, biểu đồ 14 ngày
+
+[ ] 2.11  Lịch sử chạy + log từng bước     /runs
+          Lượt để mở: ______________________  (chọn lượt XONG, đừng lượt hỏng)
+          Chỉ vào   : Diễn biến · Log thô · ảnh chụp lúc đó · nút Xuất file
+
+
+PHẦN 3 — CÔNG VIỆC PHÁT SINH (ngoài checklist)
+------------------------------------------------------------------------
+
+[ ] 3.1   Threads — kiểm tra tài khoản     /th/accounts
+          Tài khoản : ______________________
+[ ] 3.2   Threads — báo cáo bài            /th/report
+          Link bài  : ______________________________________________
+          NHỚ       : để nguyên chế độ Demo (không gửi report thật)
+
+[ ] 3.3   Tạo tài khoản Instagram          /ig/signup
+          NÓI THẲNG : phần này ĐANG LÀM, chưa xong.
+          Đã có     : luồng tạo bằng hộp thư Outlook, đã đo thật 6 lượt
+          Chốt được : captcha lúc đăng ký là do IP (IP dân cư không gặp);
+                      2Captcha giải được reCAPTCHA Enterprise của Meta;
+                      hồ sơ sạch hay bẩn không đổi kết cục;
+                      vân tay iPhone cũng không gỡ được cửa hỏi SĐT
+          Còn vướng : Instagram bắt nhập số điện thoại ngay sau khi tạo
+
+[ ] 3.4   Lò ngâm & chấm điểm hồ sơ        /ig/profiles
+          Chỉ vào   : 14 tiêu chí, 9 tiêu chí chặn cứng
+          Kể chuyện : tự tìm ra WebRTC làm lộ IP thật ra ngoài proxy →
+                      thêm thành tiêu chí chặn cứng
+
+[ ] 3.5   App worker + phát hành           /app-release  +  /stations
+          Chỉ vào   : bản macOS / Windows, máy tự cài bản mới trong 6 giờ
+
+[ ] 3.6   Đăng bài Business Suite          /fb/publish  (tab Trang)
+          Tài khoản có Business: ______________________
+          6 chức năng: đăng qua Business Suite · tạo Trang · đăng ký tài
+          khoản doanh nghiệp · kiểm tra · xác nhận email · kết bạn có lọc
+
+
+PHẦN 4 — CÂU HỎI QC HAY HỎI, TRẢ LỜI SẴN
+------------------------------------------------------------------------
+Q: Chạy được bao nhiêu profile một lúc?
+A: Mặc định 10/máy, chỉnh bằng MAX_CONCURRENT_PROFILES. Demo để 5.
+
+Q: Tỷ lệ checkpoint dưới 15% chưa?
+A: CHƯA ĐO. Trong bảng nghiệm thu ghi rõ "chưa đo", không nhận bừa.
+
+Q: Sao biết bài lên thật, không phải tool báo láo?
+A: Mở lại link bằng chính profile vừa đăng + đối chiếu activity log +
+   kiểm chéo bằng tài khoản khác. Có ảnh chụp đính kèm từng bước.
+
+Q: Tài khoản chết thì sao?
+A: 5 mức trạng thái, kiểm lần 2 mới kết luận chết, đồng bộ về hệ thống
+   kèm mã lý do, dừng chuỗi việc đang chạy.
+
+Q: Cái gì CHƯA làm được? (nói trước, đừng để QC bới ra)
+   - Duyệt bài chờ trong nhóm, duyệt thành viên chờ  → chưa phát triển
+   - Trả lời câu khảo sát khi vào nhóm               → bỏ trống + ghi cảnh báo
+   - Lọc kết bạn theo độ tuổi                        → chưa có
+   - Tạo tài khoản Threads/Instagram                 → đang làm, vướng cửa SĐT
+   - Tỷ lệ checkpoint < 15%                          → chưa đo
+
+Q: Callback trả về đâu?
+A: Mọi tác vụ đều gọi lại callback_url, kể cả tác vụ hỏng.
+   callback_url không được để localhost.
+
+
+PHẦN 5 — CẦM THEO
+------------------------------------------------------------------------
+[ ] File Word báo cáo thử việc          GHN_DPA_FW_BCTV_HTNhan.docx
+[ ] Bảng nghiệm thu QC                  BaoCao(Bo).xlsx
+[ ] Sổ R&D Threads (mở sẵn khi bị hỏi)  .docs/create_account_theads/
+[ ] Danh sách API                       sheet "API Automation Capp"
+
+NHẮC CUỐI:
+  - Lượt nào hỏng thì mở ra xem luôn, đừng giấu. Log có ảnh, giải thích được.
+  - Đừng chạy /fb/secure trên tài khoản thật quan trọng — mất là mất luôn.
+  - Chạy chức năng nào thì mở tab Lịch sử chạy cho mọi người thấy nó chạy thật.

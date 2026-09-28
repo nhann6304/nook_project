@@ -179,6 +179,12 @@ khuôn i18next. Ngày nào Nook thêm tiếng Nga (4 dạng số nhiều) hay ti
 
 ## 7 · Vì sao ghim SDK 54, không phải bản mới nhất
 
+> **Cập nhật 27/09/2026 — đã nâng lên SDK 57.** Expo Go trên App Store đã lên
+> 57.0.0, nên project SDK 54 báo "Project is incompatible" trên iPhone. Ba chỗ
+> dưới đã đảo ngược: `absoluteFillObject` → `absoluteFill` (RN 0.86 bỏ hẳn tên
+> cũ); ghi shared value bằng `.set()`; bỏ `newArchEnabled` và
+> `edgeToEdgeEnabled` khỏi `app.json` (giờ là mặc định). Phần dưới giữ làm lịch sử.
+
 **Đừng nâng SDK trước khi đọc hết mục này.** Nâng lên là app không mở được trên
 iPhone nữa, và lỗi báo ra (`Project is incompatible with this version of Expo Go`)
 không hề nói ra nguyên nhân thật.

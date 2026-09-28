@@ -51,11 +51,7 @@ export function Segmented<T extends string>({
       {width > 0 ? (
         <Animated.View
           pointerEvents="none"
-          style={[
-            s.thumb,
-            { width: (width - PAD * 2) / Math.max(options.length, 1) },
-            thumb,
-          ]}
+          style={[s.thumb, { width: (width - PAD * 2) / Math.max(options.length, 1) }, thumb]}
         />
       ) : null}
 
@@ -72,7 +68,7 @@ export function Segmented<T extends string>({
             style={s.segment}
             onPress={() => {
               if (on) return;
-              pos.value = withSpring(i, spring.press);
+              pos.set(withSpring(i, spring.press));
               onChange(o.value);
             }}
           >
@@ -90,20 +86,20 @@ const PAD = 3;
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  track: {
-    flexDirection: 'row',
-    backgroundColor: c.surfaceSunken,
-    borderRadius: radius.full,
-    padding: PAD,
-  },
-  thumb: {
-    position: 'absolute',
-    top: PAD,
-    left: PAD,
-    bottom: PAD,
-    borderRadius: radius.full,
-    backgroundColor: c.surfaceRaised,
-  },
-  segment: { flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center' },
-  label: { fontSize: 14 },
-});
+    track: {
+      flexDirection: 'row',
+      backgroundColor: c.surfaceSunken,
+      borderRadius: radius.full,
+      padding: PAD,
+    },
+    thumb: {
+      position: 'absolute',
+      top: PAD,
+      left: PAD,
+      bottom: PAD,
+      borderRadius: radius.full,
+      backgroundColor: c.surfaceRaised,
+    },
+    segment: { flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center' },
+    label: { fontSize: 14 },
+  });

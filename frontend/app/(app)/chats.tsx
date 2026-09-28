@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { ChatListScreen } from '@/features/chat/screens/ChatListScreen';
 import { useChats } from '@/features/chat/store/chatStore';
 
-export default function ChatList() {
+export default function Chats() {
   const router = useRouter();
   const conversations = useChats((s) => s.conversations);
 
@@ -13,10 +13,6 @@ export default function ChatList() {
   );
 
   return (
-    <ChatListScreen
-      conversations={conversations}
-      onOpen={open}
-      onOpenFeed={() => router.navigate('/(app)/(tabs)/feed')}
-    />
+    <ChatListScreen conversations={conversations} onOpen={open} onClose={() => router.back()} />
   );
 }

@@ -5,7 +5,7 @@
  * câm trên Android — và câm không báo lỗi, chỉ là không có gì xảy ra.
  *
  * Splash được giữ tới khi BA thứ xong: bộ chữ, ngôn ngữ đã chọn, bảng màu đã
- * chọn. Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Be Vietnam Pro;
+ * chọn. Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Plus Jakarta Sans;
  * thả sớm vì ngôn ngữ thì thấy màn đầu sai tiếng; thả sớm vì bảng màu thì cả
  * app nháy một cái đổi màu. Mỗi cái chỉ khoảng 30ms, nhưng là 30ms đầu tiên
  * người dùng nhìn thấy.
@@ -23,23 +23,28 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
 import {
-  BeVietnamPro_400Regular,
-  BeVietnamPro_500Medium,
-  BeVietnamPro_600SemiBold,
-} from '@expo-google-fonts/be-vietnam-pro';
-import { useStyles, useThemeReady, type Palette } from '@design';
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+} from '@expo-google-fonts/plus-jakarta-sans';
+import { useColors, useStyles, useThemeReady, type Palette } from '@design';
 import { useI18nReady } from '@i18n';
 
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const s = useStyles(make);
+  const light = useColors().light;
   const localeReady = useI18nReady();
   const themeReady = useThemeReady();
   const [fontsReady, error] = useFonts({
-    BeVietnamPro_400Regular,
-    BeVietnamPro_500Medium,
-    BeVietnamPro_600SemiBold,
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
   });
 
   const ready = (fontsReady || error !== null) && localeReady && themeReady;
@@ -55,7 +60,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={s.root}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
+        <StatusBar style={light ? 'dark' : 'light'} />
         <Stack
           screenOptions={{
             headerShown: false,
@@ -67,7 +72,9 @@ export default function RootLayout() {
         >
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(app)" />
+          {/* Vào app sau khi đăng nhập: mờ dần, không trượt — không có "màn
+              trước" nào để quay lại. */}
+          <Stack.Screen name="(app)" options={{ animation: 'fade' }} />
         </Stack>
       </SafeAreaProvider>
     </GestureHandlerRootView>

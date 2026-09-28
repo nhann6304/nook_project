@@ -5,13 +5,13 @@
  * nút. Khác về ruột: nút chụp là vòng rỗng viền dày, nút gửi là khối ĐẶC có
  * mũi tên — nhìn phát biết đây không còn là "bấm để chụp" nữa.
  */
-import { ActivityIndicator, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Tap } from '@ui';
+import { Spinner, Tap } from '@ui';
 import { GRADIENT_END, GRADIENT_START, radius, useColors, useStyles, type Palette } from '@design';
 
-const SIZE = 72;
+const SIZE = 84;
 
 export function SendButton({
   onPress,
@@ -43,9 +43,9 @@ export function SendButton({
         pointerEvents="none"
       />
       {busy ? (
-        <ActivityIndicator color={c.onAccent} />
+        <Spinner size={28} color={c.onAccent} />
       ) : (
-        <Ionicons name="arrow-up" size={30} color={c.onAccent} />
+        <Ionicons name="arrow-up" size={34} color={c.onAccent} />
       )}
     </Tap>
   );
@@ -53,14 +53,14 @@ export function SendButton({
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  box: {
-    width: SIZE,
-    height: SIZE,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    backgroundColor: c.accent,
-  },
-  fill: StyleSheet.absoluteFillObject,
-});
+    box: {
+      width: SIZE,
+      height: SIZE,
+      borderRadius: radius.full,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      backgroundColor: c.accent,
+    },
+    fill: StyleSheet.absoluteFill,
+  });

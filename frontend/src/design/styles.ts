@@ -60,7 +60,7 @@ export const common = StyleSheet.create<Common>({
   },
 
   /* — Phủ toàn phần — */
-  absoluteFill: StyleSheet.absoluteFillObject,
+  absoluteFill: StyleSheet.absoluteFill,
 });
 
 /** hitSlop mặc định cho những nút icon nhỏ hơn vùng chạm chuẩn. */
@@ -72,7 +72,7 @@ type Media = { fill: ImageStyle; cover: ImageStyle };
 
 export const media = StyleSheet.create<Media>({
   /** Lấp kín cha. Dùng cho ảnh đè lên khung camera. */
-  fill: StyleSheet.absoluteFillObject,
+  fill: StyleSheet.absoluteFill,
   /** Ô vuông tràn bề ngang — thẻ ảnh trong feed. */
   cover: { width: '100%', aspectRatio: 1, borderRadius: radius.frame },
 });

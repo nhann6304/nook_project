@@ -29,7 +29,7 @@ export { Card, Pill, Divider } from './layout/Surface';
 export { List, type ListProps } from './layout/List';
 export { Scroll } from './layout/Scroll';
 export { TopBar, type TopBarProps } from './layout/TopBar';
-export { TabBar, type TabItem } from './layout/TabBar';
+export { Pager, type PagerHandle, type PagerProps } from './layout/Pager';
 
 /* — Thương hiệu — */
 export { Rings, type RingsProps } from './brand/Rings';
@@ -37,7 +37,12 @@ export { Wordmark, Lockup } from './brand/Wordmark';
 export { Halo } from './brand/Halo';
 export { GhostFrame } from './brand/GhostFrame';
 export { Avatar, type AvatarProps } from './brand/Avatar';
+export { AvatarStack } from './brand/AvatarStack';
+export { SkyWash } from './brand/SkyWash';
 
 /* — Phản hồi — */
 export { EmptyState } from './feedback/EmptyState';
 export { Loading } from './feedback/Loading';
+export { Toast } from './feedback/Toast';
+export { Spinner } from './feedback/Spinner';
+export { Shimmer } from './feedback/Shimmer';

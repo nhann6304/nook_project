@@ -12,6 +12,7 @@ NestJS trên Fastify · PostgreSQL · Redis · TypeORM · Socket.IO · BullMQ.
 ./setup/mac/run.sh be             # cửa sổ 1 — server  (windows: setup/win/run.bat be)
 npm run migration:run             # LẦN ĐẦU — bảng không tự dựng
 ./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 27 bước của luồng đăng nhập
+./backend/scripts/smoke-antibot.sh   #        14 bước của phần chống bot
 ./backend/scripts/smoke-username.sh  #        15 bước của tên riêng, có cả cuộc đua
 ./backend/scripts/smoke-media.sh  #           20 bước của đường ảnh, bằng ảnh THẬT
 ./backend/scripts/smoke-admin.sh  #            9 bước của đường quản trị
@@ -24,6 +25,18 @@ một lần, xoay thẻ, thẻ bị chép, hạn phiên đẩy ra xa, hai cửa 
 thẻ — rồi kết bằng một dòng ĐẠT/HỎNG. Nó đọc mã 6 số từ
 `backend/.logs/server.log`, tệp mà `run.sh` ghi ra; log ở chỗ khác thì đặt
 `NOOK_LOG=<đường dẫn>`, server ở cổng khác thì `BASE=http://localhost:<cổng>`.
+
+`smoke-antibot.sh` soi riêng năm cái chốt chống nuôi tài khoản hàng loạt: header
+`X-Forwarded-For` không đổi được xô đếm, ba cách viết một hộp Gmail vào cùng một
+tài khoản **mà hai người thật thì không bị gộp**, tên miền hộp thư dùng một lần
+bị chặn, dấu vân mã trong Redis là HMAC chứ không phải argon2, và cửa nộp mã có
+trần theo máy gọi. Nó cần `docker exec` vào container Redis (đặt tên khác thì
+`NOOK_REDIS=<tên>`).
+
+**Chỉ được có MỘT bản server chạy** khi gõ mấy bài này. Hai bản `nest start
+--watch` cùng bật là giành cổng 4000: bản thắng phục vụ, bản thua chết — mà log
+lại thuộc về bản thua, nên script đọc ra mã CŨ và cả bộ đỏ oan trong khi server
+vẫn hoàn toàn khoẻ. Đã mất một lúc mới nhìn ra, nên ghi lại đây.
 
 Bốn bài hỏi cơ sở dữ liệu qua `scripts/db.sh` (dùng `pg` của Node, tài khoản đọc
 từ `.env`) chứ **không** qua `psql` — Windows không có `psql`, và tài khoản cắm
@@ -63,10 +76,30 @@ Không mật khẩu thì không có mật khẩu để quên, để dùng lại 
 khi cơ sở dữ liệu bị đọc trộm. Ai chiếm được hộp thư thì chiếm được tài khoản —
 nhưng với mật khẩu cũng vậy, vì nút "quên mật khẩu" cũng gửi về hộp thư đó.
 
-**Một email = một tài khoản.** `UNIQUE(kind, value)` trên `user_identities`,
-và email được chuẩn hoá (cắt khoảng trắng, hạ chữ thường) trước khi so. Đã đo:
-đăng nhập lại bằng đúng email, bằng email viết HOA, bằng email có khoảng trắng
-hai đầu — cả ba đều vào **cùng một** tài khoản, `isNew: false`.
+**Một HỘP THƯ = một tài khoản** — hộp thư, không phải chuỗi email. `UNIQUE(kind,
+value_key)` trên `user_identities`, trong đó `value_key` là email đã rút về dạng
+khoá (`identityKey()` ở `repository/user/`): cắt nhãn sau dấu `+`, và với Gmail
+thì bỏ luôn dấu chấm. Cột `value` vẫn giữ nguyên chuỗi người ta gõ — đó là chỗ
+gửi thư tới.
+
+Khoá đặt trên `value` là chưa đủ, và đây là lý do: `nam@gmail.com`,
+`nam+1@gmail.com`, `n.a.m@gmail.com` là ba chuỗi khác nhau nhưng cùng một hộp
+thư. Một hộp Gmail thật khi đó mở được vô hạn tài khoản Nook, mỗi cái đều nhận
+được mã 6 số nên đều "đã xác minh" hợp lệ — đúng hình dạng của công cụ nuôi tài
+khoản hàng loạt. **Bỏ dấu chấm CHỈ với Gmail**: nhà cung cấp khác coi dấu chấm
+là ký tự có nghĩa, gộp bừa là nhốt hai người thật vào chung một tài khoản.
+
+Đã đo: đăng nhập lại bằng đúng email, bằng email viết HOA, bằng email có khoảng
+trắng hai đầu, bằng email kèm nhãn `+bot947` — cả bốn đều vào **cùng một** tài
+khoản, `isNew: false`.
+
+**Email đúng dạng vẫn có thể bị từ chối.** `EmailGuardService` chặn tên miền
+hộp thư dùng một lần (danh sách cứng phía backend, không nhét vào `@nook/shared`
+vì gói đó bị đóng vào bản app), và khi bật `EMAIL_MX_CHECK` thì hỏi thêm bản ghi
+MX để loại tên miền bịa. Mã trả về là `auth.target_not_allowed`, tách khỏi
+`auth.target_invalid` — người dùng gõ đúng, chỉ là phải đổi email khác. Tra DNS
+hỏng thì **mở, không đóng**: không biết thì cho qua, chứ một cú DNS chập không
+được phép làm cả app không ai đăng ký được.
 
 ### Giữ phiên trên điện thoại — KHÔNG dùng bánh quy
 
@@ -776,13 +809,20 @@ npm run migration:revert
 npm run migration:show
 ```
 
-## 7. Redis làm năm việc
+## 7. Redis làm sáu việc
 
-1. Mã đăng nhập 6 số, tự chết sau 5 phút
-2. Con đếm chống gọi quá dày
-3. Hàng đợi việc nền (BullMQ)
-4. Cầu nối cho socket khi chạy nhiều bản server
-5. **Vị trí** — và cái này phải nói rõ: vị trí **không bao giờ** chạm vào
+1. Mã đăng nhập 6 số, tự chết sau 5 phút — cất **dấu vân HMAC-SHA256**, không
+   phải argon2. Mã sống 300 giây và sai 5 lần là chết, nên cái argon2 chống
+   (bẻ khoá ngoại tuyến) không phải mối lo ở đây; còn cái nó gây ra thì có
+   thật: 64 MB và một chỗ trong hàng đợi bốn luồng của libuv, cho MỖI lần xin
+   mã. Khoá ký là `AUTH_CODE_SECRET`, riêng, không dùng lại khoá thẻ phiên.
+2. Con đếm chống gọi quá dày — theo đích, theo máy gọi ở cửa xin mã, và theo
+   máy gọi ở cửa **nộp** mã (`auth:verify:ip:*`)
+3. Nhớ kết quả tra MX của tên miền email (`auth:mx:*`), 24 giờ nếu nhận thư
+   được, 1 giờ nếu không — để không hỏi DNS lại mỗi lần có người đăng nhập
+4. Hàng đợi việc nền (BullMQ)
+5. Cầu nối cho socket khi chạy nhiều bản server
+6. **Vị trí** — và cái này phải nói rõ: vị trí **không bao giờ** chạm vào
    Postgres. `EXPIRE 900` là 15 phút sau nó biến mất thật. Ghi vào Postgres thì
    nó còn nằm trong WAL và trong mọi bản sao lưu; "đã xoá" ở đó không có nghĩa
    là đã mất.
@@ -798,7 +838,22 @@ thông báo đẩy**. Socket chỉ làm người đang mở app thấy nhanh hơ
 Hệ quả: nối lại thì **hỏi lại bằng REST**, đừng phát lại qua ống. Ống không nhớ
 nó đã bỏ lỡ những gì.
 
-## 9. Sáu chỗ đã vấp — đừng vấp lại
+## 9. Bảy chỗ đã vấp — đừng vấp lại
+
+**`trustProxy: true` biến mọi trần theo IP thành đồ trang trí.** Đây từng là
+`true` thật, suốt một thời gian. Fastify hiểu `true` là "tin MỌI hop", và khi đó
+`req.ip` lấy giá trị **trái nhất** của header `X-Forwarded-For` — header do
+client tự gõ. `guardCaller` đếm theo cái IP bịa đó, nên chỉ cần đổi header mỗi
+lần một giá trị là đi qua sạch: `curl -H "X-Forwarded-For: 1.2.3.4"`. Cả cái
+đánh đổi của hai cửa signin/signup (nói thật "email chưa có tài khoản", bịt bằng
+trần theo máy gọi) khi đó chỉ còn vế nói thật.
+
+Cách đúng là khai **địa chỉ** proxy, không phải đếm hop: `TRUST_PROXY=127.0.0.1`
+hoặc `10.0.0.0/8`. Và đừng nghĩ tới việc khai số hop — bản Fastify đang dùng đã
+bỏ hẳn kiểu đó, truyền số vào là nó lặng lẽ về "không tin gì cả", kèm chú thích
+trong mã: đếm hop không soi được cái máy đang nối tới mình là ai. Đã đo sau khi
+vá: gửi `X-Forwarded-For: 1.2.3.4`, khoá trong Redis vẫn là
+`auth:hour:ip:127.0.0.1`.
 
 **NestJS 12 bỏ hẳn CommonJS.** `@nestjs/common`, `@nestjs/core`,
 `@nestjs/typeorm` đều là `"type": "module"`. Nên backend là ESM, và **mọi import

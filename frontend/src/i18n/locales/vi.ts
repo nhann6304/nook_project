@@ -26,11 +26,12 @@ export const vi = {
 
   /* ---------- Màn 1 — Chào mừng ---------- */
   welcome: {
-    headline: 'Ảnh trực tiếp\ntừ góc nhỏ của mình',
-    sub: 'Mười người bạn. Không tim, không lượt xem, không người lạ.',
-    create: 'Tạo tài khoản',
+    headline: 'Ảnh trực tiếp từ góc nhỏ của mình',
+    sub: 'Mười người bạn thân. Không lượt thích, không người lạ.',
+    create: 'Bắt đầu',
     signIn: 'Mình đã có tài khoản',
-    firstMoment: 'khoảnh khắc đầu tiên',
+    notifyTitle: '{name} vừa gửi',
+    notifySub: 'trên màn hình chủ của bạn',
   },
 
   /* ---------- Màn 2 — Đăng nhập / Tạo tài khoản ---------- */
@@ -120,6 +121,43 @@ export const vi = {
     daysAgo: { other: '{count} ngày trước' },
   },
 
+  /* ---------- Bạn bè (C12) + trang một người bạn (C14) ---------- */
+  friends: {
+    title: 'Bạn bè',
+    slots: '{filled} / {total}',
+    inviteTitle: 'Mời thêm bạn',
+    inviteLeft: { other: 'Còn {count} chỗ trong góc' },
+    full: 'Góc đã đủ mười người',
+    sendLink: 'Gửi link',
+    shareMessage: 'Vào góc nhỏ của mình trên Nook nhé: {link}',
+    sentPhoto: 'Gửi ảnh {ago}',
+    messaged: 'Nhắn cho bạn {ago}',
+    dormant: 'Lâu rồi chưa có gì mới · gửi một tấm?',
+    ringNote: 'Vòng càng ấm là càng thân. Chỉ bạn thấy màu này.',
+    level: 'Cấp {level} · {name}',
+    together: '{memories} ký ức · {days} ngày',
+    toNext: 'Còn {count} ký ức tới cấp {level}',
+    message: 'Nhắn tin',
+    album: 'Album chung',
+    albumSoon: 'Album chung sắp có',
+    photos: 'Ảnh của hai bạn',
+    noPhotos: 'Chưa có ảnh nào trong 48 giờ qua.',
+    private: 'Chỉ bạn và {name} thấy trang này.',
+    more: 'Tuỳ chọn thêm',
+    levels: {
+      l1: 'Bắt đầu',
+      l2: 'Quen',
+      l3: 'Thân dần',
+      l4: 'Gắn bó',
+      l5: 'Thân',
+      l6: 'Rất thân',
+      l7: 'Thân thiết',
+      l8: 'Cực thân',
+      l9: 'Tri kỷ',
+      l10: 'Góc trong',
+    },
+  },
+
   /* ---------- Màn 11 — Góc của bạn ---------- */
   circle: {
     title: 'Góc của bạn',
@@ -130,16 +168,61 @@ export const vi = {
     invite: 'Mời một người bạn',
   },
 
-  /* ---------- Thanh tab ---------- */
-  tabs: {
-    feed: 'Khoảnh khắc',
-    camera: 'Chụp',
-    chat: 'Trò chuyện',
+  /* ---------- Màn chính: camera + ảnh bạn bè lướt dọc ---------- */
+  home: {
+    openFriends: 'Bạn bè',
+    openChats: 'Tin nhắn',
+    friendsPill: { other: '{count} bạn' },
+    inviteFirst: 'Mời bạn đầu tiên',
+    allFriends: 'Tất cả bạn bè',
+    sendToAll: { other: 'Gửi cho cả {count} bạn' },
+    swipeHint: 'Vuốt lên xem ảnh bạn bè',
+    grid: 'Xem dạng lưới',
+    backToCamera: 'Về camera',
+    more: 'Thêm',
+    sent: { other: 'Đã gửi cho {count} bạn' },
+    sentAlone: 'Đã giữ lại — bạn bè vào là thấy',
+    endTitle: 'Hết rồi. Chụp gì đó đi.',
+    endMessage: 'Ảnh bạn bè gửi trong 48 giờ gần nhất sẽ hiện ở đây.',
+    reacted: 'Đã gửi cho {name}',
+    yours: 'Ảnh của bạn',
+    heart: 'Thả tim',
+    laugh: 'Cười',
+    fire: 'Cháy quá',
+  },
+
+  /* ---------- Nhật ký ảnh của mình ---------- */
+  journal: {
+    title: 'Nhật ký của bạn',
+    open: 'Mở nhật ký ảnh của bạn',
+    summary: '{photos} tấm · {days} ngày có ảnh',
+    weekdays: 'T2,T3,T4,T5,T6,T7,CN',
+    empty: 'Chưa gửi tấm nào. Tấm đầu tiên sẽ nằm ở đây.',
+    close: 'Đóng',
+    photoOf: 'Ảnh ngày {day}',
+    yearSummary: '{photos} tấm · {days} ngày có ảnh trong năm',
+    monthCount: { other: '{count} tấm' },
+    monthNone: 'Chưa có',
+    monthEmpty: 'Tháng này chưa có tấm nào. Chụp một tấm đi.',
+    wholeYear: 'Cả năm {year}',
+    prevYear: 'Năm trước',
+    nextYear: 'Năm sau',
+    prevMonth: 'Tháng trước',
+    nextMonth: 'Tháng sau',
+    openMonth: 'Mở {month}',
+  },
+
+  /* ---------- Tất cả ảnh (lưới) ---------- */
+  history: {
+    title: 'Tất cả ảnh',
+    today: 'Hôm nay',
+    earlier: 'Hôm qua',
+    open: 'Mở ảnh của {name}',
   },
 
   /* ---------- Trò chuyện ---------- */
   chat: {
-    title: 'Trò chuyện',
+    title: 'Tin nhắn',
     emptyTitle: 'Chưa nói chuyện với ai',
     emptyMessage:
       'Chạm vào ô nhắn dưới một khoảnh khắc là mở được cuộc trò chuyện với người gửi.',
@@ -147,7 +230,10 @@ export const vi = {
     placeholder: 'Nhắn cho {name}…',
     send: 'Gửi',
     noMessages: 'Chưa có tin nào. Bạn nói câu đầu tiên nhé.',
-    aboutThis: 'Về khoảnh khắc này',
+    sentPhoto: '{name} gửi',
+    replyingTo: 'Trả lời ảnh của {name}',
+    cancelReply: 'Bỏ trả lời ảnh này',
+    openCamera: 'Trả lời bằng ảnh',
     mineSaid: 'Bạn: {text}',
   },
 
@@ -156,6 +242,16 @@ export const vi = {
     title: 'Màu sắc',
     label: 'Bảng màu của app',
     note: 'Đổi là thấy ngay. Bảng nào cũng đã đo để chữ đọc được rõ.',
+    mode: 'Cách chọn màu',
+    auto: 'Tự động',
+    fixed: 'Cố định',
+    autoNote: 'Màu tự đổi theo giờ trong ngày, như bầu trời ngoài cửa sổ. Ảnh thì luôn giữ đúng màu thật.',
+    fixedNote: 'Giữ một bảng màu, không đổi theo giờ.',
+    now: 'bây giờ',
+    skyDawn: 'Sáng',
+    skyNoon: 'Trưa',
+    skyDusk: 'Chiều tối',
+    skyNight: 'Đêm',
     terracotta: 'Đất nung',
     moss: 'Rêu',
     deepsea: 'Biển đêm',

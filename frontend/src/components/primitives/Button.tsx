@@ -10,11 +10,21 @@
  * chặng của dải: chữ tối cho 8.37 / 6.85 / 6.47:1, chữ trắng chỉ 2.26 / 2.76 /
  * 2.92:1 — trượt chuẩn ở mọi chặng. Xem `c.onAccent` trong tokens.
  */
-import { ActivityIndicator, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GRADIENT_END, GRADIENT_START, glow, layout, radius, space, useColors, useStyles, type Palette } from '@design';
+import {
+  GRADIENT_END,
+  GRADIENT_START,
+  layout,
+  radius,
+  space,
+  useColors,
+  useStyles,
+  type Palette,
+} from '@design';
 import { Txt } from './Txt';
 import { Tap, type TapProps } from './Tap';
+import { Spinner } from '../feedback/Spinner';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
@@ -53,13 +63,7 @@ export function Button({
       disabled={off}
       feedback={off ? null : feedback}
       scaleTo={0.965}
-      style={[
-        s.base,
-        block && s.block,
-        primary ? s.primary : s[variant],
-        off && s.off,
-        style,
-      ]}
+      style={[s.base, block && s.block, primary ? s.primary : s[variant], off && s.off, style]}
       {...rest}
     >
       {/* Dải màu là lớp nền, nằm dưới chữ. Nút một màu phẳng trên nền gần đen
@@ -75,7 +79,7 @@ export function Button({
       ) : null}
 
       {loading ? (
-        <ActivityIndicator color={primary ? c.onAccent : c.text} />
+        <Spinner size={20} color={primary ? c.onAccent : c.text} />
       ) : (
         <View style={s.content}>
           {icon}
@@ -97,25 +101,25 @@ const TONE = {
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  base: {
-    minHeight: layout.controlHeight,
-    borderRadius: radius.xl,
-    paddingHorizontal: space.xxl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    // overflow hidden để dải màu bị cắt theo góc bo
-    overflow: 'hidden',
-  },
-  block: { alignSelf: 'stretch' },
-  fill: StyleSheet.absoluteFillObject,
+    base: {
+      minHeight: layout.controlHeight,
+      borderRadius: radius.md,
+      paddingHorizontal: space.xxl,
+      alignItems: 'center',
+      justifyContent: 'center',
+      // overflow hidden để dải màu bị cắt theo góc bo
+      overflow: 'hidden',
+    },
+    block: { alignSelf: 'stretch' },
+    fill: StyleSheet.absoluteFill,
 
-  primary: { backgroundColor: c.accent, ...glow(c).accent },
-  secondary: { borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
-  ghost: { backgroundColor: 'transparent' },
-  danger: { borderWidth: 1, borderColor: c.danger, backgroundColor: 'transparent' },
+    primary: { backgroundColor: c.accent },
+    secondary: { borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
+    ghost: { backgroundColor: 'transparent' },
+    danger: { borderWidth: 1, borderColor: c.danger, backgroundColor: 'transparent' },
 
-  off: { opacity: 0.4, ...glow(c).none },
+    off: { opacity: 0.4 },
 
-  content: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  label: { fontSize: 15 },
-});
+    content: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+    label: { fontSize: 16 },
+  });

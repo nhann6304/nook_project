@@ -8,6 +8,7 @@ export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const conversation = useChats((s) => s.conversations.find((c) => c.id === id));
   const send = useChats((s) => s.send);
+  const clearReply = useChats((s) => s.clearReply);
 
   const onSend = useCallback(
     (text: string) => {
@@ -17,7 +18,18 @@ export default function Chat() {
   );
 
   // Vào thẳng đường dẫn này với một id không có thật thì không có gì để hiện.
-  if (!conversation) return <Redirect href="/(app)/(tabs)/chat" />;
+  if (!conversation) return <Redirect href="/(app)/chats" />;
 
-  return <ChatScreen conversation={conversation} onSend={onSend} onClose={() => router.back()} />;
+  return (
+    <ChatScreen
+      conversation={conversation}
+      onSend={onSend}
+      onClearReply={() => clearReply(conversation.id)}
+      onOpenCamera={() => router.dismissTo('/(app)/home')}
+      onOpenFriend={() =>
+        router.push({ pathname: '/(app)/friend/[id]', params: { id: conversation.friend.id } })
+      }
+      onClose={() => router.back()}
+    />
+  );
 }

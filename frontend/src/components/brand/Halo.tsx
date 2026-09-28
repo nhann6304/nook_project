@@ -37,13 +37,11 @@ export const Halo = memo(function Halo({
 
   useEffect(() => {
     if (!breathe || reduced) {
-      t.value = 0;
+      t.set(0);
       return;
     }
-    t.value = withRepeat(
-      withTiming(1, { duration: 3600, easing: Easing.inOut(Easing.quad) }),
-      -1,
-      true,
+    t.set(
+      withRepeat(withTiming(1, { duration: 3600, easing: Easing.inOut(Easing.quad) }), -1, true),
     );
   }, [breathe, reduced, t]);
 
@@ -77,6 +75,6 @@ function Ring({ size, scale, bg }: { size: number; scale: number; bg: string }) 
 
 const make = () =>
   StyleSheet.create({
-  box: { alignItems: 'center', justifyContent: 'center' },
-  ring: { position: 'absolute' },
-});
+    box: { alignItems: 'center', justifyContent: 'center' },
+    ring: { position: 'absolute' },
+  });

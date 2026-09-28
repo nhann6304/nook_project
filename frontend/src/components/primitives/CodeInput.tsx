@@ -40,10 +40,7 @@ export function CodeInput({
   const input = useRef<TextInput>(null);
   const [focused, setFocused] = useState(false);
 
-  const cells = useMemo(
-    () => Array.from({ length }, (_, i) => value[i] ?? ''),
-    [length, value],
-  );
+  const cells = useMemo(() => Array.from({ length }, (_, i) => value[i] ?? ''), [length, value]);
 
   const handleChange = useCallback(
     (t: string) => onChange(t.replace(/\D/g, '').slice(0, length)),
@@ -98,24 +95,24 @@ export function CodeInput({
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  wrap: { width: '100%' },
-  row: { flexDirection: 'row', gap: space.sm },
-  cell: {
-    flex: 1,
-    // Máy gập mở ra rộng 674pt. Không chặn trần thì sáu ô kéo thành sáu cái hộp.
-    maxWidth: 56,
-    aspectRatio: 48 / 56,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: c.border,
-    backgroundColor: c.surfaceSunken,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cellFilled: { backgroundColor: c.surface },
-  cellActive: { borderColor: c.accent },
-  cellInvalid: { borderColor: c.danger },
-  char: { fontSize: type.title.fontSize },
-  // Ô thật đè lên sáu ô giả: trong suốt nhưng vẫn nhận bàn phím và tự điền.
-  realInput: { ...StyleSheet.absoluteFillObject, opacity: 0, color: 'transparent' },
-});
+    wrap: { width: '100%' },
+    row: { flexDirection: 'row', gap: space.sm },
+    cell: {
+      flex: 1,
+      // Máy gập mở ra rộng 674pt. Không chặn trần thì sáu ô kéo thành sáu cái hộp.
+      maxWidth: 56,
+      aspectRatio: 48 / 56,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: c.border,
+      backgroundColor: c.surfaceSunken,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    cellFilled: { backgroundColor: c.surface },
+    cellActive: { borderColor: c.accent },
+    cellInvalid: { borderColor: c.danger },
+    char: { fontSize: type.title.fontSize },
+    // Ô thật đè lên sáu ô giả: trong suốt nhưng vẫn nhận bàn phím và tự điền.
+    realInput: { ...StyleSheet.absoluteFill, opacity: 0, color: 'transparent' },
+  });

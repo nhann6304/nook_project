@@ -24,10 +24,13 @@ export function ComposerField({
   placeholder,
   sendLabel,
   onSend,
+  left,
 }: {
   placeholder: string;
   sendLabel: string;
   onSend: (text: string) => void;
+  /** Nút đứng trước ô soạn (ví dụ trả lời bằng ảnh). */
+  left?: React.ReactNode;
 }) {
   const s = useStyles(make);
   const c = useColors();
@@ -43,6 +46,7 @@ export function ComposerField({
 
   return (
     <View style={s.dock}>
+      {left}
       <View style={s.pill}>
         <TextInput
           value={text}
@@ -76,21 +80,30 @@ export function ComposerField({
 
 const make = (c: Palette) =>
   StyleSheet.create({
-    dock: { paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: space.sm },
-    pill: {
+    dock: {
       flexDirection: 'row',
       alignItems: 'flex-end',
       gap: space.sm,
-      padding: space.xs,
+      paddingHorizontal: space.md,
+      paddingTop: space.sm,
+      paddingBottom: space.sm,
+    },
+    pill: {
+      flex: 1,
+      minHeight: 46,
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: space.sm,
+      padding: space.xs + 1,
       paddingLeft: space.lg,
-      borderRadius: radius.xl,
+      borderRadius: radius.full,
       backgroundColor: c.surface,
     },
     input: {
       flex: 1,
       // Trần bốn dòng. Cộng đệm dọc của chính ô nhập.
       maxHeight: type.body.lineHeight * 4 + space.md * 2,
-      paddingVertical: space.md,
+      paddingVertical: space.sm,
       color: c.text,
       fontSize: type.body.fontSize,
       lineHeight: type.body.lineHeight,

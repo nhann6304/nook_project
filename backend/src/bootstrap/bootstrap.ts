@@ -11,6 +11,18 @@ import { setupHttp } from './http.setup.js';
 import { setupRealtime } from './realtime.setup.js';
 
 /**
+ * Đọc thẳng `process.env`, không qua `ConfigService`: adapter Fastify phải
+ * dựng xong TRƯỚC khi Nest có container, nên lúc này chưa có gì để hỏi. Cách
+ * chọn giá trị nằm ở `TRUST_PROXY` bên `env.validation.ts`.
+ *
+ * Bỏ trống thì `false` — không tin proxy nào. Thà dồn cả nhà chung Wi-Fi vào
+ * một xô còn hơn để trần chống bot thành đồ trang trí.
+ */
+function trustedProxies(): string | false {
+  return process.env.TRUST_PROXY?.trim() || false;
+}
+
+/**
  * Bật server. Đọc từ trên xuống là thấy đủ thứ tự các bước, không hơn.
  *
  * Mỗi bước là một hàm ở tệp riêng. Chi tiết của bước nào thì nằm trong bước đó.
@@ -20,7 +32,12 @@ export async function bootstrap(): Promise<void> {
     AppModule,
     new FastifyAdapter({
       // Đứng sau nginx thì `req.ip` phải là IP người dùng, không phải IP nginx.
-      trustProxy: true,
+      //
+      // DANH SÁCH ĐỊA CHỈ, không phải `true`. `true` là tin mọi hop, và khi đó
+      // Fastify lấy giá trị TRÁI NHẤT của `X-Forwarded-For` — giá trị client tự
+      // bịa. Mọi trần đếm theo IP (`guardCaller`) khi đó chỉ cần đổi header mỗi
+      // lần một giá trị là đi qua hết. Đây từng là `true`.
+      trustProxy: trustedProxies(),
       bodyLimit: 1_048_576,
 
       /**

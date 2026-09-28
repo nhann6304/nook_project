@@ -59,12 +59,12 @@ export function Tap({
   // Bọc tay ở đây còn làm luật react-hooks kêu, vì `pressed` là kho ngoài React
   // — sửa nó bên trong một hàm đã ghi nhớ tay là đúng cái luật đó cấm.
   const handleIn: NonNullable<PressableProps['onPressIn']> = (e) => {
-    pressed.value = withSpring(1, spring.press);
+    pressed.set(withSpring(1, spring.press));
     onPressIn?.(e);
   };
 
   const handleOut: NonNullable<PressableProps['onPressOut']> = (e) => {
-    pressed.value = withTiming(0, { duration: duration.fast });
+    pressed.set(withTiming(0, { duration: duration.fast }));
     onPressOut?.(e);
   };
 

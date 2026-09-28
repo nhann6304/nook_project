@@ -1,8 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { randomInt } from 'node:crypto';
-import argon2 from 'argon2';
+import { ConfigService } from '@nestjs/config';
+import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
 import { ERR, LIMITS, type TSignInMethod } from '@nook/shared';
 import { AppException } from '../../../core/error/index.js';
+import { Env } from '../../../config/env/index.js';
 import { RedisService } from '../../../infra/redis/service/index.js';
 
 /**
@@ -12,11 +13,14 @@ import { RedisService } from '../../../infra/redis/service/index.js';
  *   auth:code:<kind>:<target>     băm { hash, tries, sentAt }   TTL 300s
  *   auth:resend:<kind>:<target>   chốt chặn gửi lại              TTL  60s
  *   auth:hour:<kind>:<target>     con đếm số mã trong một giờ    TTL 3600s
+ *   auth:hour:ip:<ip>             con đếm số mã theo máy gọi     TTL 3600s
+ *   auth:verify:ip:<ip>           con đếm số lần NỘP mã          TTL 3600s
  */
 const KEY = {
   code: (method: TSignInMethod, target: string) => `auth:code:${method}:${target}`,
   resend: (method: TSignInMethod, target: string) => `auth:resend:${method}:${target}`,
   callerHour: (ip: string) => `auth:hour:ip:${ip}`,
+  verifyHour: (ip: string) => `auth:verify:ip:${ip}`,
   hour: (method: TSignInMethod, target: string) => `auth:hour:${method}:${target}`,
 } as const;
 
@@ -36,6 +40,23 @@ const HOUR_SECONDS = 3_600;
  *
  * Cất là **dấu vân** của mã, không phải mã. Ai đọc được Redis cũng không đăng
  * nhập thay ai được.
+ *
+ * ── Dấu vân là HMAC, KHÔNG phải argon2 — và đó là chủ ý ────────────────────
+ *
+ * Argon2 sinh ra để chống bẻ khoá NGOẠI TUYẾN cho mật khẩu: thứ sống nhiều
+ * năm, người ta dùng lại ở chỗ khác, nên phải làm mỗi lần thử tốn kém. Mã ở
+ * đây sống 300 giây, sai 5 lần là chết. Ai bẻ được nó ba tiếng sau thì cầm
+ * trong tay một cái mã đã hết hạn từ lâu.
+ *
+ * Cái giá thì có thật: argon2 mặc định ngốn 64 MB và chạy trên hàng đợi luồng
+ * phụ của libuv — mặc định BỐN luồng, dùng chung với đọc tệp và tra DNS của cả
+ * server. Băm một cái cho MỖI lần xin mã nghĩa là ai bắn liên tục vào
+ * `/auth/code` thì làm nghẽn hàng đợi đó, và mọi thứ khác đứng theo.
+ *
+ * HMAC-SHA256 với khoá riêng của server thì tức thời, và người đọc được Redis
+ * vẫn không suy ngược ra mã vì họ không có khoá — đúng mức an toàn cần cho bài
+ * toán này. Dấu vân buộc luôn vào `method:target` để một dấu vân không dùng
+ * lại được cho đích khác.
  */
 @Injectable()
 export class CodeService {
@@ -47,9 +68,17 @@ export class CodeService {
     resendSeconds: LIMITS.codeResendSeconds,
     perHour: LIMITS.codesPerHour,
     perHourPerIp: LIMITS.codesPerHourPerIp,
+    verifyPerHourPerIp: LIMITS.verifyPerHourPerIp,
   } as const;
 
-  constructor(private readonly redis: RedisService) {}
+  private readonly secret: string;
+
+  constructor(
+    private readonly redis: RedisService,
+    config: ConfigService<Env, true>,
+  ) {
+    this.secret = config.get('AUTH_CODE_SECRET', { infer: true });
+  }
 
   /**
    * Trần theo MÁY GỌI, không theo email.
@@ -70,6 +99,28 @@ export class CodeService {
 
     if (used > this.limits.perHourPerIp) {
       throw new AppException(ERR.CODE_TOO_MANY_HERE, HttpStatus.TOO_MANY_REQUESTS, {
+        retryAfterSeconds: Math.max(await this.redis.ttl(key), 1),
+      });
+    }
+  }
+
+  /**
+   * Trần theo máy gọi cho cửa NỘP mã.
+   *
+   * Không phải để chống đoán mã — 5 lần sai là mã chết. Cái này bịt chỗ khác:
+   * `/auth/verify` từng là cửa duy nhất không có trần nào, nên nó là chỗ bắn
+   * thoải mái. Con số rộng hơn trần xin mã vì người thật gõ sai mã là bình
+   * thường, còn xin mã 30 lần một giờ thì không.
+   */
+  async guardVerifyCaller(ip: string | null): Promise<void> {
+    if (!ip) return;
+
+    const key = KEY.verifyHour(ip);
+    const used = await this.redis.client.incr(key);
+    if (used === 1) await this.redis.client.expire(key, HOUR_SECONDS);
+
+    if (used > this.limits.verifyPerHourPerIp) {
+      throw new AppException(ERR.VERIFY_TOO_MANY_HERE, HttpStatus.TOO_MANY_REQUESTS, {
         retryAfterSeconds: Math.max(await this.redis.ttl(key), 1),
       });
     }
@@ -111,7 +162,7 @@ export class CodeService {
 
     const codeKey = KEY.code(method, target);
     await this.redis.client.hset(codeKey, {
-      hash: await argon2.hash(code),
+      hash: this.sign(method, target, code),
       tries: 0,
       sentAt: Date.now(),
     });
@@ -134,7 +185,7 @@ export class CodeService {
       throw new AppException(ERR.CODE_LOCKED, HttpStatus.TOO_MANY_REQUESTS);
     }
 
-    if (!(await argon2.verify(row.hash, code))) {
+    if (!this.matches(row.hash, this.sign(method, target, code))) {
       const tried = await this.redis.client.hincrby(codeKey, 'tries', 1);
       const triesLeft = Math.max(this.limits.maxTries - tried, 0);
       if (triesLeft === 0) await this.redis.del(codeKey);
@@ -160,5 +211,26 @@ export class CodeService {
   async retryAfterSeconds(method: TSignInMethod, target: string): Promise<number> {
     const ttl = await this.redis.ttl(KEY.resend(method, target));
     return ttl > 0 ? ttl : 0;
+  }
+
+  /** Dấu vân của mã. Buộc vào đích luôn — một dấu vân không xài cho đích khác. */
+  private sign(method: TSignInMethod, target: string, code: string): string {
+    return createHmac('sha256', this.secret).update(`${method}:${target}:${code}`).digest('hex');
+  }
+
+  /**
+   * So hai chuỗi trong thời gian KHÔNG phụ thuộc vào chỗ chúng khác nhau.
+   *
+   * `===` thoát ngay ở byte đầu tiên lệch, và khoảng thời gian chênh đó đo
+   * được. Ở đây thì khai thác nó gần như không tưởng (mã chết sau 5 lần sai),
+   * nhưng so bằng cách đúng cũng chỉ tốn ba dòng.
+   *
+   * So độ dài trước là bắt buộc: `timingSafeEqual` NÉM khi hai bên khác độ dài
+   * — và nó sẽ khác, với những mã còn treo trong Redis từ thời còn dùng argon2.
+   */
+  private matches(stored: string, expected: string): boolean {
+    const a = Buffer.from(stored, 'utf8');
+    const b = Buffer.from(expected, 'utf8');
+    return a.length === b.length && timingSafeEqual(a, b);
   }
 }

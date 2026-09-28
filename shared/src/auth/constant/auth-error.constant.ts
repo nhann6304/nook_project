@@ -12,8 +12,16 @@ export const AUTH_ERR = {
   CODE_TOO_MANY: 'auth.code_too_many',
   /** Xin mã quá nhiều trong một giờ, tính theo máy gọi */
   CODE_TOO_MANY_HERE: 'auth.code_too_many_here',
+  /** Nộp mã quá nhiều trong một giờ, tính theo máy gọi */
+  VERIFY_TOO_MANY_HERE: 'auth.verify_too_many_here',
   /** Email hoặc số điện thoại không đúng dạng */
   TARGET_INVALID: 'auth.target_invalid',
+  /**
+   * Đúng dạng, nhưng không nhận: hộp thư dùng một lần, hoặc tên miền không có
+   * chỗ nhận thư. Tách khỏi TARGET_INVALID vì app phải nói khác — người dùng
+   * gõ đúng, chỉ là phải đổi sang email khác.
+   */
+  TARGET_NOT_ALLOWED: 'auth.target_not_allowed',
   /** Không gửi được mã đi (nhà mạng / hộp thư từ chối) */
   SEND_FAILED: 'auth.send_failed',
   /** Đường đăng nhập này chưa mở — xem SIGNIN_METHODS_ENABLED */

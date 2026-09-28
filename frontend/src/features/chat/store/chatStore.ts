@@ -20,9 +20,14 @@ const nextId = () => `m-${++seq}`;
 
 type ChatState = {
   conversations: readonly Conversation[];
+  /** Gửi một tin. Cuộc đang có ảnh chờ trả lời thì ảnh đó đi kèm tin này. */
   send: (id: string, text: string, at: number) => void;
-  /** Mở (hoặc tạo) cuộc trò chuyện gắn với một khoảnh khắc. Trả về id. */
+  /** Mở (hoặc tạo) cuộc trò chuyện, đặt tấm ảnh chờ trả lời. Trả về id. */
   openAbout: (friend: Author, photo: PhotoSource, caption: string | undefined) => string;
+  /** Mở (hoặc tạo rỗng) cuộc trò chuyện với một người, không kèm ảnh. */
+  open: (friend: Author) => string;
+  /** Bỏ tấm ảnh đang chờ — người dùng bấm X trên ô soạn. */
+  clearReply: (id: string) => void;
 };
 
 export const useChats = create<ChatState>((set) => ({
@@ -32,7 +37,11 @@ export const useChats = create<ChatState>((set) => ({
     set((s) => ({
       conversations: s.conversations.map((c) =>
         c.id === id
-          ? { ...c, messages: [...c.messages, { id: nextId(), text, at, mine: true }] }
+          ? {
+              ...c,
+              replyTo: undefined,
+              messages: [...c.messages, { id: nextId(), text, at, mine: true, about: c.replyTo }],
+            }
           : c,
       ),
     })),
@@ -40,15 +49,29 @@ export const useChats = create<ChatState>((set) => ({
   openAbout: (friend, photo, caption) => {
     set((s) => {
       const found = s.conversations.find((c) => c.id === friend.id);
-      const about = { photo, caption };
+      const replyTo = { photo, caption };
       if (found) {
         return {
-          conversations: s.conversations.map((c) => (c.id === friend.id ? { ...c, about } : c)),
+          conversations: s.conversations.map((c) => (c.id === friend.id ? { ...c, replyTo } : c)),
         };
       }
       // Cuộc mới lên ĐẦU danh sách: nó là cái vừa xảy ra.
-      return { conversations: [{ id: friend.id, friend, messages: [], about }, ...s.conversations] };
+      return { conversations: [{ id: friend.id, friend, messages: [], replyTo }, ...s.conversations] };
     });
     return friend.id;
   },
+
+  open: (friend) => {
+    set((s) =>
+      s.conversations.some((c) => c.id === friend.id)
+        ? s
+        : { conversations: [{ id: friend.id, friend, messages: [] }, ...s.conversations] },
+    );
+    return friend.id;
+  },
+
+  clearReply: (id) =>
+    set((s) => ({
+      conversations: s.conversations.map((c) => (c.id === id ? { ...c, replyTo: undefined } : c)),
+    })),
 }));

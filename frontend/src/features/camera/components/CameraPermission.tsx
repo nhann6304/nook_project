@@ -68,7 +68,8 @@ export function CameraPermission({
   }, [blocked, onRequest]);
 
   return (
-    <Screen>
+    // Nằm TRONG một trang của màn chính — chắn tai thỏ đã có ở ngoài rồi.
+    <Screen edges={[]}>
       <EmptyState
         title={blocked ? t('camera.permission.blockedTitle') : t('camera.permission.title')}
         message={blocked ? t('camera.permission.blockedMessage') : t('camera.permission.message')}
@@ -85,5 +86,10 @@ export function CameraPermission({
 }
 
 const s = StyleSheet.create({
-  escape: { paddingBottom: space.lg, maxWidth: layout.maxTextWidth, width: '100%', alignSelf: 'center' },
+  escape: {
+    paddingBottom: space.lg,
+    maxWidth: layout.maxTextWidth,
+    width: '100%',
+    alignSelf: 'center',
+  },
 });

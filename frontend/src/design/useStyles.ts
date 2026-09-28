@@ -30,8 +30,9 @@
  * thân là mỗi lần vẽ một hàm mới, khoá mới, và bảng tra không bao giờ trúng.
  */
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 import { useTheme } from './theme';
-import type { Palette, PaletteKey } from './palettes';
+import type { Palette, ThemeKey } from './palettes';
 
 export function useColors(): Palette {
   return useTheme((s) => s.palette);
@@ -39,7 +40,7 @@ export function useColors(): Palette {
 
 type Factory<T> = (c: Palette) => T;
 
-const cache = new WeakMap<Factory<unknown>, Map<PaletteKey, unknown>>();
+const cache = new WeakMap<Factory<unknown>, Map<ThemeKey, unknown>>();
 
 export function useStyles<T>(make: Factory<T>): T {
   const palette = useColors();
@@ -91,8 +92,21 @@ export function glow(c: Palette) {
 export function useThemeReady(): boolean {
   const ready = useTheme((s) => s.ready);
   const hydrate = useTheme((s) => s.hydrate);
+  const tick = useTheme((s) => s.tick);
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
+  // Chế độ tự động: mỗi phút xem đã sang chặng trời mới chưa, và xem lại ngay
+  // khi app quay về từ nền (để qua đêm, mở máy là đúng màu buổi sáng).
+  useEffect(() => {
+    const timer = setInterval(tick, 60_000);
+    const sub = AppState.addEventListener('change', (st) => {
+      if (st === 'active') tick();
+    });
+    return () => {
+      clearInterval(timer);
+      sub.remove();
+    };
+  }, [tick]);
   return ready;
 }
