@@ -55,6 +55,22 @@ export const vi = {
   },
 
   /* ---------- Màn 3 — Nhập mã ---------- */
+  profile: {
+    title: 'Bạn tên gì?',
+    sub: 'Bạn bè trong góc sẽ thấy tên và ảnh này.',
+    nameLabel: 'Tên của bạn',
+    namePlaceholder: 'Tên của bạn',
+    usernameLabel: 'Tên riêng',
+    usernamePlaceholder: 'tenrieng',
+    usernameHint: 'Bạn bè tìm bạn bằng tên riêng này.',
+    usernameShort: 'Tên riêng cần ít nhất 3 ký tự.',
+    usernameChars: 'Chỉ dùng chữ không dấu, số, dấu chấm và gạch dưới.',
+    taken: 'Tên riêng này có người dùng rồi. Bạn thử tên khác nhé.',
+    addPhoto: 'Thêm ảnh đại diện',
+    changePhoto: 'Đổi ảnh đại diện',
+    continue: 'Tiếp tục',
+  },
+
   verify: {
     title: 'Mã đã gửi rồi nhé',
     sub: 'Sáu số vừa được gửi tới {target}.',
@@ -156,6 +172,13 @@ export const vi = {
       noneTitle: 'Chưa thấy ai tên “{query}”',
       noneMessage: 'Có thể họ chưa dùng Nook. Gửi link để rủ họ vào nhé.',
       failed: 'Chưa gửi được lời mời. Bạn thử lại giúp mình nhé.',
+    },
+    invites: {
+      title: 'Lời mời đang chờ',
+      sub: '@{username} · {ago}',
+      accept: 'Nhận lời',
+      acceptLabel: 'Nhận lời mời của {name}',
+      decline: 'Từ chối lời mời của {name}',
     },
     levels: {
       l1: 'Bắt đầu',

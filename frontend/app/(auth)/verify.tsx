@@ -22,11 +22,18 @@ export default function Verify() {
         setError(res.message);
         return false;
       }
+      // Người mới đặt tên + ảnh trước; người cũ vào thẳng camera. Khi có
+      // server thì phân biệt bằng `onboarded` trong hồ sơ trả về, không bằng
+      // cửa họ đã chọn ở màn Chào mừng.
+      if (pending?.intent === 'signup') {
+        router.replace('/(auth)/profile');
+        return true;
+      }
       codeAccepted();
       router.replace('/(app)/home');
       return true;
     },
-    [codeAccepted, router],
+    [codeAccepted, pending, router],
   );
 
   const resend = useCallback(() => {

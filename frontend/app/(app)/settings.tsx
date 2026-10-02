@@ -3,12 +3,15 @@ import { useRouter } from 'expo-router';
 import { SettingsScreen } from '@/features/settings/screens/SettingsScreen';
 import { PALETTE_KEYS, SKY_KEYS, useTheme, type PaletteKey, type SkyKey } from '@design';
 import { useT } from '@i18n';
-import { FRIENDS } from '@/mocks/friends';
+import { useCircle } from '@/features/circle/store/circleStore';
 import { ME } from '@/mocks/moments';
+import { useProfile } from '@/features/profile/store/profileStore';
 
 export default function Settings() {
   const router = useRouter();
   const t = useT();
+  const friendCount = useCircle((s) => s.friends.length);
+  const myName = useProfile((s) => s.name);
   const current = useTheme((s) => s.palette.key);
   const fixed = useTheme((s) => s.fixed);
   const mode = useTheme((s) => s.mode);
@@ -33,8 +36,8 @@ export default function Settings() {
 
   return (
     <SettingsScreen
-      name={ME.name}
-      friendCount={FRIENDS.length}
+      name={myName ?? ME.name}
+      friendCount={friendCount}
       palette={fixed}
       paletteNames={names}
       onPickPalette={setPalette}

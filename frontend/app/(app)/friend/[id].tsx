@@ -5,13 +5,13 @@ import { FriendScreen } from '@/features/circle/screens/FriendScreen';
 import { useMoments } from '@/features/feed/store/momentsStore';
 import { useChats } from '@/features/chat/store/chatStore';
 import { useT } from '@i18n';
-import { FRIENDS } from '@/mocks/friends';
+import { useCircle } from '@/features/circle/store/circleStore';
 
 export default function Friend() {
   const router = useRouter();
   const t = useT();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const friend = FRIENDS.find((f) => f.id === id);
+  const friend = useCircle((s) => s.friends.find((f) => f.id === id));
   const moments = useMoments((s) => s.moments);
   const photos = useMemo(() => moments.filter((m) => m.author.id === id), [id, moments]);
   const openChat = useChats((s) => s.open);

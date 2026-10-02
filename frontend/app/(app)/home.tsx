@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { HomeScreen } from '@/features/home/screens/HomeScreen';
 import type { Shot } from '@/features/camera/components/CameraPage';
@@ -8,12 +8,12 @@ import { useMoments } from '@/features/feed/store/momentsStore';
 import { useChats } from '@/features/chat/store/chatStore';
 import { lastMessage } from '@/features/chat/types';
 import { useJournal } from '@/features/journal/store/journalStore';
-import { FRIENDS } from '@/mocks/friends';
-
-const NAMES = FRIENDS.map((f) => f.name);
+import { useCircle } from '@/features/circle/store/circleStore';
 
 export default function Home() {
   const router = useRouter();
+  const friends = useCircle((s) => s.friends);
+  const names = useMemo(() => friends.map((f) => f.name), [friends]);
   const moments = useMoments((s) => s.moments);
   const add = useMoments((s) => s.add);
   const journal = useJournal((s) => s.entries);
@@ -48,7 +48,7 @@ export default function Home() {
 
   return (
     <HomeScreen
-      friendNames={NAMES}
+      friendNames={names}
       moments={moments}
       unread={unread}
       onSend={send}

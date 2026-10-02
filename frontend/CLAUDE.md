@@ -123,9 +123,10 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] Xin quyền camera: có nhánh "đã từ chối" mở Cài đặt máy + tự đọc lại khi quay về
 - [x] Điều hướng expo-router có kiểu, kho trạng thái Zustand
 - [x] Icon PNG cho store đã xuất; wordmark "nook" vẽ lại bằng SVG
-- [ ] Onboarding — còn 3 màn: Tên và ảnh, Mời người đầu tiên, Xin quyền
+- [x] Màn **Tên + ảnh** (người mới, sau khi nhập mã): tên hiện, @tên riêng tự gợi ý, ảnh đại diện — hàng giả `profile/lib/profileApi.ts`
+- [ ] Onboarding — còn 2 màn: Mời người đầu tiên, Xin quyền
 - [ ] Cài đặt: mới có hàng Ngôn ngữ. Còn Vị trí, Thông báo, Tài khoản
-- [~] Thêm bạn — ô tìm theo tên / @tên ở màn Bạn bè (hàng giả `circle/lib/circleApi.ts`). Còn chờ đường API tìm người + lời mời bên backend
+- [x] **Thêm bạn** (hàng giả `circle/lib/circleApi.ts`): ô tìm — lọc người trong góc theo tên, tìm người trên Nook CHỈ theo @tên; mời · nhận lời · từ chối. Danh sách bạn ở kho `circle/store/circleStore.ts`, mọi màn đọc chung. Còn chờ backend
 - [ ] "Lưu về máy" ở màn Vừa chụp xong — cần `expo-media-library` + xin quyền ghi
 - [ ] Chưa đo hiệu năng trên máy Android tầm trung
 - [ ] Widget: thiết kế xong, chưa viết mã gốc — **cần development build**
@@ -133,10 +134,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 
 ## Việc tiếp theo hợp lý
 
-Gần nhất: màn **Tên + ảnh** để đi hết một lượt onboarding (màn 4).
-
-Sau đó: **Thêm bạn** (màn 12–13) — hiện ô `+` ở hàng người chỉ mở màn Góc, chưa
-mời được ai thật.
+Gần nhất: nối `authApi.ts`, `circleApi.ts`, `profileApi.ts` vào server khi backend
+có đường — màn hình không phải sửa.
 
 Cần quyết sớm: **có chuyển sang development build không.** Hiện mọi thứ còn chạy
 trên Expo Go (quét QR là xem được trên máy thật). Widget và `react-native-mmkv`

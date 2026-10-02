@@ -51,6 +51,22 @@ export const en: Mirror<typeof vi> = {
     terms: 'Tapping “Continue” means you agree to Nook’s Terms of Service and Privacy Policy.',
   },
 
+  profile: {
+    title: "What's your name?",
+    sub: 'Friends in your nook will see this name and photo.',
+    nameLabel: 'Your name',
+    namePlaceholder: 'Your name',
+    usernameLabel: 'Username',
+    usernamePlaceholder: 'username',
+    usernameHint: 'Friends find you by this username.',
+    usernameShort: 'Use at least 3 characters.',
+    usernameChars: 'Only letters, numbers, dots and underscores.',
+    taken: 'That username is taken. Try another one.',
+    addPhoto: 'Add a profile photo',
+    changePhoto: 'Change profile photo',
+    continue: 'Continue',
+  },
+
   verify: {
     title: 'Code sent',
     sub: 'Six digits are on their way to {target}.',
@@ -152,6 +168,13 @@ export const en: Mirror<typeof vi> = {
       noneTitle: 'No one called “{query}” yet',
       noneMessage: 'They may not be on Nook. Send them a link instead.',
       failed: "Couldn't send the invite. Please try again.",
+    },
+    invites: {
+      title: 'Waiting for you',
+      sub: '@{username} · {ago}',
+      accept: 'Accept',
+      acceptLabel: 'Accept invite from {name}',
+      decline: 'Decline invite from {name}',
     },
     levels: {
       l1: 'Just started',

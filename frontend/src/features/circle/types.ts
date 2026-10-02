@@ -25,3 +25,14 @@ export type Person = {
   username: string;
   uri?: string;
 };
+
+/** Lời mời người khác gửi cho mình, đang chờ mình nhận. */
+export type Invite = Person & {
+  /** Lúc họ mời, epoch ms. */
+  at: number;
+};
+
+/** Quan hệ giữa mình và một người, nhìn từ phía mình. Trùng tên với hợp đồng server. */
+export type Relation = 'none' | 'requested' | 'incoming' | 'friend';
+
+export type PersonResult = Person & { relation: Relation };

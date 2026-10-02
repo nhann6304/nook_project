@@ -7,13 +7,15 @@
  *
  * Vòng màu là cấp thân — chỉ mình thấy, nên dòng chân màn nói rõ điều đó.
  *
- * Ô tìm ở đầu: gõ là lọc ngay người trong góc (không cần mạng), đồng thời tìm
- * người khác trên Nook theo tên / @tên để mời. Không thấy ai thì rủ gửi link.
+ * Ô tìm ở đầu: gõ là lọc ngay người trong góc theo tên (không cần mạng), đồng
+ * thời tìm người khác trên Nook theo @tên để mời. Không thấy ai thì rủ gửi link.
+ *
+ * Ai đã mời mình thì nằm trên cùng, nhận hoặc từ chối ngay tại chỗ.
  */
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOut } from 'react-native-reanimated';
 import {
   Avatar,
   Button,
@@ -27,11 +29,11 @@ import {
   Tap,
   Txt,
 } from '@ui';
-import { radius, space, spring, useColors, useStyles, type Palette } from '@design';
+import { duration, radius, space, spring, useColors, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
-import { CIRCLE_SIZE, type Friend, type Person } from '../types';
+import { CIRCLE_SIZE, type Friend, type Invite, type Person, type PersonResult } from '../types';
 import { MIN_QUERY } from '../lib/circleApi';
-import { fold, matches } from '../lib/fold';
+import { fold, matches } from '@/lib/fold';
 
 const STAGGER = 45;
 
@@ -44,9 +46,12 @@ export function CircleScreen({
   onQueryChange,
   people,
   searching,
-  requested,
+  incoming,
+  busy,
   onRequest,
-  searchError,
+  onAccept,
+  onDecline,
+  error,
 }: {
   friends: readonly Friend[];
   onInvite: () => void;
@@ -54,13 +59,17 @@ export function CircleScreen({
   onClose: () => void;
   query: string;
   onQueryChange: (q: string) => void;
-  /** Người ngoài góc khớp `query` — server trả về. */
-  people: readonly Person[];
+  /** Người ngoài góc khớp `query` — server trả về, kèm quan hệ với mình. */
+  people: readonly PersonResult[];
   searching: boolean;
-  /** Ai đã được mời trong lần mở màn này. */
-  requested: ReadonlySet<string>;
+  /** Ai đã mời mình, đang chờ. */
+  incoming: readonly Invite[];
+  /** Ai đang chờ server trả lời (nhận / từ chối). */
+  busy: ReadonlySet<string>;
   onRequest: (id: string) => void;
-  searchError: string | null;
+  onAccept: (person: Person) => void;
+  onDecline: (id: string) => void;
+  error: string | null;
 }) {
   const s = useStyles(make);
   const c = useColors();
@@ -116,16 +125,47 @@ export function CircleScreen({
           friends={friends}
           people={people}
           searching={searching}
-          requested={requested}
           full={left <= 0}
-          error={searchError}
+          error={error}
           sub={sub}
           onOpenFriend={onOpenFriend}
           onRequest={onRequest}
+          onAccept={onAccept}
           onInvite={onInvite}
         />
       ) : (
         <Scroll>
+          {incoming.length > 0 ? (
+            <>
+              <Txt variant="label" tone="muted" style={s.section}>
+                {t('friends.invites.title')}
+              </Txt>
+              {incoming.map((inv) => (
+                <Animated.View key={inv.id} exiting={FadeOut.duration(duration.fast)}>
+                  <InviteRow
+                    invite={inv}
+                    sub={t('friends.invites.sub', {
+                      username: inv.username,
+                      ago: ago(new Date(inv.at)),
+                    })}
+                    busy={busy.has(inv.id)}
+                    full={left <= 0}
+                    acceptLabel={t('friends.invites.accept')}
+                    acceptA11y={t('friends.invites.acceptLabel', { name: inv.name })}
+                    declineA11y={t('friends.invites.decline', { name: inv.name })}
+                    onAccept={onAccept}
+                    onDecline={onDecline}
+                  />
+                </Animated.View>
+              ))}
+              {error ? (
+                <View style={s.hint}>
+                  <HelperText tone="danger">{error}</HelperText>
+                </View>
+              ) : null}
+            </>
+          ) : null}
+
           <View style={s.invite}>
             <View style={s.inviteText}>
               <Txt variant="label">{t('friends.inviteTitle')}</Txt>
@@ -175,24 +215,24 @@ function SearchResults({
   friends,
   people,
   searching,
-  requested,
   full,
   error,
   sub,
   onOpenFriend,
   onRequest,
+  onAccept,
   onInvite,
 }: {
   query: string;
   friends: readonly Friend[];
-  people: readonly Person[];
+  people: readonly PersonResult[];
   searching: boolean;
-  requested: ReadonlySet<string>;
   full: boolean;
   error: string | null;
   sub: (f: Friend) => string;
   onOpenFriend: (id: string) => void;
   onRequest: (id: string) => void;
+  onAccept: (person: Person) => void;
   onInvite: () => void;
 }) {
   const s = useStyles(make);
@@ -241,12 +281,19 @@ function SearchResults({
           <PersonRow
             key={p.id}
             person={p}
-            requested={requested.has(p.id)}
             disabled={full}
-            addLabel={t('friends.search.add')}
-            requestedLabel={t('friends.search.requested')}
-            a11y={t('friends.search.addLabel', { name: p.name })}
+            labels={{
+              none: t('friends.search.add'),
+              requested: t('friends.search.requested'),
+              incoming: t('friends.invites.accept'),
+            }}
+            a11y={
+              p.relation === 'incoming'
+                ? t('friends.invites.acceptLabel', { name: p.name })
+                : t('friends.search.addLabel', { name: p.name })
+            }
             onRequest={onRequest}
+            onAccept={onAccept}
           />
         ))
       )}
@@ -259,24 +306,25 @@ function SearchResults({
   );
 }
 
+/** Kết quả tìm: một nút, đổi theo quan hệ — mời · đã mời · nhận lời. */
 const PersonRow = memo(function PersonRow({
   person,
-  requested,
   disabled,
-  addLabel,
-  requestedLabel,
+  labels,
   a11y,
   onRequest,
+  onAccept,
 }: {
-  person: Person;
-  requested: boolean;
+  person: PersonResult;
   disabled: boolean;
-  addLabel: string;
-  requestedLabel: string;
+  labels: Record<'none' | 'requested' | 'incoming', string>;
   a11y: string;
   onRequest: (id: string) => void;
+  onAccept: (person: Person) => void;
 }) {
   const s = useStyles(make);
+  const sent = person.relation === 'requested';
+  const label = person.relation === 'friend' ? labels.none : labels[person.relation];
   return (
     <View style={s.row}>
       <Avatar name={person.name} uri={person.uri} ring={false} size={52} recyclingKey={person.id} />
@@ -289,11 +337,62 @@ const PersonRow = memo(function PersonRow({
         </Txt>
       </View>
       <Button
-        label={requested ? requestedLabel : addLabel}
-        variant={requested ? 'ghost' : 'secondary'}
-        disabled={requested || disabled}
-        onPress={() => onRequest(person.id)}
+        label={label}
+        variant={sent ? 'ghost' : 'secondary'}
+        disabled={sent || disabled}
+        onPress={() => (person.relation === 'incoming' ? onAccept(person) : onRequest(person.id))}
         accessibilityLabel={a11y}
+        style={s.addBtn}
+      />
+    </View>
+  );
+});
+
+/** Một lời mời đang chờ: nhận (nút) hoặc từ chối (dấu ✕). */
+const InviteRow = memo(function InviteRow({
+  invite,
+  sub,
+  busy,
+  full,
+  acceptLabel,
+  acceptA11y,
+  declineA11y,
+  onAccept,
+  onDecline,
+}: {
+  invite: Invite;
+  sub: string;
+  busy: boolean;
+  full: boolean;
+  acceptLabel: string;
+  acceptA11y: string;
+  declineA11y: string;
+  onAccept: (person: Person) => void;
+  onDecline: (id: string) => void;
+}) {
+  const s = useStyles(make);
+  const c = useColors();
+  return (
+    <View style={s.row}>
+      <Avatar name={invite.name} uri={invite.uri} ring={false} size={52} recyclingKey={invite.id} />
+      <View style={s.rowText}>
+        <Txt variant="section" numberOfLines={1}>
+          {invite.name}
+        </Txt>
+        <Txt variant="faint" tone="faint" numberOfLines={1}>
+          {sub}
+        </Txt>
+      </View>
+      <IconButton label={declineA11y} onPress={() => onDecline(invite.id)} disabled={busy}>
+        <Ionicons name="close" size={20} color={c.textMuted} />
+      </IconButton>
+      <Button
+        label={acceptLabel}
+        variant="secondary"
+        loading={busy}
+        disabled={full}
+        onPress={() => onAccept(invite)}
+        accessibilityLabel={acceptA11y}
         style={s.addBtn}
       />
     </View>

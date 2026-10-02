@@ -1,10 +1,11 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CircleScreen } from '@/features/circle/screens/CircleScreen';
-import { useT } from '@i18n';
+import { relationOf, useCircle } from '@/features/circle/store/circleStore';
 import { useFriendSearch } from '@/features/circle/lib/useFriendSearch';
-import { FRIENDS } from '@/mocks/friends';
+import { useInvites } from '@/features/circle/lib/useInvites';
+import { useT } from '@i18n';
 
 /** Link mời giả — khi có server thì lấy link thật (hạn 7 ngày) từ API. */
 const INVITE_LINK = 'https://nook.app/i/demo';
@@ -12,7 +13,20 @@ const INVITE_LINK = 'https://nook.app/i/demo';
 export default function Circle() {
   const router = useRouter();
   const t = useT();
+  const friends = useCircle((s) => s.friends);
+  const incoming = useCircle((s) => s.incoming);
+  const requested = useCircle((s) => s.requested);
   const search = useFriendSearch();
+  const invites = useInvites();
+
+  // Người đã trong góc hiện ở mục "Trong góc của bạn" rồi, đừng hiện lần hai.
+  const people = useMemo(
+    () =>
+      search.people
+        .map((p) => ({ ...p, relation: relationOf(p.id, { friends, incoming, requested }) }))
+        .filter((p) => p.relation !== 'friend'),
+    [friends, incoming, requested, search.people],
+  );
 
   // Bảng chia sẻ của hệ điều hành: Zalo, Messenger, tin nhắn… người dùng tự chọn.
   const invite = useCallback(() => {
@@ -21,17 +35,20 @@ export default function Circle() {
 
   return (
     <CircleScreen
-      friends={FRIENDS}
+      friends={friends}
       onInvite={invite}
       onOpenFriend={(id) => router.push({ pathname: '/(app)/friend/[id]', params: { id } })}
       onClose={() => router.back()}
       query={search.query}
       onQueryChange={search.setQuery}
-      people={search.people}
+      people={people}
       searching={search.searching}
-      requested={search.requested}
-      onRequest={(id) => void search.request(id)}
-      searchError={search.error}
+      incoming={incoming}
+      busy={invites.busy}
+      onRequest={(id) => void invites.request(id)}
+      onAccept={(p) => void invites.accept(p)}
+      onDecline={(id) => void invites.decline(id)}
+      error={invites.error ?? search.error}
     />
   );
 }
