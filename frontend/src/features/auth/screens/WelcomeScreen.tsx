@@ -10,16 +10,7 @@ import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Button, Img, Screen, Txt, Wordmark } from '@ui';
-import {
-  duration,
-  layout,
-  radius,
-  space,
-  spring,
-  useColors,
-  useStyles,
-  type Palette,
-} from '@design';
+import { duration, layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import { SEED_MOMENTS } from '@/mocks/moments';
 
@@ -39,11 +30,7 @@ export function WelcomeScreen({
   const { height } = useWindowDimensions();
   const heroH = Math.round(height * 0.66);
 
-  const rise = (i: number) =>
-    FadeInDown.delay(duration.slow + i * STAGGER)
-      .springify()
-      .damping(spring.enter.damping)
-      .stiffness(spring.enter.stiffness);
+  const rise = (i: number) => FadeInDown.delay(duration.slow + i * STAGGER).duration(duration.slow);
 
   return (
     <View style={s.root}>
@@ -62,7 +49,7 @@ export function WelcomeScreen({
         </View>
 
         <Animated.View
-          entering={FadeInUp.delay(duration.scene).springify().damping(spring.enter.damping)}
+          entering={FadeInUp.delay(duration.scene).duration(duration.slow)}
           style={s.notice}
         >
           <Img source={SEED_MOMENTS[1]!.photo} style={s.noticeThumb} transition={0} />

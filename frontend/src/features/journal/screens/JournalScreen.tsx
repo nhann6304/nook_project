@@ -13,18 +13,9 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeIn, FadeInDown, FadeOut, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
 import { EmptyState, IconButton, Img, Screen, Scroll, Tap, Txt } from '@ui';
-import {
-  duration,
-  layout,
-  radius,
-  space,
-  spring,
-  useColors,
-  useStyles,
-  type Palette,
-} from '@design';
+import { duration, layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useDate, useLocale, useT } from '@i18n';
 import { dayKey, type Entry } from '../types';
 
@@ -242,7 +233,7 @@ function YearView({
 
   return (
     <Scroll contentContainerStyle={s.yearContent}>
-      <Animated.View entering={FadeInDown.springify().damping(spring.enter.damping)}>
+      <Animated.View entering={FadeInDown.duration(duration.base)}>
         <Txt variant="display">{year}</Txt>
         <Txt variant="body" tone="muted">
           {t('journal.yearSummary', stats)}
@@ -390,10 +381,7 @@ function MonthView({
 
   return (
     <Scroll contentContainerStyle={s.monthContent}>
-      <Animated.View
-        entering={FadeInDown.springify().damping(spring.enter.damping)}
-        style={s.monthHead}
-      >
+      <Animated.View entering={FadeInDown.duration(duration.base)} style={s.monthHead}>
         <View style={s.monthTitle}>
           <Txt variant="display">{title}</Txt>
           <Txt variant="body" tone="muted">
@@ -520,7 +508,7 @@ function Viewer({
       >
         <View style={s.backdrop} />
       </Tap>
-      <Animated.View entering={ZoomIn.springify().damping(spring.enter.damping)}>
+      <Animated.View entering={FadeIn.duration(duration.base)}>
         <Scroll
           horizontal
           pagingEnabled

@@ -4,7 +4,7 @@
  */
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
-import { duration, radius, space, spring, useStyles, type Palette } from '@design';
+import { duration, radius, space, useStyles, type Palette } from '@design';
 import { Txt } from '../primitives/Txt';
 
 export function Toast({
@@ -22,9 +22,7 @@ export function Toast({
     <View pointerEvents="none" style={s.slot}>
       <Animated.View
         key={id}
-        entering={FadeInDown.springify()
-          .damping(spring.enter.damping)
-          .stiffness(spring.enter.stiffness)}
+        entering={FadeInDown.duration(duration.base)}
         exiting={FadeOutUp.duration(duration.base)}
         style={s.pill}
         accessibilityLiveRegion="polite"

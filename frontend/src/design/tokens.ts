@@ -123,12 +123,17 @@ export const ease = {
   inOut: [0.4, 0, 0.2, 1],
 } as const;
 
-/** Độ nảy cho Reanimated. Damping cao = dừng dứt khoát, không rung lắc. */
+/**
+ * Lò xo cho Reanimated — TẮT DẦN TỚI HẠN, không vọt quá rồi dội lại.
+ * `damping ≥ 2·√(stiffness·mass)` thì lò xo chạy tới nơi rồi đứng yên. Bản cũ
+ * (damping 18 / 22) thấp hơn ngưỡng đó, mọi thứ nảy "tưng tưng" (02/10/2026).
+ * Đổi `stiffness` hay `mass` thì tính lại `damping` theo công thức trên.
+ */
 export const spring = {
   /** Phản hồi khi nhấn. Phải dừng trước khi ngón tay kịp rời. */
-  press: { damping: 22, stiffness: 380, mass: 0.6 },
+  press: { damping: 31, stiffness: 380, mass: 0.6 },
   /** Thứ xuất hiện trên màn. */
-  enter: { damping: 18, stiffness: 180, mass: 0.9 },
+  enter: { damping: 26, stiffness: 180, mass: 0.9 },
   /** Hiệu ứng nền, thở chậm. */
   gentle: { damping: 26, stiffness: 90, mass: 1 },
 } as const;

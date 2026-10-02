@@ -29,7 +29,7 @@ import {
   Tap,
   Txt,
 } from '@ui';
-import { duration, radius, space, spring, useColors, useStyles, type Palette } from '@design';
+import { duration, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
 import { CIRCLE_SIZE, type Friend, type Invite, type Person, type PersonResult } from '../types';
 import { MIN_QUERY } from '../lib/circleApi';
@@ -191,9 +191,7 @@ export function CircleScreen({
               {friends.map((f, i) => (
                 <Animated.View
                   key={f.id}
-                  entering={FadeInDown.delay(i * STAGGER)
-                    .springify()
-                    .damping(spring.enter.damping)}
+                  entering={FadeInDown.delay(i * STAGGER).duration(duration.base)}
                 >
                   <FriendRow friend={f} sub={sub(f)} onOpen={onOpenFriend} />
                 </Animated.View>

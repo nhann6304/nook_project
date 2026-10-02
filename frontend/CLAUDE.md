@@ -82,6 +82,10 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   gì gửi nấy. Máy cao thì khung nằm giữa phần dư (`frame.top`).
 - Chuyển cảnh chỉ dùng **transform + opacity**. Lướt trang đi thẳng theo ngón
   tay, không lún/thu nhỏ (bản cũ nhìn như nhảy lên xuống, Android giật khung camera).
+- **Không nảy.** Thứ hiện ra dùng `FadeIn…duration(...)`, không `.springify()`;
+  `spring.*` đã tắt dần tới hạn — đổi số thì giữ `damping ≥ 2·√(stiffness·mass)`.
+- Bàn phím **không co khung** ở màn chính: chú thích tự nhích lên
+  (`useAnimatedKeyboard`), trang giữ nguyên chiều cao.
 - **Không thanh tab** (bảng thiết kế bản 7, thay luật 01/09/2026). Màn chính
   `app/(app)/home.tsx` là camera ở trang 0 + ảnh bạn bè từng trang bên dưới,
   **vuốt lên** là tới (`<Pager>`). Góc trái → bạn bè (trượt từ trái), góc phải

@@ -101,7 +101,7 @@ export function HomeScreen({
   const c = useColors();
   const t = useT();
   const ago = useAgo();
-  const { width } = useWindowDimensions();
+  const { width, height: windowH } = useWindowDimensions();
   const count = friendNames.length;
 
   const root = useRef<View>(null);
@@ -125,9 +125,17 @@ export function HomeScreen({
     return { w, h: Math.round(h), top, x: (width - w) / 2, y: area.y + top };
   }, [area, width]);
 
+  // Bàn phím KHÔNG được co khung: co là trang đổi cao, khung camera nhỏ lại rồi
+  // to ra, cả màn giật lên giật xuống. Ô gõ duy nhất ở màn này là chú thích lúc
+  // xem lại ảnh, nên trong lúc đó bỏ qua mọi lần co; chữ chú thích tự nhích lên
+  // trên bàn phím (`CameraPage`).
+  const reviewingRef = useRef(false);
+  useEffect(() => {
+    reviewingRef.current = reviewing;
+  }, [reviewing]);
   const measure = useCallback((e: LayoutChangeEvent) => {
     const { y, height } = e.nativeEvent.layout;
-    setArea({ y, h: height });
+    setArea((prev) => (reviewingRef.current && height < prev.h ? prev : { y, h: height }));
     root.current?.measureInWindow((x, wy) => setRootAt({ x, y: wy }));
   }, []);
 
@@ -277,6 +285,7 @@ export function HomeScreen({
         return (
           <CameraPage
             frame={frame}
+            keyboardGap={windowH - (rootAt.y + frame.y + frame.h)}
             onReviewChange={setReviewing}
             onSend={send}
             onOpenFeed={toFeed}
@@ -308,13 +317,27 @@ export function HomeScreen({
         />
       );
     },
-    [ago, frame, journal, moments, onOpenJournal, react, reactionLabels, send, t, toFeed, weekdays],
+    [
+      ago,
+      frame,
+      journal,
+      moments,
+      onOpenJournal,
+      react,
+      reactionLabels,
+      rootAt.y,
+      send,
+      t,
+      toFeed,
+      weekdays,
+      windowH,
+    ],
   );
 
   return (
     <View style={s.page}>
       <SkyWash />
-      <Screen padded={false} keyboard clear>
+      <Screen padded={false} clear>
         <View ref={root} style={s.root} collapsable={false}>
           {/* 1 — Thanh trên */}
           <View style={s.bar}>

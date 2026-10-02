@@ -7,19 +7,9 @@
 import { memo } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { Avatar, Button, IconButton, Img, Scroll, Screen, Txt } from '@ui';
-import {
-  duration,
-  font,
-  layout,
-  radius,
-  space,
-  spring,
-  useColors,
-  useStyles,
-  type Palette,
-} from '@design';
+import { duration, font, layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import type { Moment } from '@/features/feed/types';
 import type { Friend } from '../types';
@@ -59,7 +49,7 @@ export function FriendScreen({
 
       <Scroll>
         <View style={s.head}>
-          <Animated.View entering={ZoomIn.springify().damping(spring.enter.damping)}>
+          <Animated.View entering={FadeIn.duration(duration.base)}>
             <Avatar
               name={friend.name}
               uri={friend.uri}

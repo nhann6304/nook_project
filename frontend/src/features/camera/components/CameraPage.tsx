@@ -17,11 +17,10 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
   FadeOut,
-  ZoomIn,
+  useAnimatedKeyboard,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
-  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { CaptionField, IconButton, Img, Loading, Spinner } from '@ui';
@@ -32,7 +31,6 @@ import {
   media,
   radius,
   space,
-  spring,
   useColors,
   useStyles,
   type Palette,
@@ -55,6 +53,7 @@ export const FOOTER_HEIGHT = 92;
 
 export function CameraPage({
   frame,
+  keyboardGap,
   onReviewChange,
   onSend,
   onOpenFeed,
@@ -62,6 +61,8 @@ export function CameraPage({
 }: {
   /** `top`: khoảng từ đỉnh trang tới khung — màn chính tính, mọi trang dùng chung. */
   frame: { w: number; h: number; top: number };
+  /** Khoảng từ đáy khung tới đáy màn — để chữ chú thích né bàn phím. */
+  keyboardGap: number;
   onReviewChange: (reviewing: boolean) => void;
   /** Màn chính nhận ảnh, vẽ hiệu ứng bay, rồi lưu. */
   onSend: (shot: Shot) => void;
@@ -86,6 +87,11 @@ export function CameraPage({
   // Nháy trắng trong khung lúc bấm — cửa trập "đóng" một cái.
   const blink = useSharedValue(0);
   const blinkStyle = useAnimatedStyle(() => ({ opacity: blink.get() }));
+  // Khung đứng yên khi bàn phím bật; chỉ ô chú thích nhích lên vừa đủ né nó.
+  const keyboard = useAnimatedKeyboard();
+  const liftStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: -Math.max(0, keyboard.height.value - keyboardGap + space.md) }],
+  }));
   const spin = useSharedValue(0);
   const spinStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${spin.value}deg` }] }));
 
@@ -178,7 +184,7 @@ export function CameraPage({
   }, [caption, discard, onSend, shot]);
 
   const flip = useCallback(() => {
-    spin.set(withSpring(spin.get() + 180, spring.enter));
+    spin.set(withTiming(spin.get() + 180, { duration: duration.slow }));
     setFacing((f) => (f === 'front' ? 'back' : 'front'));
   }, [spin]);
 
@@ -244,7 +250,7 @@ export function CameraPage({
         {reviewing ? (
           <Animated.View
             entering={FadeIn.delay(duration.fast).duration(duration.base)}
-            style={s.captionSlot}
+            style={[s.captionSlot, liftStyle]}
           >
             <CaptionField
               value={caption}
@@ -265,7 +271,7 @@ export function CameraPage({
                 <Ionicons name="close" size={22} color={c.text} />
               </IconButton>
             </Animated.View>
-            <Animated.View key="send" entering={ZoomIn.springify().damping(spring.enter.damping)}>
+            <Animated.View key="send" entering={FadeIn.duration(duration.base)}>
               <SendButton onPress={send} label={t('review.send')} />
             </Animated.View>
             <View style={s.slot} />
