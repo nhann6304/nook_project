@@ -35,3 +35,11 @@ export const MUTUAL_FRIENDS: Readonly<Record<string, readonly string[]>> = {
   f1: ['Hưng', 'Duy'],
   f2: ['Yến'],
 };
+
+/** Người đang mở "Tìm quanh đây" cùng lúc với mình, kèm khoảng cách (mét). */
+export const NEARBY: readonly { id: string; meters: number }[] = [
+  { id: 'p3', meters: 60 },
+  { id: 'p4', meters: 340 },
+  { id: 'p6', meters: 820 },
+  { id: 'p1', meters: 2400 },
+];

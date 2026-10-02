@@ -87,6 +87,28 @@ export const en: Mirror<typeof vi> = {
     lockHint: 'People outside your nook only see your name, photo and @username.',
   },
 
+  nearby: {
+    title: 'Nearby',
+    entryHint: 'Meet people close by who have this open too',
+    radius: 'Radius',
+    meters: '{n} m',
+    km: '{n} km',
+    ruleMutual: 'Only people who also have Nearby open can see each other.',
+    ruleNoSpot: 'Nobody sees where you are — only “within 500 m”.',
+    ruleAutoOff: 'Turns off after 5 minutes, or as soon as you leave.',
+    start: 'Search within {distance}',
+    stop: 'Stop',
+    liveTitle: 'Visible to people nearby',
+    liveLeft: 'Turns off in {time}',
+    within: '@{username} · within {distance}',
+    inCircle: 'In your nook',
+    emptyTitle: 'No one within {distance} yet',
+    emptyMessage: 'Ask friends to open this too, or widen the radius.',
+    deniedTitle: 'Location is off',
+    deniedMessage: 'Allow location for Nook in your phone settings to find people nearby.',
+    failed: "Couldn't get your location. Try again somewhere more open.",
+  },
+
   verify: {
     title: 'Code sent',
     sub: 'Six digits are on their way to {target}.',

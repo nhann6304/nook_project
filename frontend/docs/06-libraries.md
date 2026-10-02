@@ -83,6 +83,8 @@ thứ không ai hiểu.
 |---|---|---|---|
 | `expo-camera` | 17.0.10 | Màn chính của app. | |
 | `expo-image-picker` | 17.0.11 | Nút "Chọn ảnh có sẵn" ở màn Camera. Tự lo cả hộp thoại xin quyền thư viện, nên không phải viết thêm một luồng quyền nữa. | Một mã gốc nữa; có sẵn trong Expo Go nên chưa cần development build. |
+| `expo-image-manipulator` | ~57.0.20 | Cắt ảnh vừa chụp / vừa chọn về đúng khung vuông và "nướng" hướng xoay EXIF vào điểm ảnh (`camera/lib/squarePhoto.ts`). | Có sẵn trong Expo Go. |
+| `expo-location` | ~57.0.20 | "Tìm quanh đây": xin quyền vị trí lúc dùng, lấy toạ độ MỘT lần rồi làm tròn ~11 m trước khi rời máy. Không chạy nền. | Có sẵn trong Expo Go. Chỉ xin quyền "khi đang dùng", không bao giờ "luôn luôn".
 | `expo-secure-store` | 15.0.8 | Cất thẻ đăng nhập vào Keychain (iOS) / Keystore (Android). **Chưa dùng** — chờ backend. | |
 | `expo-localization` | 17.0.9 | Đọc ngôn ngữ máy để chọn tiếng Việt hay tiếng Anh lúc mở app lần đầu. | |
 | `@react-native-async-storage/async-storage` | 2.2.0 | Nhớ ngôn ngữ người dùng đã chọn. Một cửa duy nhất ở `src/lib/storage.ts`. **Không để bí mật vào đây** — đó là việc của `expo-secure-store`. | Đọc **bất đồng bộ**, nên lúc khởi động có một nhịp chờ. MMKV đọc đồng bộ và nhanh hơn nhiều nhưng cần development build. |

@@ -37,6 +37,7 @@ export default function Circle() {
     <CircleScreen
       friends={friends}
       onInvite={invite}
+      onOpenNearby={() => router.push('/(app)/nearby')}
       onOpenFriend={(id) => router.push({ pathname: '/(app)/friend/[id]', params: { id } })}
       onClose={() => router.back()}
       query={search.query}

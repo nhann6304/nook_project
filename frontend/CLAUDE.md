@@ -131,6 +131,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [ ] Onboarding — còn 2 màn: Mời người đầu tiên, Xin quyền
 - [ ] Cài đặt: mới có hàng Ngôn ngữ. Còn Vị trí, Thông báo, Tài khoản
 - [x] **Thêm bạn** (hàng giả `circle/lib/circleApi.ts`): ô tìm — lọc người trong góc theo tên, tìm người trên Nook CHỈ theo @tên; mời · nhận lời · từ chối. Danh sách bạn ở kho `circle/store/circleStore.ts`, mọi màn đọc chung. Còn chờ backend
+- [x] **Tag bạn** trong chú thích (gõ `@`, chỉ bạn trong góc, tối đa 5) → chạm tên mở **trang cá nhân** (`person/[id]`). **Khoá trang** trong Cài đặt: người ngoài góc chỉ thấy tên, ảnh, @tên. Thông báo cho người được tag là việc của server
+- [x] **Tìm quanh đây** (`nearby`): người dùng chọn bán kính 100 m – 3 km; chỉ người cũng đang bật thấy nhau, chỉ hiện nấc khoảng cách, tự tắt sau 5 phút. Hàng giả `nearby/lib/nearbyApi.ts` — luật cho server ghi ở đầu tệp đó
 - [ ] "Lưu về máy" ở màn Vừa chụp xong — cần `expo-media-library` + xin quyền ghi
 - [ ] Chưa đo hiệu năng trên máy Android tầm trung
 - [ ] Widget: thiết kế xong, chưa viết mã gốc — **cần development build**
@@ -138,7 +140,7 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 
 ## Việc tiếp theo hợp lý
 
-Gần nhất: nối `authApi.ts`, `circleApi.ts`, `profileApi.ts` vào server khi backend
+Gần nhất: nối `authApi.ts`, `circleApi.ts`, `profileApi.ts`, `nearbyApi.ts` vào server khi backend
 có đường — màn hình không phải sửa.
 
 Cần quyết sớm: **có chuyển sang development build không.** Hiện mọi thứ còn chạy

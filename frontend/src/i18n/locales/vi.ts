@@ -91,6 +91,28 @@ export const vi = {
     lockHint: 'Người ngoài góc chỉ thấy tên, ảnh và @tên của bạn.',
   },
 
+  nearby: {
+    title: 'Tìm quanh đây',
+    entryHint: 'Gặp người ở gần cũng đang mở màn này',
+    radius: 'Bán kính',
+    meters: '{n} m',
+    km: '{n} km',
+    ruleMutual: 'Chỉ người cũng đang mở “Tìm quanh đây” mới thấy nhau.',
+    ruleNoSpot: 'Không ai thấy vị trí của bạn — chỉ thấy “dưới 500 m”.',
+    ruleAutoOff: 'Tự tắt sau 5 phút, hoặc ngay khi bạn rời màn này.',
+    start: 'Bật tìm trong {distance}',
+    stop: 'Tắt',
+    liveTitle: 'Đang hiện bạn với người quanh đây',
+    liveLeft: 'Tự tắt sau {time}',
+    within: '@{username} · dưới {distance}',
+    inCircle: 'Trong góc',
+    emptyTitle: 'Chưa thấy ai trong {distance}',
+    emptyMessage: 'Rủ bạn bè cùng mở màn này, hoặc nới rộng bán kính.',
+    deniedTitle: 'Chưa có quyền vị trí',
+    deniedMessage: 'Bật vị trí cho Nook trong Cài đặt máy để tìm người quanh đây.',
+    failed: 'Chưa lấy được vị trí. Bạn ra chỗ thoáng hơn rồi thử lại nhé.',
+  },
+
   verify: {
     title: 'Mã đã gửi rồi nhé',
     sub: 'Sáu số vừa được gửi tới {target}.',

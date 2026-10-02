@@ -40,6 +40,7 @@ const STAGGER = 45;
 export function CircleScreen({
   friends,
   onInvite,
+  onOpenNearby,
   onOpenFriend,
   onClose,
   query,
@@ -55,6 +56,7 @@ export function CircleScreen({
 }: {
   friends: readonly Friend[];
   onInvite: () => void;
+  onOpenNearby: () => void;
   onOpenFriend: (id: string) => void;
   onClose: () => void;
   query: string;
@@ -165,6 +167,22 @@ export function CircleScreen({
               ) : null}
             </>
           ) : null}
+
+          <Tap
+            onPress={onOpenNearby}
+            scaleTo={0.98}
+            style={s.nearby}
+            accessibilityLabel={t('nearby.title')}
+          >
+            <Ionicons name="location-outline" size={22} color={c.accent} />
+            <View style={s.inviteText}>
+              <Txt variant="label">{t('nearby.title')}</Txt>
+              <Txt variant="faint" tone="muted">
+                {t('nearby.entryHint')}
+              </Txt>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={c.textFaint} />
+          </Tap>
 
           <View style={s.invite}>
             <View style={s.inviteText}>
@@ -461,6 +479,16 @@ const make = (c: Palette) =>
       backgroundColor: c.surface,
     },
     inviteText: { flex: 1, gap: 2 },
+    nearby: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: space.md,
+      marginHorizontal: space.lg,
+      marginTop: space.md,
+      padding: space.lg,
+      borderRadius: radius.lg,
+      backgroundColor: c.surface,
+    },
     inviteBtn: { minHeight: 44, paddingHorizontal: space.lg, borderRadius: radius.sm + 2 },
 
     list: { marginTop: space.md },

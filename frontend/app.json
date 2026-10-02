@@ -57,6 +57,12 @@
           "backgroundColor": "#151312"
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Nook dùng vị trí chỉ khi bạn mở “Tìm quanh đây”, để gặp người ở gần cũng đang mở màn đó. Vị trí không được lưu lại."
+        }
+      ],
       "expo-localization",
       "expo-image",
       "expo-secure-store",
