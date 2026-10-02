@@ -32,6 +32,7 @@ import {
 } from '@design';
 import * as feel from '@/lib/haptics';
 import type { Moment } from '../types';
+import { splitCaption } from '../lib/tags';
 
 /** Ba cảm xúc, không hơn. Gửi đi dưới dạng emoji trong cuộc trò chuyện. */
 export const REACTIONS = [
@@ -43,6 +44,9 @@ export type Reaction = (typeof REACTIONS)[number];
 
 export const REPLY_HEIGHT = 54;
 
+/** Id của chính mình trong dữ liệu khoảnh khắc. Đổi thành id thật khi có hồ sơ từ server. */
+const ME_ID = 'me';
+
 export const MomentPage = memo(function MomentPage({
   moment,
   frame,
@@ -50,7 +54,9 @@ export const MomentPage = memo(function MomentPage({
   replyHint,
   yoursLabel,
   reactionLabels,
+  mentionedLabel,
   onReply,
+  onOpenPerson,
 }: {
   moment: Moment;
   /** `top`: khoảng từ đỉnh trang tới khung — màn chính tính, mọi trang dùng chung. */
@@ -59,8 +65,12 @@ export const MomentPage = memo(function MomentPage({
   replyHint: string;
   yoursLabel: string;
   reactionLabels: Record<Reaction['key'], string>;
+  /** Chữ trên nhãn khi chính mình được tag, ví dụ "Nhắc tới bạn". */
+  mentionedLabel: string;
   /** `null` = mở ô nhắn chữ. */
   onReply: (moment: Moment, reaction: Reaction | null) => void;
+  /** Chạm vào một tên được tag → trang cá nhân người đó. */
+  onOpenPerson: (id: string) => void;
 }) {
   const s = useStyles(make);
   const c = useColors();
@@ -87,11 +97,34 @@ export const MomentPage = memo(function MomentPage({
           </Txt>
         </View>
 
+        {moment.tags?.some((tg) => tg.id === ME_ID) ? (
+          <View style={s.mentioned} pointerEvents="none">
+            <Txt variant="faint" tone="onAccent">
+              {mentionedLabel}
+            </Txt>
+          </View>
+        ) : null}
+
         {moment.caption ? (
-          <View style={s.captionSlot} pointerEvents="none">
+          <View style={s.captionSlot} pointerEvents="box-none">
             <View style={s.caption}>
               <Txt variant="label" tone="onPhoto" center numberOfLines={2}>
-                {moment.caption}
+                {splitCaption(moment.caption, moment.tags).map((part, i) =>
+                  part.tag ? (
+                    <Txt
+                      key={i}
+                      variant="label"
+                      tone="onPhoto"
+                      style={s.tag}
+                      onPress={() => onOpenPerson(part.tag!.id)}
+                      accessibilityRole="link"
+                    >
+                      {part.text}
+                    </Txt>
+                  ) : (
+                    part.text
+                  ),
+                )}
               </Txt>
             </View>
           </View>
@@ -218,4 +251,14 @@ const make = (c: Palette) =>
     react: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
     ghost: { position: 'absolute' },
     dim: { opacity: 0.75 },
+    tag: { textDecorationLine: 'underline' },
+    mentioned: {
+      position: 'absolute',
+      top: space.lg + 44,
+      left: space.lg,
+      borderRadius: radius.full,
+      backgroundColor: c.accent,
+      paddingHorizontal: space.md,
+      paddingVertical: space.xs,
+    },
   });

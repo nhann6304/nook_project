@@ -17,6 +17,9 @@ export type Author = {
   dormant?: boolean;
 };
 
+/** Một người được tag trong chú thích. Chữ trong chú thích là "@username". */
+export type Tag = { id: string; name: string; username: string };
+
 export type Moment = {
   id: string;
   photo: PhotoSource;
@@ -28,4 +31,6 @@ export type Moment = {
   mine?: boolean;
   /** Đã nhắn lại cho người này chưa (trong lượt mở app này). */
   repliedTo?: boolean;
+  /** Bạn được tag. Chỉ tag được người đã chung góc với người đăng. */
+  tags?: readonly Tag[];
 };

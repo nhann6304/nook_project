@@ -71,6 +71,26 @@ export const vi = {
     continue: 'Tiếp tục',
   },
 
+  person: {
+    lockedTitle: 'Trang này đã khoá',
+    lockedMessage: 'Chỉ bạn trong góc của {name} mới xem được thêm.',
+    joined: 'Ở Nook từ {month}',
+    mutual: 'Bạn chung: {names}',
+    noMutual: 'Chưa có bạn chung',
+    invite: 'Mời vào góc',
+    openPair: 'Trang riêng của bạn và {name}',
+    selfOpen: 'Đây là trang người khác thấy về bạn. Khoá trang trong Cài đặt.',
+    selfLocked: 'Trang đang khoá: người ngoài góc chỉ thấy tên, ảnh và @tên.',
+    noUsername: 'chưa có tên riêng',
+    notFound: 'Không tìm thấy người này. Có thể họ đã rời Nook.',
+  },
+
+  privacy: {
+    title: 'Riêng tư',
+    lock: 'Khoá trang cá nhân',
+    lockHint: 'Người ngoài góc chỉ thấy tên, ảnh và @tên của bạn.',
+  },
+
   verify: {
     title: 'Mã đã gửi rồi nhé',
     sub: 'Sáu số vừa được gửi tới {target}.',
@@ -118,6 +138,8 @@ export const vi = {
     sendToNobody: 'Chưa có ai trong góc để gửi',
     captionPlaceholder: 'Thêm một dòng…',
     captionLabel: 'Thêm một dòng cho ảnh',
+    tag: 'Tag bạn vào ảnh',
+    tagPerson: 'Tag {name}',
     privacy: { other: 'Ảnh này chỉ đi tới {count} người trong góc của bạn. Không ai khác thấy được.' },
     send: 'Gửi đi',
   },
@@ -206,6 +228,8 @@ export const vi = {
 
   /* ---------- Màn chính: camera + ảnh bạn bè lướt dọc ---------- */
   home: {
+    sentTagged: 'Đã gửi · đã báo cho {names}',
+    mentioned: 'Nhắc tới bạn',
     openFriends: 'Bạn bè',
     openChats: 'Tin nhắn',
     friendsPill: { other: '{count} bạn' },

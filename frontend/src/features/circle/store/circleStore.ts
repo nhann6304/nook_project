@@ -16,7 +16,7 @@ type CircleState = {
   incoming: readonly Invite[];
   requested: ReadonlySet<string>;
   /** Thêm vào góc. `false` khi góc đã đầy — người gọi báo cho người dùng. */
-  addFriend: (person: Pick<Person, 'id' | 'name' | 'uri'>) => boolean;
+  addFriend: (person: Pick<Person, 'id' | 'name' | 'username' | 'uri'>) => boolean;
   dropIncoming: (id: string) => void;
   markRequested: (id: string, on: boolean) => void;
 };
@@ -30,7 +30,15 @@ export const useCircle = create<CircleState>((set, get) => ({
     const { friends } = get();
     if (friends.some((f) => f.id === p.id)) return true;
     if (friends.length >= CIRCLE_SIZE) return false;
-    const fresh: Friend = { id: p.id, name: p.name, uri: p.uri, level: 1, memories: 0, days: 0 };
+    const fresh: Friend = {
+      id: p.id,
+      name: p.name,
+      username: p.username,
+      uri: p.uri,
+      level: 1,
+      memories: 0,
+      days: 0,
+    };
     set((s) => ({
       friends: [fresh, ...s.friends],
       incoming: s.incoming.filter((i) => i.id !== p.id),

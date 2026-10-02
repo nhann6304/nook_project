@@ -17,7 +17,7 @@
  * Nằm ở src/components chứ không ở tính năng camera vì nó chạm thẳng vào
  * `TextInput` thô — thứ chỉ src/components được phép.
  */
-import { forwardRef, useCallback, useRef, useState } from 'react';
+import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { radius, space, useColors, useStyles, type, type Palette } from '@design';
@@ -35,11 +35,13 @@ export type CaptionFieldProps = {
 
 export const CaptionField = forwardRef<TextInput, CaptionFieldProps>(function CaptionField(
   { value, onChangeText, placeholder, label, editable = true },
-  _ref,
+  ref,
 ) {
   const s = useStyles(make);
   const c = useColors();
   const input = useRef<TextInput>(null);
+  // Người gọi cần `focus()` — nút "Tag bạn" chèn "@" rồi đưa con trỏ vào ô.
+  useImperativeHandle(ref, () => input.current as TextInput, []);
   const [focused, setFocused] = useState(false);
   const focus = useCallback(() => input.current?.focus(), []);
 

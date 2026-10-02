@@ -67,6 +67,26 @@ export const en: Mirror<typeof vi> = {
     continue: 'Continue',
   },
 
+  person: {
+    lockedTitle: 'This page is private',
+    lockedMessage: "Only people in {name}'s nook can see more.",
+    joined: 'On Nook since {month}',
+    mutual: 'Mutual friends: {names}',
+    noMutual: 'No mutual friends yet',
+    invite: 'Invite to your nook',
+    openPair: 'You and {name}',
+    selfOpen: 'This is what others see about you. Make it private in Settings.',
+    selfLocked: 'Private: people outside your nook only see your name, photo and @username.',
+    noUsername: 'no username yet',
+    notFound: "Couldn't find this person. They may have left Nook.",
+  },
+
+  privacy: {
+    title: 'Privacy',
+    lock: 'Private profile',
+    lockHint: 'People outside your nook only see your name, photo and @username.',
+  },
+
   verify: {
     title: 'Code sent',
     sub: 'Six digits are on their way to {target}.',
@@ -112,6 +132,8 @@ export const en: Mirror<typeof vi> = {
     sendToNobody: 'Nobody in your nook to send to yet',
     captionPlaceholder: 'Add a line…',
     captionLabel: 'Add a line to this photo',
+    tag: 'Tag friends in this photo',
+    tagPerson: 'Tag {name}',
     privacy: {
       one: 'This photo only goes to {count} person in your nook. Nobody else can see it.',
       other: 'This photo only goes to {count} people in your nook. Nobody else can see it.',
@@ -203,6 +225,8 @@ export const en: Mirror<typeof vi> = {
   },
 
   home: {
+    sentTagged: 'Sent · {names} will be notified',
+    mentioned: 'Mentions you',
     openFriends: 'Friends',
     openChats: 'Messages',
     friendsPill: { one: '{count} friend', other: '{count} friends' },

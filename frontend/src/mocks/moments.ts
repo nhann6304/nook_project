@@ -35,16 +35,18 @@ export const SEED_MOMENTS: readonly Moment[] = [
   {
     id: 's1',
     photo: require('../../assets/images/sample/moment-1.png'),
-    caption: 'Về tới nhà đúng lúc trời chuyển màu',
+    caption: 'Về tới nhà đúng lúc trời chuyển màu, nhớ @hung.tran ghê',
     at: now - 4 * MINUTE,
     author: AUTHORS.yen!,
+    tags: [{ id: 'f2', name: 'Hưng', username: 'hung.tran' }],
   },
   {
     id: 's2',
     photo: require('../../assets/images/sample/moment-3.png'),
-    caption: 'Ly thứ ba rồi mà vẫn chưa tỉnh',
+    caption: 'Ly thứ ba rồi mà vẫn chưa tỉnh, @ban ra quán không',
     at: now - 52 * MINUTE,
     author: AUTHORS.hung!,
+    tags: [{ id: 'me', name: 'Bạn', username: 'ban' }],
   },
   {
     id: 's3',

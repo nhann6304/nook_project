@@ -11,7 +11,7 @@
  */
 import { create } from 'zustand';
 import { ME, SEED_MOMENTS } from '@/mocks/moments';
-import type { Moment, PhotoSource } from '../types';
+import type { Moment, PhotoSource, Tag } from '../types';
 
 let seq = 0;
 /** Không dùng Math.random: id chỉ cần duy nhất trong một lượt mở app. */
@@ -19,7 +19,7 @@ const nextId = () => `mine-${++seq}`;
 
 type MomentsState = {
   moments: readonly Moment[];
-  add: (photo: PhotoSource, caption: string, at: number) => void;
+  add: (photo: PhotoSource, caption: string, at: number, tags?: readonly Tag[]) => void;
   markReplied: (id: string) => void;
   clear: () => void;
 };
@@ -27,10 +27,18 @@ type MomentsState = {
 export const useMoments = create<MomentsState>((set) => ({
   moments: SEED_MOMENTS,
 
-  add: (photo, caption, at) =>
+  add: (photo, caption, at, tags) =>
     set((s) => ({
       moments: [
-        { id: nextId(), photo, caption: caption || undefined, at, author: ME, mine: true },
+        {
+          id: nextId(),
+          photo,
+          caption: caption || undefined,
+          at,
+          author: ME,
+          mine: true,
+          tags: tags?.length ? tags : undefined,
+        },
         ...s.moments,
       ],
     })),

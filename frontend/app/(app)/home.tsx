@@ -14,6 +14,10 @@ export default function Home() {
   const router = useRouter();
   const friends = useCircle((s) => s.friends);
   const names = useMemo(() => friends.map((f) => f.name), [friends]);
+  const taggable = useMemo(
+    () => friends.map((f) => ({ id: f.id, name: f.name, username: f.username })),
+    [friends],
+  );
   const moments = useMoments((s) => s.moments);
   const add = useMoments((s) => s.add);
   const journal = useJournal((s) => s.entries);
@@ -26,7 +30,8 @@ export default function Home() {
   const send = useCallback(
     (shot: Shot) => {
       const at = Date.now();
-      add(shot.uri, shot.caption, at);
+      // Thông báo cho người được tag là việc của server (đẩy tin) — app chỉ gửi kèm danh sách.
+      add(shot.uri, shot.caption, at, shot.tags);
       addEntry(shot.uri, shot.caption, at);
     },
     [add, addEntry],
@@ -49,6 +54,8 @@ export default function Home() {
   return (
     <HomeScreen
       friendNames={names}
+      taggable={taggable}
+      onOpenPerson={(id) => router.push({ pathname: '/(app)/person/[id]', params: { id } })}
       moments={moments}
       unread={unread}
       onSend={send}

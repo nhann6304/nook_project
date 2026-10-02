@@ -23,3 +23,15 @@ export const INCOMING: readonly Invite[] = [
   { id: 'p7', name: 'Gia Hân', username: 'giahan', at: now - 2 * HOUR },
   { id: 'p8', name: 'Tuấn Lê', username: 'tuan.le', at: now - 26 * HOUR },
 ];
+
+/** Trang cá nhân đang khoá — Mai Trâm (ngoài góc) và Linh (trong góc, vẫn thấy đủ). */
+export const LOCKED_PROFILES: ReadonlySet<string> = new Set(['p5', 'f4']);
+
+/** Bạn chung giữa mình và từng người. */
+export const MUTUAL_FRIENDS: Readonly<Record<string, readonly string[]>> = {
+  p1: ['Yến', 'Duy'],
+  p2: ['Hưng'],
+  p7: ['Yến', 'Hưng', 'Bảo'],
+  f1: ['Hưng', 'Duy'],
+  f2: ['Yến'],
+};

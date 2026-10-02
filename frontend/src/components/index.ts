@@ -20,6 +20,7 @@ export { HelperText } from './primitives/HelperText';
 export { CodeInput, type CodeInputProps } from './primitives/CodeInput';
 export { ComposerField } from './primitives/ComposerField';
 export { Segmented, type SegmentedOption } from './primitives/Segmented';
+export { Toggle } from './primitives/Toggle';
 export { Img, type ImgProps } from './primitives/Img';
 
 /* — Bố cục — */

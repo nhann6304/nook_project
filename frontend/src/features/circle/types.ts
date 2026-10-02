@@ -2,6 +2,8 @@
 export type Friend = {
   id: string;
   name: string;
+  /** @tên riêng, không kèm "@". Để tag vào chú thích ảnh. */
+  username: string;
   uri?: string;
   level: number;
   dormant?: boolean;

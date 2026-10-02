@@ -33,6 +33,7 @@ Trước khi viết một component mới, tra bảng này. Cột phải là th�
 | Dòng phụ dưới ô nhập | `<HelperText>` | `<Txt>` tự đặt |
 | Ô nhập mã 6 số | `<CodeInput>` | sáu `<Field>` |
 | Chuyển 2–3 chế độ | `<Segmented>` | hai nút tự tô màu |
+| Bật/tắt một cài đặt | `<Toggle label hint>` | `Switch` của react-native |
 | Ảnh | `<Img>` | `<Image>` của RN hoặc expo-image trực tiếp |
 | Khung màn hình | `<Screen>` | `<SafeAreaView>` |
 | Xếp ngang / dọc | `<Row>` `<Col>` | `style={{flexDirection:…}}` |

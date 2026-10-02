@@ -12,7 +12,19 @@
  * chạy được nên nhóm đó chưa hiện, nhưng chỗ của nó là trên cùng.
  */
 import { StyleSheet, View } from 'react-native';
-import { Avatar, Button, Card, Col, Row, Screen, Scroll, Segmented, TopBar, Txt } from '@ui';
+import {
+  Avatar,
+  Button,
+  Card,
+  Col,
+  Row,
+  Screen,
+  Scroll,
+  Segmented,
+  Toggle,
+  TopBar,
+  Txt,
+} from '@ui';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
   SKIES,
@@ -50,6 +62,8 @@ export function SettingsScreen({
   sky,
   skyNames,
   onPickMode,
+  locked,
+  onLockChange,
   onClose,
 }: {
   name: string;
@@ -61,6 +75,9 @@ export function SettingsScreen({
   sky: SkyKey | null;
   skyNames: Readonly<Record<SkyKey, string>>;
   onPickMode: (mode: ThemeMode) => void;
+  /** Trang cá nhân đang khoá. */
+  locked: boolean;
+  onLockChange: (locked: boolean) => void;
   onClose: () => void;
 }) {
   const t = useT();
@@ -127,6 +144,17 @@ export function SettingsScreen({
                 </Txt>
               </>
             )}
+          </Card>
+        </Group>
+
+        <Group title={t('privacy.title')}>
+          <Card style={s.card}>
+            <Toggle
+              value={locked}
+              onChange={onLockChange}
+              label={t('privacy.lock')}
+              hint={t('privacy.lockHint')}
+            />
           </Card>
         </Group>
 

@@ -63,7 +63,7 @@ import {
 import { MomentPage, type Reaction } from '@/features/feed/components/MomentPage';
 import { MomentGrid, type Rect } from '@/features/feed/components/MomentGrid';
 import { Shutter } from '@/features/camera/components/Shutter';
-import type { Moment } from '@/features/feed/types';
+import type { Moment, Tag } from '@/features/feed/types';
 import { JournalStrip } from '@/features/journal/components/JournalStrip';
 import type { Entry } from '@/features/journal/types';
 
@@ -74,6 +74,8 @@ const IN_OUT = Easing.bezier(...ease.inOut);
 
 export function HomeScreen({
   friendNames,
+  taggable,
+  onOpenPerson,
   moments,
   unread,
   onSend,
@@ -85,6 +87,9 @@ export function HomeScreen({
   onOpenJournal,
 }: {
   friendNames: readonly string[];
+  /** Bạn trong góc — tag được vào chú thích. */
+  taggable: readonly Tag[];
+  onOpenPerson: (id: string) => void;
   moments: readonly Moment[];
   unread: boolean;
   onSend: (shot: Shot) => void;
@@ -151,14 +156,21 @@ export function HomeScreen({
   /* ── Gửi: ảnh bay về viên thuốc trên đầu ── */
   const [flying, setFlying] = useState<string | null>(null);
   const fly = useSharedValue(0);
+  const sentTags = useRef<readonly Tag[]>([]);
   const landed = useCallback(() => {
     setFlying(null);
     feel.success();
-    say(count === 0 ? t('home.sentAlone') : t('home.sent', { count }));
+    const tagged = sentTags.current;
+    if (tagged.length > 0) {
+      say(t('home.sentTagged', { names: tagged.map((tg) => tg.name).join(', ') }));
+    } else {
+      say(count === 0 ? t('home.sentAlone') : t('home.sent', { count }));
+    }
   }, [count, say, t]);
 
   const send = useCallback(
     (shot: Shot) => {
+      sentTags.current = shot.tags;
       setFlying(shot.uri);
       fly.set(0);
       fly.set(
@@ -285,6 +297,7 @@ export function HomeScreen({
         return (
           <CameraPage
             frame={frame}
+            taggable={taggable}
             keyboardGap={windowH - (rootAt.y + frame.y + frame.h)}
             onReviewChange={setReviewing}
             onSend={send}
@@ -313,7 +326,9 @@ export function HomeScreen({
           replyHint={t('feed.replyTo', { name: m.author.name })}
           yoursLabel={t('home.yours')}
           reactionLabels={reactionLabels}
+          mentionedLabel={t('home.mentioned')}
           onReply={react}
+          onOpenPerson={onOpenPerson}
         />
       );
     },
@@ -323,11 +338,13 @@ export function HomeScreen({
       journal,
       moments,
       onOpenJournal,
+      onOpenPerson,
       react,
       reactionLabels,
       rootAt.y,
       send,
       t,
+      taggable,
       toFeed,
       weekdays,
       windowH,

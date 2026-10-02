@@ -9,7 +9,7 @@
  * góc do màn chính vẽ ở lớp trên cùng — ở trong trang thì ảnh bị cắt bởi
  * khung trang, bay không ra khỏi được.
  */
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, type ComponentRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
@@ -43,8 +43,17 @@ import { ScreenFlash, WARMUP_MS, type ScreenFlashHandle } from './ScreenFlash';
 import { SendButton } from './SendButton';
 import { Shutter } from './Shutter';
 import { squarePhoto } from '../lib/squarePhoto';
+import { TagSuggestions } from './TagSuggestions';
+import type { Tag } from '@/features/feed/types';
+import {
+  insertMention,
+  MAX_TAGS,
+  mentionAtEnd,
+  suggestTags,
+  tagsIn,
+} from '@/features/feed/lib/tags';
 
-export type Shot = { uri: string; caption: string };
+export type Shot = { uri: string; caption: string; tags: Tag[] };
 
 /** Chiều cao hàng chụp. Màn chính cần số này để tính cỡ khung. */
 export const CONTROLS_HEIGHT = 128;
@@ -54,6 +63,7 @@ export const FOOTER_HEIGHT = 92;
 export function CameraPage({
   frame,
   keyboardGap,
+  taggable,
   onReviewChange,
   onSend,
   onOpenFeed,
@@ -63,6 +73,8 @@ export function CameraPage({
   frame: { w: number; h: number; top: number };
   /** Khoảng từ đáy khung tới đáy màn — để chữ chú thích né bàn phím. */
   keyboardGap: number;
+  /** Bạn trong góc — những người tag được vào chú thích. */
+  taggable: readonly Tag[];
   onReviewChange: (reviewing: boolean) => void;
   /** Màn chính nhận ảnh, vẽ hiệu ứng bay, rồi lưu. */
   onSend: (shot: Shot) => void;
@@ -179,9 +191,25 @@ export function CameraPage({
 
   const send = useCallback(() => {
     if (!shot) return;
-    onSend({ uri: shot, caption: caption.trim() });
+    const text = caption.trim();
+    onSend({ uri: shot, caption: text, tags: tagsIn(text, taggable) });
     discard();
-  }, [caption, discard, onSend, shot]);
+  }, [caption, discard, onSend, shot, taggable]);
+
+  /* ── Tag bạn: gõ "@" là hiện hàng gợi ý ── */
+  const captionRef = useRef<ComponentRef<typeof CaptionField>>(null);
+  const partial = mentionAtEnd(caption);
+  const tagged = tagsIn(caption, taggable);
+  const suggestions =
+    partial !== null && tagged.length < MAX_TAGS ? suggestTags(partial, taggable, tagged) : [];
+  const pickTag = useCallback((tag: Tag) => {
+    feel.select();
+    setCaption((v) => insertMention(v, tag.username));
+  }, []);
+  const startTag = useCallback(() => {
+    setCaption((v) => (mentionAtEnd(v) !== null ? v : `${v}${v && !v.endsWith(' ') ? ' ' : ''}@`));
+    captionRef.current?.focus();
+  }, []);
 
   const flip = useCallback(() => {
     spin.set(withTiming(spin.get() + 180, { duration: duration.slow }));
@@ -252,7 +280,13 @@ export function CameraPage({
             entering={FadeIn.delay(duration.fast).duration(duration.base)}
             style={[s.captionSlot, liftStyle]}
           >
+            <TagSuggestions
+              people={suggestions}
+              label={(name) => t('review.tagPerson', { name })}
+              onPick={pickTag}
+            />
             <CaptionField
+              ref={captionRef}
               value={caption}
               onChangeText={setCaption}
               placeholder={t('review.captionPlaceholder')}
@@ -274,7 +308,15 @@ export function CameraPage({
             <Animated.View key="send" entering={FadeIn.duration(duration.base)}>
               <SendButton onPress={send} label={t('review.send')} />
             </Animated.View>
-            <View style={s.slot} />
+            {taggable.length > 0 ? (
+              <Animated.View key="tag" entering={FadeIn.duration(duration.base)}>
+                <IconButton label={t('review.tag')} onPress={startTag} style={s.round}>
+                  <Ionicons name="at" size={22} color={c.text} />
+                </IconButton>
+              </Animated.View>
+            ) : (
+              <View style={s.slot} />
+            )}
           </>
         ) : (
           <>

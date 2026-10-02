@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { SettingsScreen } from '@/features/settings/screens/SettingsScreen';
 import { PALETTE_KEYS, SKY_KEYS, useTheme, type PaletteKey, type SkyKey } from '@design';
@@ -6,12 +6,25 @@ import { useT } from '@i18n';
 import { useCircle } from '@/features/circle/store/circleStore';
 import { ME } from '@/mocks/moments';
 import { useProfile } from '@/features/profile/store/profileStore';
+import { setProfileLocked } from '@/features/profile/lib/profileApi';
 
 export default function Settings() {
   const router = useRouter();
   const t = useT();
   const friendCount = useCircle((s) => s.friends.length);
   const myName = useProfile((s) => s.name);
+  const locked = useProfile((s) => s.locked);
+  const setLocked = useProfile((s) => s.setLocked);
+
+  // Đổi ngay trên màn, server hỏng thì trả lại như cũ.
+  const changeLock = useCallback(
+    async (next: boolean) => {
+      setLocked(next);
+      const res = await setProfileLocked(next);
+      if (!res.ok) setLocked(!next);
+    },
+    [setLocked],
+  );
   const current = useTheme((s) => s.palette.key);
   const fixed = useTheme((s) => s.fixed);
   const mode = useTheme((s) => s.mode);
@@ -45,6 +58,8 @@ export default function Settings() {
       sky={sky}
       skyNames={skyNames}
       onPickMode={setMode}
+      locked={locked}
+      onLockChange={(v) => void changeLock(v)}
       onClose={() => router.back()}
     />
   );
