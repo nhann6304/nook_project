@@ -3,10 +3,11 @@
  * là tới. Không thanh tab (bảng thiết kế bản 7): góc trái → bạn bè, góc phải
  * → tin nhắn, giữa là việc chính.
  *
- * Ba chuyển cảnh sống ở đây vì chúng phải vẽ ĐÈ lên mọi thứ, ngoài khung trang:
- *   · lướt trang: trang cũ lún xuống sau trang mới (xem `Pager`);
+ * Hai chuyển cảnh sống ở đây vì chúng phải vẽ ĐÈ lên mọi thứ, ngoài khung trang:
  *   · gửi ảnh: ảnh thu nhỏ bay về viên thuốc "N bạn" trên đầu;
- *   · mở từ lưới: "cửa sổ" nở từ đúng ô vừa chạm ra thành khung ảnh.
+ *   · mở từ lưới: ảnh nở từ đúng ô vừa chạm ra thành khung.
+ * Cả hai chỉ dùng transform + opacity. Đừng animate left/top/width/height:
+ * mỗi khung hình phải dàn trang lại, máy yếu là giật.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -113,13 +114,15 @@ export function HomeScreen({
   const [gridOpen, setGridOpen] = useState(false);
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
 
-  /* ── Khung ảnh: 3:4, chung cho camera và mọi khoảnh khắc ── */
+  /* ── Khung ảnh vuông, chung cho camera và mọi khoảnh khắc ── */
   const frame = useMemo(() => {
     const maxW = width - layout.frameInset * 2;
     const maxH = area.h - layout.frameInset - CONTROLS_HEIGHT - FOOTER_HEIGHT;
     const h = Math.max(0, Math.min(maxW / layout.cameraFrameRatio, maxH));
     const w = Math.round(h * layout.cameraFrameRatio);
-    return { w, h: Math.round(h), x: (width - w) / 2, y: area.y + layout.frameInset };
+    // Máy cao còn dư chỗ: đẩy khung xuống một nửa phần dư, đừng dồn hết xuống đáy.
+    const top = layout.frameInset + Math.round(Math.max(0, maxH - h) / 2);
+    return { w, h: Math.round(h), top, x: (width - w) / 2, y: area.y + top };
   }, [area, width]);
 
   const measure = useCallback((e: LayoutChangeEvent) => {
@@ -169,7 +172,7 @@ export function HomeScreen({
     };
   });
 
-  /* ── Mở từ lưới: cửa sổ nở từ ô vừa chạm ── */
+  /* ── Mở từ lưới: ảnh nở từ ô vừa chạm ── */
   const [win, setWin] = useState<{ photo: Moment['photo']; from: Rect; index: number } | null>(
     null,
   );
@@ -200,7 +203,7 @@ export function HomeScreen({
       winFade.set(1);
       open.set(0);
       open.set(
-        withTiming(1, { duration: duration.scene, easing: OUT }, (done) => {
+        withTiming(1, { duration: duration.slow, easing: OUT }, (done) => {
           if (done) runOnJS(opened)(index);
         }),
       );
@@ -208,26 +211,19 @@ export function HomeScreen({
     [moments, open, opened, rootAt, winFade],
   );
 
+  // Lớp ảnh nằm sẵn ĐÚNG chỗ khung; transform kéo nó về ô vừa chạm rồi thả ra.
+  // Ô lưới và khung cùng vuông nên co một hệ số là khớp, bo góc co theo luôn.
   const winStyle = useAnimatedStyle(() => {
-    const f = win?.from ?? { x: 0, y: 0, w: 0, h: 0 };
-    const k = open.value;
+    const f = win?.from ?? { x: frame.x, y: frame.y, w: frame.w, h: frame.h };
+    const k = 1 - open.value;
+    const dx = f.x + f.w / 2 - (frame.x + frame.w / 2);
+    const dy = f.y + f.h / 2 - (frame.y + frame.h / 2);
+    const from = frame.w > 0 ? f.w / frame.w : 1;
     return {
       opacity: winFade.value,
-      left: f.x + (frame.x - f.x) * k,
-      top: f.y + (frame.y - f.y) * k,
-      width: f.w + (frame.w - f.w) * k,
-      height: f.h + (frame.h - f.h) * k,
-      borderRadius: radius.md + (radius.viewfinder - radius.md) * k,
+      transform: [{ translateX: dx * k }, { translateY: dy * k }, { scale: 1 - (1 - from) * k }],
     };
   });
-  // Song cửa: hai nét chữ thập, tan dần khi cửa mở.
-  const muntinStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(open.value, [0, 0.45], [0.7, 0], Extrapolation.CLAMP),
-  }));
-  const gridBack = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 - (win ? open.value : 0) * 0.06 }],
-  }));
-  const gridDim = useAnimatedStyle(() => ({ opacity: (win ? open.value : 0) * 0.55 }));
 
   /* ── Thanh trên + hàng dưới đổi theo vị trí lướt ── */
   const onCamera = page === 0;
@@ -237,10 +233,9 @@ export function HomeScreen({
   const feedPill = useAnimatedStyle(() => ({
     opacity: interpolate(scrollY.value, [area.h * 0.3, area.h * 0.8], [0, 1], Extrapolation.CLAMP),
   }));
-  const feedBar = useAnimatedStyle(() => {
-    const k = interpolate(scrollY.value, [area.h * 0.35, area.h], [0, 1], Extrapolation.CLAMP);
-    return { opacity: k, transform: [{ translateY: (1 - k) * 24 }] };
-  });
+  const feedBar = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [area.h * 0.35, area.h], [0, 1], Extrapolation.CLAMP),
+  }));
 
   const toCamera = useCallback(() => pager.current?.goTo(0), []);
   const toFeed = useCallback(() => pager.current?.goTo(1), []);
@@ -422,7 +417,7 @@ export function HomeScreen({
               exiting={FadeOut.duration(duration.fast)}
               style={s.overlay}
             >
-              <Animated.View style={[s.fill, gridBack]}>
+              <View style={s.fill}>
                 <MomentGrid
                   moments={moments}
                   title={t('history.title')}
@@ -433,8 +428,7 @@ export function HomeScreen({
                   onOpen={openFromGrid}
                   onClose={() => setGridOpen(false)}
                 />
-              </Animated.View>
-              <Animated.View pointerEvents="none" style={[s.dim, gridDim]} />
+              </View>
               <View style={s.gridShutter}>
                 <Shutter
                   size={68}
@@ -448,12 +442,17 @@ export function HomeScreen({
             </Animated.View>
           ) : null}
 
-          {/* 5 — Cửa sổ đang mở */}
+          {/* 5 — Ảnh đang nở từ lưới */}
           {win ? (
-            <Animated.View pointerEvents="none" style={[s.window, winStyle]}>
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                s.window,
+                { left: frame.x, top: frame.y, width: frame.w, height: frame.h },
+                winStyle,
+              ]}
+            >
               <Img source={win.photo} style={media.fill} transition={0} />
-              <Animated.View style={[s.muntinV, muntinStyle]} />
-              <Animated.View style={[s.muntinH, muntinStyle]} />
             </Animated.View>
           ) : null}
 
@@ -482,18 +481,12 @@ export function HomeScreen({
 
 const KEEP = [0] as const;
 
-function EndPage({
-  frame,
-  title,
-  message,
-}: {
-  frame: { w: number; h: number };
-  title: string;
-  message: string;
-}) {
+type Frame = { w: number; h: number; top: number };
+
+function EndPage({ frame, title, message }: { frame: Frame; title: string; message: string }) {
   const s = useStyles(make);
   return (
-    <View style={s.endRoot}>
+    <View style={[s.endRoot, { paddingTop: frame.top }]}>
       <View style={[s.end, { width: frame.w, height: frame.h }]}>
         <Txt variant="title" center>
           {title}
@@ -559,7 +552,6 @@ const make = (c: Palette) =>
     },
 
     overlay: { ...StyleSheet.absoluteFill, backgroundColor: c.bg, zIndex: 3 },
-    dim: { ...StyleSheet.absoluteFill, backgroundColor: c.bg },
     gridShutter: {
       position: 'absolute',
       left: 0,
@@ -571,32 +563,15 @@ const make = (c: Palette) =>
     window: {
       position: 'absolute',
       overflow: 'hidden',
+      borderRadius: radius.viewfinder,
       backgroundColor: c.surfaceRaised,
       zIndex: 4,
-    },
-    muntinV: {
-      position: 'absolute',
-      top: 0,
-      bottom: 0,
-      left: '50%',
-      width: 3,
-      marginLeft: -1.5,
-      backgroundColor: c.bg,
-    },
-    muntinH: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: '50%',
-      height: 3,
-      marginTop: -1.5,
-      backgroundColor: c.bg,
     },
 
     fly: { position: 'absolute', overflow: 'hidden', zIndex: 5 },
     toast: { position: 'absolute', left: 0, right: 0, top: BAR + space.sm, zIndex: 6 },
 
-    endRoot: { flex: 1, alignItems: 'center', paddingTop: layout.frameInset },
+    endRoot: { flex: 1, alignItems: 'center' },
     end: {
       borderRadius: radius.viewfinder,
       backgroundColor: c.surfaceSunken,

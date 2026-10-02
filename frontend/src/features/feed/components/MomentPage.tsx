@@ -22,7 +22,6 @@ import Animated, {
 import { Avatar, Img, Tap, Txt } from '@ui';
 import {
   duration,
-  layout,
   media,
   radius,
   space,
@@ -54,7 +53,8 @@ export const MomentPage = memo(function MomentPage({
   onReply,
 }: {
   moment: Moment;
-  frame: { w: number; h: number };
+  /** `top`: khoảng từ đỉnh trang tới khung — màn chính tính, mọi trang dùng chung. */
+  frame: { w: number; h: number; top: number };
   ago: string;
   replyHint: string;
   yoursLabel: string;
@@ -66,7 +66,7 @@ export const MomentPage = memo(function MomentPage({
   const c = useColors();
 
   return (
-    <View style={s.root}>
+    <View style={[s.root, { paddingTop: frame.top }]}>
       <View style={[s.frame, { width: frame.w, height: frame.h }]}>
         <Img source={moment.photo} recyclingKey={moment.id} style={media.fill} shimmer />
         <LinearGradient colors={[c.scrim, 'transparent']} style={s.topShade} pointerEvents="none" />
@@ -169,7 +169,7 @@ function ReactButton({
 
 const make = (c: Palette) =>
   StyleSheet.create({
-    root: { flex: 1, alignItems: 'center', paddingTop: layout.frameInset },
+    root: { flex: 1, alignItems: 'center' },
     frame: {
       borderRadius: radius.viewfinder,
       backgroundColor: c.surfaceRaised,

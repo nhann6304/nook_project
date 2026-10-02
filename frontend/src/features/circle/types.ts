@@ -16,3 +16,12 @@ export type Friend = {
 };
 
 export const CIRCLE_SIZE = 10;
+
+/** Một người dùng Nook chưa ở trong góc — kết quả của ô tìm bạn. */
+export type Person = {
+  id: string;
+  name: string;
+  /** Không kèm "@". */
+  username: string;
+  uri?: string;
+};

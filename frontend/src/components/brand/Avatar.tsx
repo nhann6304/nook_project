@@ -22,6 +22,8 @@ export type AvatarProps = {
   /** Cấp thân 1–10. */
   level?: number;
   dormant?: boolean;
+  /** `false` = người chưa ở trong góc: vòng xám trơn, không có cấp thân để tô. */
+  ring?: boolean;
   onPress?: () => void;
   /**
    * Chữ cho trình đọc màn hình. Component KHÔNG tự dịch: src/components không
@@ -38,6 +40,7 @@ export const Avatar = memo(function Avatar({
   size = 56,
   level = 1,
   dormant = false,
+  ring = true,
   onPress,
   label,
   recyclingKey,
@@ -55,7 +58,7 @@ export const Avatar = memo(function Avatar({
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke={dormant ? c.border : ringColor(c, level)}
+          stroke={dormant || !ring ? c.border : ringColor(c, level)}
           strokeWidth={stroke}
           strokeDasharray={dormant ? '4 5' : undefined}
           fill="none"

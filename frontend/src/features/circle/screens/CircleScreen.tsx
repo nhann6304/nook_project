@@ -6,15 +6,32 @@
  * không có gì mới thì vòng đứt nét, và dòng phụ rủ gửi một tấm — không trách.
  *
  * Vòng màu là cấp thân — chỉ mình thấy, nên dòng chân màn nói rõ điều đó.
+ *
+ * Ô tìm ở đầu: gõ là lọc ngay người trong góc (không cần mạng), đồng thời tìm
+ * người khác trên Nook theo tên / @tên để mời. Không thấy ai thì rủ gửi link.
  */
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Avatar, Button, EmptyState, IconButton, Scroll, Screen, Tap, Txt } from '@ui';
+import {
+  Avatar,
+  Button,
+  EmptyState,
+  Field,
+  HelperText,
+  IconButton,
+  Scroll,
+  Screen,
+  Spinner,
+  Tap,
+  Txt,
+} from '@ui';
 import { radius, space, spring, useColors, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
-import { CIRCLE_SIZE, type Friend } from '../types';
+import { CIRCLE_SIZE, type Friend, type Person } from '../types';
+import { MIN_QUERY } from '../lib/circleApi';
+import { fold, matches } from '../lib/fold';
 
 const STAGGER = 45;
 
@@ -23,11 +40,27 @@ export function CircleScreen({
   onInvite,
   onOpenFriend,
   onClose,
+  query,
+  onQueryChange,
+  people,
+  searching,
+  requested,
+  onRequest,
+  searchError,
 }: {
   friends: readonly Friend[];
   onInvite: () => void;
   onOpenFriend: (id: string) => void;
   onClose: () => void;
+  query: string;
+  onQueryChange: (q: string) => void;
+  /** Người ngoài góc khớp `query` — server trả về. */
+  people: readonly Person[];
+  searching: boolean;
+  /** Ai đã được mời trong lần mở màn này. */
+  requested: ReadonlySet<string>;
+  onRequest: (id: string) => void;
+  searchError: string | null;
 }) {
   const s = useStyles(make);
   const c = useColors();
@@ -44,7 +77,7 @@ export function CircleScreen({
   };
 
   return (
-    <Screen padded={false}>
+    <Screen padded={false} keyboard>
       <View style={s.bar}>
         <IconButton label={t('home.backToCamera')} onPress={onClose} style={s.round}>
           <Ionicons name="chevron-back" size={22} color={c.text} />
@@ -57,49 +90,215 @@ export function CircleScreen({
         </Txt>
       </View>
 
-      <Scroll>
-        <View style={s.invite}>
-          <View style={s.inviteText}>
-            <Txt variant="label">{t('friends.inviteTitle')}</Txt>
-            <Txt variant="faint" tone="muted">
-              {left > 0 ? t('friends.inviteLeft', { count: left }) : t('friends.full')}
-            </Txt>
-          </View>
-          <Button
-            label={t('friends.sendLink')}
-            onPress={onInvite}
-            disabled={left <= 0}
-            style={s.inviteBtn}
-          />
-        </View>
+      <View style={s.searchBox}>
+        <Field
+          value={query}
+          onChangeText={onQueryChange}
+          placeholder={t('friends.search.placeholder')}
+          accessibilityLabel={t('friends.search.placeholder')}
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
+          prefix={<Ionicons name="search" size={18} color={c.textFaint} style={s.searchIcon} />}
+          suffix={
+            query ? (
+              <IconButton label={t('friends.search.clear')} onPress={() => onQueryChange('')}>
+                <Ionicons name="close-circle" size={18} color={c.textFaint} />
+              </IconButton>
+            ) : null
+          }
+        />
+      </View>
 
-        {friends.length === 0 ? (
-          <EmptyState
-            title={t('circle.waitingTitle', { count: CIRCLE_SIZE })}
-            message={t('circle.waitingMessage')}
-          />
-        ) : (
-          <View style={s.list}>
-            {friends.map((f, i) => (
-              <Animated.View
-                key={f.id}
-                entering={FadeInDown.delay(i * STAGGER)
-                  .springify()
-                  .damping(spring.enter.damping)}
-              >
-                <FriendRow friend={f} sub={sub(f)} onOpen={onOpenFriend} />
-              </Animated.View>
-            ))}
+      {fold(query) ? (
+        <SearchResults
+          query={query}
+          friends={friends}
+          people={people}
+          searching={searching}
+          requested={requested}
+          full={left <= 0}
+          error={searchError}
+          sub={sub}
+          onOpenFriend={onOpenFriend}
+          onRequest={onRequest}
+          onInvite={onInvite}
+        />
+      ) : (
+        <Scroll>
+          <View style={s.invite}>
+            <View style={s.inviteText}>
+              <Txt variant="label">{t('friends.inviteTitle')}</Txt>
+              <Txt variant="faint" tone="muted">
+                {left > 0 ? t('friends.inviteLeft', { count: left }) : t('friends.full')}
+              </Txt>
+            </View>
+            <Button
+              label={t('friends.sendLink')}
+              onPress={onInvite}
+              disabled={left <= 0}
+              style={s.inviteBtn}
+            />
           </View>
-        )}
 
-        <Txt variant="faint" tone="faint" center style={s.note}>
-          {t('friends.ringNote')}
-        </Txt>
-      </Scroll>
+          {friends.length === 0 ? (
+            <EmptyState
+              title={t('circle.waitingTitle', { count: CIRCLE_SIZE })}
+              message={t('circle.waitingMessage')}
+            />
+          ) : (
+            <View style={s.list}>
+              {friends.map((f, i) => (
+                <Animated.View
+                  key={f.id}
+                  entering={FadeInDown.delay(i * STAGGER)
+                    .springify()
+                    .damping(spring.enter.damping)}
+                >
+                  <FriendRow friend={f} sub={sub(f)} onOpen={onOpenFriend} />
+                </Animated.View>
+              ))}
+            </View>
+          )}
+
+          <Txt variant="faint" tone="faint" center style={s.note}>
+            {t('friends.ringNote')}
+          </Txt>
+        </Scroll>
+      )}
     </Screen>
   );
 }
+
+function SearchResults({
+  query,
+  friends,
+  people,
+  searching,
+  requested,
+  full,
+  error,
+  sub,
+  onOpenFriend,
+  onRequest,
+  onInvite,
+}: {
+  query: string;
+  friends: readonly Friend[];
+  people: readonly Person[];
+  searching: boolean;
+  requested: ReadonlySet<string>;
+  full: boolean;
+  error: string | null;
+  sub: (f: Friend) => string;
+  onOpenFriend: (id: string) => void;
+  onRequest: (id: string) => void;
+  onInvite: () => void;
+}) {
+  const s = useStyles(make);
+  const t = useT();
+  const inCircle = friends.filter((f) => matches(query, f.name));
+  const tooShort = fold(query).length < MIN_QUERY;
+  const nobody = !tooShort && !searching && inCircle.length === 0 && people.length === 0;
+
+  if (nobody) {
+    return (
+      <EmptyState
+        title={t('friends.search.noneTitle', { query: query.trim() })}
+        message={t('friends.search.noneMessage')}
+        actionLabel={full ? undefined : t('friends.sendLink')}
+        onAction={full ? undefined : onInvite}
+      />
+    );
+  }
+
+  return (
+    <Scroll>
+      {inCircle.length > 0 ? (
+        <>
+          <Txt variant="label" tone="muted" style={s.section}>
+            {t('friends.search.inCircle')}
+          </Txt>
+          {inCircle.map((f) => (
+            <FriendRow key={f.id} friend={f} sub={sub(f)} onOpen={onOpenFriend} />
+          ))}
+        </>
+      ) : null}
+
+      <Txt variant="label" tone="muted" style={s.section}>
+        {t('friends.search.onNook')}
+      </Txt>
+      {tooShort ? (
+        <Txt variant="faint" tone="faint" style={s.hint}>
+          {t('friends.search.typeMore')}
+        </Txt>
+      ) : searching ? (
+        <View style={s.spinner}>
+          <Spinner />
+        </View>
+      ) : (
+        people.map((p) => (
+          <PersonRow
+            key={p.id}
+            person={p}
+            requested={requested.has(p.id)}
+            disabled={full}
+            addLabel={t('friends.search.add')}
+            requestedLabel={t('friends.search.requested')}
+            a11y={t('friends.search.addLabel', { name: p.name })}
+            onRequest={onRequest}
+          />
+        ))
+      )}
+      {error ? (
+        <View style={s.hint}>
+          <HelperText tone="danger">{error}</HelperText>
+        </View>
+      ) : null}
+    </Scroll>
+  );
+}
+
+const PersonRow = memo(function PersonRow({
+  person,
+  requested,
+  disabled,
+  addLabel,
+  requestedLabel,
+  a11y,
+  onRequest,
+}: {
+  person: Person;
+  requested: boolean;
+  disabled: boolean;
+  addLabel: string;
+  requestedLabel: string;
+  a11y: string;
+  onRequest: (id: string) => void;
+}) {
+  const s = useStyles(make);
+  return (
+    <View style={s.row}>
+      <Avatar name={person.name} uri={person.uri} ring={false} size={52} recyclingKey={person.id} />
+      <View style={s.rowText}>
+        <Txt variant="section" numberOfLines={1}>
+          {person.name}
+        </Txt>
+        <Txt variant="faint" tone="faint" numberOfLines={1}>
+          @{person.username}
+        </Txt>
+      </View>
+      <Button
+        label={requested ? requestedLabel : addLabel}
+        variant={requested ? 'ghost' : 'secondary'}
+        disabled={requested || disabled}
+        onPress={() => onRequest(person.id)}
+        accessibilityLabel={a11y}
+        style={s.addBtn}
+      />
+    </View>
+  );
+});
 
 const FriendRow = memo(function FriendRow({
   friend,
@@ -177,5 +376,11 @@ const make = (c: Palette) =>
     },
     faded: { opacity: 0.55 },
     rowText: { flex: 1, gap: 2 },
+    searchBox: { paddingHorizontal: space.lg, paddingTop: space.sm },
+    searchIcon: { marginRight: space.sm },
+    section: { paddingHorizontal: space.lg, paddingTop: space.xl, paddingBottom: space.sm },
+    hint: { paddingHorizontal: space.lg },
+    spinner: { paddingVertical: space.xl, alignItems: 'center' },
+    addBtn: { minHeight: 40, paddingHorizontal: space.lg, borderRadius: radius.sm + 2 },
     note: { paddingHorizontal: space.huge - space.sm, paddingTop: space.xxl },
   });

@@ -180,7 +180,8 @@ Lấy từ `frontend/docs/02-ui-system.md`, nhắc lại ở đây vì hay bị 
 - **Mỗi màn đúng MỘT nút `variant="primary"`.** Hai cái là không màn nào nổi.
 - Chữ trên nút primary là màu **tối** (`color.onAccent`), không phải trắng.
   Chữ trắng trên dải cam–hồng chỉ đạt 2.3:1 — không đọc được ngoài nắng.
-- Khung ảnh **đứng 3:4**, chung cho camera và khoảnh khắc — xem `layout.cameraFrameRatio`.
+- Khung ảnh **vuông 1:1**, chung cho camera và khoảnh khắc — xem `layout.cameraFrameRatio`. Ảnh gửi đi cắt đúng khung (`squarePhoto`).
+- Chuyển cảnh chỉ animate **transform + opacity**, không animate left/top/width/height.
 - **Không thanh tab.** Màn chính là camera + ảnh bạn bè lướt dọc; màn khác
   đều `push` chồng lên, hướng trượt nói nó nằm ở đâu (bạn bè trái, tin nhắn phải).
 - Chuyển cảnh lớn dùng `duration.scene` + `ease.out`; phản hồi nhấn vẫn ≤ 320ms.

@@ -2,9 +2,10 @@
  * Pager — lướt dọc từng trang một, kiểu Locket: camera là trang 0, mỗi khoảnh
  * khắc là một trang bên dưới.
  *
- * Trang đang rời đi lún xuống SAU trang mới (thu nhỏ + tối dần + trôi chậm hơn
- * ngón tay), nên lướt có cảm giác xếp chồng từng tấm chứ không phải cuộn một
- * dải dài. Mọi thứ chạy trên luồng UI qua `scrollY`.
+ * Trang đi THẲNG theo ngón tay, không hiệu ứng gì thêm (02/10/2026). Bản trước
+ * cho trang cũ lún xuống + thu nhỏ + tối dần: khung ảnh trôi lệch nhịp ngón
+ * tay nên nhìn như nhảy lên nhảy xuống, và Android vẽ khung camera dưới lớp
+ * co giãn bị giật. `scrollY` vẫn chia ra cho thanh trên/dưới mờ theo.
  *
  * Dùng `snapToInterval` chứ không `pagingEnabled`: Android không hỗ trợ
  * `pagingEnabled` theo chiều dọc.
@@ -15,11 +16,8 @@
 import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
 import { StyleSheet, View, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import Animated, {
-  Extrapolation,
-  interpolate,
   useAnimatedRef,
   useAnimatedScrollHandler,
-  useAnimatedStyle,
   scrollTo,
   runOnUI,
   type SharedValue,
@@ -70,11 +68,10 @@ export const Pager = forwardRef<PagerHandle, PagerProps>(function Pager(
           'worklet';
           scrollTo(scroller, 0, y, animated);
         })();
-        // Không animated thì không có sự kiện dừng cuộn nào để bắt.
-        if (!animated) {
-          setIndex(i);
-          onIndexChange?.(i);
-        }
+        // Báo ngay, kể cả khi có trượt: cuộn bằng lệnh thì iOS không bắn
+        // `onMomentumScrollEnd`, chờ nó là trang đích còn trống.
+        setIndex(i);
+        onIndexChange?.(i);
       },
     }),
     [onIndexChange, pageHeight, scroller],
@@ -84,9 +81,9 @@ export const Pager = forwardRef<PagerHandle, PagerProps>(function Pager(
   for (let i = 0; i < count; i++) {
     const live = Math.abs(i - index) <= WINDOW || keep?.includes(i) === true;
     pages.push(
-      <Page key={i} index={i} height={pageHeight} scrollY={scrollY}>
+      <View key={i} style={[s.page, { height: pageHeight }]}>
         {live ? renderPage(i) : null}
-      </Page>,
+      </View>,
     );
   }
 
@@ -108,34 +105,6 @@ export const Pager = forwardRef<PagerHandle, PagerProps>(function Pager(
     </Animated.ScrollView>
   );
 });
-
-function Page({
-  index,
-  height,
-  scrollY,
-  children,
-}: {
-  index: number;
-  height: number;
-  scrollY: SharedValue<number>;
-  children: React.ReactNode;
-}) {
-  const anim = useAnimatedStyle(() => {
-    if (height <= 0) return {};
-    // 0 = đang đứng đúng trang, 1 = đã bị trang sau đè hết.
-    const gone = interpolate(scrollY.value / height - index, [0, 1], [0, 1], Extrapolation.CLAMP);
-    return {
-      opacity: 1 - gone * 0.7,
-      transform: [{ translateY: gone * height * 0.55 }, { scale: 1 - gone * 0.1 }],
-    };
-  });
-
-  return (
-    <Animated.View style={[s.page, { height }, anim]}>
-      <View style={s.fill}>{children}</View>
-    </Animated.View>
-  );
-}
 
 const s = StyleSheet.create({
   fill: { flex: 1 },

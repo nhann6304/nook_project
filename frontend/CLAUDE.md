@@ -76,9 +76,12 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - **Mỗi màn đúng MỘT** nút `variant="primary"`.
 - Chữ trên nút primary là màu **tối** (`c.onAccent`), không phải trắng — chữ
   trắng trên dải màu chỉ đạt 1.9–2.5:1 ở mọi bảng.
-- Khung ảnh **đứng 3:4** (`layout.cameraFrameRatio`), CHUNG cho camera và mọi
-  khoảnh khắc; bề ngang = máy trừ 2×`frameInset`, máy ngắn thì chiều cao (đo
-  bằng `onLayout`) chặn trước. Theo bảng thiết kế bản 7 (27/09/2026).
+- Khung ảnh **vuông 1:1** (`layout.cameraFrameRatio`, đổi 02/10/2026 — 3:4 dài
+  quá), CHUNG cho camera và mọi khoảnh khắc. Ảnh chụp / chọn từ máy được CẮT
+  đúng khung (`camera/lib/squarePhoto.ts`) và camera trước để `mirror` — thấy
+  gì gửi nấy. Máy cao thì khung nằm giữa phần dư (`frame.top`).
+- Chuyển cảnh chỉ dùng **transform + opacity**. Lướt trang đi thẳng theo ngón
+  tay, không lún/thu nhỏ (bản cũ nhìn như nhảy lên xuống, Android giật khung camera).
 - **Không thanh tab** (bảng thiết kế bản 7, thay luật 01/09/2026). Màn chính
   `app/(app)/home.tsx` là camera ở trang 0 + ảnh bạn bè từng trang bên dưới,
   **vuốt lên** là tới (`<Pager>`). Góc trái → bạn bè (trượt từ trái), góc phải
@@ -122,7 +125,7 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] Icon PNG cho store đã xuất; wordmark "nook" vẽ lại bằng SVG
 - [ ] Onboarding — còn 3 màn: Tên và ảnh, Mời người đầu tiên, Xin quyền
 - [ ] Cài đặt: mới có hàng Ngôn ngữ. Còn Vị trí, Thông báo, Tài khoản
-- [ ] Thêm bạn — đặc tả xong, chưa code
+- [~] Thêm bạn — ô tìm theo tên / @tên ở màn Bạn bè (hàng giả `circle/lib/circleApi.ts`). Còn chờ đường API tìm người + lời mời bên backend
 - [ ] "Lưu về máy" ở màn Vừa chụp xong — cần `expo-media-library` + xin quyền ghi
 - [ ] Chưa đo hiệu năng trên máy Android tầm trung
 - [ ] Widget: thiết kế xong, chưa viết mã gốc — **cần development build**

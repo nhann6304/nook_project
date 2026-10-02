@@ -44,6 +44,7 @@ import { FlashToggle, type FlashMode } from './FlashToggle';
 import { ScreenFlash, WARMUP_MS, type ScreenFlashHandle } from './ScreenFlash';
 import { SendButton } from './SendButton';
 import { Shutter } from './Shutter';
+import { squarePhoto } from '../lib/squarePhoto';
 
 export type Shot = { uri: string; caption: string };
 
@@ -59,7 +60,8 @@ export function CameraPage({
   onOpenFeed,
   footer,
 }: {
-  frame: { w: number; h: number };
+  /** `top`: khoảng từ đỉnh trang tới khung — màn chính tính, mọi trang dùng chung. */
+  frame: { w: number; h: number; top: number };
   onReviewChange: (reviewing: boolean) => void;
   /** Màn chính nhận ảnh, vẽ hiệu ứng bay, rồi lưu. */
   onSend: (shot: Shot) => void;
@@ -86,6 +88,15 @@ export function CameraPage({
   const blinkStyle = useAnimatedStyle(() => ({ opacity: blink.get() }));
   const spin = useSharedValue(0);
   const spinStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${spin.value}deg` }] }));
+
+  // Cắt hỏng (hiếm) thì vẫn giữ ảnh gốc — mất ảnh vừa chụp tệ hơn lệch khung.
+  const toSquare = useCallback(async (uri: string) => {
+    try {
+      return await squarePhoto(uri);
+    } catch {
+      return uri;
+    }
+  }, []);
 
   const review = useCallback(
     (uri: string | null) => {
@@ -129,14 +140,14 @@ export function CameraPage({
       if (Platform.OS === 'ios') void cam.current.pausePreview();
       setProcessing(true);
       const photo = await shooting;
-      if (photo?.uri) review(photo.uri);
+      if (photo?.uri) review(await toSquare(photo.uri));
       else if (Platform.OS === 'ios') void cam.current?.resumePreview();
     } finally {
       screenFlash.current?.off();
       setProcessing(false);
       setBusy(false);
     }
-  }, [blink, busy, facing, flash, review]);
+  }, [blink, busy, facing, flash, review, toSquare]);
 
   // Huỷ chọn ảnh là một lựa chọn, không phải sự cố — im lặng quay về.
   const pick = useCallback(async () => {
@@ -144,14 +155,15 @@ export function CameraPage({
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect: [3, 4],
+      aspect: [1, 1],
       quality: 0.8,
     });
     const first = res.assets?.[0];
     if (res.canceled || !first) return;
     feel.select();
-    review(first.uri);
-  }, [busy, review]);
+    // Android có thể bỏ qua `aspect`, iOS thì luôn vuông — cắt lại cho chắc.
+    review(await toSquare(first.uri));
+  }, [busy, review, toSquare]);
 
   const discard = useCallback(() => {
     if (Platform.OS === 'ios') void cam.current?.resumePreview();
@@ -189,12 +201,15 @@ export function CameraPage({
   const reviewing = shot !== null;
 
   return (
-    <View style={s.root}>
+    <View style={[s.root, { paddingTop: frame.top }]}>
       <View style={[s.frame, { width: frame.w, height: frame.h }]}>
         <CameraView
           ref={cam}
           style={common.absoluteFill}
           facing={facing}
+          // Ảnh camera trước giữ y như lúc ngắm (soi gương). Mặc định `false`
+          // thì ảnh ra bị lật ngang so với thứ người dùng vừa thấy.
+          mirror
           // Camera sau dùng đèn thật; camera trước đã có đèn màn hình lo.
           flash={facing === 'back' ? flash : 'off'}
         />
@@ -289,7 +304,7 @@ export function CameraPage({
 
 const make = (c: Palette) =>
   StyleSheet.create({
-    root: { flex: 1, alignItems: 'center', paddingTop: layout.frameInset },
+    root: { flex: 1, alignItems: 'center' },
     frame: {
       borderRadius: radius.viewfinder,
       backgroundColor: c.surfaceRaised,

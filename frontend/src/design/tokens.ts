@@ -77,12 +77,12 @@ export const type = {
 
 export const layout = {
   /**
-   * Khung ảnh = ĐỨNG 3:4 (rộng / cao), theo bảng thiết kế bản 7. Bề ngang là
-   * máy trừ 2×`frameInset`; máy ngắn thì chiều cao chặn trước rồi suy ra ngang.
-   * Camera và khoảnh khắc dùng CHUNG khung này, nên lướt từ camera sang ảnh bạn
-   * bè thì khung đứng yên, chỉ có ảnh trong nó đổi.
+   * Khung ảnh VUÔNG 1:1 (02/10/2026 — 3:4 dài quá trên điện thoại). Ảnh chụp
+   * được cắt đúng khung này (`squarePhoto`), nên thấy gì gửi nấy. Bề ngang là
+   * máy trừ 2×`frameInset`; máy ngắn thì chiều cao chặn trước. Camera và
+   * khoảnh khắc dùng CHUNG khung, lướt từ camera sang ảnh bạn bè khung đứng yên.
    */
-  cameraFrameRatio: 3 / 4,
+  cameraFrameRatio: 1,
   frameInset: 8,
   /** Vùng chạm tối thiểu. Apple khuyến nghị 44pt, Android 48dp — lấy số lớn hơn. */
   minTouch: 48,
