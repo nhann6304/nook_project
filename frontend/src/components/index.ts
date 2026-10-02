@@ -47,3 +47,4 @@ export { Loading } from './feedback/Loading';
 export { Toast } from './feedback/Toast';
 export { Spinner } from './feedback/Spinner';
 export { Shimmer } from './feedback/Shimmer';
+export { OfflineBar } from './feedback/OfflineBar';

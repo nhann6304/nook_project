@@ -37,6 +37,7 @@ import {
 } from '@design';
 import { useT } from '@i18n';
 import * as feel from '@/lib/haptics';
+import * as sound from '@/lib/sound';
 import { CameraPermission } from './CameraPermission';
 import { FlashToggle, type FlashMode } from './FlashToggle';
 import { ScreenFlash, WARMUP_MS, type ScreenFlashHandle } from './ScreenFlash';
@@ -146,6 +147,7 @@ export function CameraPage({
     }
 
     feel.capture();
+    sound.capture();
     blink.set(
       withSequence(
         withTiming(0.85, { duration: duration.instant }),

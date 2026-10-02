@@ -64,6 +64,8 @@ export function SettingsScreen({
   onPickMode,
   locked,
   onLockChange,
+  soundOn,
+  onSoundChange,
   onClose,
 }: {
   name: string;
@@ -78,6 +80,8 @@ export function SettingsScreen({
   /** Trang cá nhân đang khoá. */
   locked: boolean;
   onLockChange: (locked: boolean) => void;
+  soundOn: boolean;
+  onSoundChange: (on: boolean) => void;
   onClose: () => void;
 }) {
   const t = useT();
@@ -144,6 +148,17 @@ export function SettingsScreen({
                 </Txt>
               </>
             )}
+          </Card>
+        </Group>
+
+        <Group title={t('sound.title')}>
+          <Card style={s.card}>
+            <Toggle
+              value={soundOn}
+              onChange={onSoundChange}
+              label={t('sound.label')}
+              hint={t('sound.hint')}
+            />
           </Card>
         </Group>
 

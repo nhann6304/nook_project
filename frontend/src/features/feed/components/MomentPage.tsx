@@ -31,6 +31,7 @@ import {
   type Palette,
 } from '@design';
 import * as feel from '@/lib/haptics';
+import * as sound from '@/lib/sound';
 import type { Moment } from '../types';
 import { splitCaption } from '../lib/tags';
 
@@ -182,6 +183,7 @@ function ReactButton({
 
   const press = useCallback(() => {
     feel.confirm();
+    sound.reacted();
     pop.set(withSequence(withSpring(1.25, spring.press), withSpring(1, spring.enter)));
     fly.set(0);
     fly.set(withTiming(1, { duration: duration.scene }));

@@ -33,6 +33,7 @@ import {
   AvatarStack,
   IconButton,
   Img,
+  OfflineBar,
   Pager,
   Screen,
   SkyWash,
@@ -54,6 +55,7 @@ import {
 } from '@design';
 import { useAgo, useT } from '@i18n';
 import * as feel from '@/lib/haptics';
+import * as sound from '@/lib/sound';
 import {
   CameraPage,
   CONTROLS_HEIGHT,
@@ -76,6 +78,7 @@ export function HomeScreen({
   friendNames,
   taggable,
   onOpenPerson,
+  offline,
   moments,
   unread,
   onSend,
@@ -90,6 +93,8 @@ export function HomeScreen({
   /** Bạn trong góc — tag được vào chú thích. */
   taggable: readonly Tag[];
   onOpenPerson: (id: string) => void;
+  /** Máy đang không ra được internet — hiện viên "Đang chờ mạng". */
+  offline: boolean;
   moments: readonly Moment[];
   unread: boolean;
   onSend: (shot: Shot) => void;
@@ -160,6 +165,7 @@ export function HomeScreen({
   const landed = useCallback(() => {
     setFlying(null);
     feel.success();
+    sound.sent();
     const tagged = sentTags.current;
     if (tagged.length > 0) {
       say(t('home.sentTagged', { names: tagged.map((tg) => tg.name).join(', ') }));
@@ -510,6 +516,10 @@ export function HomeScreen({
             </Animated.View>
           ) : null}
 
+          <View style={s.offline} pointerEvents="none">
+            <OfflineBar visible={offline} label={t('home.offline')} />
+          </View>
+
           <View style={s.toast} pointerEvents="none">
             <Toast message={toast?.text ?? null} id={toast?.id} />
           </View>
@@ -610,6 +620,7 @@ const make = (c: Palette) =>
 
     fly: { position: 'absolute', overflow: 'hidden', zIndex: 5 },
     toast: { position: 'absolute', left: 0, right: 0, top: BAR + space.sm, zIndex: 6 },
+    offline: { position: 'absolute', left: 0, right: 0, top: BAR + space.xs, zIndex: 5 },
 
     endRoot: { flex: 1, alignItems: 'center' },
     end: {

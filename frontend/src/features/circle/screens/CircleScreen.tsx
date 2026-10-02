@@ -15,7 +15,7 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeOut } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {
   Avatar,
   Button,
@@ -29,13 +29,11 @@ import {
   Tap,
   Txt,
 } from '@ui';
-import { duration, radius, space, useColors, useStyles, type Palette } from '@design';
+import { motion, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
 import { CIRCLE_SIZE, type Friend, type Invite, type Person, type PersonResult } from '../types';
 import { MIN_QUERY } from '../lib/circleApi';
 import { fold, matches } from '@/lib/fold';
-
-const STAGGER = 45;
 
 export function CircleScreen({
   friends,
@@ -143,7 +141,7 @@ export function CircleScreen({
                 {t('friends.invites.title')}
               </Txt>
               {incoming.map((inv) => (
-                <Animated.View key={inv.id} exiting={FadeOut.duration(duration.fast)}>
+                <Animated.View key={inv.id} exiting={motion.leave()} layout={motion.reflow()}>
                   <InviteRow
                     invite={inv}
                     sub={t('friends.invites.sub', {
@@ -207,10 +205,7 @@ export function CircleScreen({
           ) : (
             <View style={s.list}>
               {friends.map((f, i) => (
-                <Animated.View
-                  key={f.id}
-                  entering={FadeInDown.delay(i * STAGGER).duration(duration.base)}
-                >
+                <Animated.View key={f.id} entering={motion.rise(i)} layout={motion.reflow()}>
                   <FriendRow friend={f} sub={sub(f)} onOpen={onOpenFriend} />
                 </Animated.View>
               ))}

@@ -82,6 +82,7 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   gì gửi nấy. Máy cao thì khung nằm giữa phần dư (`frame.top`).
 - Chuyển cảnh chỉ dùng **transform + opacity**. Lướt trang đi thẳng theo ngón
   tay, không lún/thu nhỏ (bản cũ nhìn như nhảy lên xuống, Android giật khung camera).
+- Chuyển động lấy từ `motion` (`@design`); âm thanh qua `@/lib/sound` — đúng ba tiếng, tắt được trong Cài đặt.
 - **Không nảy.** Thứ hiện ra dùng `FadeIn…duration(...)`, không `.springify()`;
   `spring.*` đã tắt dần tới hạn — đổi số thì giữ `damping ≥ 2·√(stiffness·mass)`.
 - Bàn phím **không co khung** ở màn chính: chú thích tự nhích lên

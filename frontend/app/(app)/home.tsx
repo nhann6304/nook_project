@@ -9,9 +9,11 @@ import { useChats } from '@/features/chat/store/chatStore';
 import { lastMessage } from '@/features/chat/types';
 import { useJournal } from '@/features/journal/store/journalStore';
 import { useCircle } from '@/features/circle/store/circleStore';
+import { useOnline } from '@/hooks/useOnline';
 
 export default function Home() {
   const router = useRouter();
+  const online = useOnline();
   const friends = useCircle((s) => s.friends);
   const names = useMemo(() => friends.map((f) => f.name), [friends]);
   const taggable = useMemo(
@@ -55,6 +57,7 @@ export default function Home() {
     <HomeScreen
       friendNames={names}
       taggable={taggable}
+      offline={!online}
       onOpenPerson={(id) => router.push({ pathname: '/(app)/person/[id]', params: { id } })}
       moments={moments}
       unread={unread}

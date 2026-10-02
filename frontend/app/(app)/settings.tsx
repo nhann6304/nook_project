@@ -7,6 +7,7 @@ import { useCircle } from '@/features/circle/store/circleStore';
 import { ME } from '@/mocks/moments';
 import { useProfile } from '@/features/profile/store/profileStore';
 import { setProfileLocked } from '@/features/profile/lib/profileApi';
+import { useSound } from '@/features/settings/store/soundStore';
 
 export default function Settings() {
   const router = useRouter();
@@ -14,6 +15,8 @@ export default function Settings() {
   const friendCount = useCircle((s) => s.friends.length);
   const myName = useProfile((s) => s.name);
   const locked = useProfile((s) => s.locked);
+  const soundOn = useSound((s) => s.on);
+  const setSound = useSound((s) => s.set);
   const setLocked = useProfile((s) => s.setLocked);
 
   // Đổi ngay trên màn, server hỏng thì trả lại như cũ.
@@ -60,6 +63,8 @@ export default function Settings() {
       onPickMode={setMode}
       locked={locked}
       onLockChange={(v) => void changeLock(v)}
+      soundOn={soundOn}
+      onSoundChange={setSound}
       onClose={() => router.back()}
     />
   );

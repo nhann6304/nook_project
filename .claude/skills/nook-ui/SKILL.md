@@ -34,6 +34,9 @@ Trước khi viết một component mới, tra bảng này. Cột phải là th�
 | Ô nhập mã 6 số | `<CodeInput>` | sáu `<Field>` |
 | Chuyển 2–3 chế độ | `<Segmented>` | hai nút tự tô màu |
 | Bật/tắt một cài đặt | `<Toggle label hint>` | `Switch` của react-native |
+| Hiện ra / rời đi / dồn chỗ | `motion.appear()` `motion.rise(i)` `motion.leave()` `motion.reflow()` từ `@design` | `.springify()`, `ZoomIn`, `BounceIn` — nảy "tưng tưng" |
+| Âm thanh | `@/lib/sound` (`capture` · `sent` · `reacted`) | gọi thẳng `expo-audio`; thêm tiếng cho nút thường |
+| Báo mất mạng | `<OfflineBar>` + `useOnline()` | `Alert` mỗi lần rớt mạng |
 | Ảnh | `<Img>` | `<Image>` của RN hoặc expo-image trực tiếp |
 | Khung màn hình | `<Screen>` | `<SafeAreaView>` |
 | Xếp ngang / dọc | `<Row>` `<Col>` | `style={{flexDirection:…}}` |

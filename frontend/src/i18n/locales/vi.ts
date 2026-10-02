@@ -113,6 +113,12 @@ export const vi = {
     failed: 'Chưa lấy được vị trí. Bạn ra chỗ thoáng hơn rồi thử lại nhé.',
   },
 
+  sound: {
+    title: 'Âm thanh',
+    label: 'Tiếng khi chụp, gửi và thả cảm xúc',
+    hint: 'Nhỏ, không ngắt nhạc bạn đang nghe. iPhone để im lặng thì im.',
+  },
+
   verify: {
     title: 'Mã đã gửi rồi nhé',
     sub: 'Sáu số vừa được gửi tới {target}.',
@@ -251,6 +257,7 @@ export const vi = {
   /* ---------- Màn chính: camera + ảnh bạn bè lướt dọc ---------- */
   home: {
     sentTagged: 'Đã gửi · đã báo cho {names}',
+    offline: 'Đang chờ mạng',
     mentioned: 'Nhắc tới bạn',
     openFriends: 'Bạn bè',
     openChats: 'Tin nhắn',

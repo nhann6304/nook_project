@@ -8,7 +8,7 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import {
   Avatar,
   Button,
@@ -22,7 +22,7 @@ import {
   TopBar,
   Txt,
 } from '@ui';
-import { duration, radius as rad, space, useColors, useStyles, type Palette } from '@design';
+import { motion, radius as rad, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import type { Person, Relation } from '@/features/circle/types';
 import { RADII, type NearbyPerson, type Radius } from '../lib/nearbyApi';
@@ -97,7 +97,7 @@ export function NearbyScreen({
         />
       ) : active ? (
         <Scroll>
-          <Animated.View entering={FadeIn.duration(duration.base)}>
+          <Animated.View entering={motion.appear()}>
             <Card style={s.live}>
               <View style={s.dot} />
               <View style={s.liveText}>
@@ -119,7 +119,7 @@ export function NearbyScreen({
             />
           ) : (
             people.map((p, i) => (
-              <Animated.View key={p.id} entering={FadeInDown.delay(i * 45).duration(duration.base)}>
+              <Animated.View key={p.id} entering={motion.rise(i)} layout={motion.reflow()}>
                 <NearbyItem
                   person={p}
                   sub={t('nearby.within', { username: p.username, distance: distance(p.within) })}

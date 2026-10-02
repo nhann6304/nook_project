@@ -31,6 +31,8 @@ import {
 } from '@expo-google-fonts/plus-jakarta-sans';
 import { useColors, useStyles, useThemeReady, type Palette } from '@design';
 import { useI18nReady } from '@i18n';
+import { initSound } from '@/lib/sound';
+import { useSound } from '@/features/settings/store/soundStore';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -48,6 +50,12 @@ export default function RootLayout() {
   });
 
   const ready = (fontsReady || error !== null) && localeReady && themeReady;
+
+  // Âm thanh nạp song song, KHÔNG giữ splash: thiếu tiếng vài trăm mili giây
+  // đầu không ai nhận ra, chờ nó thì ai cũng thấy.
+  useEffect(() => {
+    void initSound().then(useSound.getState().hydrate);
+  }, []);
 
   useEffect(() => {
     // Thả splash cả khi nạp chữ HỎNG. Không có nhánh này thì một lỗi font

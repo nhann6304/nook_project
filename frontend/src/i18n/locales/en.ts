@@ -109,6 +109,12 @@ export const en: Mirror<typeof vi> = {
     failed: "Couldn't get your location. Try again somewhere more open.",
   },
 
+  sound: {
+    title: 'Sound',
+    label: 'Sounds for capture, send and reactions',
+    hint: "Quiet, never stops your music. Silent on iPhone's silent mode.",
+  },
+
   verify: {
     title: 'Code sent',
     sub: 'Six digits are on their way to {target}.',
@@ -248,6 +254,7 @@ export const en: Mirror<typeof vi> = {
 
   home: {
     sentTagged: 'Sent · {names} will be notified',
+    offline: 'Waiting for connection',
     mentioned: 'Mentions you',
     openFriends: 'Friends',
     openChats: 'Messages',

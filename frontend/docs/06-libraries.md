@@ -22,13 +22,13 @@ thứ không ai hiểu.
 
 | Gói | Bản | Vì sao | Cái giá |
 |---|---|---|---|
-| `expo` | 54.0.37 | Bộ khung. Lo build, quyền, cập nhật, quản lý bản gốc. **Cố ý không phải bản mới nhất** — xem mục 7. | Buộc theo nhịp SDK của Expo. |
-| `react-native` | 0.81.5 | Bản do Expo 54 chọn. **Đừng tự nâng.** | |
-| `react` | 19.1.0 | Bản Expo 54 khai. | |
-| `react-dom` | 19.1.0 | **Không dùng để làm web** — nhưng `expo-router` kéo nó vào, và không khai ở đây thì npm tự lấy bản mới nhất rồi cài hỏng. Xem cảnh báo ngay dưới bảng. | |
-| `typescript` | 5.9.3 | Kiểu chặt (`strict` + `noUncheckedIndexedAccess`). | |
-| `expo-router` | 6.0.24 | Điều hướng theo tệp. Đường dẫn có kiểu (`typedRoutes`), gõ sai route là tsc báo. | Kéo theo `react-dom` và một cụm `@radix-ui` cho bản web mà mình không dùng. |
-| `expo-constants` · `expo-linking` | 18 / 8 | expo-router cần. | |
+| `expo` | 57.0.25 | Bộ khung. Lo build, quyền, cập nhật, quản lý bản gốc. **Cố ý không phải bản mới nhất** — xem mục 7. | Buộc theo nhịp SDK của Expo. |
+| `react-native` | 0.86.3 | Bản do Expo 57 chọn. **Đừng tự nâng.** | |
+| `react` | 19.2.3 | Bản Expo 57 khai. | |
+| `react-dom` | 19.2.3 | **Không dùng để làm web** — nhưng `expo-router` kéo nó vào, và không khai ở đây thì npm tự lấy bản mới nhất rồi cài hỏng. Xem cảnh báo ngay dưới bảng. | |
+| `typescript` | 6.0.3 | Kiểu chặt (`strict` + `noUncheckedIndexedAccess`). | |
+| `expo-router` | 57.0.23 | Điều hướng theo tệp. Đường dẫn có kiểu (`typedRoutes`), gõ sai route là tsc báo. | Kéo theo `react-dom` và một cụm `@radix-ui` cho bản web mà mình không dùng. |
+| `expo-constants` · `expo-linking` | 57.0.19 / 57.0.11 | expo-router cần. | |
 
 > ### ⚠ Đừng xoá `package-lock.json`
 >
@@ -56,37 +56,38 @@ thứ không ai hiểu.
 
 | Gói | Bản | Vì sao | Cái giá |
 |---|---|---|---|
-| `react-native-reanimated` | 4.1.7 | **Mọi animation.** Chạy trên luồng UI, nên JS có kẹt thì hoạt ảnh vẫn đều. Xem `src/components/primitives/Tap.tsx`. | Học khái niệm worklet. |
-| `react-native-worklets` | 0.5.1 | Reanimated 4 tách phần worklet ra gói riêng. Không dùng trực tiếp. | |
-| `react-native-gesture-handler` | 2.28.0 | Cử chỉ chạy trên luồng gốc. Nook điều hướng bằng cử chỉ nên đây là bắt buộc. | Phải bọc `GestureHandlerRootView` ngoài cùng, quên là mọi cử chỉ câm trên Android. |
+| `react-native-reanimated` | 4.5.1 | **Mọi animation.** Chạy trên luồng UI, nên JS có kẹt thì hoạt ảnh vẫn đều. Xem `src/components/primitives/Tap.tsx`. | Học khái niệm worklet. |
+| `react-native-worklets` | 0.10.1 | Reanimated 4 tách phần worklet ra gói riêng. Không dùng trực tiếp. | |
+| `react-native-gesture-handler` | 2.32.0 | Cử chỉ chạy trên luồng gốc. Nook điều hướng bằng cử chỉ nên đây là bắt buộc. | Phải bọc `GestureHandlerRootView` ngoài cùng, quên là mọi cử chỉ câm trên Android. |
 | `@shopify/flash-list` | 2.0.2 | **Mọi danh sách.** Tái dùng ô đã cuộn qua. Bản 2 viết lại cho Kiến trúc mới. | Chỉ chạy trên Kiến trúc mới (dự án này đang dùng). |
-| `expo-image` | 3.0.11 | **Mọi ảnh.** Cache đĩa, giải mã ngoài luồng chính. | |
-| `react-native-screens` | 4.16.0 | Mỗi màn là một màn gốc thật, không phải View chồng lên nhau. | |
+| `expo-image` | 57.0.5 | **Mọi ảnh.** Cache đĩa, giải mã ngoài luồng chính. | |
+| `react-native-screens` | 4.26.2 | Mỗi màn là một màn gốc thật, không phải View chồng lên nhau. | |
 
 ## 3 · Giao diện
 
 | Gói | Bản | Vì sao | Cái giá |
 |---|---|---|---|
-| `react-native-safe-area-context` | 5.6.2 | Hỏi máy chỗ tai thỏ và thanh điều hướng. Là cách duy nhất để một bản thiết kế vừa cả iPhone SE lẫn Galaxy Fold. | |
-| `react-native-svg` | 15.12.1 | Dấu hiệu "Ôm", khung đứt nét, vòng độ thân. **Bắt buộc**: Android vẽ `borderStyle:'dashed'` + `borderRadius` thành nét **liền**. | |
-| `expo-linear-gradient` | 15.0.8 | Dải cam→hồng của nút chính và nút chụp. | |
-| `expo-haptics` | 15.0.8 | Rung. Gói qua `src/lib/haptics.ts` — không gọi thẳng. | |
+| `react-native-safe-area-context` | 5.7.0 | Hỏi máy chỗ tai thỏ và thanh điều hướng. Là cách duy nhất để một bản thiết kế vừa cả iPhone SE lẫn Galaxy Fold. | |
+| `react-native-svg` | 15.15.4 | Dấu hiệu "Ôm", khung đứt nét, vòng độ thân. **Bắt buộc**: Android vẽ `borderStyle:'dashed'` + `borderRadius` thành nét **liền**. | |
+| `expo-linear-gradient` | 57.0.2 | Dải cam→hồng của nút chính và nút chụp. | |
+| `expo-haptics` | 57.0.3 | Rung. Gói qua `src/lib/haptics.ts` — không gọi thẳng. | |
+| `expo-audio` | 57.0.5 | Ba tiếng nhỏ: chụp, gửi xong, thả cảm xúc. Gói qua `src/lib/sound.ts` — không gọi thẳng. `mixWithOthers` nên không ngắt nhạc người dùng; iPhone gạt im lặng thì im; tắt được trong Cài đặt. Tệp âm tự tổng hợp, cả ba ~17KB. | Một mã gốc nữa; có sẵn trong Expo Go. |
 | `@expo/vector-icons` | 15.1.1 | Icon. Dùng bộ **Ionicons**, không trộn nhiều bộ. | Kèm ~10 tệp font icon vào gói cài. |
-| `expo-font` | 14.0.12 | Nạp bộ chữ. | |
-| `@expo-google-fonts/be-vietnam-pro` | 0.4.1 | Chữ thân. Bộ vẽ dấu tiếng Việt tử tế nhất trong tầm miễn phí. | |
-| `@expo-google-fonts/fredoka` | 0.4.1 | **Chỉ** cho chữ "nook" ở màn Chào mừng. | Một bộ chữ nữa trong gói cài, dùng cho đúng bốn chữ cái. Chấp nhận vì nó là mặt của app. |
-| `expo-splash-screen` · `expo-status-bar` · `expo-system-ui` | 31 / 3 / 6 | Màn mở, thanh trạng thái, nền hệ thống. | |
+| `expo-font` | 57.0.4 | Nạp bộ chữ. | |
+| `@expo-google-fonts/plus-jakarta-sans` | 0.4.2 | Bộ chữ duy nhất của app (bảng thiết kế bản 7). Đủ dấu tiếng Việt, nét 400–800. | Năm tệp font trong gói cài. |
+| `expo-splash-screen` · `expo-status-bar` · `expo-system-ui` | 57.0.9 / 57.0.1 / 57.0.4 | Màn mở, thanh trạng thái, nền hệ thống. | |
 
 ## 4 · Chức năng
 
 | Gói | Bản | Vì sao | Cái giá |
 |---|---|---|---|
-| `expo-camera` | 17.0.10 | Màn chính của app. | |
-| `expo-image-picker` | 17.0.11 | Nút "Chọn ảnh có sẵn" ở màn Camera. Tự lo cả hộp thoại xin quyền thư viện, nên không phải viết thêm một luồng quyền nữa. | Một mã gốc nữa; có sẵn trong Expo Go nên chưa cần development build. |
-| `expo-image-manipulator` | ~57.0.20 | Cắt ảnh vừa chụp / vừa chọn về đúng khung vuông và "nướng" hướng xoay EXIF vào điểm ảnh (`camera/lib/squarePhoto.ts`). | Có sẵn trong Expo Go. |
-| `expo-location` | ~57.0.20 | "Tìm quanh đây": xin quyền vị trí lúc dùng, lấy toạ độ MỘT lần rồi làm tròn ~11 m trước khi rời máy. Không chạy nền. | Có sẵn trong Expo Go. Chỉ xin quyền "khi đang dùng", không bao giờ "luôn luôn".
-| `expo-secure-store` | 15.0.8 | Cất thẻ đăng nhập vào Keychain (iOS) / Keystore (Android). **Chưa dùng** — chờ backend. | |
-| `expo-localization` | 17.0.9 | Đọc ngôn ngữ máy để chọn tiếng Việt hay tiếng Anh lúc mở app lần đầu. | |
+| `expo-camera` | 57.0.5 | Màn chính của app. | |
+| `expo-image-picker` | 57.0.20 | Nút "Chọn ảnh có sẵn" ở màn Camera. Tự lo cả hộp thoại xin quyền thư viện, nên không phải viết thêm một luồng quyền nữa. | Một mã gốc nữa; có sẵn trong Expo Go nên chưa cần development build. |
+| `expo-image-manipulator` | 57.0.20 | Cắt ảnh vừa chụp / vừa chọn về đúng khung vuông và "nướng" hướng xoay EXIF vào điểm ảnh (`camera/lib/squarePhoto.ts`). | Có sẵn trong Expo Go. |
+| `expo-location` | 57.0.20 | "Tìm quanh đây": xin quyền vị trí lúc dùng, lấy toạ độ MỘT lần rồi làm tròn ~11 m trước khi rời máy. Không chạy nền. | Có sẵn trong Expo Go. Chỉ xin quyền "khi đang dùng", không bao giờ "luôn luôn".
+| `expo-network` | 57.0.2 | Viên "Đang chờ mạng" (`src/hooks/useOnline.ts`). Chỉ là GỢI Ý — xem `.docs/04-offline-design.md` mục 7. | Có sẵn trong Expo Go. |
+| `expo-secure-store` | 57.0.4 | Cất thẻ đăng nhập vào Keychain (iOS) / Keystore (Android). **Chưa dùng** — chờ backend. | |
+| `expo-localization` | 57.0.2 | Đọc ngôn ngữ máy để chọn tiếng Việt hay tiếng Anh lúc mở app lần đầu. | |
 | `@react-native-async-storage/async-storage` | 2.2.0 | Nhớ ngôn ngữ người dùng đã chọn. Một cửa duy nhất ở `src/lib/storage.ts`. **Không để bí mật vào đây** — đó là việc của `expo-secure-store`. | Đọc **bất đồng bộ**, nên lúc khởi động có một nhịp chờ. MMKV đọc đồng bộ và nhanh hơn nhiều nhưng cần development build. |
 | `zustand` | 5.0.15 | Kho trạng thái. Đọc bằng selector nên đổi một trường không làm cả app vẽ lại — Context thì có. | Thêm một khái niệm cho người mới. |
 
@@ -94,9 +95,9 @@ thứ không ai hiểu.
 
 | Gói | Bản | Vì sao |
 |---|---|---|
-| `eslint` + `eslint-config-expo` | 9.39 / 10.0.0 | Nền cho luật riêng ở `eslint.config.js`. |
+| `eslint` + `eslint-config-expo` | 9.39.5 / 57.0.2 | Nền cho luật riêng ở `eslint.config.js`. |
 | `prettier` | 3.9.6 | Định dạng. Không cãi nhau về dấu cách. |
-| `@types/react` | 19.1.17 | |
+| `@types/react` | 19.2.18 | |
 
 ---
 
@@ -176,6 +177,11 @@ khuôn i18next. Ngày nào Nook thêm tiếng Nga (4 dạng số nhiều) hay ti
 | `react-native-unistyles` | Hệ style viết bằng C++, rất nhanh, có sẵn chủ đề. Nhưng nó giải bài toán mà `src/design` đã giải xong, mà lại thêm một gói gốc. |
 | `@tanstack/react-query` | Rất hợp lúc có backend thật. Chưa có gì để lấy về nên chưa cài. |
 | `react-native-bottom-sheet` | Chờ tới màn Trò chuyện. |
+| `lottie-react-native` | Hoạt hình dựng sẵn từ After Effects. Đẹp ở bản demo, nhưng là thứ làm app "trông như mẫu có sẵn" — đúng cái bảng thiết kế muốn tránh. Mỗi tệp JSON vài chục KB. Chuyển động của Nook tự viết bằng Reanimated, theo `motion` trong `src/design/motion.ts`. |
+| `@shopify/react-native-skia` | Vẽ GPU, cực mạnh — và nặng thêm vài MB cho gói cài. Chưa có hình nào SVG + Reanimated không vẽ được. |
+| `expo-blur` | Kính mờ là dấu hiệu dễ nhận nhất của giao diện "làm cho có". Trên Android còn tốn GPU và từng lỗi vẽ. Chỗ đè lên ảnh dùng nền `onPhoto` bán trong suốt. |
+| `moti` | Lớp bọc ngoài Reanimated cho dễ viết. Thêm một tầng nữa để hiểu, trong khi `motion` đã gói sẵn bốn kiểu chuyển động cần dùng. |
+| Tamagui · React Native Paper · gluestack · NativeBase | Bộ giao diện dựng sẵn: nhanh có màn đầu, nhưng mọi app dùng chúng trông giống nhau, và mỗi bộ kéo theo hệ chủ đề riêng đè lên `src/design`. |
 
 ---
 
