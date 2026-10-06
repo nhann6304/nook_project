@@ -107,6 +107,10 @@ cần tự giới thiệu nữa.
 
 ## 1.5 Màu không còn là một bảng cố định
 
+> **06/10/2026:** thay bằng họ xanh lam pastel — nền Sáng/Tối/Theo máy + năm
+> màu locket, font Poppins + Caveat. Bảng dưới đây là lịch sử; nguồn thật là
+> `docs/10-theme.md` và `src/design/palettes.ts`.
+
 Người dùng **chọn được bảng màu** (Cài đặt → Màu sắc). Có năm bảng, mặc định là
 **Đất nung**:
 

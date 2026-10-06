@@ -61,7 +61,11 @@ export const CONTROLS_HEIGHT = 128;
 /** Chỗ dành cho dải dưới hàng chụp (nhật ký 7 ngày). */
 export const FOOTER_HEIGHT = 92;
 
+/** Vầng sáng quanh khung lúc chụp, nhô ra mỗi bên chừng này. */
+const GLOW = 10;
+
 export function CameraPage({
+  active,
   frame,
   keyboardGap,
   taggable,
@@ -70,6 +74,8 @@ export function CameraPage({
   onOpenFeed,
   footer,
 }: {
+  /** `false` khi màn chính bị che (sang tab khác) — tắt hẳn camera. */
+  active: boolean;
   /** `top`: khoảng từ đỉnh trang tới khung — màn chính tính, mọi trang dùng chung. */
   frame: { w: number; h: number; top: number };
   /** Khoảng từ đáy khung tới đáy màn — để chữ chú thích né bàn phím. */
@@ -100,6 +106,8 @@ export function CameraPage({
   // Nháy trắng trong khung lúc bấm — cửa trập "đóng" một cái.
   const blink = useSharedValue(0);
   const blinkStyle = useAnimatedStyle(() => ({ opacity: blink.get() }));
+  // Khung "bừng sáng" một nhịp quanh viền — chỉ opacity, chạy trên luồng UI.
+  const glowStyle = useAnimatedStyle(() => ({ opacity: blink.get() * 0.6 }));
   // Khung đứng yên khi bàn phím bật; chỉ ô chú thích nhích lên vừa đủ né nó.
   const keyboard = useAnimatedKeyboard();
   const liftStyle = useAnimatedStyle(() => ({
@@ -238,9 +246,18 @@ export function CameraPage({
 
   return (
     <View style={[s.root, { paddingTop: frame.top }]}>
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          s.glow,
+          { top: frame.top - GLOW, width: frame.w + GLOW * 2, height: frame.h + GLOW * 2 },
+          glowStyle,
+        ]}
+      />
       <View style={[s.frame, { width: frame.w, height: frame.h }]}>
         <CameraView
           ref={cam}
+          active={active}
           style={common.absoluteFill}
           facing={facing}
           // Ảnh camera trước giữ y như lúc ngắm (soi gương). Mặc định `false`
@@ -362,6 +379,11 @@ const make = (c: Palette) =>
     },
     corner: { position: 'absolute', top: space.md + 2, left: space.md + 2 },
     blink: { ...StyleSheet.absoluteFill, backgroundColor: c.onPhotoText },
+    glow: {
+      position: 'absolute',
+      borderRadius: radius.viewfinder + GLOW,
+      backgroundColor: c.accentBright,
+    },
     processing: {
       ...StyleSheet.absoluteFill,
       alignItems: 'center',

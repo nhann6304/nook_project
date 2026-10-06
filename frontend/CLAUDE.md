@@ -72,10 +72,10 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 
 **Giao diện**
 
-- Màu **Tự động theo trời** là mặc định (bảng thiết kế F1/15b): sáng + trưa là nền SÁNG, chiều tối + đêm là nền tối (`skyAt` trong `palettes.ts`). Hoặc giữ cố định một trong **năm bảng** tối. Chữ trên ảnh dùng `tone="onPhoto"` (luôn sáng), đừng dùng màu chữ thường.
+- Màu **xanh lam pastel** (06/10/2026): nền **Sáng** mặc định · Tối · Theo máy, cộng **năm màu locket** — `docs/10-theme.md`. "Theo trời" đã bỏ. Chữ trên ảnh dùng `tone="onPhoto"` (luôn sáng). Mặt nổi dùng "kính" `c.glass` + `lift(c)`, **không blur thật** (Android giật).
 - **Mỗi màn đúng MỘT** nút `variant="primary"`.
-- Chữ trên nút primary là màu **tối** (`c.onAccent`), không phải trắng — chữ
-  trắng trên dải màu chỉ đạt 1.9–2.5:1 ở mọi bảng.
+- Chữ trên nút primary là `c.onAccent`: **trắng** ở nền sáng (nút denim đặc),
+  **navy** ở nền tối (nút lam nhạt). Nút đặc, không dải màu.
 - Khung ảnh **vuông 1:1** (`layout.cameraFrameRatio`, đổi 02/10/2026 — 3:4 dài
   quá), CHUNG cho camera và mọi khoảnh khắc. Ảnh chụp / chọn từ máy được CẮT
   đúng khung (`camera/lib/squarePhoto.ts`) và camera trước để `mirror` — thấy
@@ -87,15 +87,19 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   `spring.*` đã tắt dần tới hạn — đổi số thì giữ `damping ≥ 2·√(stiffness·mass)`.
 - Bàn phím **không co khung** ở màn chính: chú thích tự nhích lên
   (`useAnimatedKeyboard`), trang giữ nguyên chiều cao.
-- **Không thanh tab** (bảng thiết kế bản 7, thay luật 01/09/2026). Màn chính
-  `app/(app)/home.tsx` là camera ở trang 0 + ảnh bạn bè từng trang bên dưới,
-  **vuốt lên** là tới (`<Pager>`). Góc trái → bạn bè (trượt từ trái), góc phải
-  → tin nhắn (trượt từ phải). Chữ: **Plus Jakarta Sans**, tiêu đề nét 800.
+- **Thanh tab dưới đáy, ba nút** (06/10/2026 — người dùng tìm không ra Cài
+  đặt): Trang chủ · Lướt ảnh · Cài đặt (`app/(app)/(tabs)/`, `<TabBar>`). Hai
+  nút đầu là HAI vị trí của cùng màn `home` (camera trang 0, ảnh bạn bè từ
+  trang 1, `<Pager>`) — nối qua `home/store/homeNav.ts`, chung một camera.
+  Rời tab là camera tắt (`active`). Góc trái → bạn bè, góc phải → tin nhắn,
+  vẫn mở chồng lên. Icon dùng bản **đặc** (`home`, không `home-outline`).
+- Chữ: **Poppins** (tiêu đề 600–700, không 800) + **Caveat** cho lời nhấn viết
+  tay (`variant="hand"`, mỗi màn tối đa một chỗ).
 - **Không có linh vật** (bỏ 31/08/2026). Chỗ trống dùng `<GhostFrame>` hoặc
   lưới mười chỗ.
 - Wordmark **chỉ** ở màn Chào mừng; dấu hiệu `<Rings>` thì dùng trong app.
 - Vùng chạm tối thiểu `layout.minTouch` (48).
-- `c.textDisabled` **không phải màu chữ đọc được** (~2.4:1 ở mọi bảng).
+- `c.textDisabled` **không phải màu chữ đọc được** (~2.1:1 ở mọi bảng).
 - Không hiện số like/lượt xem công khai, không bảng xếp hạng giữa bạn bè.
 - Cấp thân chỉ hai người trong cặp nhìn thấy.
 - Ba từ **cấm** trong chữ hiện cho người dùng: *điểm*, *hạng*, *nhiệm vụ*
@@ -120,7 +124,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] React Compiler bật; Reanimated / FlashList / expo-image đã vào đúng chỗ
 - [x] Màn Chào mừng, Đăng nhập, Nhập mã, Camera, Vừa chụp xong, Khoảnh khắc, Góc
 - [x] **Hai thứ tiếng** (vi + en), an toàn kiểu, đổi trong Cài đặt — `docs/09-i18n.md`
-- [x] **Năm bảng màu** người dùng chọn được, mọi cặp đã đo WCAG — `docs/10-theme.md`
+- [x] **Nền sáng/tối + năm màu locket** người dùng chọn được, mọi cặp đã đo WCAG — `docs/10-theme.md`
+- [x] **Thanh tab 3 nút** · Cài đặt làm lại (trang của mình + số ảnh 30 ngày ở đầu) · khung bừng sáng khi chụp
 - [x] Camera: khung TRÀN MÉP, đèn (camera trước dùng đèn màn hình), chọn ảnh có sẵn
 - [x] Màn chính lướt dọc camera → ảnh bạn bè, lưới "Tất cả ảnh" mở kiểu cửa sổ, ảnh gửi bay về góc
 - [x] **Tin nhắn** (danh sách + một cuộc), nối từ ảnh bạn bè
@@ -130,7 +135,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] Icon PNG cho store đã xuất; wordmark "nook" vẽ lại bằng SVG
 - [x] Màn **Tên + ảnh** (người mới, sau khi nhập mã): tên hiện, @tên riêng tự gợi ý, ảnh đại diện — hàng giả `profile/lib/profileApi.ts`
 - [ ] Onboarding — còn 2 màn: Mời người đầu tiên, Xin quyền
-- [ ] Cài đặt: mới có hàng Ngôn ngữ. Còn Vị trí, Thông báo, Tài khoản
+- [ ] Cài đặt: còn Vị trí, Thông báo, Tài khoản
+- [ ] Quay video ngắn (giữ nút chụp ~3s) — cần `expo-video` để phát trong feed
 - [x] **Thêm bạn** (hàng giả `circle/lib/circleApi.ts`): ô tìm — lọc người trong góc theo tên, tìm người trên Nook CHỈ theo @tên; mời · nhận lời · từ chối. Danh sách bạn ở kho `circle/store/circleStore.ts`, mọi màn đọc chung. Còn chờ backend
 - [x] **Tag bạn** trong chú thích (gõ `@`, chỉ bạn trong góc, tối đa 5) → chạm tên mở **trang cá nhân** (`person/[id]`). **Khoá trang** trong Cài đặt: người ngoài góc chỉ thấy tên, ảnh, @tên. Thông báo cho người được tag là việc của server
 - [x] **Tìm quanh đây** (`nearby`): người dùng chọn bán kính 100 m – 3 km; chỉ người cũng đang bật thấy nhau, chỉ hiện nấc khoảng cách, tự tắt sau 5 phút. Hàng giả `nearby/lib/nearbyApi.ts` — luật cho server ghi ở đầu tệp đó

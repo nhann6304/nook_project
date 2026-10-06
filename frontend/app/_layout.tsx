@@ -5,13 +5,12 @@
  * câm trên Android — và câm không báo lỗi, chỉ là không có gì xảy ra.
  *
  * Splash được giữ tới khi BA thứ xong: bộ chữ, ngôn ngữ đã chọn, bảng màu đã
- * chọn. Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Plus Jakarta Sans;
+ * chọn. Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Poppins;
  * thả sớm vì ngôn ngữ thì thấy màn đầu sai tiếng; thả sớm vì bảng màu thì cả
  * app nháy một cái đổi màu. Mỗi cái chỉ khoảng 30ms, nhưng là 30ms đầu tiên
  * người dùng nhìn thấy.
  *
- * Ba nút điều hướng của Android không cần nhuộm tay: userInterfaceStyle 'dark'
- * trong app.json đã cho chúng màu sáng. (expo-navigation-bar SDK 57 đã bỏ
+ * Ba nút điều hướng của Android theo userInterfaceStyle 'automatic' trong app.json. (expo-navigation-bar SDK 57 đã bỏ
  * setButtonStyleAsync — đừng gọi lại hàm đó.)
  */
 import { useEffect } from 'react';
@@ -23,12 +22,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
 import {
-  PlusJakartaSans_400Regular,
-  PlusJakartaSans_500Medium,
-  PlusJakartaSans_600SemiBold,
-  PlusJakartaSans_700Bold,
-  PlusJakartaSans_800ExtraBold,
-} from '@expo-google-fonts/plus-jakarta-sans';
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+} from '@expo-google-fonts/poppins';
+import { Caveat_700Bold } from '@expo-google-fonts/caveat';
 import { useColors, useStyles, useThemeReady, type Palette } from '@design';
 import { useI18nReady } from '@i18n';
 import { initSound } from '@/lib/sound';
@@ -42,11 +41,11 @@ export default function RootLayout() {
   const localeReady = useI18nReady();
   const themeReady = useThemeReady();
   const [fontsReady, error] = useFonts({
-    PlusJakartaSans_400Regular,
-    PlusJakartaSans_500Medium,
-    PlusJakartaSans_600SemiBold,
-    PlusJakartaSans_700Bold,
-    PlusJakartaSans_800ExtraBold,
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+    Caveat_700Bold,
   });
 
   const ready = (fontsReady || error !== null) && localeReady && themeReady;

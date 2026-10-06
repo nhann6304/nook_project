@@ -14,6 +14,7 @@ export { Txt, type TxtProps } from './primitives/Txt';
 export { Tap, type TapProps } from './primitives/Tap';
 export { Button, type ButtonProps } from './primitives/Button';
 export { IconButton, type IconButtonProps } from './primitives/IconButton';
+export { IconBadge, type IconName } from './primitives/IconBadge';
 export { CaptionField } from './primitives/CaptionField';
 export { Field, type FieldProps } from './primitives/Field';
 export { HelperText } from './primitives/HelperText';
@@ -31,6 +32,7 @@ export { List, type ListProps } from './layout/List';
 export { Scroll } from './layout/Scroll';
 export { TopBar, type TopBarProps } from './layout/TopBar';
 export { Pager, type PagerHandle, type PagerProps } from './layout/Pager';
+export { TabBar, TAB_BAR_HEIGHT, type TabItem } from './layout/TabBar';
 
 /* — Thương hiệu — */
 export { Rings, type RingsProps } from './brand/Rings';
@@ -39,7 +41,6 @@ export { Halo } from './brand/Halo';
 export { GhostFrame } from './brand/GhostFrame';
 export { Avatar, type AvatarProps } from './brand/Avatar';
 export { AvatarStack } from './brand/AvatarStack';
-export { SkyWash } from './brand/SkyWash';
 
 /* — Phản hồi — */
 export { EmptyState } from './feedback/EmptyState';

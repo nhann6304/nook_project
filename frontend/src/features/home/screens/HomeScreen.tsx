@@ -1,7 +1,7 @@
 /**
  * Màn chính — camera ở trang 0, ảnh bạn bè xếp từng trang bên dưới, vuốt lên
- * là tới. Không thanh tab (bảng thiết kế bản 7): góc trái → bạn bè, góc phải
- * → tin nhắn, giữa là việc chính.
+ * là tới. Thanh tab dưới đáy nhảy giữa hai vị trí đó ("Trang chủ" / "Lướt
+ * ảnh", qua `jump`). Góc trái → bạn bè, góc phải → tin nhắn.
  *
  * Hai chuyển cảnh sống ở đây vì chúng phải vẽ ĐÈ lên mọi thứ, ngoài khung trang:
  *   · gửi ảnh: ảnh thu nhỏ bay về viên thuốc "N bạn" trên đầu;
@@ -36,7 +36,6 @@ import {
   OfflineBar,
   Pager,
   Screen,
-  SkyWash,
   Tap,
   Toast,
   Txt,
@@ -46,6 +45,7 @@ import {
   duration,
   ease,
   layout,
+  lift,
   media,
   radius,
   space,
@@ -70,7 +70,6 @@ import { JournalStrip } from '@/features/journal/components/JournalStrip';
 import type { Entry } from '@/features/journal/types';
 
 const BAR = 52;
-const FEED_BAR = 64;
 const OUT = Easing.bezier(...ease.out);
 const IN_OUT = Easing.bezier(...ease.inOut);
 
@@ -85,9 +84,12 @@ export function HomeScreen({
   onReply,
   onOpenFriends,
   onOpenChats,
-  onOpenMore,
   journal,
   onOpenJournal,
+  active,
+  jump,
+  onPageChange,
+  onReviewChange,
 }: {
   friendNames: readonly string[];
   /** Bạn trong góc — tag được vào chú thích. */
@@ -102,10 +104,15 @@ export function HomeScreen({
   onReply: (moment: Moment, reaction: Reaction | null) => void;
   onOpenFriends: () => void;
   onOpenChats: () => void;
-  onOpenMore: () => void;
   /** Ảnh mình đã gửi — cho dải 7 ngày dưới nút chụp. */
   journal: readonly Entry[];
   onOpenJournal: () => void;
+  /** Màn đang hiện — `false` thì tắt camera (đỡ pin, đỡ nóng máy, đỡ giật). */
+  active: boolean;
+  /** Thanh tab xin nhảy; `n` đổi là nhảy. */
+  jump: { to: 'camera' | 'feed'; n: number } | null;
+  onPageChange: (page: number) => void;
+  onReviewChange: (reviewing: boolean) => void;
 }) {
   const s = useStyles(make);
   const c = useColors();
@@ -121,7 +128,11 @@ export function HomeScreen({
   const [rootAt, setRootAt] = useState({ x: 0, y: 0 });
   const [page, setPage] = useState(0);
   const [reviewing, setReviewing] = useState(false);
-  const [gridOpen, setGridOpen] = useState(false);
+  // Lưới mở "trong" một lần nhảy của thanh tab: nhảy lần mới là lưới tự đóng.
+  const jumpN = jump?.n ?? 0;
+  const [gridAt, setGridAt] = useState<number | null>(null);
+  const gridOpen = gridAt === jumpN;
+  const setGridOpen = useCallback((open: boolean) => setGridAt(open ? jumpN : null), [jumpN]);
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null);
 
   /* ── Khung ảnh vuông, chung cho camera và mọi khoảnh khắc ── */
@@ -216,7 +227,7 @@ export function HomeScreen({
         }),
       );
     },
-    [winFade],
+    [setGridOpen, winFade],
   );
 
   const openFromGrid = useCallback(
@@ -259,12 +270,25 @@ export function HomeScreen({
   const feedPill = useAnimatedStyle(() => ({
     opacity: interpolate(scrollY.value, [area.h * 0.3, area.h * 0.8], [0, 1], Extrapolation.CLAMP),
   }));
-  const feedBar = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [area.h * 0.35, area.h], [0, 1], Extrapolation.CLAMP),
-  }));
 
   const toCamera = useCallback(() => pager.current?.goTo(0), []);
+  const openGrid = useCallback(() => setGridOpen(true), [setGridOpen]);
   const toFeed = useCallback(() => pager.current?.goTo(1), []);
+
+  // Đang ở ảnh thứ 5 mà bấm "Lướt ảnh" thì giữ nguyên chỗ, đừng kéo về ảnh đầu.
+  const pageRef = useRef(0);
+  useEffect(() => {
+    pageRef.current = page;
+    onPageChange(page);
+  }, [onPageChange, page]);
+  useEffect(() => {
+    onReviewChange(reviewing);
+  }, [onReviewChange, reviewing]);
+  useEffect(() => {
+    if (!jump) return;
+    if (jump.to === 'camera') toCamera();
+    else if (pageRef.current === 0) toFeed();
+  }, [jump, toCamera, toFeed]);
 
   // Nút quay lại của Android: lưới → đóng lưới; đang xem ảnh → về camera.
   useEffect(() => {
@@ -280,7 +304,7 @@ export function HomeScreen({
       return false;
     });
     return () => sub.remove();
-  }, [gridOpen, page, toCamera]);
+  }, [gridOpen, page, setGridOpen, toCamera]);
 
   const react = useCallback(
     (m: Moment, r: Reaction | null) => {
@@ -302,6 +326,7 @@ export function HomeScreen({
       if (i === 0) {
         return (
           <CameraPage
+            active={active}
             frame={frame}
             taggable={taggable}
             keyboardGap={windowH - (rootAt.y + frame.y + frame.h)}
@@ -339,6 +364,7 @@ export function HomeScreen({
       );
     },
     [
+      active,
       ago,
       frame,
       journal,
@@ -359,8 +385,7 @@ export function HomeScreen({
 
   return (
     <View style={s.page}>
-      <SkyWash />
-      <Screen padded={false} clear>
+      <Screen padded={false} clear edges={TOP}>
         <View ref={root} style={s.root} collapsable={false}>
           {/* 1 — Thanh trên */}
           <View style={s.bar}>
@@ -369,7 +394,7 @@ export function HomeScreen({
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
               <IconButton label={t('home.openFriends')} onPress={onOpenFriends} style={s.round}>
-                <Ionicons name="people-outline" size={20} color={c.text} />
+                <Ionicons name="people" size={21} color={c.accent} />
               </IconButton>
             </Animated.View>
 
@@ -386,10 +411,10 @@ export function HomeScreen({
               // MỘT vùng bấm phủ cả hai viên thuốc. Hai viên chồng lên nhau chỉ là
               // hình (mờ qua lại theo vị trí lướt), không viên nào tự bắt chạm.
               <Tap
-                onPress={onOpenFriends}
+                onPress={onCamera ? onOpenFriends : openGrid}
                 scaleTo={0.96}
                 style={s.center}
-                accessibilityLabel={t('home.openFriends')}
+                accessibilityLabel={onCamera ? t('home.openFriends') : t('home.grid')}
               >
                 <Animated.View style={[s.layer, camPill]} pointerEvents="none">
                   {count === 0 ? (
@@ -408,8 +433,8 @@ export function HomeScreen({
                 </Animated.View>
                 <Animated.View style={[s.layer, feedPill]} pointerEvents="none">
                   <View style={s.pill}>
+                    <Ionicons name="grid-outline" size={16} color={c.text} />
                     <Txt variant="label">{t('home.allFriends')}</Txt>
-                    <Ionicons name="chevron-down" size={14} color={c.text} />
                   </View>
                 </Animated.View>
               </Tap>
@@ -420,7 +445,7 @@ export function HomeScreen({
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
               <IconButton label={t('home.openChats')} onPress={onOpenChats} style={s.round}>
-                <Ionicons name="chatbubble-outline" size={19} color={c.text} />
+                <Ionicons name="chatbubble-ellipses" size={20} color={c.accent} />
                 {unread ? <View style={s.dot} /> : null}
               </IconButton>
             </Animated.View>
@@ -441,19 +466,6 @@ export function HomeScreen({
               />
             ) : null}
 
-            {/* 3 — Hàng dưới khi đang xem ảnh bạn bè */}
-            <Animated.View
-              style={[s.feedBar, feedBar]}
-              pointerEvents={onCamera ? 'none' : 'box-none'}
-            >
-              <IconButton label={t('home.grid')} onPress={() => setGridOpen(true)}>
-                <Ionicons name="grid-outline" size={22} color={c.text} />
-              </IconButton>
-              <Shutter size={56} onPress={toCamera} label={t('home.backToCamera')} />
-              <IconButton label={t('home.more')} onPress={onOpenMore}>
-                <Ionicons name="ellipsis-horizontal" size={22} color={c.text} />
-              </IconButton>
-            </Animated.View>
           </View>
 
           {/* 4 — Lưới tất cả ảnh */}
@@ -530,6 +542,8 @@ export function HomeScreen({
 }
 
 const KEEP = [0] as const;
+/** Thanh tab đã lo phần đáy máy. */
+const TOP = ['top'] as const;
 
 type Frame = { w: number; h: number; top: number };
 
@@ -563,7 +577,15 @@ const make = (c: Palette) =>
       zIndex: 2,
     },
     hidden: { opacity: 0 },
-    round: { width: 44, height: 44, borderRadius: radius.full, backgroundColor: c.surface },
+    round: {
+      width: 44,
+      height: 44,
+      borderRadius: radius.full,
+      backgroundColor: c.glass,
+      borderWidth: 1,
+      borderColor: c.glassBorder,
+      ...lift(c),
+    },
     dot: {
       position: 'absolute',
       top: 9,
@@ -573,14 +595,17 @@ const make = (c: Palette) =>
       borderRadius: radius.full,
       backgroundColor: c.accent,
       borderWidth: 2,
-      borderColor: c.surface,
+      borderColor: c.glass,
     },
     center: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center' },
     layer: { position: 'absolute' },
     pill: {
       height: 44,
       borderRadius: radius.full,
-      backgroundColor: c.surface,
+      backgroundColor: c.glass,
+      borderWidth: 1,
+      borderColor: c.glassBorder,
+      ...lift(c),
       flexDirection: 'row',
       alignItems: 'center',
       gap: space.sm,
@@ -589,17 +614,6 @@ const make = (c: Palette) =>
     pillAccent: { backgroundColor: c.accent },
 
     area: { flex: 1 },
-    feedBar: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: 0,
-      height: FEED_BAR,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: space.xxxl,
-    },
 
     overlay: { ...StyleSheet.absoluteFill, backgroundColor: c.bg, zIndex: 3 },
     gridShutter: {

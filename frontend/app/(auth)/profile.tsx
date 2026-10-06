@@ -27,7 +27,7 @@ export default function Profile() {
       }
       setProfile(input);
       codeAccepted();
-      router.replace('/(app)/home');
+      router.replace('/(app)/(tabs)/home');
     },
     [codeAccepted, router, setProfile],
   );

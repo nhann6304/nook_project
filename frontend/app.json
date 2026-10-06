@@ -5,12 +5,12 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "scheme": "nook",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "platforms": [
       "ios",
       "android"
     ],
-    "backgroundColor": "#151312",
+    "backgroundColor": "#FFFFFF",
     "icon": "./assets/images/icon.png",
     "ios": {
       "supportsTablet": false,
@@ -54,7 +54,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#151312"
+          "backgroundColor": "#FFFFFF"
         }
       ],
       [

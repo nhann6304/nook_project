@@ -30,7 +30,7 @@
  * thân là mỗi lần vẽ một hàm mới, khoá mới, và bảng tra không bao giờ trúng.
  */
 import { useEffect } from 'react';
-import { AppState } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { useTheme } from './theme';
 import type { Palette, ThemeKey } from './palettes';
 
@@ -92,21 +92,29 @@ export function glow(c: Palette) {
 export function useThemeReady(): boolean {
   const ready = useTheme((s) => s.ready);
   const hydrate = useTheme((s) => s.hydrate);
-  const tick = useTheme((s) => s.tick);
+  const setSystem = useTheme((s) => s.setSystem);
+  const scheme = useColorScheme();
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
-  // Chế độ tự động: mỗi phút xem đã sang chặng trời mới chưa, và xem lại ngay
-  // khi app quay về từ nền (để qua đêm, mở máy là đúng màu buổi sáng).
+  // Luôn theo dõi nền máy, kể cả khi đang Sáng/Tối cố định: chuyển sang
+  // "Theo máy" là đúng màu ngay, không chờ máy đổi lần sau.
   useEffect(() => {
-    const timer = setInterval(tick, 60_000);
-    const sub = AppState.addEventListener('change', (st) => {
-      if (st === 'active') tick();
-    });
-    return () => {
-      clearInterval(timer);
-      sub.remove();
-    };
-  }, [tick]);
+    setSystem(scheme === 'dark' ? 'dark' : 'light');
+  }, [scheme, setSystem]);
   return ready;
+}
+
+/**
+ * Bóng của mặt "kính". Android: `elevation` trên nền trong suốt vẽ ra viền
+ * xám bẩn, nên `glass` luôn là màu ĐẶC.
+ */
+export function lift(c: Palette) {
+  return {
+    shadowColor: c.shadow,
+    shadowOpacity: c.light ? 0.1 : 0.35,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  } as const;
 }

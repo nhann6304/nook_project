@@ -8,3 +8,9 @@ export function dayKey(at: number | Date): string {
   const d = typeof at === 'number' ? new Date(at) : at;
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
+
+/** Số ảnh đã gửi trong `days` ngày gần nhất, tính tới lúc gọi. */
+export function postedWithin(entries: readonly Entry[], days: number): number {
+  const since = Date.now() - days * 86_400_000;
+  return entries.filter((e) => e.at >= since).length;
+}

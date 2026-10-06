@@ -1,36 +1,34 @@
 /**
- * Bảng màu. Người dùng chọn được — mặc định là "Đất nung".
+ * Bảng màu — họ xanh lam pastel (bảng thiết kế 06/10/2026, thay đất nung +
+ * màu theo trời). Hai NỀN (sáng / tối) × năm MÀU LOCKET = mười bảng.
  *
- * ── Vì sao có nhiều bảng ─────────────────────────────────────────────────
- * Nook là app dùng buổi tối, trên giường, trong phòng tối. Cùng một bảng màu
- * không hợp với mọi mắt và mọi thói quen: có người chịu được cam ấm, có người
- * thấy nhức và cần xanh trầm. Cho chọn rẻ hơn nhiều so với đoán.
+ * ── Nền và màu locket tách nhau ─────────────────────────────────────────
+ * Nền, bề mặt, đường kẻ, chữ đi theo `Tone` — luôn ngả lam, kể cả khi người
+ * dùng chọn locket hồng. Màu locket chỉ đổi sắc nhấn: nút, vòng thân, viền ảnh.
+ * Đổi cả nền theo locket thì năm lựa chọn thành năm app khác nhau.
  *
- * ── Mỗi bảng là một BỘ ĐẦY ĐỦ, không phải đổi mỗi màu nhấn ───────────────
- * Nền, bề mặt, đường kẻ, chữ đều ngả theo sắc của bảng. Chỉ đổi màu nhấn thì
- * cả năm bảng trông y hệt nhau, chỉ khác cái nút.
+ * ── Nút chính: sáng thì chữ TRẮNG, tối thì chữ TỐI ──────────────────────
+ * Nền sáng dùng nút denim đặc (#3C5B91, trắng trên đó 6.9:1). Nền tối dùng nút
+ * lam nhạt, chữ navy. Luật cũ "chữ trên nút luôn tối" là cho dải cam — hết áp.
  *
- * ── Mọi con số ở đây là ĐO, không phải ước lượng ─────────────────────────
- * Tỉ lệ tương phản WCAG 2.1 tính trên chính `bg` của từng bảng. Cả năm bảng
- * đều đạt ở mọi cặp: chữ ≥ 14:1, chữ mờ ≥ 6.8:1, chữ nhạt ≥ 4.8:1, mọi sắc
- * nhấn ≥ 4.8:1, và chữ tối trên dải màu ≥ 5.6:1 ở cả ba chặng.
+ * ── Đo, không ước ───────────────────────────────────────────────────────
+ * Trên `bg` của từng nền: chữ ≥ 15:1, chữ mờ ≥ 7.1:1, chữ nhạt ≥ 5.2:1 (≥ 4.6
+ * trên `surface`), sắc nhấn ≥ 5.4:1 (≥ 4.8 trên `surface`), chữ trên nút ≥ 5.4:1. `textDisabled` cố ý KHÔNG đạt (~2:1) — chỉ
+ * cho chữ đã tắt và nét trang trí.
  *
- * `textDisabled` là ngoại lệ DUY NHẤT và cố ý: khoảng 2.4:1, KHÔNG đạt chuẩn
- * đọc. Nó chỉ dùng cho chữ đã tắt và nét trang trí. Chữ nhỏ nhất mà người ta
- * phải đọc được là `textFaint`.
- *
- * ── Bão hoà đi theo SẮC, không dùng chung một con số ─────────────────────
- * Mắt chịu được cam/đỏ đậm hơn hẳn xanh lá và xanh lơ ở cùng mức bão hoà —
- * cam ở S=0.76 trông ấm, còn xanh lá ở S=0.74 trông như đèn neon. Bản sinh
- * đầu tiên dùng một con số chung và ra đúng lỗi đó. Trần bão hoà theo vùng
- * sắc: cam/hồng 0.72–0.76 · vàng 0.52 · xanh lá 0.40 · lơ 0.46 · lam 0.52 ·
- * tím 0.54.
- *
- * Sinh bằng script rồi chép vào đây, KHÔNG tính lúc chạy: tính lúc chạy là
- * mỗi lần mở app tốn công vô ích cho một kết quả không bao giờ đổi.
+ * Mười bảng dựng MỘT lần lúc nạp module (vòng thân nội suy, lớp phủ ghép alpha),
+ * không dựng lại khi vẽ: `useStyles` nhớ theo `key`, đổi bảng chỉ là tra.
  */
 
-/** Một bảng màu đầy đủ. Thêm khoá ở đây là cả năm bảng phải khai. */
+export const TONES = ['light', 'dark'] as const;
+export type Tone = (typeof TONES)[number];
+
+export const ACCENT_KEYS = ['denim', 'rose', 'sage', 'lavender', 'apricot'] as const;
+export type AccentKey = (typeof ACCENT_KEYS)[number];
+
+export type ThemeKey = `${Tone}-${AccentKey}`;
+
+/** Một bảng màu đầy đủ. Thêm khoá ở đây là phải khai ở `build`. */
 export type Palette = {
   key: ThemeKey;
   /** Nền sáng — thanh trạng thái phải đổi sang chữ tối. */
@@ -46,13 +44,23 @@ export type Palette = {
   border: string;
   borderSoft: string;
 
-  /* — Sắc chính — */
+  /* — "Kính" — mặt nổi (thanh tab, nút tròn trên camera). Không blur thật:
+       blur trên Android vẽ lại mỗi khung hình. Nền gần trong + viền sáng +
+       bóng mềm cho cùng cảm giác mà không tốn gì. — */
+  glass: string;
+  glassBorder: string;
+  /** Màu bóng đổ của mặt nổi. */
+  shadow: string;
+
+  /* — Sắc chính (màu locket) — */
   accent: string;
   accent2: string;
   accentBright: string;
   accentDeep: string;
-  /** Chữ NẰM TRÊN dải màu. Luôn là màu tối, không bao giờ trắng. */
+  /** Chữ NẰM TRÊN nút chính. */
   onAccent: string;
+  /** Nền tròn sau icon (hàng cài đặt, tab đang chọn). */
+  accentSoft: string;
 
   /* — Chữ — */
   text: string;
@@ -61,8 +69,7 @@ export type Palette = {
   /** KHÔNG đạt chuẩn đọc. Chỉ cho chữ đã tắt và nét trang trí. */
   textDisabled: string;
 
-  /* — Màu mang nghĩa. Tách hẳn khỏi sắc chính để không ai nhầm
-       "màu thương hiệu" với "trạng thái xấu". — */
+  /* — Màu mang nghĩa — tách khỏi sắc chính để không nhầm với trạng thái xấu. */
   honey: string;
   mint: string;
   violet: string;
@@ -78,7 +85,7 @@ export type Palette = {
   onPhoto: string;
   hairlineOnPhoto: string;
 
-  /* — Dải màu — */
+  /** Nút chính. Ba chặng CÙNG một màu — nút đặc, không dải (đỡ "AI"). */
   gradient: readonly [string, string, string];
   gradientPressed: readonly [string, string, string];
 
@@ -87,254 +94,160 @@ export type Palette = {
 
   /** Lõi nút chụp. */
   core: string;
-  /**
-   * Chữ NẰM TRÊN ảnh (tên người gửi, caption). Luôn sáng, kể cả ở bảng sáng —
-   * ảnh không bao giờ bị nhuộm theo bảng, và dưới chữ luôn có lớp `onPhoto` tối.
-   */
+  /** Chữ NẰM TRÊN ảnh. Luôn trắng — dưới chữ luôn có lớp `onPhoto` tối. */
   onPhotoText: string;
-  /** Vệt trời ở đầu màn chính. `null` = bảng cố định, không có trời. */
-  sky: readonly [string, string] | null;
-  stars: boolean;
 };
 
-type Fixed = Omit<Palette, 'light' | 'core' | 'onPhotoText' | 'sky' | 'stars'>;
+/* ══════════════ NỀN ══════════════ */
 
-/** Năm bảng cố định đều là nền tối: lõi nút chụp và chữ trên ảnh = màu chữ. */
-function dark(p: Fixed): Palette {
-  return { ...p, light: false, core: p.text, onPhotoText: p.text, sky: null, stars: false };
+type Base = Omit<
+  Palette,
+  | 'key'
+  | 'accent'
+  | 'accent2'
+  | 'accentBright'
+  | 'accentDeep'
+  | 'onAccent'
+  | 'accentSoft'
+  | 'glowStrong'
+  | 'glowSoft'
+  | 'glowFaint'
+  | 'glowPink'
+  | 'gradient'
+  | 'gradientPressed'
+  | 'ring'
+>;
+
+const PHOTO = {
+  scrim: 'rgba(15,22,38,0.55)',
+  scrimSoft: 'rgba(15,22,38,0.3)',
+  onPhoto: 'rgba(15,22,38,0.45)',
+  hairlineOnPhoto: 'rgba(255,255,255,0.22)',
+  onPhotoText: '#FFFFFF',
+} as const;
+
+const BASES: Readonly<Record<Tone, Base>> = {
+  /** Trắng + lam xám — đúng bảng "Một vài mẹo nhỏ". */
+  light: {
+    ...PHOTO,
+    light: true,
+    bg: '#FFFFFF',
+    surfaceSunken: '#F5F8FC',
+    surface: '#EDF2F8', //         nền ô mẹo
+    surfaceRaised: '#DCE7F7', //   nền icon tròn
+    border: '#D2DDEE',
+    borderSoft: '#E5ECF6',
+    glass: '#F8FAFE',
+    glassBorder: '#FFFFFF',
+    shadow: '#18356E',
+    text: '#1B263F', //           15.1:1
+    textMuted: '#4A5874', //       7.1:1
+    textFaint: '#5F6C88', //       5.3:1
+    textDisabled: '#AAB6CB', //    2.1:1 — KHÔNG đọc được, cố ý
+    honey: '#966A05',
+    mint: '#2B7F60',
+    violet: '#6A4FB0',
+    danger: '#B23A3A',
+    core: '#FFFFFF',
+  },
+  /** Navy — màn chào "Gặp gỡ những khoảnh khắc đặc biệt". */
+  dark: {
+    ...PHOTO,
+    light: false,
+    bg: '#0F1626',
+    surfaceSunken: '#131B2D',
+    surface: '#1A2438',
+    surfaceRaised: '#232F47',
+    border: '#2F3C58',
+    borderSoft: '#1F2A40',
+    glass: '#1C273D',
+    glassBorder: 'rgba(255,255,255,0.08)',
+    shadow: '#000000',
+    text: '#E9EEF8', //           15.5:1
+    textMuted: '#A6B2C9', //       8.5:1
+    textFaint: '#8392AE', //       5.8:1
+    textDisabled: '#465370', //    2.1:1 — KHÔNG đọc được, cố ý
+    honey: '#E3C98F',
+    mint: '#7FCDB0',
+    violet: '#B9A4EA',
+    danger: '#EC8A8A',
+    core: '#E9EEF8',
+  },
+};
+
+/* ══════════════ MÀU LOCKET ══════════════ */
+
+/** [nhấn, đậm, sáng, phụ] cho từng nền. */
+type Swatch = readonly [accent: string, deep: string, bright: string, second: string];
+
+const ACCENTS: Readonly<Record<AccentKey, Readonly<Record<Tone, Swatch>>>> = {
+  denim: {
+    light: ['#3C5B91', '#18356E', '#6F8FD9', '#728CC3'],
+    dark: ['#8FA7D8', '#6F8FD9', '#C9DAF9', '#AAB6CB'],
+  },
+  rose: {
+    light: ['#A3466B', '#7A2E4D', '#D98AA8', '#C77B97'],
+    dark: ['#E5A3BB', '#C9809B', '#F5CCDA', '#D9B0C0'],
+  },
+  sage: {
+    light: ['#3B7558', '#24533C', '#74B393', '#7FA892'],
+    dark: ['#91C9AB', '#6FAE8E', '#C4E6D3', '#A9C4B5'],
+  },
+  lavender: {
+    light: ['#634FA0', '#44337A', '#9C8BDB', '#9A8CC4'],
+    dark: ['#B7A8E8', '#9887D6', '#DCD3F7', '#BDB4D6'],
+  },
+  apricot: {
+    light: ['#9C5326', '#713814', '#E0915E', '#C58A66'],
+    dark: ['#EDB08A', '#D98F63', '#F8D5BE', '#D7B8A4'],
+  },
+};
+
+/* ══════════════ DỰNG ══════════════ */
+
+const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+const alpha = (hex: string, a: number) => `rgba(${rgb(hex).join(',')},${a})`;
+const mix = (from: string, to: string, k: number) => {
+  const a = rgb(from);
+  const b = rgb(to);
+  return `#${a
+    .map((v, i) => Math.round(v + ((b[i] ?? v) - v) * k).toString(16).padStart(2, '0'))
+    .join('')}`;
+};
+
+function build(tone: Tone, key: AccentKey): Palette {
+  const base = BASES[tone];
+  const [accent, deep, bright, second] = ACCENTS[key][tone];
+  const flat = (x: string) => [x, x, x] as const;
+  return {
+    ...base,
+    key: `${tone}-${key}`,
+    accent,
+    accentDeep: deep,
+    accentBright: bright,
+    accent2: second,
+    onAccent: tone === 'light' ? '#FFFFFF' : base.bg,
+    accentSoft: tone === 'light' ? mix(bright, '#FFFFFF', 0.72) : alpha(accent, 0.16),
+    glowStrong: alpha(accent, 0.14),
+    glowSoft: alpha(accent, 0.09),
+    glowFaint: alpha(accent, 0.05),
+    glowPink: alpha(second, 0.1),
+    gradient: flat(accent),
+    gradientPressed: flat(deep),
+    ring: Array.from({ length: 10 }, (_, i) => mix(base.textDisabled, accent, (i + 1) / 10)),
+  };
 }
 
-export const PALETTE_KEYS = ['terracotta', 'moss', 'deepsea', 'dusk', 'neutral'] as const;
-export type PaletteKey = (typeof PALETTE_KEYS)[number];
+export const PALETTES: Readonly<Record<ThemeKey, Palette>> = Object.fromEntries(
+  TONES.flatMap((tone) => ACCENT_KEYS.map((k) => [`${tone}-${k}`, build(tone, k)])),
+) as Record<ThemeKey, Palette>;
 
+export const paletteOf = (tone: Tone, key: AccentKey): Palette => PALETTES[`${tone}-${key}`];
 
-/** Đất nung — ấm, mặc định. */
-const terracotta = dark({
-  key: 'terracotta',
+export const DEFAULT_ACCENT: AccentKey = 'denim';
 
-  bg: '#151312',
-  surfaceSunken: '#1A1817',
-  surface: '#211E1C',
-  surfaceRaised: '#2A2624',
-
-  border: '#39332F',
-  borderSoft: '#282320',
-
-  accent: '#E8834F', //         6.87:1
-  accent2: '#E86E93', //        6.25:1
-  accentBright: '#F7A97A', //   9.62:1
-  accentDeep: '#C96A38', //     4.94:1
-  onAccent: '#1A0E08', // trên dải: 7.95 / 6.33 / 5.91
-
-  text: '#E9E3DC', //          14.54:1
-  textMuted: '#A79C93', //      6.90:1
-  textFaint: '#8B8179', //      4.86:1
-  textDisabled: '#5C5249', //   2.43:1 — KHÔNG đọc được, cố ý
-
-  honey: '#EFC169', //         11.03:1
-  mint: '#6FC9A8', //           9.35:1
-  violet: '#A98CE0', //         6.63:1
-  danger: '#E87B7B', //         6.66:1
-
-  glowStrong: 'rgba(232,131,79,0.1)',
-  glowSoft: 'rgba(232,131,79,0.07)',
-  glowFaint: 'rgba(232,131,79,0.04)',
-  glowPink: 'rgba(232,110,147,0.08)',
-  scrim: 'rgba(21,19,18,0.6)',
-  scrimSoft: 'rgba(21,19,18,0.35)',
-  onPhoto: 'rgba(21,19,18,0.55)',
-  hairlineOnPhoto: 'rgba(233,227,220,0.16)',
-
-  gradient: ['#EE9159', '#E8735A', '#DE6A8E'],
-  gradientPressed: ['#C96A38', '#C05A48', '#BE5477'],
-
-  ring: ['#8A6A52', '#9A7150', '#AC784E', '#BE7F4D', '#CF864C', '#DD8A50', '#E8834F', '#E8785F', '#E67078', '#E86E93'],
-});
-
-/** Rêu — xanh lá trầm. */
-const moss = dark({
-  key: 'moss',
-
-  bg: '#131614',
-  surfaceSunken: '#161918',
-  surface: '#1D211F',
-  surfaceRaised: '#252A28',
-
-  border: '#313734',
-  borderSoft: '#222624',
-
-  accent: '#4EB363', //         6.90:1
-  accent2: '#75A635', //        6.30:1
-  accentBright: '#7ACE8F', //   9.59:1
-  accentDeep: '#50935E', //     4.92:1
-  onAccent: '#091E0D', // trên dải: 7.61 / 6.11 / 5.66
-
-  text: '#DBE8E4', //          14.47:1
-  textMuted: '#8FA39C', //      6.84:1
-  textFaint: '#738A80', //      4.92:1
-  textDisabled: '#4A5952', //   2.47:1 — KHÔNG đọc được, cố ý
-
-  honey: '#DDC794', //         10.99:1
-  mint: '#7AC9AC', //           9.35:1
-  violet: '#B18CDD', //         6.65:1
-  danger: '#E57E7E', //         6.61:1
-
-  glowStrong: 'rgba(78,179,99,0.1)',
-  glowSoft: 'rgba(78,179,99,0.07)',
-  glowFaint: 'rgba(78,179,99,0.04)',
-  glowPink: 'rgba(117,166,53,0.08)',
-  scrim: 'rgba(19,22,20,0.6)',
-  scrimSoft: 'rgba(19,22,20,0.35)',
-  onPhoto: 'rgba(19,22,20,0.55)',
-  hairlineOnPhoto: 'rgba(219,232,228,0.16)',
-
-  gradient: ['#63BE75', '#54AC40', '#73A038'],
-  gradientPressed: ['#4C935A', '#4D883F', '#5F7E37'],
-
-  ring: ['#507A58', '#4E8154', '#4C884E', '#4D8D4A', '#519247', '#569843', '#5C9C40', '#63A03C', '#6CA338', '#75A734'],
-});
-
-/** Biển đêm — lam sâu. */
-const deepsea = dark({
-  key: 'deepsea',
-
-  bg: '#121416',
-  surfaceSunken: '#15181A',
-  surface: '#1C1F22',
-  surfaceRaised: '#24272B',
-
-  border: '#303438',
-  borderSoft: '#212327',
-
-  accent: '#5CA8C3', //         6.90:1
-  accent2: '#8892D9', //        6.30:1
-  accentBright: '#8CC3DC', //   9.63:1
-  accentDeep: '#508BA3', //     4.89:1
-  onAccent: '#09181E', // trên dải: 7.83 / 6.23 / 5.77
-
-  text: '#E1E4EC', //          14.52:1
-  textMuted: '#989EAB', //      6.87:1
-  textFaint: '#7C8592', //      4.95:1
-  textDisabled: '#4A5159', //   2.30:1 — KHÔNG đọc được, cố ý
-
-  honey: '#DCC691', //         11.02:1
-  mint: '#77C8AA', //           9.34:1
-  violet: '#B08ADC', //         6.61:1
-  danger: '#E47C7C', //         6.57:1
-
-  glowStrong: 'rgba(92,168,195,0.1)',
-  glowSoft: 'rgba(92,168,195,0.07)',
-  glowFaint: 'rgba(92,168,195,0.04)',
-  glowPink: 'rgba(136,146,217,0.08)',
-  scrim: 'rgba(18,20,22,0.6)',
-  scrimSoft: 'rgba(18,20,22,0.35)',
-  onPhoto: 'rgba(18,20,22,0.55)',
-  hairlineOnPhoto: 'rgba(225,228,236,0.16)',
-
-  gradient: ['#70B4CC', '#729ACF', '#828DD3'],
-  gradientPressed: ['#4B8BA3', '#527CB3', '#626EBA'],
-
-  ring: ['#527581', '#537A8E', '#547E9B', '#5582AA', '#5C86B5', '#6589BE', '#6D8BC7', '#768DCF', '#7E90D6', '#8692DC'],
-});
-
-/** Hoàng hôn — tím khói ngả hồng. */
-const dusk = dark({
-  key: 'dusk',
-
-  bg: '#151316',
-  surfaceSunken: '#181619',
-  surface: '#201D21',
-  surfaceRaised: '#29252A',
-
-  border: '#353137',
-  borderSoft: '#252226',
-
-  accent: '#BE8ADC', //         6.91:1
-  accent2: '#E76EA1', //        6.28:1
-  accentBright: '#D7ABEB', //   9.60:1
-  accentDeep: '#A46DC1', //     4.87:1
-  onAccent: '#16091E', // trên dải: 8.32 / 6.69 / 6.17
-
-  text: '#EBE1EC', //          14.53:1
-  textMuted: '#A999AC', //      6.90:1
-  textFaint: '#8E7E93', //      4.89:1
-  textDisabled: '#554A59', //   2.21:1 — KHÔNG đọc được, cố ý
-
-  honey: '#DCC691', //         11.02:1
-  mint: '#77C8AA', //           9.35:1
-  violet: '#B08ADC', //         6.61:1
-  danger: '#E47C7C', //         6.57:1
-
-  glowStrong: 'rgba(190,138,220,0.1)',
-  glowSoft: 'rgba(190,138,220,0.07)',
-  glowFaint: 'rgba(190,138,220,0.04)',
-  glowPink: 'rgba(231,110,161,0.08)',
-  scrim: 'rgba(21,19,22,0.6)',
-  scrimSoft: 'rgba(21,19,22,0.35)',
-  onPhoto: 'rgba(21,19,22,0.55)',
-  hairlineOnPhoto: 'rgba(235,225,236,0.16)',
-
-  gradient: ['#C799E2', '#DE6FD2', '#E16A9B'],
-  gradientPressed: ['#A46CC5', '#C247B5', '#C64179'],
-
-  ring: ['#8B5DA5', '#995DAE', '#A85BB6', '#B858BD', '#C458BE', '#CD5CBA', '#D460B5', '#DB66AF', '#E16AA9', '#E76FA1'],
-});
-
-/** Trung tính — gần như không màu. */
-const neutral = dark({
-  key: 'neutral',
-
-  bg: '#151414',
-  surfaceSunken: '#181817',
-  surface: '#201F1E',
-  surfaceRaised: '#292826',
-
-  border: '#353433',
-  borderSoft: '#252423',
-
-  accent: '#BD995D', //         6.90:1
-  accent2: '#C48A70', //        6.32:1
-  accentBright: '#D3B880', //   9.58:1
-  accentDeep: '#9A8151', //     4.93:1
-  onAccent: '#1E1609', // trên dải: 7.80 / 6.24 / 5.71
-
-  text: '#E8E4DA', //          14.48:1
-  textMuted: '#A49E90', //      6.89:1
-  textFaint: '#8A8374', //      4.89:1
-  textDisabled: '#59534A', //   2.42:1 — KHÔNG đọc được, cố ý
-
-  honey: '#DCC692', //         10.98:1
-  mint: '#77C8AA', //           9.30:1
-  violet: '#B18ADC', //         6.60:1
-  danger: '#E47E7E', //         6.64:1
-
-  glowStrong: 'rgba(189,153,93,0.1)',
-  glowSoft: 'rgba(189,153,93,0.07)',
-  glowFaint: 'rgba(189,153,93,0.04)',
-  glowPink: 'rgba(196,138,112,0.08)',
-  scrim: 'rgba(21,20,20,0.6)',
-  scrimSoft: 'rgba(21,20,20,0.35)',
-  onPhoto: 'rgba(21,20,20,0.55)',
-  hairlineOnPhoto: 'rgba(232,228,218,0.16)',
-
-  gradient: ['#C6A76F', '#BF8F64', '#BE846C'],
-  gradientPressed: ['#9C7F4E', '#9B724E', '#9B6851'],
-
-  ring: ['#7D6E54', '#867355', '#8F7555', '#997855', '#A47C55', '#AE7E56', '#B5805B', '#BD8260', '#C48565', '#CA876B'],
-});
-
-export const PALETTES: Readonly<Record<PaletteKey, Palette>> = {
-  terracotta,
-  moss,
-  deepsea,
-  dusk,
-  neutral,
-};
-
-export const DEFAULT_PALETTE: PaletteKey = 'terracotta';
-
-export function isPaletteKey(v: string | null | undefined): v is PaletteKey {
-  return PALETTE_KEYS.includes(v as PaletteKey);
+export function isAccentKey(v: string | null | undefined): v is AccentKey {
+  return ACCENT_KEYS.includes(v as AccentKey);
 }
 
 /** Màu vòng độ thân theo cấp 1–10. Ngoài khoảng thì kẹp về hai đầu. */
@@ -342,130 +255,3 @@ export function ringColor(c: Palette, level: number): string {
   const i = Math.min(Math.max(Math.round(level), 1), c.ring.length) - 1;
   return c.ring[i] ?? c.ring[0]!;
 }
-
-/* ══════════════ MÀU SỐNG THEO TRỜI ══════════════ */
-
-/**
- * Chế độ "Tự động" (bảng thiết kế F1 + 15b): màu app đi theo giờ trong ngày
- * như bầu trời ngoài cửa sổ. Sáng và trưa là nền SÁNG, chiều tối và đêm là nền
- * tối. Ảnh không bao giờ bị nhuộm — chỉ nền, khung, nút đổi.
- *
- * Mốc giờ tính theo đồng hồ máy, không cần vị trí.
- */
-export const SKY_KEYS = ['skyDawn', 'skyNoon', 'skyDusk', 'skyNight'] as const;
-export type SkyKey = (typeof SKY_KEYS)[number];
-export type ThemeKey = PaletteKey | SkyKey;
-
-/** Giờ bắt đầu của từng chặng. Ngoài ba mốc này là đêm. */
-export function skyAt(hour: number): SkyKey {
-  if (hour >= 5 && hour < 10) return 'skyDawn';
-  if (hour >= 10 && hour < 16) return 'skyNoon';
-  if (hour >= 16 && hour < 19) return 'skyDusk';
-  return 'skyNight';
-}
-
-/** Phần dùng chung của hai bảng sáng: lớp phủ trên ảnh vẫn TỐI. */
-const LIGHT_PHOTO = {
-  scrim: 'rgba(24,16,12,0.55)',
-  scrimSoft: 'rgba(24,16,12,0.3)',
-  onPhoto: 'rgba(24,16,12,0.5)',
-  hairlineOnPhoto: 'rgba(255,255,255,0.22)',
-  onPhotoText: '#FFFFFF',
-  core: '#FFFFFF',
-  light: true,
-  stars: false,
-} as const;
-
-const skyDawn: Palette = {
-  ...LIGHT_PHOTO,
-  key: 'skyDawn',
-  bg: '#F6EEE6',
-  surfaceSunken: '#F1E7DD',
-  surface: '#EDE2D7',
-  surfaceRaised: '#E4D6C8',
-  border: '#D8C7B7',
-  borderSoft: '#E6D9CC',
-  accent: '#C25E2A',
-  accent2: '#C24F74',
-  accentBright: '#D9703A',
-  accentDeep: '#A64D1F',
-  onAccent: '#1A0E08',
-  text: '#2A1E18',
-  textMuted: '#6E5E52',
-  textFaint: '#7A6A5E',
-  textDisabled: '#B9A999',
-  honey: '#B8860B',
-  mint: '#2F8F6B',
-  violet: '#7456B8',
-  danger: '#B83A3A',
-  glowStrong: 'rgba(217,112,58,0.12)',
-  glowSoft: 'rgba(217,112,58,0.08)',
-  glowFaint: 'rgba(217,112,58,0.05)',
-  glowPink: 'rgba(194,79,116,0.08)',
-  gradient: ['#D9703A', '#CF5F4A', '#C24F74'],
-  gradientPressed: ['#B85C2E', '#AE4F3D', '#A3425F'],
-  ring: ['#C9A88E', '#C99F80', '#C99573', '#CA8B65', '#CB8058', '#CC754B', '#C9683F', '#C65F4B', '#C3575F', '#C24F74'],
-  sky: ['#F5BF98', '#F7DCC4'],
-};
-
-const skyNoon: Palette = {
-  ...LIGHT_PHOTO,
-  key: 'skyNoon',
-  bg: '#FFF8EC',
-  surfaceSunken: '#FAF0DF',
-  surface: '#F5EAD6',
-  surfaceRaised: '#EDDDC2',
-  border: '#E0CCAA',
-  borderSoft: '#EEE0C8',
-  accent: '#B8700F',
-  accent2: '#C0563A',
-  accentBright: '#D98A1E',
-  accentDeep: '#96590A',
-  onAccent: '#2B1A05',
-  text: '#2B2113',
-  textMuted: '#6C5B43',
-  textFaint: '#7C6B52',
-  textDisabled: '#BFAE92',
-  honey: '#A87A0A',
-  mint: '#2F8F6B',
-  violet: '#7456B8',
-  danger: '#B83A3A',
-  glowStrong: 'rgba(217,138,30,0.12)',
-  glowSoft: 'rgba(217,138,30,0.08)',
-  glowFaint: 'rgba(217,138,30,0.05)',
-  glowPink: 'rgba(192,86,58,0.08)',
-  gradient: ['#D98A1E', '#CC7422', '#C0563A'],
-  gradientPressed: ['#B87418', '#AD611C', '#A2482F'],
-  ring: ['#CDB48A', '#CCAB78', '#CBA267', '#CA9856', '#C98E45', '#C88434', '#C07826', '#BC6C2C', '#BE6133', '#C0563A'],
-  sky: ['#FFE08A', '#FFF0CC'],
-};
-
-const skyDusk: Palette = {
-  ...terracotta,
-  key: 'skyDusk',
-  bg: '#1F1518',
-  surfaceSunken: '#241A1D',
-  surface: '#2E2025',
-  surfaceRaised: '#38282E',
-  border: '#46343A',
-  borderSoft: '#33252A',
-  accent: '#EE8A5A',
-  text: '#F2E4DE',
-  textMuted: '#B39A95',
-  textFaint: '#9A827D',
-  core: '#F2E4DE',
-  onPhotoText: '#F2E4DE',
-  scrim: 'rgba(31,21,24,0.6)',
-  scrimSoft: 'rgba(31,21,24,0.35)',
-  onPhoto: 'rgba(31,21,24,0.55)',
-  sky: ['#9A5462', '#5A3039'],
-};
-
-const skyNight: Palette = {
-  ...terracotta,
-  key: 'skyNight',
-  sky: ['#1F2238', '#181624'],
-  stars: true,
-};
-
-export const SKIES: Readonly<Record<SkyKey, Palette>> = { skyDawn, skyNoon, skyDusk, skyNight };

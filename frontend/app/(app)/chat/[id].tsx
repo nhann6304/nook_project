@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ChatScreen } from '@/features/chat/screens/ChatScreen';
 import { useChats } from '@/features/chat/store/chatStore';
+import { useHomeNav } from '@/features/home/store/homeNav';
 
 export default function Chat() {
   const router = useRouter();
@@ -25,7 +26,10 @@ export default function Chat() {
       conversation={conversation}
       onSend={onSend}
       onClearReply={() => clearReply(conversation.id)}
-      onOpenCamera={() => router.dismissTo('/(app)/home')}
+      onOpenCamera={() => {
+        router.dismissTo('/(app)/(tabs)/home');
+        useHomeNav.getState().go('camera');
+      }}
       onOpenFriend={() =>
         router.push({ pathname: '/(app)/friend/[id]', params: { id: conversation.friend.id } })
       }

@@ -47,30 +47,35 @@ export const radius = {
 
 export const font = {
   /**
-   * Plus Jakarta Sans — theo bảng thiết kế. Hình chữ gọn, hiện đại, đủ dấu
-   * tiếng Việt. Tiêu đề dùng nét 800 và khít chữ: đó là giọng Gen Z của app,
-   * đừng hạ về 600 cho "an toàn" — nhìn lại thành app văn phòng.
+   * Poppins — theo bảng thiết kế 06/10/2026 (thay Plus Jakarta Sans). Tiêu đề
+   * nét 600–700, KHÔNG 800: Poppins 800 tròn và nặng, nhìn như quảng cáo.
+   * Chỉ nạp năm nét dưới đây — mỗi nét thêm là thêm thời gian giữ màn chờ.
    */
-  body: 'PlusJakartaSans_400Regular',
-  bodyMedium: 'PlusJakartaSans_500Medium',
-  bodySemi: 'PlusJakartaSans_600SemiBold',
-  bodyBold: 'PlusJakartaSans_700Bold',
-  heavy: 'PlusJakartaSans_800ExtraBold',
+  body: 'Poppins_400Regular',
+  bodyMedium: 'Poppins_500Medium',
+  bodySemi: 'Poppins_600SemiBold',
+  bodyBold: 'Poppins_700Bold',
+  heavy: 'Poppins_700Bold',
+  /** Chữ viết tay — chỉ cho lời nhấn ngắn ("Một vài mẹo nhỏ"), không cho đoạn văn. */
+  hand: 'Caveat_700Bold',
 } as const;
 
 /**
- * Sáu bậc, không hơn. Thêm bậc thứ bảy là bắt đầu có hai thứ trông gần giống nhau.
+ * Bảy bậc. `hand` là bậc trang trí, mỗi màn tối đa một chỗ.
  *
  * maxScale giới hạn phóng chữ để layout không vỡ khi người dùng bật cỡ chữ lớn,
  * nhưng vẫn cho phóng — không bao giờ khoá allowFontScaling.
+ * Poppins có phần đầu/đuôi chữ cao hơn Jakarta nên lineHeight ≈ 1.45× cỡ chữ;
+ * thấp hơn là dấu tiếng Việt (ỗ, ẫ) bị cắt trên Android.
  */
 export const type = {
-  display: { fontSize: 34, lineHeight: 40, fontFamily: font.heavy, letterSpacing: -1, maxScale: 1.25 },
-  title: { fontSize: 24, lineHeight: 30, fontFamily: font.heavy, letterSpacing: -0.6, maxScale: 1.4 },
-  section: { fontSize: 17, lineHeight: 22, fontFamily: font.bodyBold, letterSpacing: -0.2, maxScale: 1.4 },
-  body: { fontSize: 15, lineHeight: 22, fontFamily: font.body, letterSpacing: 0, maxScale: 1.6 },
-  label: { fontSize: 14, lineHeight: 19, fontFamily: font.bodyBold, letterSpacing: 0, maxScale: 1.5 },
-  faint: { fontSize: 12, lineHeight: 17, fontFamily: font.bodyMedium, letterSpacing: 0, maxScale: 1.5 },
+  display: { fontSize: 32, lineHeight: 44, fontFamily: font.bodyBold, letterSpacing: -0.6, maxScale: 1.25 },
+  title: { fontSize: 22, lineHeight: 32, fontFamily: font.bodySemi, letterSpacing: -0.3, maxScale: 1.4 },
+  section: { fontSize: 16, lineHeight: 24, fontFamily: font.bodySemi, letterSpacing: -0.1, maxScale: 1.4 },
+  body: { fontSize: 14, lineHeight: 21, fontFamily: font.body, letterSpacing: 0, maxScale: 1.6 },
+  label: { fontSize: 14, lineHeight: 20, fontFamily: font.bodySemi, letterSpacing: 0, maxScale: 1.5 },
+  faint: { fontSize: 12, lineHeight: 18, fontFamily: font.body, letterSpacing: 0, maxScale: 1.5 },
+  hand: { fontSize: 24, lineHeight: 30, fontFamily: font.hand, letterSpacing: 0, maxScale: 1.3 },
 } as const;
 
 /* ══════════════ BỐ CỤC ══════════════ */

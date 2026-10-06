@@ -30,7 +30,7 @@ export default function Verify() {
         return true;
       }
       codeAccepted();
-      router.replace('/(app)/home');
+      router.replace('/(app)/(tabs)/home');
       return true;
     },
     [codeAccepted, pending, router],

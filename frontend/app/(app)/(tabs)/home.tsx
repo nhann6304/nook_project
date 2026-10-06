@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useRouter } from 'expo-router';
+import { useIsFocused, useRouter } from 'expo-router';
 import { HomeScreen } from '@/features/home/screens/HomeScreen';
 import type { Shot } from '@/features/camera/components/CameraPage';
 import type { Reaction } from '@/features/feed/components/MomentPage';
@@ -10,9 +10,14 @@ import { lastMessage } from '@/features/chat/types';
 import { useJournal } from '@/features/journal/store/journalStore';
 import { useCircle } from '@/features/circle/store/circleStore';
 import { useOnline } from '@/hooks/useOnline';
+import { useHomeNav } from '@/features/home/store/homeNav';
 
 export default function Home() {
   const router = useRouter();
+  const focused = useIsFocused();
+  const jump = useHomeNav((s) => s.jump);
+  const setPage = useHomeNav((s) => s.setPage);
+  const setReviewing = useHomeNav((s) => s.setReviewing);
   const online = useOnline();
   const friends = useCircle((s) => s.friends);
   const names = useMemo(() => friends.map((f) => f.name), [friends]);
@@ -65,9 +70,12 @@ export default function Home() {
       onReply={reply}
       onOpenFriends={() => router.push('/(app)/circle')}
       onOpenChats={() => router.push('/(app)/chats')}
-      onOpenMore={() => router.push('/(app)/settings')}
       journal={journal}
       onOpenJournal={() => router.push('/(app)/journal')}
+      active={focused}
+      jump={jump}
+      onPageChange={setPage}
+      onReviewChange={setReviewing}
     />
   );
 }

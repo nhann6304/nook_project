@@ -1,7 +1,13 @@
 # Nook — Bảng màu người dùng chọn được
 
-Năm bảng, mặc định **Đất nung**. Đổi trong **Cài đặt → Màu sắc**, đổi là thấy
-ngay, nhớ giữa các lần mở app.
+Họ **xanh lam pastel** (06/10/2026, thay đất nung + màu theo trời). Hai lựa chọn
+độc lập trong **Cài đặt → Giao diện**, đổi là thấy ngay, nhớ giữa các lần mở app:
+
+- **Nền:** Sáng (mặc định) · Tối · Theo máy.
+- **Màu locket:** Lam (mặc định) · Hồng · Lá · Oải hương · Mơ.
+
+2 nền × 5 màu = 10 bảng, dựng một lần lúc nạp `palettes.ts`. Khoá bảng là
+`'light-denim'`, `'dark-rose'`…
 
 ---
 
@@ -65,31 +71,30 @@ lại mỗi lần provider vẽ lại, kể cả chỗ không đụng tới màu
 
 ---
 
-## 4 · Năm bảng
+## 4 · Nền và màu locket
 
-| Khoá | Tên | Sắc | Dành cho |
-|---|---|---|---|
-| `terracotta` | Đất nung | cam đất → hồng | mặc định, ấm |
-| `moss` | Rêu | xanh lá trầm | mắt mỏi với màu ấm |
-| `deepsea` | Biển đêm | lơ → lam | phòng tối, đọc khuya |
-| `dusk` | Hoàng hôn | tím khói → hồng | dịu, hơi lạnh |
-| `neutral` | Trung tính | vàng đồng rất nhạt | gần như không màu |
+Nền, bề mặt, đường kẻ, chữ đi theo **nền** (`BASES` trong `palettes.ts`) và luôn
+ngả lam. Màu locket chỉ đổi sắc nhấn: nút, vòng thân, viền ảnh, tab đang chọn.
 
-Mỗi bảng là một bộ **đầy đủ**: nền, bề mặt, đường kẻ, chữ đều ngả theo sắc của
-bảng. Chỉ đổi màu nhấn thì cả năm trông y hệt nhau, chỉ khác cái nút.
+| Nền | `bg` | `surface` | `surfaceRaised` | Chữ | Nút chính |
+|---|---|---|---|---|---|
+| Sáng | `#FFFFFF` | `#EDF2F8` | `#DCE7F7` | `#1B263F` | denim `#3C5B91`, chữ **trắng** |
+| Tối | `#0F1626` | `#1A2438` | `#232F47` | `#E9EEF8` | lam nhạt `#8FA7D8`, chữ **navy** |
+
+Nút chính là màu **đặc** (`gradient` ba chặng cùng một màu) — dải màu nhìn "AI".
+
+**Kính, không blur.** Mặt nổi (thanh tab, nút tròn trên camera) dùng `c.glass`
++ viền `c.glassBorder` + bóng `lift(c)`. Blur thật trên Android vẽ lại mỗi khung
+hình. `glass` luôn là màu đặc — `elevation` trên nền trong suốt ra viền bẩn.
 
 ---
 
-## 5 · Thêm một bảng
+## 5 · Thêm một màu locket
 
-1. Mở script sinh màu, thêm một dòng `pal(...)` với sắc nền và hai đầu sắc chính.
-2. Chạy nó, xem bảng tương phản in ra. **Mọi cặp phải đạt** — script tự chấm.
-3. Chép kết quả vào `src/design/palettes.ts`.
-4. Thêm khoá vào `PALETTE_KEYS` và tên vào `theme.*` ở **cả hai** tệp ngôn ngữ
-   (tsc sẽ đòi).
-
-Sinh bằng script rồi **chép vào**, không tính lúc chạy: tính lúc chạy là mỗi lần
-mở app tốn công cho một kết quả không bao giờ đổi.
+1. Thêm khoá vào `ACCENT_KEYS`, bốn màu `[nhấn, đậm, sáng, phụ]` cho CẢ hai nền.
+2. Đo lại: sắc nhấn ≥ 4.5:1 trên `bg` và `surface` của nền đó, chữ trên nút
+   ≥ 4.5:1 (nền sáng chữ trắng, nền tối chữ `bg`).
+3. Thêm tên vào `theme.*` ở **cả hai** tệp ngôn ngữ (tsc sẽ đòi).
 
 ---
 
