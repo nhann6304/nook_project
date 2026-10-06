@@ -52,6 +52,7 @@ export function SettingsScreen({
   onLockChange,
   soundOn,
   onSoundChange,
+  onSignOut,
 }: {
   name: string;
   username: string | null;
@@ -69,6 +70,7 @@ export function SettingsScreen({
   onLockChange: (locked: boolean) => void;
   soundOn: boolean;
   onSoundChange: (on: boolean) => void;
+  onSignOut: () => void;
 }) {
   const t = useT();
   const s = useStyles(make);
@@ -167,6 +169,12 @@ export function SettingsScreen({
               ) : (
                 <Button label={t('language.system')} variant="ghost" onPress={followSystem} block />
               )}
+            </Line>
+          </Group>
+
+          <Group title={t('account.title')}>
+            <Line icon="log-out" title={t('account.signOut')} hint={t('account.signOutHint')}>
+              <Button label={t('account.signOut')} variant="danger" onPress={onSignOut} block />
             </Line>
           </Group>
         </View>

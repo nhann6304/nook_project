@@ -5,8 +5,10 @@ hệ thống sản phẩm ở [`../.docs/01-product-system.md`](../.docs/01-prod
 
 Mọi lệnh trong file này chạy từ thư mục `frontend/`.
 
-**Stack:** Expo SDK **57** + React Native 0.86.3 + TypeScript 6.0. Chưa có backend;
-`src/features/auth/lib/authApi.ts` là hàng giả (mã đúng: `123456`).
+**Stack:** Expo SDK **57** + React Native 0.86.3 + TypeScript 6.0.
+
+**Nối server:** chép `.env.example` thành `.env`, điền `EXPO_PUBLIC_API_URL`.
+Bỏ trống thì mọi `*Api.ts` chạy hàng giả (mã đăng nhập `123456`).
 
 ---
 
@@ -57,7 +59,10 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - `src/components/` **không được gọi `t()`** — nhãn trợ năng nhận qua props.
 - Màn hình **không biết router tồn tại** — nhận `onX` qua props. File trong
   `app/` là chỗ nối.
-- Màn hình **không biết server tồn tại** — mọi lệnh gọi mạng ở `*Api.ts`.
+- Màn hình **không biết server tồn tại** — mọi lệnh gọi mạng ở `*Api.ts`, và
+  mọi `*Api.ts` đi qua **`@/lib/api`** (`call`, `LIVE`), không tự `fetch`. Đường
+  dẫn / mã lỗi / kiểu lấy từ `@nook/shared`, câu lỗi bằng `translateError(code)`.
+  Thẻ: ngắn hạn ở bộ nhớ, dài hạn ở SecureStore, làm mới MỘT lượt cho cả app.
 - Animation: **Reanimated**, không bao giờ `Animated` của react-native.
 - Danh sách: `<List>` (FlashList), không bao giờ `FlatList`.
 - Ảnh: `<Img>` (expo-image), không bao giờ `<Image>`.
@@ -135,8 +140,9 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] Icon PNG cho store đã xuất; wordmark "nook" vẽ lại bằng SVG
 - [x] Màn **Tên + ảnh** (người mới, sau khi nhập mã): tên hiện, @tên riêng tự gợi ý, ảnh đại diện — hàng giả `profile/lib/profileApi.ts`
 - [ ] Onboarding — còn 2 màn: Mời người đầu tiên, Xin quyền
-- [ ] Cài đặt: còn Vị trí, Thông báo, Tài khoản
-- [ ] Quay video ngắn (giữ nút chụp ~3s) — cần `expo-video` để phát trong feed
+- [ ] Cài đặt: còn Vị trí, Thông báo. Tài khoản mới có Đăng xuất
+- [x] **Video ngắn**: giữ nút chụp quay ≤ 3 giây (vòng đếm), phát lặp trong feed chỉ ở trang đang xem
+- [x] **Nối server**: đăng nhập (xin mã, nộp mã, làm mới thẻ, đăng xuất) và lưu hồ sơ + ảnh đại diện chạy thật khi có `EXPO_PUBLIC_API_URL`. Gửi khoảnh khắc đã gọi đúng hợp đồng `POST /v1/moments` — **server chưa có module `moment`**. Góc bạn bè, trang người khác, khoá trang, tìm quanh đây: vẫn giả vì server chưa có đường
 - [x] **Thêm bạn** (hàng giả `circle/lib/circleApi.ts`): ô tìm — lọc người trong góc theo tên, tìm người trên Nook CHỈ theo @tên; mời · nhận lời · từ chối. Danh sách bạn ở kho `circle/store/circleStore.ts`, mọi màn đọc chung. Còn chờ backend
 - [x] **Tag bạn** trong chú thích (gõ `@`, chỉ bạn trong góc, tối đa 5) → chạm tên mở **trang cá nhân** (`person/[id]`). **Khoá trang** trong Cài đặt: người ngoài góc chỉ thấy tên, ảnh, @tên. Thông báo cho người được tag là việc của server
 - [x] **Tìm quanh đây** (`nearby`): người dùng chọn bán kính 100 m – 3 km; chỉ người cũng đang bật thấy nhau, chỉ hiện nấc khoảng cách, tự tắt sau 5 phút. Hàng giả `nearby/lib/nearbyApi.ts` — luật cho server ghi ở đầu tệp đó
@@ -147,8 +153,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 
 ## Việc tiếp theo hợp lý
 
-Gần nhất: nối `authApi.ts`, `circleApi.ts`, `profileApi.ts`, `nearbyApi.ts` vào server khi backend
-có đường — màn hình không phải sửa.
+Gần nhất: khi backend có `moment` / `circle`, thay ruột `momentApi.ts`, `circleApi.ts`
+theo khuôn của `authApi.ts` (`if (!LIVE) giả; else call(...)`) — màn hình không phải sửa.
 
 Cần quyết sớm: **có chuyển sang development build không.** Hiện mọi thứ còn chạy
 trên Expo Go (quét QR là xem được trên máy thật). Widget và `react-native-mmkv`

@@ -31,13 +31,21 @@ export const MEDIA_STATUSES = [
 ] as const;
 
 /** Định dạng máy ảnh điện thoại thật sự sinh ra. */
-export const MEDIA_CONTENT_TYPES = [
+export const MEDIA_IMAGE_TYPES = [
   'image/jpeg',
   'image/png',
   'image/heic',
   'image/heif',
   'image/webp',
 ] as const;
+
+/**
+ * Video ngắn của khoảnh khắc (giữ nút chụp). iPhone quay ra `.mov`, Android
+ * ra `.mp4`. CHỈ cho `moment` — ảnh đại diện không được là video.
+ */
+export const MEDIA_VIDEO_TYPES = ['video/mp4', 'video/quicktime'] as const;
+
+export const MEDIA_CONTENT_TYPES = [...MEDIA_IMAGE_TYPES, ...MEDIA_VIDEO_TYPES] as const;
 
 export const MEDIA_LIMITS = {
   /**
@@ -50,6 +58,8 @@ export const MEDIA_LIMITS = {
   uploadUrlTtlSeconds: 600,
   /** Đường xem đã ký sống bao lâu. Ngắn, vì ký lại thì rẻ. */
   readUrlTtlSeconds: 600,
+  /** Video khoảnh khắc dài nhất. App dừng quay ở đây; ngắn là cố ý — đây là khoảnh khắc, không phải clip. */
+  videoMaxSeconds: 3,
 } as const;
 
 /**

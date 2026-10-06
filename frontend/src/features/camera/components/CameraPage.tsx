@@ -11,7 +11,14 @@
  */
 import { useCallback, useRef, useState, type ComponentRef } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
+import {
+  CameraView,
+  useCameraPermissions,
+  useMicrophonePermissions,
+  type CameraType,
+} from 'expo-camera';
+import { getThumbnailAsync } from 'expo-video-thumbnails';
+import { MEDIA_LIMITS } from '@nook/shared/model/constant';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, {
@@ -23,7 +30,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { CaptionField, IconButton, Img, Loading, Spinner } from '@ui';
+import { CaptionField, Clip, IconButton, Img, Loading, Spinner } from '@ui';
 import {
   common,
   duration,
@@ -54,7 +61,8 @@ import {
   tagsIn,
 } from '@/features/feed/lib/tags';
 
-export type Shot = { uri: string; caption: string; tags: Tag[] };
+/** `uri` luôn là ẢNH (với video thì là ảnh bìa) — lưới, nhật ký, hiệu ứng bay dùng nó. */
+export type Shot = { uri: string; caption: string; tags: Tag[]; video?: string };
 
 /** Chiều cao hàng chụp. Màn chính cần số này để tính cỡ khung. */
 export const CONTROLS_HEIGHT = 128;
@@ -63,6 +71,9 @@ export const FOOTER_HEIGHT = 92;
 
 /** Vầng sáng quanh khung lúc chụp, nhô ra mỗi bên chừng này. */
 const GLOW = 10;
+/** Đổi camera sang chế độ quay mất một nhịp; `onCameraReady` không báo thì chờ tối đa chừng này. */
+const MODE_SWITCH_MS = 600;
+const MAX_VIDEO_MS = MEDIA_LIMITS.videoMaxSeconds * 1000;
 
 export function CameraPage({
   active,
@@ -94,6 +105,13 @@ export function CameraPage({
   const t = useT();
 
   const [permission, requestPermission, refreshPermission] = useCameraPermissions();
+  const [mic, requestMic] = useMicrophonePermissions();
+  const [mode, setMode] = useState<'picture' | 'video'>('picture');
+  const [recording, setRecording] = useState(false);
+  const [clip, setClip] = useState<string | null>(null);
+  const holding = useRef(false);
+  const recordingRef = useRef(false);
+  const readyWait = useRef<(() => void) | null>(null);
   const [facing, setFacing] = useState<CameraType>('front');
   const [flash, setFlash] = useState<FlashMode>('off');
   const [shot, setShot] = useState<string | null>(null);
@@ -193,18 +211,73 @@ export function CameraPage({
     review(await toSquare(first.uri));
   }, [busy, review, toSquare]);
 
+  /*
+   * Giữ nút = quay. Camera chỉ đổi sang chế độ quay LÚC GIỮ (đổi sẵn thì chụp
+   * ảnh trên Android chậm hẳn). Thả tay trong lúc đang đổi thì thôi, không quay.
+   * Micro bị từ chối thì vẫn quay, video câm.
+   */
+  const onReady = useCallback(() => {
+    readyWait.current?.();
+    readyWait.current = null;
+  }, []);
+
+  const holdStart = useCallback(async () => {
+    if (busy || !cam.current) return;
+    holding.current = true;
+    setBusy(true);
+    if (mic && !mic.granted && mic.canAskAgain) await requestMic();
+    if (holding.current && mode !== 'video') {
+      await new Promise<void>((resolve) => {
+        readyWait.current = resolve;
+        setMode('video');
+        setTimeout(resolve, MODE_SWITCH_MS);
+      });
+    }
+    if (!holding.current || !cam.current) {
+      setMode('picture');
+      setBusy(false);
+      return;
+    }
+    feel.capture();
+    recordingRef.current = true;
+    setRecording(true);
+    try {
+      const res = await cam.current.recordAsync({ maxDuration: MEDIA_LIMITS.videoMaxSeconds });
+      if (res?.uri) {
+        const poster = await getThumbnailAsync(res.uri, { time: 0 }).catch(() => null);
+        setClip(res.uri);
+        review(poster ? await toSquare(poster.uri) : res.uri);
+      } else {
+        setMode('picture');
+      }
+    } catch {
+      setMode('picture');
+    } finally {
+      recordingRef.current = false;
+      setRecording(false);
+      setBusy(false);
+    }
+  }, [busy, mic, mode, requestMic, review, toSquare]);
+
+  const holdEnd = useCallback(() => {
+    holding.current = false;
+    if (recordingRef.current) cam.current?.stopRecording();
+  }, []);
+
   const discard = useCallback(() => {
     if (Platform.OS === 'ios') void cam.current?.resumePreview();
     review(null);
+    setClip(null);
+    setMode('picture');
     setCaption('');
   }, [review]);
 
   const send = useCallback(() => {
     if (!shot) return;
     const text = caption.trim();
-    onSend({ uri: shot, caption: text, tags: tagsIn(text, taggable) });
+    onSend({ uri: shot, caption: text, tags: tagsIn(text, taggable), video: clip ?? undefined });
     discard();
-  }, [caption, discard, onSend, shot, taggable]);
+  }, [caption, clip, discard, onSend, shot, taggable]);
 
   /* ── Tag bạn: gõ "@" là hiện hàng gợi ý ── */
   const captionRef = useRef<ComponentRef<typeof CaptionField>>(null);
@@ -258,6 +331,11 @@ export function CameraPage({
         <CameraView
           ref={cam}
           active={active}
+          mode={mode}
+          // Quay video bằng camera sau: "đèn" là đèn pin bật suốt lúc quay.
+          enableTorch={recording && facing === 'back' && flash === 'on'}
+          mute={!mic?.granted}
+          onCameraReady={onReady}
           style={common.absoluteFill}
           facing={facing}
           // Ảnh camera trước giữ y như lúc ngắm (soi gương). Mặc định `false`
@@ -270,6 +348,7 @@ export function CameraPage({
         {reviewing ? (
           <Animated.View entering={FadeIn.duration(duration.fast)} style={common.absoluteFill}>
             <Img source={{ uri: shot }} style={media.fill} transition={0} />
+            {clip ? <Clip uri={clip} playing={active} /> : null}
           </Animated.View>
         ) : (
           <Animated.View
@@ -345,7 +424,15 @@ export function CameraPage({
               </IconButton>
             </Animated.View>
             <Animated.View key="shutter" entering={FadeIn.duration(duration.base)}>
-              <Shutter onPress={() => void capture()} busy={busy} label={t('camera.shutter')} />
+              <Shutter
+                onPress={() => void capture()}
+                onHoldStart={() => void holdStart()}
+                onHoldEnd={holdEnd}
+                recording={recording}
+                maxMs={MAX_VIDEO_MS}
+                busy={busy}
+                label={t('camera.shutter')}
+              />
             </Animated.View>
             <Animated.View key="flip" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('camera.flip')} onPress={flip} style={s.round}>

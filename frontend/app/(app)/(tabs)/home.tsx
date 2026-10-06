@@ -5,6 +5,7 @@ import type { Shot } from '@/features/camera/components/CameraPage';
 import type { Reaction } from '@/features/feed/components/MomentPage';
 import type { Moment } from '@/features/feed/types';
 import { useMoments } from '@/features/feed/store/momentsStore';
+import { sendMoment } from '@/features/feed/lib/momentApi';
 import { useChats } from '@/features/chat/store/chatStore';
 import { lastMessage } from '@/features/chat/types';
 import { useJournal } from '@/features/journal/store/journalStore';
@@ -38,7 +39,15 @@ export default function Home() {
     (shot: Shot) => {
       const at = Date.now();
       // Thông báo cho người được tag là việc của server (đẩy tin) — app chỉ gửi kèm danh sách.
-      add(shot.uri, shot.caption, at, shot.tags);
+      add(shot.uri, shot.caption, at, shot.tags, shot.video);
+      // Feed thêm ngay trên máy; lên server chạy nền. Hỏng thì ảnh vẫn ở máy —
+      // hàng đợi gửi lại khi có mạng (`.docs/03-offline.md`) chưa làm.
+      void sendMoment({
+        photo: shot.uri,
+        video: shot.video,
+        caption: shot.caption,
+        tagIds: shot.tags.map((tg) => tg.id),
+      });
       addEntry(shot.uri, shot.caption, at);
     },
     [add, addEntry],

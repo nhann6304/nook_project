@@ -55,6 +55,16 @@ export function translate<K extends Key>(key: K, ...args: Args<At<Source, K>>): 
   return useI18n.getState().t(key, ...args);
 }
 
+/**
+ * Mã lỗi server (`auth.code_invalid`) → câu cho người dùng, tra ở `errors.*`.
+ * Mã lạ (server mới hơn app) thì ra câu chung — đừng bao giờ hiện chính cái mã.
+ */
+export function translateError(code: string): string {
+  const key = `errors.${code}`;
+  const text = (useI18n.getState().t as (k: string) => string)(key);
+  return text === key ? translate('errors.common.server_error') : text;
+}
+
 /* ---------- Số và ngày theo ngôn ngữ đang chọn ---------- */
 
 /*

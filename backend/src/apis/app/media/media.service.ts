@@ -15,7 +15,7 @@ import { StorageService } from '../../../infra/storage/service/storage.service.j
 import { MediaRepository, MediaVariantRepository } from '../../../repository/index.js';
 import { QUEUE, type IBuildVariantsJob } from '../../../queue/constant/queue.constant.js';
 import { Media } from '../../../database/entity/media/media.entity.js';
-import { extFor } from './media.constant.js';
+import { extFor, isVideo } from './media.constant.js';
 import { MediaMapper } from './media.mapper.js';
 import { MediaDto, type CreateUploadDto } from './media.dto.js';
 
@@ -55,6 +55,9 @@ export class MediaService {
   /** Bước 1 — ghi dòng chờ và ký giấy phép tải lên. */
   @Transactional()
   async createUpload(ownerId: string, dto: CreateUploadDto): Promise<ICreateUploadResult> {
+    if (dto.kind === 'avatar' && isVideo(dto.contentType)) {
+      throw new AppException(ERR.MEDIA_TYPE_UNSUPPORTED, HttpStatus.BAD_REQUEST);
+    }
     const row = await this.media.create({
       ownerId,
       kind: dto.kind,
@@ -118,6 +121,11 @@ export class MediaService {
     row.readyAt = new Date();
     row.byteSize = object.byteSize;
     const saved = await this.media.save(row);
+
+    if (isVideo(saved.contentType)) {
+      this.log.debug(`media ready (video, no variants): ${mediaId}`);
+      return this.mapper.toDto(saved, []);
+    }
 
     // Dựng bản nhẹ ở VIỆC NỀN, không dựng ngay tại đây. Kéo 12MB về bộ nhớ rồi
     // nén lại mất vài trăm mili giây và chiếm một luồng — người dùng không có

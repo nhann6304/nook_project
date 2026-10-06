@@ -6,6 +6,9 @@
 
 export type SignInMethod = 'email' | 'phone';
 
+/** Cửa vào ở màn Chào: tạo mới hay đã có tài khoản. Server soi trước khi gửi mã. */
+export type SignInIntent = 'signup' | 'signin';
+
 /** Đủ chặt để chặn lỗi gõ, không chặt tới mức loại nhầm email hợp lệ. */
 const EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 

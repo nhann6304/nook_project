@@ -506,6 +506,11 @@ câu tiếng Việt. Khai ở controller bằng ba decorator, không tả tay:
 
 ## 4. Ảnh — bản gốc giữ nguyên, mãi mãi
 
+> **Video ngắn (06/10/2026):** `video/mp4`, `video/quicktime` đi CÙNG đường này
+> (`MEDIA_VIDEO_TYPES`), chỉ cho `kind: 'moment'` — ảnh đại diện là video thì
+> `media.type_unsupported`. Video KHÔNG dựng bản nhẹ (`sharp` chỉ đọc ảnh);
+> `complete` nhận xong là trả, không xếp việc nền. App gửi kèm ảnh bìa riêng.
+
 **Không thu nhỏ, không nén lại, không đổi định dạng.** Không có `sharp`, không
 có `resize`, không có `quality` ở đâu trong mã. Bytes vào kho đúng bằng bytes
 máy ảnh chụp ra, và không có đường nào xoá bản gốc. Đó là sản phẩm — bóp ảnh

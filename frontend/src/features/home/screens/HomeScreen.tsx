@@ -352,6 +352,7 @@ export function HomeScreen({
       return (
         <MomentPage
           moment={m}
+          active={i === page}
           frame={frame}
           ago={ago(new Date(m.at))}
           replyHint={t('feed.replyTo', { name: m.author.name })}
@@ -366,6 +367,7 @@ export function HomeScreen({
     [
       active,
       ago,
+      page,
       frame,
       journal,
       moments,

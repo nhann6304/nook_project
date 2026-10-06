@@ -2,11 +2,15 @@
  * Cửa hồ sơ: lưu hồ sơ lúc mới vào, xem trang người khác, khoá trang mình.
  * HIỆN TẠI LÀ HÀNG GIẢ.
  *
- * Khi nối server: ảnh tải lên qua đường đã ký trước (`/v1/media/upload-url`),
- * rồi `PATCH /v1/me` với `displayName`, `username`, `avatarMediaId`. Tên đã có
- * người lấy thì server trả `username.taken` — ở đây giả bằng danh sách dưới.
+ * `saveProfile` đã nối server (khi `LIVE`): ảnh lên qua `uploadMedia`, rồi
+ * `PATCH /v1/me` với `displayName`, `username`, `avatarMediaId`. Hai hàm còn
+ * lại vẫn giả — server chưa có đường xem trang người khác và khoá trang.
  */
-import { translate } from '@i18n';
+import { API } from '@nook/shared/common/constant';
+import type { IUpdateMeBody, IUserProfile } from '@nook/shared/model/interface';
+import { translate, translateError } from '@i18n';
+import { LIVE, call } from '@/lib/api';
+import { uploadMedia } from '@/features/media/lib/mediaApi';
 import { FRIENDS } from '@/mocks/friends';
 import { LOCKED_PROFILES, MUTUAL_FRIENDS, PEOPLE } from '@/mocks/people';
 
@@ -17,11 +21,25 @@ const FAKE_DELAY = 600;
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export async function saveProfile(input: ProfileInput): Promise<SaveResult> {
+  if (LIVE) return saveLive(input);
   await wait(FAKE_DELAY);
   if (PEOPLE.some((p) => p.username === input.username)) {
     return { ok: false, field: 'username', message: translate('profile.taken') };
   }
   return { ok: true };
+}
+
+async function saveLive(input: ProfileInput): Promise<SaveResult> {
+  const body: IUpdateMeBody = { displayName: input.name, username: input.username };
+  if (input.avatarUri) {
+    const up = await uploadMedia(input.avatarUri, 'avatar');
+    if (!up.ok) return { ok: false, field: 'form', message: translateError(up.code) };
+    body.avatarMediaId = up.media.id;
+  }
+  const res = await call<IUserProfile>('PATCH', API.user.updateMe, body);
+  if (res.ok) return { ok: true };
+  const field = res.code.startsWith('username.') ? 'username' : 'form';
+  return { ok: false, field, message: translateError(res.code) };
 }
 
 /**

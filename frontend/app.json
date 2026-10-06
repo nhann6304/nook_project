@@ -18,7 +18,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Nook cần camera để bạn chụp khoảnh khắc gửi cho bạn bè trong góc của mình.",
         "NSPhotoLibraryUsageDescription": "Nook cần thư viện ảnh để bạn chọn một tấm đã chụp sẵn.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMicrophoneUsageDescription": "Nook cần micro để video ngắn của bạn có tiếng. Không cho thì video vẫn quay, chỉ không có tiếng."
       }
     },
     "android": {
@@ -30,7 +31,8 @@
       },
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.VIBRATE"
+        "android.permission.VIBRATE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [
@@ -39,7 +41,9 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Nook cần camera để bạn chụp khoảnh khắc gửi cho bạn bè trong góc của mình."
+          "cameraPermission": "Nook cần camera để bạn chụp khoảnh khắc gửi cho bạn bè trong góc của mình.",
+          "microphonePermission": "Nook cần micro để video ngắn của bạn có tiếng. Không cho thì video vẫn quay, chỉ không có tiếng.",
+          "recordAudioAndroid": true
         }
       ],
       [

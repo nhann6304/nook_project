@@ -23,6 +23,8 @@ export type Tag = { id: string; name: string; username: string };
 export type Moment = {
   id: string;
   photo: PhotoSource;
+  /** Video ngắn (giữ nút chụp). Có thì `photo` là ảnh bìa, nằm dưới lúc video chưa ra hình. */
+  video?: string;
   caption?: string;
   /** Lúc chụp, epoch ms. Nook chỉ giữ 48 giờ nên không cần gì lớn hơn ngày. */
   at: number;

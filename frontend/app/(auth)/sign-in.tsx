@@ -24,7 +24,7 @@ export default function SignIn() {
     async (method: SignInMethod, target: string) => {
       setBusy(true);
       setError(null);
-      const res = await sendCode(method, target);
+      const res = await sendCode(method, target, intent ?? 'signup');
       setBusy(false);
       if (!res.ok) {
         setError(res.message);

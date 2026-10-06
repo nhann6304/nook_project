@@ -14,18 +14,18 @@ export default function Verify() {
 
   const verify = useCallback(
     async (code: string): Promise<boolean> => {
+      if (!pending) return false;
       setBusy(true);
       setError(null);
-      const res = await verifyCode(code);
+      const res = await verifyCode(pending.method, pending.target, code, pending.intent);
       setBusy(false);
       if (!res.ok) {
         setError(res.message);
         return false;
       }
-      // Người mới đặt tên + ảnh trước; người cũ vào thẳng camera. Khi có
-      // server thì phân biệt bằng `onboarded` trong hồ sơ trả về, không bằng
-      // cửa họ đã chọn ở màn Chào mừng.
-      if (pending?.intent === 'signup') {
+      // Người mới đặt tên + ảnh trước; người cũ vào thẳng camera. `isNew` lấy
+      // từ `onboarded` của server, không từ cửa họ đã chọn ở màn Chào mừng.
+      if (res.isNew) {
         router.replace('/(auth)/profile');
         return true;
       }
@@ -38,7 +38,7 @@ export default function Verify() {
 
   const resend = useCallback(() => {
     if (!pending) return;
-    void sendCode(pending.method, pending.target);
+    void sendCode(pending.method, pending.target, pending.intent);
   }, [pending]);
 
   // Vào thẳng đường dẫn này mà chưa qua màn trước thì không có gì để xác minh.

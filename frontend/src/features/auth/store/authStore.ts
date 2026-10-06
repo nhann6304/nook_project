@@ -10,6 +10,7 @@
  * xem docs/09-frontend-backend-contract.md để biết ai sẽ lắp vào và lắp thế nào.
  */
 import { create } from 'zustand';
+import { LIVE, hasSession, onSessionLost } from '@/lib/api';
 import type { SignInMethod } from '../lib/identity';
 
 export type AuthPhase = 'unknown' | 'signed-out' | 'awaiting-code' | 'signed-in';
@@ -34,10 +35,12 @@ type AuthState = {
   setBusy: (v: boolean) => void;
   clearError: () => void;
   signOut: () => void;
+  /** Đọc thẻ đã cất: còn phiên thì vào thẳng app. Gọi một lần ở `app/_layout.tsx`. */
+  hydrate: () => Promise<void>;
 };
 
 export const useAuth = create<AuthState>((set) => ({
-  phase: 'signed-out',
+  phase: 'unknown',
   pending: null,
   error: null,
   busy: false,
@@ -48,4 +51,11 @@ export const useAuth = create<AuthState>((set) => ({
   setBusy: (busy) => set({ busy }),
   clearError: () => set({ error: null }),
   signOut: () => set({ phase: 'signed-out', pending: null, error: null, busy: false }),
+  hydrate: async () => {
+    const signedIn = LIVE && (await hasSession());
+    set({ phase: signedIn ? 'signed-in' : 'signed-out' });
+  },
 }));
+
+// Thẻ dài hạn hết hạn / bị thu hồi giữa chừng → về màn Chào.
+onSessionLost(() => useAuth.getState().signOut());

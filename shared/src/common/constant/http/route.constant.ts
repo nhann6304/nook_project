@@ -40,6 +40,10 @@ export const API = {
     /** GET — danh sách người dùng, lật trang bằng con trỏ */
     users: '/v1/admin/users',
   },
+  moment: {
+    /** POST — gửi một khoảnh khắc cho cả góc (CHƯA có bên server) */
+    create: '/v1/moments',
+  },
   achievement: {
     /** GET — thành tích của chính mình, kèm số chỗ trong góc */
     mine: '/v1/me/achievements',

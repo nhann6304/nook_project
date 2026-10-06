@@ -33,8 +33,8 @@ trước — nó là bản đồ, và nó chỉ bạn đọc ĐÚNG mục nào t
 - **Tài liệu nằm đúng nơi nó thuộc về.** Cả hai bên cùng cần → `.docs/`.
   Chỉ một bên cần → `frontend/docs/` hoặc `backend/docs/`.
 - **Ranh giới FE ↔ BE:** màn hình không biết server tồn tại. Mọi lệnh gọi mạng
-  nằm trong `frontend/src/features/<tên>/lib/*Api.ts`. Hiện `authApi.ts` là hàng
-  giả (mã đúng: `123456`). Nối backend = thay ruột file đó, không đụng màn hình.
+  nằm trong `frontend/src/features/<tên>/lib/*Api.ts`, đi qua `frontend/src/lib/api.ts`.
+  Không có `EXPO_PUBLIC_API_URL` thì chạy hàng giả (mã đúng: `123456`).
 - **Đường dẫn API, mã lỗi, giới hạn: lấy từ `@nook/shared`, đừng gõ lại.** Gõ
   lại là mở đường cho hai bên lệch nhau mà không ai báo. Gói đó phải luôn
   `dependencies: {}` — nó bị nhét vào bản app trên điện thoại.
@@ -147,9 +147,9 @@ Việc tiếp theo của BE: **góc bạn bè** (mời, chấp nhận, luật ch
 — và đó cũng là thứ đầu tiên làm con đếm nhúc nhích, nên `AchievementService
 .evaluate()` sẽ có người gọi từ đó.
 
-Việc có thể làm ngay, ngắn: **nối `frontend/src/features/auth/lib/authApi.ts`
-vào server thật.** Backend đã sẵn sàng; chỉ thay ruột hai hàm trong file đó,
-không đụng màn hình nào.
+App đã nối server (06/10/2026): đặt `EXPO_PUBLIC_API_URL` trong `frontend/.env`
+là đăng nhập + lưu hồ sơ chạy thật. Việc tiếp của BE theo app: module **`moment`**
+— app đã gọi `POST /v1/moments` đúng `ICreateMomentBody` bên `@nook/shared`.
 
 Việc tiếp theo của FE: màn **Tên + ảnh** để đi hết một lượt onboarding, rồi
 **Thêm bạn** — ô `+` ở hàng người hiện chỉ mở màn Góc, chưa mời được ai thật.

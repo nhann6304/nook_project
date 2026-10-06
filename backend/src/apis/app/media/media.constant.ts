@@ -1,4 +1,4 @@
-import { MEDIA_CONTENT_TYPES } from '@nook/shared';
+import { MEDIA_CONTENT_TYPES, MEDIA_VIDEO_TYPES } from '@nook/shared';
 
 /**
  * Đuôi tệp đặt cho bản gốc trên kho.
@@ -14,7 +14,14 @@ export const CONTENT_TYPE_EXT: Record<TContentType, string> = {
   'image/heic': 'heic',
   'image/heif': 'heif',
   'image/webp': 'webp',
+  'video/mp4': 'mp4',
+  'video/quicktime': 'mov',
 };
+
+/** Video thì không dựng bản nhẹ (`sharp` chỉ đọc ảnh) và không làm ảnh đại diện được. */
+export function isVideo(contentType: string): boolean {
+  return (MEDIA_VIDEO_TYPES as readonly string[]).includes(contentType);
+}
 
 /** Đuôi cho một kiểu tệp, kiểu nào lạ thì `bin`. */
 export function extFor(contentType: string): string {

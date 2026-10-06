@@ -81,12 +81,15 @@ thứ không ai hiểu.
 
 | Gói | Bản | Vì sao | Cái giá |
 |---|---|---|---|
-| `expo-camera` | 57.0.5 | Màn chính của app. | |
+| `expo-camera` | 57.0.5 | Màn chính của app. Giữ nút chụp = quay video (≤ `MEDIA_LIMITS.videoMaxSeconds`); xin micro lúc giữ lần đầu, từ chối thì video câm. | |
 | `expo-image-picker` | 57.0.20 | Nút "Chọn ảnh có sẵn" ở màn Camera. Tự lo cả hộp thoại xin quyền thư viện, nên không phải viết thêm một luồng quyền nữa. | Một mã gốc nữa; có sẵn trong Expo Go nên chưa cần development build. |
 | `expo-image-manipulator` | 57.0.20 | Cắt ảnh vừa chụp / vừa chọn về đúng khung vuông và "nướng" hướng xoay EXIF vào điểm ảnh (`camera/lib/squarePhoto.ts`). | Có sẵn trong Expo Go. |
 | `expo-location` | 57.0.20 | "Tìm quanh đây": xin quyền vị trí lúc dùng, lấy toạ độ MỘT lần rồi làm tròn ~11 m trước khi rời máy. Không chạy nền. | Có sẵn trong Expo Go. Chỉ xin quyền "khi đang dùng", không bao giờ "luôn luôn".
 | `expo-network` | 57.0.2 | Viên "Đang chờ mạng" (`src/hooks/useOnline.ts`). Chỉ là GỢI Ý — xem `.docs/04-offline-design.md` mục 7. | Có sẵn trong Expo Go. |
-| `expo-secure-store` | 57.0.4 | Cất thẻ đăng nhập vào Keychain (iOS) / Keystore (Android). **Chưa dùng** — chờ backend. | |
+| `expo-secure-store` | 57.0.4 | Cất thẻ dài hạn vào Keychain (iOS) / Keystore (Android) — `src/lib/api.ts`. | |
+| `expo-video` | 57.0.5 | Phát video ngắn 3 giây (`<Clip>`). Chỉ trang đang xem dựng trình phát. | Có sẵn trong Expo Go. |
+| `expo-video-thumbnails` | 57.0.2 | Ảnh bìa của video — lưới, nhật ký, hiệu ứng bay vẫn dùng ảnh. | Có sẵn trong Expo Go. |
+| `@nook/shared` | `file:../shared` | Hợp đồng với server: `API`, mã lỗi, giới hạn, kiểu. App đọc bản dịch `shared/dist` — `npm run shared` dựng, tự chạy trước `dev`/`typecheck`/sau `install`. `metro.config.js` thêm `../shared` vào `watchFolders`. | Không phụ thuộc gì, nên không làm nặng bản app. |
 | `expo-localization` | 57.0.2 | Đọc ngôn ngữ máy để chọn tiếng Việt hay tiếng Anh lúc mở app lần đầu. | |
 | `@react-native-async-storage/async-storage` | 2.2.0 | Nhớ ngôn ngữ người dùng đã chọn. Một cửa duy nhất ở `src/lib/storage.ts`. **Không để bí mật vào đây** — đó là việc của `expo-secure-store`. | Đọc **bất đồng bộ**, nên lúc khởi động có một nhịp chờ. MMKV đọc đồng bộ và nhanh hơn nhiều nhưng cần development build. |
 | `zustand` | 5.0.15 | Kho trạng thái. Đọc bằng selector nên đổi một trường không làm cả app vẽ lại — Context thì có. | Thêm một khái niệm cho người mới. |

@@ -19,7 +19,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { Avatar, Img, Tap, Txt } from '@ui';
+import { Avatar, Clip, Img, Tap, Txt } from '@ui';
 import {
   duration,
   media,
@@ -50,6 +50,7 @@ const ME_ID = 'me';
 
 export const MomentPage = memo(function MomentPage({
   moment,
+  active,
   frame,
   ago,
   replyHint,
@@ -60,6 +61,8 @@ export const MomentPage = memo(function MomentPage({
   onOpenPerson,
 }: {
   moment: Moment;
+  /** Trang đang nằm giữa màn — video chỉ phát ở trang này. */
+  active: boolean;
   /** `top`: khoảng từ đỉnh trang tới khung — màn chính tính, mọi trang dùng chung. */
   frame: { w: number; h: number; top: number };
   ago: string;
@@ -80,6 +83,8 @@ export const MomentPage = memo(function MomentPage({
     <View style={[s.root, { paddingTop: frame.top }]}>
       <View style={[s.frame, { width: frame.w, height: frame.h }]}>
         <Img source={moment.photo} recyclingKey={moment.id} style={media.fill} shimmer />
+        {/* Chỉ trang đang xem mới dựng trình phát — lướt nhanh không đẻ ra năm cái. */}
+        {moment.video && active ? <Clip uri={moment.video} playing /> : null}
         <LinearGradient colors={[c.scrim, 'transparent']} style={s.topShade} pointerEvents="none" />
 
         <View style={s.author}>

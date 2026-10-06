@@ -40,6 +40,7 @@ Trước khi viết một component mới, tra bảng này. Cột phải là th�
 | Âm thanh | `@/lib/sound` (`capture` · `sent` · `reacted`) | gọi thẳng `expo-audio`; thêm tiếng cho nút thường |
 | Báo mất mạng | `<OfflineBar>` + `useOnline()` | `Alert` mỗi lần rớt mạng |
 | Ảnh | `<Img>` | `<Image>` của RN hoặc expo-image trực tiếp |
+| Video ngắn | `<Clip uri playing>` — chỉ dựng ở trang đang xem, ảnh bìa nằm dưới | `expo-video` trực tiếp |
 | Khung màn hình | `<Screen>` | `<SafeAreaView>` |
 | Xếp ngang / dọc | `<Row>` `<Col>` | `style={{flexDirection:…}}` |
 | Đẩy xuống đáy | `<Flex />` | `marginTop:'auto'` |

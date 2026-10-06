@@ -137,7 +137,7 @@ export const vi = {
     openSettings: 'Cài đặt',
     gallery: 'Chọn ảnh có sẵn',
     flash: 'Bật tắt đèn',
-    shutter: 'Chụp khoảnh khắc',
+    shutter: 'Chạm để chụp, giữ để quay',
     flip: 'Đổi camera trước sau',
     peekHint: 'Ảnh chỉ đi tới những người trong góc của bạn.',
     captionHint: 'Thêm một dòng…',
@@ -341,6 +341,11 @@ export const vi = {
     lavender: 'Oải hương',
     apricot: 'Mơ',
   },
+  account: {
+    title: 'Tài khoản',
+    signOut: 'Đăng xuất',
+    signOutHint: 'Ảnh và bạn bè vẫn còn nguyên, đăng nhập lại là thấy.',
+  },
   tabs: {
     label: 'Chuyển màn',
     home: 'Trang chủ',
@@ -361,6 +366,55 @@ export const vi = {
   },
 
   /* ---------- Đường dẫn hỏng ---------- */
+  errors: {
+    app: {
+      offline: 'Mạng đang chập chờn. Thử lại giúp mình nhé.',
+      timeout: 'Mạng chậm quá, chưa gửi được. Thử lại nhé.',
+    },
+    common: {
+      bad_request: 'Có gì đó chưa đúng. Bạn thử lại nhé.',
+      not_found: 'Không tìm thấy thứ bạn cần. Thử lại sau nhé.',
+      rate_limited: 'Bạn thao tác nhanh quá. Chờ một chút rồi thử lại nhé.',
+      payload_too_large: 'Tệp nặng quá. Bạn chọn tệp nhỏ hơn nhé.',
+      server_error: 'Nook đang trục trặc. Thử lại sau ít phút nhé.',
+      not_implemented: 'Phần này chưa mở. Chờ bản sau nhé.',
+    },
+    auth: {
+      code_invalid: 'Mã không đúng. Bạn thử nhập lại nhé.',
+      code_expired: 'Mã hết hạn rồi. Bấm gửi lại để nhận mã mới nhé.',
+      code_locked: 'Sai nhiều lần quá. Bấm gửi lại để nhận mã mới nhé.',
+      code_too_soon: 'Mã vừa gửi xong. Chờ chút rồi xin mã mới nhé.',
+      code_too_many: 'Bạn xin mã nhiều quá. Thử lại sau một giờ nhé.',
+      code_too_many_here: 'Máy này xin mã nhiều quá. Thử lại sau một giờ nhé.',
+      verify_too_many_here: 'Nhập sai nhiều quá. Thử lại sau một giờ nhé.',
+      target_invalid: 'Email này chưa đúng dạng. Bạn xem lại nhé.',
+      target_not_allowed: 'Email này không nhận được thư của Nook. Bạn dùng email khác nhé.',
+      send_failed: 'Chưa gửi được mã. Thử lại sau ít phút nhé.',
+      method_unavailable: 'Cách này chưa mở. Bạn dùng email nhé.',
+      account_not_found: 'Email này chưa có tài khoản. Bạn tạo mới nhé.',
+      account_exists: 'Email này đã có tài khoản. Bạn đăng nhập nhé.',
+      session_expired: 'Lâu rồi bạn chưa vào. Đăng nhập lại nhé.',
+      session_revoked: 'Bạn đã đăng xuất trên máy này. Đăng nhập lại nhé.',
+      unauthorized: 'Bạn cần đăng nhập lại nhé.',
+      forbidden: 'Bạn không mở được phần này.',
+    },
+    user: {
+      not_found: 'Không tìm thấy người này.',
+      name_invalid: 'Tên này chưa dùng được. Bạn thử tên khác nhé.',
+    },
+    username: {
+      invalid: 'Chỉ dùng chữ không dấu, số, dấu chấm và gạch dưới.',
+      reserved: 'Tên riêng này Nook giữ lại. Bạn thử tên khác nhé.',
+      taken: 'Tên riêng này có người dùng rồi. Bạn thử tên khác nhé.',
+    },
+    media: {
+      not_found: 'Không tìm thấy ảnh này.',
+      type_unsupported: 'Nook chưa đọc được loại tệp này.',
+      too_large: 'Tệp nặng quá. Bạn chọn tệp nhỏ hơn nhé.',
+      not_uploaded: 'Ảnh chưa lên hết. Thử gửi lại nhé.',
+      forbidden: 'Bạn không xem được ảnh này.',
+    },
+  },
   notFound: {
     title: 'Không tìm thấy trang này',
     message: 'Đường dẫn bạn vừa mở không còn nữa.',

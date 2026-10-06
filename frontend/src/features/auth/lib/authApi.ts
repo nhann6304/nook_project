@@ -1,32 +1,83 @@
 /**
- * Cửa giữa giao diện và server. HIỆN TẠI LÀ HÀNG GIẢ.
+ * Cửa đăng nhập. Màn hình gọi ba hàm dưới, chỉ quan tâm tới kết quả.
  *
- * Màn hình không được biết server tồn tại. Nó gọi hai hàm dưới đây và chỉ quan
- * tâm tới kết quả. Khi backend có thật, chỉ file này đổi — không màn nào phải
- * sửa một dòng.
+ * `LIVE` (có `EXPO_PUBLIC_API_URL`) → gọi server thật qua `@/lib/api`.
+ * Không thì hàng giả: mã đúng là `123456`, mọi mã khác bị từ chối.
  *
- * Mã giả để bấm thử: 123456. Mọi mã khác đều bị từ chối.
+ * Câu lỗi tra từ MÃ server (`translateError`), không bao giờ hiện chính cái mã.
  */
-import { translate } from '@i18n';
-import type { SignInMethod } from './identity';
+import { API } from '@nook/shared/common/constant';
+import type {
+  ISendCodeResult,
+  IUserProfile,
+  IVerifyCodeResult,
+} from '@nook/shared/model/interface';
+import { translate, translateError } from '@i18n';
+import { LIVE, call, clearSession, saveSession } from '@/lib/api';
+import type { SignInIntent, SignInMethod } from './identity';
 
-export type SendResult = { ok: true } | { ok: false; message: string };
-export type VerifyResult = { ok: true } | { ok: false; message: string };
+export type SendResult = { ok: true } | { ok: false; code: string; message: string };
+export type VerifyResult =
+  | { ok: true; isNew: boolean; user: IUserProfile | null }
+  | { ok: false; code: string; message: string };
 
 const FAKE_DELAY = 700;
 const FAKE_CODE = '123456';
-
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-export async function sendCode(_method: SignInMethod, _target: string): Promise<SendResult> {
-  await wait(FAKE_DELAY);
-  return { ok: true };
+const fail = (code: string) => ({ ok: false as const, code, message: translateError(code) });
+
+/** Server nhận số theo dạng quốc tế; app giữ 9 số trong nước. */
+const toServer = (method: SignInMethod, target: string) =>
+  method === 'phone' ? `+84${target}` : target.trim().toLowerCase();
+
+/**
+ * `intent` cho server soi TRƯỚC khi gửi thư: vào cửa "đăng nhập" mà email chưa
+ * có tài khoản thì trả `auth.account_not_found` ngay, không gửi mã.
+ */
+export async function sendCode(
+  method: SignInMethod,
+  target: string,
+  intent: SignInIntent,
+): Promise<SendResult> {
+  if (!LIVE) {
+    await wait(FAKE_DELAY);
+    return { ok: true };
+  }
+  const res = await call<ISendCodeResult>(
+    'POST',
+    API.auth.code,
+    { method, target: toServer(method, target), intent },
+    { auth: false },
+  );
+  return res.ok ? { ok: true } : fail(res.code);
 }
 
-export async function verifyCode(code: string): Promise<VerifyResult> {
-  await wait(FAKE_DELAY);
-  if (code === FAKE_CODE) return { ok: true };
-  // Câu lỗi lấy từ kho chữ, không viết thẳng: khi backend thật trả mã lỗi thì
-  // chỗ này đổi thành tra bảng mã → khoá, còn màn hình không đụng gì.
-  return { ok: false, message: translate('verify.wrongCode') };
+export async function verifyCode(
+  method: SignInMethod,
+  target: string,
+  code: string,
+  intent: SignInIntent,
+): Promise<VerifyResult> {
+  if (!LIVE) {
+    await wait(FAKE_DELAY);
+    if (code !== FAKE_CODE) {
+      return { ok: false, code: 'auth.code_invalid', message: translate('verify.wrongCode') };
+    }
+    return { ok: true, isNew: intent === 'signup', user: null };
+  }
+  const res = await call<IVerifyCodeResult>(
+    'POST',
+    API.auth.verify,
+    { method, target: toServer(method, target), code },
+    { auth: false },
+  );
+  if (!res.ok) return fail(res.code);
+  await saveSession(res.data);
+  // `onboarded` là sự thật của server — người cũ vào cửa "tạo mới" vẫn được vào thẳng.
+  return { ok: true, isNew: !res.data.user.onboarded, user: res.data.user };
+}
+
+export async function signOut(): Promise<void> {
+  await clearSession();
 }

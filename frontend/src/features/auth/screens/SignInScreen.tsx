@@ -24,9 +24,9 @@ import {
 } from '@ui';
 import { layout, space, useStyles, type Palette } from '@design';
 import { useT, type T } from '@i18n';
-import { formatVnPhone, isValidTarget, type SignInMethod } from '../lib/identity';
+import { formatVnPhone, isValidTarget, type SignInIntent, type SignInMethod } from '../lib/identity';
 
-export type SignInIntent = 'signup' | 'signin';
+export type { SignInIntent };
 
 /**
  * Chữ của hai cửa. Bảng tra tĩnh chứ không phải `t(\`signIn.${intent}Title\`)`:

@@ -1,4 +1,7 @@
 import { useCallback, useMemo } from 'react';
+import { useRouter } from 'expo-router';
+import { signOut } from '@/features/auth/lib/authApi';
+import { useAuth } from '@/features/auth/store/authStore';
 import { SettingsScreen } from '@/features/settings/screens/SettingsScreen';
 import { ACCENT_KEYS, useTheme, type AccentKey } from '@design';
 import { useT } from '@i18n';
@@ -11,6 +14,8 @@ import { useJournal } from '@/features/journal/store/journalStore';
 import { postedWithin } from '@/features/journal/types';
 
 export default function Settings() {
+  const router = useRouter();
+  const leave = useAuth((s) => s.signOut);
   const t = useT();
   const friendCount = useCircle((s) => s.friends.length);
   const myName = useProfile((s) => s.name);
@@ -60,6 +65,11 @@ export default function Settings() {
       onLockChange={(v) => void changeLock(v)}
       soundOn={soundOn}
       onSoundChange={setSound}
+      onSignOut={() => {
+        void signOut();
+        leave();
+        router.replace('/(auth)/welcome');
+      }}
     />
   );
 }

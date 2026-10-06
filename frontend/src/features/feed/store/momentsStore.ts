@@ -19,7 +19,13 @@ const nextId = () => `mine-${++seq}`;
 
 type MomentsState = {
   moments: readonly Moment[];
-  add: (photo: PhotoSource, caption: string, at: number, tags?: readonly Tag[]) => void;
+  add: (
+    photo: PhotoSource,
+    caption: string,
+    at: number,
+    tags?: readonly Tag[],
+    video?: string,
+  ) => void;
   markReplied: (id: string) => void;
   clear: () => void;
 };
@@ -27,12 +33,13 @@ type MomentsState = {
 export const useMoments = create<MomentsState>((set) => ({
   moments: SEED_MOMENTS,
 
-  add: (photo, caption, at, tags) =>
+  add: (photo, caption, at, tags, video) =>
     set((s) => ({
       moments: [
         {
           id: nextId(),
           photo,
+          video,
           caption: caption || undefined,
           at,
           author: ME,

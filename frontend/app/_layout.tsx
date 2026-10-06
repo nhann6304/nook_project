@@ -4,8 +4,8 @@
  * GestureHandlerRootView phải nằm NGOÀI CÙNG, nếu không mọi cử chỉ vuốt đều
  * câm trên Android — và câm không báo lỗi, chỉ là không có gì xảy ra.
  *
- * Splash được giữ tới khi BA thứ xong: bộ chữ, ngôn ngữ đã chọn, bảng màu đã
- * chọn. Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Poppins;
+ * Splash được giữ tới khi BỐN thứ xong: bộ chữ, ngôn ngữ, bảng màu đã chọn, và
+ * phiên đăng nhập cất trên máy. Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Poppins;
  * thả sớm vì ngôn ngữ thì thấy màn đầu sai tiếng; thả sớm vì bảng màu thì cả
  * app nháy một cái đổi màu. Mỗi cái chỉ khoảng 30ms, nhưng là 30ms đầu tiên
  * người dùng nhìn thấy.
@@ -32,6 +32,7 @@ import { useColors, useStyles, useThemeReady, type Palette } from '@design';
 import { useI18nReady } from '@i18n';
 import { initSound } from '@/lib/sound';
 import { useSound } from '@/features/settings/store/soundStore';
+import { useAuth } from '@/features/auth/store/authStore';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -48,7 +49,12 @@ export default function RootLayout() {
     Caveat_700Bold,
   });
 
-  const ready = (fontsReady || error !== null) && localeReady && themeReady;
+  const authReady = useAuth((s) => s.phase !== 'unknown');
+  const ready = (fontsReady || error !== null) && localeReady && themeReady && authReady;
+
+  useEffect(() => {
+    void useAuth.getState().hydrate();
+  }, []);
 
   // Âm thanh nạp song song, KHÔNG giữ splash: thiếu tiếng vài trăm mili giây
   // đầu không ai nhận ra, chờ nó thì ai cũng thấy.
