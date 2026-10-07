@@ -27,7 +27,6 @@ export function CircleScreen({
   onInvite,
   onOpenNearby,
   onOpenFriend,
-  onClose,
   query,
   onQueryChange,
   people,
@@ -43,7 +42,6 @@ export function CircleScreen({
   onInvite: () => void;
   onOpenNearby: () => void;
   onOpenFriend: (id: string) => void;
-  onClose: () => void;
   query: string;
   onQueryChange: (q: string) => void;
   /** Người ngoài góc khớp `query` — server trả về, kèm quan hệ với mình. */
@@ -73,11 +71,8 @@ export function CircleScreen({
   };
 
   return (
-    <Screen padded={false} keyboard>
+    <Screen padded={false} keyboard edges={TOP}>
       <View style={s.bar}>
-        <IconButton label={t('home.backToCamera')} onPress={onClose} style={s.round}>
-          <Icon name="back" size={22} color={c.text} />
-        </IconButton>
         <Txt variant="title" style={s.title}>
           {t('friends.title')}
         </Txt>
@@ -329,7 +324,7 @@ const PersonRow = memo(function PersonRow({
   const label = person.relation === 'friend' ? labels.none : labels[person.relation];
   return (
     <View style={s.row}>
-      <Avatar name={person.name} uri={person.uri} ring={false} size={52} recyclingKey={person.id} />
+      <Avatar name={person.name} uri={person.uri} ring={false} size={60} recyclingKey={person.id} />
       <View style={s.rowText}>
         <Txt variant="section" numberOfLines={1}>
           {person.name}
@@ -376,7 +371,7 @@ const InviteRow = memo(function InviteRow({
   const c = useColors();
   return (
     <View style={s.row}>
-      <Avatar name={invite.name} uri={invite.uri} ring={false} size={52} recyclingKey={invite.id} />
+      <Avatar name={invite.name} uri={invite.uri} ring={false} size={60} recyclingKey={invite.id} />
       <View style={s.rowText}>
         <Txt variant="section" numberOfLines={1}>
           {invite.name}
@@ -425,7 +420,7 @@ const FriendRow = memo(function FriendRow({
           uri={friend.uri}
           level={friend.level}
           dormant={friend.dormant}
-          size={52}
+          size={60}
           recyclingKey={friend.id}
         />
       </View>
@@ -451,8 +446,15 @@ const make = (c: Palette) =>
       gap: space.md,
       paddingHorizontal: space.lg,
     },
-    round: { width: 44, height: 44, borderRadius: radius.full, backgroundColor: c.surface },
-    title: { flex: 1, fontSize: 20, lineHeight: 26 },
+    round: {
+      width: 52,
+      height: 52,
+      borderRadius: radius.full,
+      backgroundColor: c.surfaceRaised,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    title: { flex: 1, fontSize: 22, lineHeight: 30 },
 
     invite: {
       flexDirection: 'row',
@@ -495,3 +497,6 @@ const make = (c: Palette) =>
     addBtn: { minHeight: 40, paddingHorizontal: space.lg, borderRadius: radius.sm + 2 },
     note: { paddingHorizontal: space.huge - space.sm, paddingTop: space.xxl },
   });
+
+/** Màn gốc của một tab: thanh tab đã lo phần đáy máy. */
+const TOP = ['top'] as const;

@@ -38,6 +38,7 @@ export { TabBar, TAB_BAR_HEIGHT, type TabItem } from './layout/TabBar';
 
 /* — Thương hiệu — */
 export { Rings, type RingsProps } from './brand/Rings';
+export { SkyWash } from './brand/SkyWash';
 export { Wordmark, Lockup } from './brand/Wordmark';
 export { Halo } from './brand/Halo';
 export { GhostFrame } from './brand/GhostFrame';

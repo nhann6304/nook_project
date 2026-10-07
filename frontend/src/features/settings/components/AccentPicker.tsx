@@ -45,7 +45,7 @@ const Dot = memo(function Dot({
 }) {
   const s = useStyles(make);
   const c = useColors();
-  const swatch = paletteOf(c.light ? 'light' : 'dark', id);
+  const swatch = paletteOf(c.scene, id);
 
   return (
     <Tap

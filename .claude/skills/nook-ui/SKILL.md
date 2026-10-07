@@ -184,15 +184,15 @@ Cuộn, kéo thả, và phản hồi nhấn. Cả ba đều phải là Reanimate
 
 Lấy từ `frontend/docs/02-ui-system.md`, nhắc lại ở đây vì hay bị quên nhất:
 
-- Nền mặc định **SÁNG** (lam pastel). Chữ nằm trên ảnh phải là `tone="onPhoto"`, icon trên ảnh là `c.onPhotoText`; dùng `c.text` trên ảnh là chữ tối chìm vào ảnh.
+- Màu mặc định **theo trời** (sáng · trưa · chiều · tối · mưa), họ lam pastel. Chữ nằm trên ảnh phải là `tone="onPhoto"`, icon trên ảnh là `c.onPhotoText`; dùng `c.text` trên ảnh là chữ tối chìm vào ảnh.
 - Mặt nổi dùng "kính": `c.glass` + viền `c.glassBorder` + `lift(c)`. **Không blur thật** — Android vẽ lại mỗi khung hình.
 - Icon dùng bản **đặc** (`people`, không `people-outline`); nền tròn sau icon là `<IconBadge>`.
 - **Mỗi màn đúng MỘT nút `variant="primary"`.** Hai cái là không màn nào nổi.
 - Chữ trên nút primary là `c.onAccent` — trắng ở nền sáng, navy ở nền tối. Đừng tự chọn.
 - Khung ảnh **vuông 1:1**, chung cho camera và khoảnh khắc — xem `layout.cameraFrameRatio`. Ảnh gửi đi cắt đúng khung (`squarePhoto`).
 - Chuyển cảnh chỉ animate **transform + opacity**, không animate left/top/width/height.
-- **Thanh tab ba nút** (`<TabBar>`): Trang chủ · Lướt ảnh · Cài đặt. Hai nút đầu
-  là hai vị trí của cùng màn chính. Màn khác `push` chồng lên (bạn bè trái, tin nhắn phải).
+- **Thanh tab bốn nút** (`<TabBar>`): Chụp · Bạn bè · Tin nhắn · Cài đặt. Ảnh
+  bạn bè vuốt lên từ camera, không phải tab. Màn khác `push` chồng lên (bạn bè trái, tin nhắn phải).
   Màn gốc của tab dùng `<Screen edges={['top']}>` — thanh tab đã lo đáy máy.
 - Chuyển cảnh lớn dùng `duration.scene` + `ease.out`; phản hồi nhấn vẫn ≤ 320ms.
 - **Không có linh vật.** Chỗ trống dùng `<GhostFrame>` hoặc lưới mười chỗ.

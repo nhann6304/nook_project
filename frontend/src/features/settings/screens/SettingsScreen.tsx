@@ -22,7 +22,16 @@ import {
   Txt,
   type IconName,
 } from '@ui';
-import { layout, radius, space, useStyles, type AccentKey, type Palette, type ThemeMode } from '@design';
+import {
+  layout,
+  radius,
+  space,
+  useStyles,
+  type AccentKey,
+  type Palette,
+  type ThemeMode,
+  type SkyScene,
+} from '@design';
 import {
   LOCALES,
   LOCALE_NAMES,
@@ -34,6 +43,8 @@ import {
   type Locale,
 } from '@i18n';
 import { AccentPicker } from '../components/AccentPicker';
+import { SkyStrip } from '../components/SkyStrip';
+import { AudiencePicker, type AudiencePerson } from '@/features/camera/components/AudiencePicker';
 
 const LOCALE_OPTIONS = LOCALES.map((l) => ({ value: l, label: LOCALE_NAMES[l] }));
 
@@ -45,6 +56,14 @@ export function SettingsScreen({
   posts30,
   mode,
   onPickMode,
+  scene,
+  sceneNames,
+  rainReady,
+  onEnableRain,
+  audience,
+  defaultHidden,
+  onToggleHidden,
+  onToggleAllHidden,
   accent,
   accentNames,
   onPickAccent,
@@ -62,6 +81,16 @@ export function SettingsScreen({
   posts30: number;
   mode: ThemeMode;
   onPickMode: (mode: ThemeMode) => void;
+  /** Cảnh đang dùng khi "Theo trời", để tô ô "bây giờ". */
+  scene: SkyScene | null;
+  sceneNames: Readonly<Record<SkyScene, string>>;
+  /** Đã có quyền vị trí — biết được trời mưa. */
+  rainReady: boolean;
+  onEnableRain: () => void;
+  audience: readonly AudiencePerson[];
+  defaultHidden: readonly string[];
+  onToggleHidden: (id: string) => void;
+  onToggleAllHidden: () => void;
   accent: AccentKey;
   accentNames: Readonly<Record<AccentKey, string>>;
   onPickAccent: (key: AccentKey) => void;
@@ -112,12 +141,37 @@ export function SettingsScreen({
                 hint={t('privacy.lockHint')}
               />
             </Line>
+            <Divider inset />
+            <Line
+              icon="eyeOff"
+              title={t('audience.settingsTitle')}
+              hint={t('audience.settingsHint')}
+            >
+              {audience.length === 0 ? (
+                <Txt variant="faint" tone="muted">
+                  {t('audience.empty')}
+                </Txt>
+              ) : (
+                <View style={s.bleed}>
+                  <AudiencePicker
+                    people={audience}
+                    hidden={defaultHidden}
+                    onToggle={onToggleHidden}
+                    onToggleAll={onToggleAllHidden}
+                    allLabel={t('audience.all')}
+                    hiddenLabel={(n) => t('audience.hiddenPerson', { name: n })}
+                    label={t('audience.settingsTitle')}
+                  />
+                </View>
+              )}
+            </Line>
           </Group>
 
           <Group title={t('theme.title')}>
             <Line icon="contrast" title={t('theme.mode')}>
               <Segmented<ThemeMode>
                 options={[
+                  { value: 'sky', label: t('theme.sky') },
                   { value: 'light', label: t('theme.light') },
                   { value: 'dark', label: t('theme.dark') },
                   { value: 'system', label: t('theme.system') },
@@ -130,6 +184,36 @@ export function SettingsScreen({
                 <Txt variant="faint" tone="muted">
                   {t('theme.systemNote')}
                 </Txt>
+              ) : null}
+              {mode === 'sky' ? (
+                <>
+                  <SkyStrip
+                    current={scene}
+                    accent={accent}
+                    names={sceneNames}
+                    nowLabel={t('theme.now')}
+                  />
+                  <Txt variant="faint" tone="muted">
+                    {t('theme.skyNote')}
+                  </Txt>
+                  {rainReady ? (
+                    <Txt variant="faint" tone="accent">
+                      {t('theme.rainReady')}
+                    </Txt>
+                  ) : (
+                    <>
+                      <Button
+                        label={t('theme.rainOn')}
+                        variant="secondary"
+                        onPress={onEnableRain}
+                        block
+                      />
+                      <Txt variant="faint" tone="muted">
+                        {t('theme.rainHint')}
+                      </Txt>
+                    </>
+                  )}
+                </>
               ) : null}
             </Line>
             <Divider inset />
@@ -268,6 +352,13 @@ const make = (c: Palette) =>
     groupTitle: { paddingHorizontal: space.xs },
     card: { paddingVertical: space.sm, gap: 0 },
     line: { flexDirection: 'row', gap: space.md, paddingVertical: space.md },
-    content: { flex: 1, gap: space.md, justifyContent: 'center', minHeight: layout.minTouch - space.sm },
+    content: {
+      flex: 1,
+      gap: space.md,
+      justifyContent: 'center',
+      minHeight: layout.minTouch - space.sm,
+    },
     head: { gap: 2 },
+    // Hàng avatar cuộn tới mép thẻ, không bị cắt cụt ở lề trong.
+    bleed: { marginLeft: -space.lg, marginRight: -space.lg },
   });

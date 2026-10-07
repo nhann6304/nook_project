@@ -1,13 +1,18 @@
 # Nook — Bảng màu người dùng chọn được
 
-Họ **xanh lam pastel** (06/10/2026, thay đất nung + màu theo trời). Hai lựa chọn
-độc lập trong **Cài đặt → Giao diện**, đổi là thấy ngay, nhớ giữa các lần mở app:
+Họ **xanh lam pastel, sống theo trời** (07/10/2026). Hai lựa chọn độc lập trong
+**Cài đặt → Giao diện**, đổi là thấy ngay, nhớ giữa các lần mở app:
 
-- **Nền:** Sáng (mặc định) · Tối · Theo máy.
+- **Nền:** Theo trời (mặc định) · Sáng · Tối · Theo máy. Theo trời = sáng
+  (5–10h) · trưa (10–16h) · chiều (16–19h) · tối (19–5h), trời mưa thì sang
+  mưa / mưa đêm. Mưa hỏi Open-Meteo bằng vị trí thô (~11 km), chỉ khi đã có
+  quyền vị trí (`features/sky`).
 - **Màu locket:** Lam (mặc định) · Hồng · Lá · Oải hương · Mơ.
 
-2 nền × 5 màu = 10 bảng, dựng một lần lúc nạp `palettes.ts`. Khoá bảng là
-`'light-denim'`, `'dark-rose'`…
+6 cảnh × 5 màu = 30 bảng, dựng một lần lúc nạp `palettes.ts`. Khoá bảng là
+`'dawn-denim'`, `'rainNight-rose'`…
+
+> Mục 4 bên dưới (bảng nền Sáng/Tối) là bản 06/10 — số đúng nằm ở `BASES`.
 
 ---
 

@@ -2,9 +2,9 @@
  * Bộ icon RIÊNG của LOVO — vẽ tay trên lưới 24, thay Ionicons (07/10/2026:
  * "icon mảnh, nhìn như app nào cũng có").
  *
- * Một giọng nét cho cả bộ: nét DÀY (2.4), đầu + góc bo tròn, và phần thân tô
- * nhạt (`soft`, 18%) để icon có khối, đọc được ngoài nắng. Ba kiểu nét:
- *   stroke — chỉ viền · soft — viền + ruột nhạt · solid — tô kín (chấm, mắt).
+ * Một giọng nét cho cả bộ: nét DÀY (2.7), đầu + góc bo tròn, và phần thân tô
+ * đậm (`soft`, 30%) để icon có khối, đọc được ngoài nắng. Ba kiểu nét:
+ *   stroke — chỉ viền · soft — viền + ruột tô đậm · solid — tô kín (chấm, mắt).
  *
  * Thêm icon: thêm một khoá vào `ICONS`, giữ lưới 24 và độ dày, đừng mượn
  * icon từ bộ khác — lệch giọng là thấy ngay.
@@ -18,8 +18,8 @@ type Part =
   | { c: readonly [cx: number, cy: number, r: number]; s?: Style }
   | { r: readonly [x: number, y: number, w: number, h: number, rx: number]; s?: Style };
 
-const STROKE = 2.4;
-const SOFT = 0.18;
+const STROKE = 2.7;
+const SOFT = 0.3;
 
 const ICONS = {
   home: [
@@ -138,6 +138,10 @@ const ICONS = {
     { c: [12, 12, 8.5], s: 'soft' },
     { d: 'M3.5 12h17M12 3.5c2.4 2.4 3.5 5.3 3.5 8.5s-1.1 6.1-3.5 8.5c-2.4-2.4-3.5-5.3-3.5-8.5s1.1-6.1 3.5-8.5z' },
   ],
+  bell: [
+    { d: 'M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2H4.5z', s: 'soft' },
+    { d: 'M10 20.5a2.2 2.2 0 0 0 4 0' },
+  ],
   logout: [
     { d: 'M10 4.5H7A2.5 2.5 0 0 0 4.5 7v10A2.5 2.5 0 0 0 7 19.5h3' },
     { d: 'M14.5 8l4 4-4 4M18.5 12H9.5' },
@@ -155,8 +159,11 @@ export const Icon = memo(function Icon({
   size?: number;
   color: string;
 }) {
+  // Vẽ to hơn số được hỏi 15% (07/10/2026: "icon nhỏ xíu") — một chỗ thay vì
+  // sửa cỡ ở hàng trăm chỗ gọi. Hình vẫn nằm giữa vùng chạm của nút.
+  const px = Math.round(size * 1.15);
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" pointerEvents="none">
+    <Svg width={px} height={px} viewBox="0 0 24 24" pointerEvents="none">
       {(ICONS[name] as readonly Part[]).map((p, i) => {
         const s = p.s ?? 'stroke';
         const paint = {

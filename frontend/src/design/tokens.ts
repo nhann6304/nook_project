@@ -47,15 +47,17 @@ export const radius = {
 
 export const font = {
   /**
-   * Poppins — theo bảng thiết kế 06/10/2026 (thay Plus Jakarta Sans). Tiêu đề
-   * nét 600–700, KHÔNG 800: Poppins 800 tròn và nặng, nhìn như quảng cáo.
-   * Chỉ nạp năm nét dưới đây — mỗi nét thêm là thêm thời gian giữ màn chờ.
+   * Poppins — theo bảng thiết kế 06/10/2026 (thay Plus Jakarta Sans). Chỉ
+   * `display` dùng 800; tiêu đề thường 700 — 800 tràn lan thì nặng như quảng cáo.
+   * Chỉ nạp các nét dưới đây — mỗi nét thêm là thêm thời gian giữ màn chờ.
    */
-  body: 'Poppins_400Regular',
-  bodyMedium: 'Poppins_500Medium',
+  // 07/10/2026: cả thang lên một nấc ("chữ nhạt quá") — chữ thường là 500,
+  // không còn 400; tiêu đề lớn 800.
+  body: 'Poppins_500Medium',
+  bodyMedium: 'Poppins_600SemiBold',
   bodySemi: 'Poppins_600SemiBold',
   bodyBold: 'Poppins_700Bold',
-  heavy: 'Poppins_700Bold',
+  heavy: 'Poppins_800ExtraBold',
   /** Chữ viết tay — chỉ cho lời nhấn ngắn ("Một vài mẹo nhỏ"), không cho đoạn văn. */
   hand: 'Caveat_700Bold',
 } as const;
@@ -69,25 +71,26 @@ export const font = {
  * thấp hơn là dấu tiếng Việt (ỗ, ẫ) bị cắt trên Android.
  */
 export const type = {
-  display: { fontSize: 32, lineHeight: 44, fontFamily: font.bodyBold, letterSpacing: -0.6, maxScale: 1.25 },
-  title: { fontSize: 22, lineHeight: 32, fontFamily: font.bodySemi, letterSpacing: -0.3, maxScale: 1.4 },
-  section: { fontSize: 16, lineHeight: 24, fontFamily: font.bodySemi, letterSpacing: -0.1, maxScale: 1.4 },
-  body: { fontSize: 14, lineHeight: 21, fontFamily: font.body, letterSpacing: 0, maxScale: 1.6 },
-  label: { fontSize: 14, lineHeight: 20, fontFamily: font.bodySemi, letterSpacing: 0, maxScale: 1.5 },
-  faint: { fontSize: 12, lineHeight: 18, fontFamily: font.body, letterSpacing: 0, maxScale: 1.5 },
-  hand: { fontSize: 24, lineHeight: 30, fontFamily: font.hand, letterSpacing: 0, maxScale: 1.3 },
+  display: { fontSize: 34, lineHeight: 46, fontFamily: font.heavy, letterSpacing: -0.6, maxScale: 1.25 },
+  title: { fontSize: 24, lineHeight: 34, fontFamily: font.bodyBold, letterSpacing: -0.3, maxScale: 1.4 },
+  section: { fontSize: 18, lineHeight: 26, fontFamily: font.bodyBold, letterSpacing: -0.1, maxScale: 1.4 },
+  body: { fontSize: 16, lineHeight: 24, fontFamily: font.body, letterSpacing: 0, maxScale: 1.5 },
+  label: { fontSize: 15, lineHeight: 22, fontFamily: font.bodySemi, letterSpacing: 0, maxScale: 1.5 },
+  faint: { fontSize: 13, lineHeight: 19, fontFamily: font.body, letterSpacing: 0, maxScale: 1.5 },
+  hand: { fontSize: 26, lineHeight: 32, fontFamily: font.hand, letterSpacing: 0, maxScale: 1.3 },
 } as const;
 
 /* ══════════════ BỐ CỤC ══════════════ */
 
 export const layout = {
   /**
-   * Khung ảnh VUÔNG 1:1 (02/10/2026 — 3:4 dài quá trên điện thoại). Ảnh chụp
+   * Rộng / cao = 0.9 — đứng hơn vuông một chút (07/10/2026: "dài xuống nhẹ").
+   * Trước đó 1:1 (02/10/2026 — 3:4 dài quá trên điện thoại). Ảnh chụp
    * được cắt đúng khung này (`squarePhoto`), nên thấy gì gửi nấy. Bề ngang là
    * máy trừ 2×`frameInset`; máy ngắn thì chiều cao chặn trước. Camera và
    * khoảnh khắc dùng CHUNG khung, lướt từ camera sang ảnh bạn bè khung đứng yên.
    */
-  cameraFrameRatio: 1,
+  cameraFrameRatio: 0.9,
   frameInset: 8,
   /** Vùng chạm tối thiểu. Apple khuyến nghị 44pt, Android 48dp — lấy số lớn hơn. */
   minTouch: 48,

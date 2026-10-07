@@ -1,9 +1,9 @@
 /**
- * Thanh điều hướng dưới đáy (06/10/2026, thay luật "không thanh tab": người
- * dùng tìm không ra Cài đặt).
+ * Thanh điều hướng dưới đáy — bốn nút (07/10/2026).
  *
- * Viên thuốc "kính" nổi trên nền (`glass` + viền sáng + `lift`), icon ĐẶC cho
- * dày, dễ thấy. Mượt trước đã:
+ * Bản viên thuốc nổi trước bị chê "xấu, nhìn như AI". Giờ là thanh LIỀN mép
+ * dưới, kẻ mảnh phía trên; nút đang chọn có icon trong một ô bo mềm màu nhấn,
+ * chữ đậm. Mượt trước đã:
  *   · nền ĐẶC, không blur — blur trên Android vẽ lại mỗi khung hình;
  *   · nằm TRONG dòng bố cục, không đè lên màn — nên mờ đi chứ không gỡ khi
  *     đang bận (gỡ ra là màn trên đổi cao, khung camera nhảy);
@@ -12,16 +12,17 @@
 import { memo, useEffect, useState } from 'react';
 import { Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Icon } from '../primitives/Icon';
-import { font, layout, lift, radius, space, useColors, useStyles, type Palette } from '@design';
+import { font, layout, radius, space, useColors, useStyles, type Palette } from '@design';
+import { Icon, type IconName } from '../primitives/Icon';
 import { Tap } from '../primitives/Tap';
 import { Txt } from '../primitives/Txt';
-import type { IconName } from '../primitives/Icon';
 
 export type TabItem<K extends string> = {
   key: K;
   label: string;
   icon: IconName;
+  /** Chấm báo có thứ mới (tin nhắn chưa đọc). */
+  badge?: boolean;
 };
 
 export const TAB_BAR_HEIGHT = 64;
@@ -52,13 +53,11 @@ function TabBarInner<K extends string>({
       accessibilityRole="tablist"
       accessibilityLabel={label}
       pointerEvents={dimmed ? 'none' : 'auto'}
-      style={[s.dock, { paddingBottom: Math.max(insets.bottom, space.md) }, dimmed && s.dimmed]}
+      style={[s.bar, { paddingBottom: Math.max(insets.bottom, space.sm) }, dimmed && s.dimmed]}
     >
-      <View style={s.bar}>
-        {items.map((it) => (
-          <Item key={it.key} item={it} selected={it.key === active} onPress={onPress} />
-        ))}
-      </View>
+      {items.map((it) => (
+        <Item key={it.key} item={it} selected={it.key === active} onPress={onPress} />
+      ))}
     </View>
   );
 }
@@ -83,13 +82,19 @@ const Item = memo(function Item<K extends string>({
       accessibilityLabel={item.label}
       onPress={() => onPress(item.key)}
       feedback="select"
-      scaleTo={0.94}
+      scaleTo={0.92}
       style={s.item}
     >
       <View style={[s.icon, selected && s.iconOn]}>
-        <Icon name={item.icon} size={22} color={selected ? c.onAccent : c.textFaint} />
+        <Icon name={item.icon} size={24} color={selected ? c.accent : c.textMuted} />
+        {item.badge ? <View style={s.badge} /> : null}
       </View>
-      <Txt variant="faint" tone={selected ? 'accent' : 'faint'} numberOfLines={1} style={s.label}>
+      <Txt
+        variant="faint"
+        tone={selected ? 'accent' : 'muted'}
+        numberOfLines={1}
+        style={selected ? s.labelOn : s.label}
+      >
         {item.label}
       </Txt>
     </Tap>
@@ -115,31 +120,36 @@ function useKeyboardOpen() {
 
 const make = (c: Palette) =>
   StyleSheet.create({
-    dock: {
-      paddingTop: space.sm,
-      paddingHorizontal: space.xl,
-      backgroundColor: c.bg,
-    },
-    dimmed: { opacity: 0.4 },
     bar: {
       flexDirection: 'row',
-      alignItems: 'center',
-      height: TAB_BAR_HEIGHT,
+      minHeight: TAB_BAR_HEIGHT,
+      paddingTop: space.sm,
       paddingHorizontal: space.sm,
-      borderRadius: radius.full,
-      backgroundColor: c.glass,
-      borderWidth: 1,
-      borderColor: c.glassBorder,
-      ...lift(c),
+      backgroundColor: c.bg,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: c.border,
     },
-    item: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: layout.minTouch },
+    dimmed: { opacity: 0.4 },
+    item: { flex: 1, alignItems: 'center', gap: 3, minHeight: layout.minTouch },
     icon: {
-      width: 48,
-      height: 30,
-      borderRadius: radius.full,
+      width: 60,
+      height: 34,
+      borderRadius: radius.md,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    iconOn: { backgroundColor: c.accent },
+    iconOn: { backgroundColor: c.accentSoft },
+    badge: {
+      position: 'absolute',
+      top: 3,
+      right: 14,
+      width: 10,
+      height: 10,
+      borderRadius: radius.full,
+      backgroundColor: c.danger,
+      borderWidth: 2,
+      borderColor: c.bg,
+    },
     label: { fontFamily: font.bodySemi },
+    labelOn: { fontFamily: font.bodyBold },
   });

@@ -19,7 +19,7 @@ export default function Chat() {
   );
 
   // Vào thẳng đường dẫn này với một id không có thật thì không có gì để hiện.
-  if (!conversation) return <Redirect href="/(app)/chats" />;
+  if (!conversation) return <Redirect href="/(app)/(tabs)/chats" />;
 
   return (
     <ChatScreen

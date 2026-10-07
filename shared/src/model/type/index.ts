@@ -5,3 +5,4 @@ export * from './media/media.type.js';
 export * from './achievement/achievement.type.js';
 export * from './catalog/error.type.js';
 export * from './catalog/message.type.js';
+export * from './notification/notification.type.js';

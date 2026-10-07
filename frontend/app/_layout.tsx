@@ -22,10 +22,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
 import {
-  Poppins_400Regular,
   Poppins_500Medium,
   Poppins_600SemiBold,
   Poppins_700Bold,
+  Poppins_800ExtraBold,
 } from '@expo-google-fonts/poppins';
 import { Caveat_700Bold } from '@expo-google-fonts/caveat';
 import { useColors, useStyles, useThemeReady, type Palette } from '@design';
@@ -33,6 +33,8 @@ import { useI18nReady } from '@i18n';
 import { initSound } from '@/lib/sound';
 import { useSound } from '@/features/settings/store/soundStore';
 import { useAuth } from '@/features/auth/store/authStore';
+import { useRainWatch } from '@/features/sky/lib/useRainWatch';
+import { useAudience } from '@/features/camera/store/audienceStore';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -42,18 +44,20 @@ export default function RootLayout() {
   const localeReady = useI18nReady();
   const themeReady = useThemeReady();
   const [fontsReady, error] = useFonts({
-    Poppins_400Regular,
     Poppins_500Medium,
     Poppins_600SemiBold,
     Poppins_700Bold,
+    Poppins_800ExtraBold,
     Caveat_700Bold,
   });
 
+  useRainWatch();
   const authReady = useAuth((s) => s.phase !== 'unknown');
   const ready = (fontsReady || error !== null) && localeReady && themeReady && authReady;
 
   useEffect(() => {
     void useAuth.getState().hydrate();
+    void useAudience.getState().hydrate();
   }, []);
 
   // Âm thanh nạp song song, KHÔNG giữ splash: thiếu tiếng vài trăm mili giây

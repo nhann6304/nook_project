@@ -202,7 +202,14 @@ const make = (c: Palette) =>
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: c.border,
     },
-    round: { width: 44, height: 44, borderRadius: radius.full, backgroundColor: c.surface },
+    round: {
+      width: 52,
+      height: 52,
+      borderRadius: radius.full,
+      backgroundColor: c.surfaceRaised,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
     who: { flexDirection: 'row', alignItems: 'center', gap: space.sm + 2, flexShrink: 1 },
     blank: {
       flex: 1,

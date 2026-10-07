@@ -14,3 +14,4 @@ export * from './achievement/achievement.constant.js';
 export * from './catalog/error.constant.js';
 export * from './catalog/message.constant.js';
 export * from './catalog/limit.constant.js';
+export * from './notification/notification.constant.js';

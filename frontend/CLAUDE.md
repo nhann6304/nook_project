@@ -77,7 +77,7 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 
 **Giao diện**
 
-- Màu **xanh lam pastel** (06/10/2026): nền **Sáng** mặc định · Tối · Theo máy, cộng **năm màu locket** — `docs/10-theme.md`. "Theo trời" đã bỏ. Chữ trên ảnh dùng `tone="onPhoto"` (luôn sáng). Mặt nổi dùng "kính" `c.glass` + `lift(c)`, **không blur thật** (Android giật).
+- Màu **xanh lam pastel, THEO TRỜI** (07/10/2026, mặc định): sáng · trưa · chiều · tối theo giờ máy, trời mưa thì sang màu mưa (`sceneAt` trong `palettes.ts`; mưa hỏi Open-Meteo ở `features/sky`, CHỈ khi người dùng đã cho quyền vị trí — không bao giờ tự xin). Hoặc cố định Sáng · Tối · Theo máy. Cộng **năm màu locket**. Chữ trên ảnh dùng `tone="onPhoto"`. Mặt nổi dùng `c.glass` + `lift(c)`, **không blur thật** (Android giật).
 - **Mỗi màn đúng MỘT** nút `variant="primary"`.
 - Chữ trên nút primary là `c.onAccent`: **trắng** ở nền sáng (nút denim đặc),
   **navy** ở nền tối (nút lam nhạt). Nút đặc, không dải màu.
@@ -92,18 +92,20 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   `spring.*` đã tắt dần tới hạn — đổi số thì giữ `damping ≥ 2·√(stiffness·mass)`.
 - Bàn phím **không co khung** ở màn chính: chú thích tự nhích lên
   (`useAnimatedKeyboard`), trang giữ nguyên chiều cao.
-- **Thanh tab dưới đáy, ba nút** (06/10/2026 — người dùng tìm không ra Cài
-  đặt): Trang chủ · Lướt ảnh · Cài đặt (`app/(app)/(tabs)/`, `<TabBar>`). Hai
-  nút đầu là HAI vị trí của cùng màn `home` (camera trang 0, ảnh bạn bè từ
-  trang 1, `<Pager>`) — nối qua `home/store/homeNav.ts`, chung một camera.
-  Rời tab là camera tắt (`active`). Góc trái → bạn bè, góc phải → tin nhắn,
-  vẫn mở chồng lên.
+- **Thanh tab dưới đáy, bốn nút** (07/10/2026): Chụp · Bạn bè · Tin nhắn ·
+  Cài đặt (`app/(app)/(tabs)/`, `<TabBar>` liền mép, không viên thuốc nổi).
+  Ảnh bạn bè KHÔNG là tab — vuốt lên từ camera như Locket (`<Pager>`); bấm
+  "Chụp" khi đang ở màn chính thì về camera (`home/store/homeNav.ts`). Rời tab
+  là camera tắt (`active`). Chuông thông báo ở góc phải màn chính.
+- **Chụp xong:** hàng avatar dưới ảnh chọn ai KHÔNG được xem (mặc định ai cũng
+  xem; mặc định riêng đặt ở Cài đặt → Riêng tư). Gửi đi là `hiddenFromUserIds`.
+- **Đèn camera trước chỉ sáng TRONG KHUNG**, không trắng cả màn hình.
 - **Icon: bộ RIÊNG `<Icon name>`** (`src/components/primitives/Icon.tsx`, 07/10/2026)
-  — nét 2.4 bo tròn + ruột tô nhạt. **Không dùng Ionicons** nữa; thiếu icon thì
+  — nét 2.7 bo tròn + ruột tô 30%. **Không dùng Ionicons** nữa; thiếu icon thì
   vẽ thêm vào bộ, cùng lưới 24 và độ dày.
 - **Chụp không có vòng chờ:** ảnh gốc hiện ngay, cắt vuông chạy ngầm
   (`squaring` trong `CameraPage`), tải lên server chạy nền sau khi gửi.
-- Chữ: **Poppins** (tiêu đề 600–700, không 800) + **Caveat** cho lời nhấn viết
+- Chữ: **Poppins** đậm một nấc (chữ thường 500, tiêu đề 700, `display` 800) + **Caveat** cho lời nhấn viết
   tay (`variant="hand"`, mỗi màn tối đa một chỗ).
 - **Không có linh vật** (bỏ 31/08/2026). Chỗ trống dùng `<GhostFrame>` hoặc
   lưới mười chỗ.
@@ -147,7 +149,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] Icon PNG cho store đã xuất; wordmark "nook" vẽ lại bằng SVG
 - [x] Màn **Tên + ảnh** (người mới, sau khi nhập mã): tên hiện, @tên riêng tự gợi ý, ảnh đại diện — hàng giả `profile/lib/profileApi.ts`
 - [ ] Onboarding — còn 2 màn: Mời người đầu tiên, Xin quyền
-- [ ] Cài đặt: còn Vị trí, Thông báo. Tài khoản mới có Đăng xuất
+- [x] **Thông báo** (chuông + chấm đỏ, màn `notifications`): mời, nhận lời, tag, cảm xúc, trả lời. Hàng giả `notify/lib/notifyApi.ts` — hợp đồng `INotification` đã ở `@nook/shared`, server chưa có module
+- [ ] Cài đặt: còn Vị trí, Thông báo đẩy. Tài khoản mới có Đăng xuất
 - [x] **Video ngắn**: giữ nút chụp quay ≤ 3 giây (vòng đếm), phát lặp trong feed chỉ ở trang đang xem
 - [x] **Nối server**: đăng nhập (xin mã, nộp mã, làm mới thẻ, đăng xuất) và lưu hồ sơ + ảnh đại diện chạy thật khi có `EXPO_PUBLIC_API_URL`. Gửi khoảnh khắc đã gọi đúng hợp đồng `POST /v1/moments` — **server chưa có module `moment`**. Góc bạn bè, trang người khác, khoá trang, tìm quanh đây: vẫn giả vì server chưa có đường
 - [x] **Thêm bạn** (hàng giả `circle/lib/circleApi.ts`): ô tìm — lọc người trong góc theo tên, tìm người trên Nook CHỈ theo @tên; mời · nhận lời · từ chối. Danh sách bạn ở kho `circle/store/circleStore.ts`, mọi màn đọc chung. Còn chờ backend

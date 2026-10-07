@@ -5,3 +5,4 @@ export * from './circle/circle.interface.js';
 export * from './media/media.interface.js';
 export * from './achievement/achievement.interface.js';
 export * from './moment/moment.interface.js';
+export * from './notification/notification.interface.js';

@@ -44,6 +44,12 @@ export const API = {
     /** POST — gửi một khoảnh khắc cho cả góc (CHƯA có bên server) */
     create: '/v1/moments',
   },
+  notification: {
+    /** GET — thông báo của mình, mới nhất trước (CHƯA có bên server) */
+    list: '/v1/notifications',
+    /** POST — đánh dấu đã đọc hết (CHƯA có bên server) */
+    read: '/v1/notifications/read',
+  },
   achievement: {
     /** GET — thành tích của chính mình, kèm số chỗ trong góc */
     mine: '/v1/me/achievements',

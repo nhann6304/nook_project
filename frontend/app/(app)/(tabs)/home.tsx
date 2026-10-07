@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useIsFocused, useRouter } from 'expo-router';
 import { HomeScreen } from '@/features/home/screens/HomeScreen';
 import type { Shot } from '@/features/camera/components/CameraPage';
@@ -6,8 +6,9 @@ import type { Reaction } from '@/features/feed/components/MomentPage';
 import type { Moment } from '@/features/feed/types';
 import { useMoments } from '@/features/feed/store/momentsStore';
 import { sendMoment } from '@/features/feed/lib/momentApi';
+import { useAudience } from '@/features/camera/store/audienceStore';
+import { useNotify } from '@/features/notify/store/notifyStore';
 import { useChats } from '@/features/chat/store/chatStore';
-import { lastMessage } from '@/features/chat/types';
 import { useJournal } from '@/features/journal/store/journalStore';
 import { useCircle } from '@/features/circle/store/circleStore';
 import { useOnline } from '@/hooks/useOnline';
@@ -22,6 +23,16 @@ export default function Home() {
   const online = useOnline();
   const friends = useCircle((s) => s.friends);
   const names = useMemo(() => friends.map((f) => f.name), [friends]);
+  const audience = useMemo(
+    () => friends.map((f) => ({ id: f.id, name: f.name, uri: f.uri })),
+    [friends],
+  );
+  const defaultHidden = useAudience((s) => s.defaultHidden);
+  const noticeUnread = useNotify((s) => s.notices.some((n) => !n.read));
+  const loadNotices = useNotify((s) => s.load);
+  useEffect(() => {
+    void loadNotices();
+  }, [loadNotices]);
   const taggable = useMemo(
     () => friends.map((f) => ({ id: f.id, name: f.name, username: f.username })),
     [friends],
@@ -33,7 +44,6 @@ export default function Home() {
   const markReplied = useMoments((s) => s.markReplied);
   const openAbout = useChats((s) => s.openAbout);
   const sendChat = useChats((s) => s.send);
-  const unread = useChats((s) => s.conversations.some((c) => lastMessage(c)?.mine === false));
 
   const send = useCallback(
     (shot: Shot) => {
@@ -47,6 +57,7 @@ export default function Home() {
         video: shot.video,
         caption: shot.caption,
         tagIds: shot.tags.map((tg) => tg.id),
+        hiddenFrom: shot.hiddenFrom,
       });
       addEntry(shot.uri, shot.caption, at);
     },
@@ -74,14 +85,16 @@ export default function Home() {
       offline={!online}
       onOpenPerson={(id) => router.push({ pathname: '/(app)/person/[id]', params: { id } })}
       moments={moments}
-      unread={unread}
       onSend={send}
       onReply={reply}
-      onOpenFriends={() => router.push('/(app)/circle')}
-      onOpenChats={() => router.push('/(app)/chats')}
+      onOpenFriends={() => router.navigate('/(app)/(tabs)/circle')}
+      onOpenNotices={() => router.push('/(app)/notifications')}
+      noticeUnread={noticeUnread}
       journal={journal}
       onOpenJournal={() => router.push('/(app)/journal')}
       active={focused}
+      audience={audience}
+      defaultHidden={defaultHidden}
       jump={jump}
       onPageChange={setPage}
       onReviewChange={setReviewing}

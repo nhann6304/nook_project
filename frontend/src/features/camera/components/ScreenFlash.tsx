@@ -5,9 +5,10 @@
  * dùng camera trước thì hệ thống nhận lệnh nhưng KHÔNG có gì sáng lên — đúng
  * kiểu công tắc bấm không ăn mà cả dự án này đang tránh.
  *
- * Cách mọi app selfie làm, kể cả Locket: nhuộm trắng cả màn hình trong chốc
- * lát, lấy chính màn hình làm đèn. Nó thật sự sáng lên được vì màn OLED ở mức
- * sáng cao đủ soi một khuôn mặt cách 40cm.
+ * Lấy chính màn hình làm đèn: nhuộm trắng trong chốc lát. Từ 07/10/2026 chỉ
+ * nhuộm TRONG KHUNG camera, không cả màn hình — cả màn trắng xoá thì chói và
+ * người dùng thấy app "khựng" một nhịp. Khung chiếm gần hết bề ngang nên vẫn
+ * đủ soi mặt ở khoảng cách cầm máy.
  *
  * Chạy bằng Reanimated trên luồng UI: đúng lúc này luồng JS đang bận nhất cả
  * app (mã hoá ảnh), nếu nhuộm bằng JS thì cái loé sẽ giật hoặc trễ mất khoảnh
@@ -45,7 +46,7 @@ export const ScreenFlash = forwardRef<ScreenFlashHandle>(function ScreenFlash(_p
 });
 
 const s = StyleSheet.create({
-  // Không lấy từ token: đây không phải "một màu của thương hiệu", nó là ÁNH
-  // SÁNG. Phải là trắng cao nhất máy vẽ được, thấp hơn là mất tác dụng soi.
+  // Không lấy từ token: đây là ÁNH SÁNG, không phải màu thương hiệu. Phủ kín
+  // cha của nó — đặt trong khung camera, không phải cả màn hình.
   sheet: { ...StyleSheet.absoluteFill, backgroundColor: 'white' },
 });

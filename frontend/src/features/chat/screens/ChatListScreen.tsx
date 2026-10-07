@@ -6,23 +6,20 @@
  */
 import { memo, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Avatar, EmptyState, Icon, IconButton, Img, List, Screen, Tap, Txt } from '@ui';
-import { radius, space, useColors, useStyles, type Palette } from '@design';
+import { Avatar, EmptyState, Img, List, Screen, Tap, Txt } from '@ui';
+import { radius, space, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
 import { lastAbout, lastMessage, type Conversation } from '../types';
 
 export function ChatListScreen({
   conversations,
   onOpen,
-  onClose,
 }: {
   conversations: readonly Conversation[];
   onOpen: (id: string) => void;
-  onClose: () => void;
 }) {
   const t = useT();
   const s = useStyles(make);
-  const c = useColors();
   const ago = useAgo();
 
   const renderItem = useCallback(
@@ -46,11 +43,8 @@ export function ChatListScreen({
   );
 
   return (
-    <Screen padded={false} edges={['top']}>
+    <Screen padded={false} edges={TOP}>
       <View style={s.bar}>
-        <IconButton label={t('home.backToCamera')} onPress={onClose} style={s.back}>
-          <Icon name="back" size={22} color={c.text} />
-        </IconButton>
         <Txt variant="title" style={s.title}>
           {t('chat.title')}
         </Txt>
@@ -94,7 +88,7 @@ const ChatRow = memo(function ChatRow({
         name={friend.name}
         level={friend.level}
         dormant={friend.dormant}
-        size={56}
+        size={64}
         recyclingKey={friend.id}
       />
       <View style={s.text}>
@@ -130,8 +124,15 @@ const make = (c: Palette) =>
       gap: space.md,
       paddingHorizontal: space.lg,
     },
-    back: { width: 44, height: 44, borderRadius: radius.full, backgroundColor: c.surface },
-    title: { fontSize: 20, lineHeight: 26 },
+    back: {
+      width: 52,
+      height: 52,
+      borderRadius: radius.full,
+      backgroundColor: c.surfaceRaised,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    title: { fontSize: 22, lineHeight: 30 },
     row: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -142,5 +143,8 @@ const make = (c: Palette) =>
     text: { flex: 1, minWidth: 0, gap: 2 },
     head: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
     name: { flexShrink: 1 },
-    thumb: { width: 40, height: 53, borderRadius: radius.xs + 3 },
+    thumb: { width: 52, height: 58, borderRadius: radius.sm },
   });
+
+/** Màn gốc của một tab: thanh tab đã lo phần đáy máy. */
+const TOP = ['top'] as const;

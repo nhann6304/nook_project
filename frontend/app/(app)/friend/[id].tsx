@@ -22,7 +22,7 @@ export default function Friend() {
     router.push({ pathname: '/(app)/chat/[id]', params: { id: chat } });
   }, [friend, openChat, router]);
 
-  if (!friend) return <Redirect href="/(app)/circle" />;
+  if (!friend) return <Redirect href="/(app)/(tabs)/circle" />;
 
   return (
     <FriendScreen

@@ -59,7 +59,14 @@ export function Divider({ inset }: { inset?: boolean }) {
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  card: { backgroundColor: c.surface, borderRadius: radius.xl, padding: space.lg },
+  card: {
+    backgroundColor: c.surface,
+    borderRadius: radius.xl,
+    padding: space.lg,
+    // Viền mảnh: thẻ lam rất nhạt trên nền trắng không có nó thì chìm.
+    borderWidth: 1,
+    borderColor: c.borderSoft,
+  },
   raised: { backgroundColor: c.surfaceRaised },
 
   pill: {

@@ -98,5 +98,5 @@ const make = (c: Palette) =>
     },
     today: { borderColor: c.accent },
     photo: { width: '100%', height: '100%' },
-    wd: { fontSize: 10, lineHeight: 13 },
+    wd: { fontSize: 11, lineHeight: 15 },
   });

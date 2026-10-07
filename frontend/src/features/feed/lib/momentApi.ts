@@ -12,7 +12,14 @@ import { translateError } from '@i18n';
 import { LIVE, call } from '@/lib/api';
 import { uploadMedia } from '@/features/media/lib/mediaApi';
 
-export type NewMoment = { photo: string; video?: string; caption: string; tagIds: string[] };
+export type NewMoment = {
+  photo: string;
+  video?: string;
+  caption: string;
+  tagIds: string[];
+  /** Người KHÔNG được xem. */
+  hiddenFrom: string[];
+};
 export type SendMomentResult = { ok: true; id: string } | { ok: false; message: string };
 
 export async function sendMoment(m: NewMoment): Promise<SendMomentResult> {
@@ -29,6 +36,7 @@ export async function sendMoment(m: NewMoment): Promise<SendMomentResult> {
   }
   if (m.caption) body.caption = m.caption;
   if (m.tagIds.length > 0) body.tagUserIds = m.tagIds;
+  if (m.hiddenFrom.length > 0) body.hiddenFromUserIds = m.hiddenFrom;
 
   const res = await call<ICreateMomentResult>('POST', API.moment.create, body);
   return res.ok ? { ok: true, id: res.data.id } : { ok: false, message: translateError(res.code) };

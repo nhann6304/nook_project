@@ -13,6 +13,6 @@ export default function Chats() {
   );
 
   return (
-    <ChatListScreen conversations={conversations} onOpen={open} onClose={() => router.back()} />
+    <ChatListScreen conversations={conversations} onOpen={open} />
   );
 }

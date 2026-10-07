@@ -33,7 +33,6 @@ import { CaptionField, Clip, Icon, IconButton, Img, Loading } from '@ui';
 import {
   common,
   duration,
-  layout,
   media,
   radius,
   space,
@@ -49,6 +48,7 @@ import { FlashToggle, type FlashMode } from './FlashToggle';
 import { ScreenFlash, WARMUP_MS, type ScreenFlashHandle } from './ScreenFlash';
 import { SendButton } from './SendButton';
 import { Shutter } from './Shutter';
+import { AudiencePicker, type AudiencePerson } from './AudiencePicker';
 import { squarePhoto } from '../lib/squarePhoto';
 import { TagSuggestions } from './TagSuggestions';
 import type { Tag } from '@/features/feed/types';
@@ -61,7 +61,14 @@ import {
 } from '@/features/feed/lib/tags';
 
 /** `uri` luôn là ẢNH (với video thì là ảnh bìa) — lưới, nhật ký, hiệu ứng bay dùng nó. */
-export type Shot = { uri: string; caption: string; tags: Tag[]; video?: string };
+export type Shot = {
+  uri: string;
+  caption: string;
+  tags: Tag[];
+  video?: string;
+  /** Người KHÔNG được xem tấm này. */
+  hiddenFrom: string[];
+};
 
 /** Chiều cao hàng chụp. Màn chính cần số này để tính cỡ khung. */
 export const CONTROLS_HEIGHT = 128;
@@ -76,6 +83,8 @@ const MAX_VIDEO_MS = MEDIA_LIMITS.videoMaxSeconds * 1000;
 
 export function CameraPage({
   active,
+  audience,
+  defaultHidden,
   frame,
   keyboardGap,
   taggable,
@@ -86,6 +95,10 @@ export function CameraPage({
 }: {
   /** `false` khi màn chính bị che (sang tab khác) — tắt hẳn camera. */
   active: boolean;
+  /** Bạn trong góc — hàng chọn người xem dưới ảnh vừa chụp. */
+  audience: readonly AudiencePerson[];
+  /** Người bị giấu sẵn theo Cài đặt. */
+  defaultHidden: readonly string[];
   /** `top`: khoảng từ đỉnh trang tới khung — màn chính tính, mọi trang dùng chung. */
   frame: { w: number; h: number; top: number };
   /** Khoảng từ đáy khung tới đáy màn — để chữ chú thích né bàn phím. */
@@ -108,6 +121,7 @@ export function CameraPage({
   const [mode, setMode] = useState<'picture' | 'video'>('picture');
   const [recording, setRecording] = useState(false);
   const [clip, setClip] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<readonly string[]>(defaultHidden);
   const holding = useRef(false);
   const recordingRef = useRef(false);
   const readyWait = useRef<(() => void) | null>(null);
@@ -146,10 +160,12 @@ export function CameraPage({
 
   const review = useCallback(
     (uri: string | null) => {
+      // Mỗi tấm mới bắt đầu từ người xem mặc định, không mang theo lựa chọn tấm trước.
+      if (uri) setHidden(defaultHidden);
       setShot(uri);
       onReviewChange(uri !== null);
     },
-    [onReviewChange],
+    [defaultHidden, onReviewChange],
   );
 
   /**
@@ -203,7 +219,7 @@ export function CameraPage({
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect: [1, 1],
+      aspect: [9, 10],
       quality: 0.8,
     });
     const first = res.assets?.[0];
@@ -281,9 +297,23 @@ export function CameraPage({
     if (!shot) return;
     const text = caption.trim();
     const uri = squaring.current ? await squaring.current : shot;
-    onSend({ uri, caption: text, tags: tagsIn(text, taggable), video: clip ?? undefined });
+    onSend({
+      uri,
+      caption: text,
+      tags: tagsIn(text, taggable),
+      video: clip ?? undefined,
+      hiddenFrom: [...hidden],
+    });
     discard();
-  }, [caption, clip, discard, onSend, shot, taggable]);
+  }, [caption, clip, discard, hidden, onSend, shot, taggable]);
+
+  const toggleHidden = useCallback((id: string) => {
+    setHidden((h) => (h.includes(id) ? h.filter((x) => x !== id) : [...h, id]));
+  }, []);
+  // "Tất cả": đang có người bị giấu thì mở lại cho cả góc; đang đủ thì giấu hết.
+  const toggleAll = useCallback(() => {
+    setHidden((h) => (h.length > 0 ? [] : audience.map((p) => p.id)));
+  }, [audience]);
 
   /* ── Tag bạn: gõ "@" là hiện hàng gợi ý ── */
   const captionRef = useRef<ComponentRef<typeof CaptionField>>(null);
@@ -367,6 +397,9 @@ export function CameraPage({
         )}
 
         <Animated.View pointerEvents="none" style={[s.blink, blinkStyle]} />
+        {/* Đèn màn hình CHỈ trong khung (07/10/2026: trắng cả màn hình thì chói và
+            hụt nhịp) — đủ soi mặt ở khoảng cách cầm máy. */}
+        <ScreenFlash ref={screenFlash} />
 
         {reviewing ? (
           <Animated.View
@@ -395,7 +428,7 @@ export function CameraPage({
           <>
             <Animated.View key="discard" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('review.discard')} onPress={discard} style={s.round}>
-                <Icon name="close" size={22} color={c.text} />
+                <Icon name="close" size={28} color={c.text} />
               </IconButton>
             </Animated.View>
             <Animated.View key="send" entering={FadeIn.duration(duration.base)}>
@@ -404,7 +437,7 @@ export function CameraPage({
             {taggable.length > 0 ? (
               <Animated.View key="tag" entering={FadeIn.duration(duration.base)}>
                 <IconButton label={t('review.tag')} onPress={startTag} style={s.round}>
-                  <Icon name="at" size={22} color={c.text} />
+                  <Icon name="at" size={28} color={c.text} />
                 </IconButton>
               </Animated.View>
             ) : (
@@ -415,7 +448,7 @@ export function CameraPage({
           <>
             <Animated.View key="gallery" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('camera.gallery')} onPress={() => void pick()} style={s.square}>
-                <Icon name="image" size={20} color={c.text} />
+                <Icon name="image" size={28} color={c.text} />
               </IconButton>
             </Animated.View>
             <Animated.View key="shutter" entering={FadeIn.duration(duration.base)}>
@@ -432,7 +465,7 @@ export function CameraPage({
             <Animated.View key="flip" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('camera.flip')} onPress={flip} style={s.round}>
                 <Animated.View style={spinStyle}>
-                  <Icon name="flip" size={22} color={c.text} />
+                  <Icon name="flip" size={30} color={c.text} />
                 </Animated.View>
               </IconButton>
             </Animated.View>
@@ -440,13 +473,23 @@ export function CameraPage({
         )}
       </View>
 
-      {reviewing ? null : (
+      {reviewing ? (
+        <Animated.View entering={FadeIn.duration(duration.base)} style={s.footer}>
+          <AudiencePicker
+            people={audience}
+            hidden={hidden}
+            onToggle={toggleHidden}
+            onToggleAll={toggleAll}
+            allLabel={t('audience.all')}
+            hiddenLabel={(name) => t('audience.hiddenPerson', { name })}
+            label={t('audience.title')}
+          />
+        </Animated.View>
+      ) : (
         <Animated.View entering={FadeIn.duration(duration.base)} style={s.footer}>
           {footer}
         </Animated.View>
       )}
-
-      <ScreenFlash ref={screenFlash} />
     </View>
   );
 }
@@ -482,14 +525,24 @@ const make = (c: Palette) =>
       justifyContent: 'space-between',
       paddingHorizontal: space.huge - space.sm,
     },
-    round: { borderRadius: radius.full, backgroundColor: c.surface },
-    square: {
-      borderRadius: radius.sm + 2,
-      borderWidth: 2,
+    // To, có viền: nền trắng mà nút cùng tông là chìm mất (07/10/2026).
+    round: {
+      width: 58,
+      height: 58,
+      borderRadius: radius.full,
+      backgroundColor: c.surfaceRaised,
+      borderWidth: 1,
       borderColor: c.border,
-      backgroundColor: c.surface,
     },
-    slot: { width: layout.minTouch },
+    square: {
+      width: 58,
+      height: 58,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: c.border,
+      backgroundColor: c.surfaceRaised,
+    },
+    slot: { width: 58 },
 
     footer: { height: FOOTER_HEIGHT, alignSelf: 'stretch' },
   });

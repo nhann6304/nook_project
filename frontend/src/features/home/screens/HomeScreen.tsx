@@ -1,7 +1,7 @@
 /**
  * Màn chính — camera ở trang 0, ảnh bạn bè xếp từng trang bên dưới, vuốt lên
  * là tới. Thanh tab dưới đáy nhảy giữa hai vị trí đó ("Trang chủ" / "Lướt
- * ảnh", qua `jump`). Góc trái → bạn bè, góc phải → tin nhắn.
+ * ảnh", qua `jump`). Bạn bè và tin nhắn là tab riêng.
  *
  * Hai chuyển cảnh sống ở đây vì chúng phải vẽ ĐÈ lên mọi thứ, ngoài khung trang:
  *   · gửi ảnh: ảnh thu nhỏ bay về viên thuốc "N bạn" trên đầu;
@@ -28,7 +28,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { AvatarStack, Icon, IconButton, Img, OfflineBar, Pager, Screen, Tap, Toast, Txt, type PagerHandle } from '@ui';
+import { AvatarStack, Icon, IconButton, Img, SkyWash, OfflineBar, Pager, Screen, Tap, Toast, Txt, type PagerHandle } from '@ui';
 import {
   duration,
   ease,
@@ -53,6 +53,7 @@ import {
 import { MomentPage, type Reaction } from '@/features/feed/components/MomentPage';
 import { MomentGrid, type Rect } from '@/features/feed/components/MomentGrid';
 import { Shutter } from '@/features/camera/components/Shutter';
+import type { AudiencePerson } from '@/features/camera/components/AudiencePicker';
 import type { Moment, Tag } from '@/features/feed/types';
 import { JournalStrip } from '@/features/journal/components/JournalStrip';
 import type { Entry } from '@/features/journal/types';
@@ -67,14 +68,16 @@ export function HomeScreen({
   onOpenPerson,
   offline,
   moments,
-  unread,
   onSend,
   onReply,
   onOpenFriends,
-  onOpenChats,
+  onOpenNotices,
+  noticeUnread,
   journal,
   onOpenJournal,
   active,
+  audience,
+  defaultHidden,
   jump,
   onPageChange,
   onReviewChange,
@@ -86,17 +89,20 @@ export function HomeScreen({
   /** Máy đang không ra được internet — hiện viên "Đang chờ mạng". */
   offline: boolean;
   moments: readonly Moment[];
-  unread: boolean;
   onSend: (shot: Shot) => void;
   /** `reaction` null = mở cuộc trò chuyện để nhắn chữ. */
   onReply: (moment: Moment, reaction: Reaction | null) => void;
   onOpenFriends: () => void;
-  onOpenChats: () => void;
+  onOpenNotices: () => void;
+  /** Có thông báo chưa đọc — chấm đỏ trên chuông. */
+  noticeUnread: boolean;
   /** Ảnh mình đã gửi — cho dải 7 ngày dưới nút chụp. */
   journal: readonly Entry[];
   onOpenJournal: () => void;
   /** Màn đang hiện — `false` thì tắt camera (đỡ pin, đỡ nóng máy, đỡ giật). */
   active: boolean;
+  audience: readonly AudiencePerson[];
+  defaultHidden: readonly string[];
   /** Thanh tab xin nhảy; `n` đổi là nhảy. */
   jump: { to: 'camera' | 'feed'; n: number } | null;
   onPageChange: (page: number) => void;
@@ -315,6 +321,8 @@ export function HomeScreen({
         return (
           <CameraPage
             active={active}
+            audience={audience}
+            defaultHidden={defaultHidden}
             frame={frame}
             taggable={taggable}
             keyboardGap={windowH - (rootAt.y + frame.y + frame.h)}
@@ -355,6 +363,8 @@ export function HomeScreen({
     [
       active,
       ago,
+      audience,
+      defaultHidden,
       page,
       frame,
       journal,
@@ -375,29 +385,15 @@ export function HomeScreen({
 
   return (
     <View style={s.page}>
+      <SkyWash />
       <Screen padded={false} clear edges={TOP}>
         <View ref={root} style={s.root} collapsable={false}>
           {/* 1 — Thanh trên */}
           <View style={s.bar}>
-            <Animated.View
-              style={reviewing ? s.hidden : null}
-              pointerEvents={reviewing ? 'none' : 'auto'}
-            >
-              <IconButton label={t('home.openFriends')} onPress={onOpenFriends} style={s.round}>
-                <Icon name="people" size={21} color={c.accent} />
-              </IconButton>
-            </Animated.View>
-
-            {reviewing ? (
-              <View style={s.center}>
-                <Animated.View entering={FadeIn.duration(duration.base)} style={s.pill}>
-                  <AvatarStack names={friendNames} />
-                  <Txt variant="label">
-                    {count === 0 ? t('review.sendToNobody') : t('home.sendToAll', { count })}
-                  </Txt>
-                </Animated.View>
-              </View>
-            ) : (
+            {/* Cân hai bên để viên thuốc nằm đúng giữa. */}
+            <View style={s.side} />
+            {/* Lúc xem lại ảnh: người nhận chọn ở hàng avatar dưới ảnh, trên này để trống. */}
+            {reviewing ? null : (
               // MỘT vùng bấm phủ cả hai viên thuốc. Hai viên chồng lên nhau chỉ là
               // hình (mờ qua lại theo vị trí lướt), không viên nào tự bắt chạm.
               <Tap
@@ -431,12 +427,12 @@ export function HomeScreen({
             )}
 
             <Animated.View
-              style={reviewing ? s.hidden : null}
+              style={[s.side, reviewing && s.hidden]}
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
-              <IconButton label={t('home.openChats')} onPress={onOpenChats} style={s.round}>
-                <Icon name="chat" size={20} color={c.accent} />
-                {unread ? <View style={s.dot} /> : null}
+              <IconButton label={t('notify.open')} onPress={onOpenNotices} style={s.round}>
+                <Icon name="bell" size={24} color={c.text} />
+                {noticeUnread ? <View style={s.dot} /> : null}
               </IconButton>
             </Animated.View>
           </View>
@@ -567,9 +563,10 @@ const make = (c: Palette) =>
       zIndex: 2,
     },
     hidden: { opacity: 0 },
+    side: { width: 52 },
     round: {
-      width: 44,
-      height: 44,
+      width: 52,
+      height: 52,
       borderRadius: radius.full,
       backgroundColor: c.glass,
       borderWidth: 1,
@@ -578,12 +575,12 @@ const make = (c: Palette) =>
     },
     dot: {
       position: 'absolute',
-      top: 9,
-      right: 9,
-      width: 10,
-      height: 10,
+      top: 11,
+      right: 12,
+      width: 11,
+      height: 11,
       borderRadius: radius.full,
-      backgroundColor: c.accent,
+      backgroundColor: c.danger,
       borderWidth: 2,
       borderColor: c.glass,
     },

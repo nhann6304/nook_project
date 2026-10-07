@@ -11,6 +11,11 @@ export interface ICreateMomentBody {
   caption?: string;
   /** Người được tag — chỉ người trong góc, server soi lại. */
   tagUserIds?: string[];
+  /**
+   * Người trong góc KHÔNG được xem tấm này (mặc định ai trong góc cũng xem).
+   * Server lọc khi phát; người bị tag mà nằm ở đây thì cũng không thấy.
+   */
+  hiddenFromUserIds?: string[];
 }
 
 export interface ICreateMomentResult {

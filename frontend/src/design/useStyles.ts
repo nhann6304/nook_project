@@ -30,7 +30,7 @@
  * thân là mỗi lần vẽ một hàm mới, khoá mới, và bảng tra không bao giờ trúng.
  */
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { AppState, useColorScheme } from 'react-native';
 import { useTheme } from './theme';
 import type { Palette, ThemeKey } from './palettes';
 
@@ -92,16 +92,30 @@ export function glow(c: Palette) {
 export function useThemeReady(): boolean {
   const ready = useTheme((s) => s.ready);
   const hydrate = useTheme((s) => s.hydrate);
-  const setSystem = useTheme((s) => s.setSystem);
+  const setSystemDark = useTheme((s) => s.setSystemDark);
+  const tick = useTheme((s) => s.tick);
   const scheme = useColorScheme();
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
-  // Luôn theo dõi nền máy, kể cả khi đang Sáng/Tối cố định: chuyển sang
-  // "Theo máy" là đúng màu ngay, không chờ máy đổi lần sau.
+  // Luôn theo dõi nền máy, kể cả khi đang chế độ khác: chuyển sang "Theo máy"
+  // là đúng màu ngay, không chờ máy đổi lần sau.
   useEffect(() => {
-    setSystem(scheme === 'dark' ? 'dark' : 'light');
-  }, [scheme, setSystem]);
+    setSystemDark(scheme === 'dark');
+  }, [scheme, setSystemDark]);
+  // "Theo trời": mỗi phút xem đã sang cảnh mới chưa, và xem lại ngay khi app
+  // quay về từ nền (qua đêm, mở máy là đúng màu buổi sáng). `tick` không đổi
+  // bảng thì không `set` — không ai vẽ lại.
+  useEffect(() => {
+    const timer = setInterval(tick, 60_000);
+    const sub = AppState.addEventListener('change', (st) => {
+      if (st === 'active') tick();
+    });
+    return () => {
+      clearInterval(timer);
+      sub.remove();
+    };
+  }, [tick]);
   return ready;
 }
 
