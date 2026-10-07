@@ -1,13 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="LOVO">
   
-  <g transform="translate(256 420.57142857142856) scale(1.8285714285714285)">
-  <g fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M14 16V84H52" stroke="#FFFFFF"/>
-    <path d="M98 86C78 72 68 60 68 44C68 32 77 24 87 24C93 24 97 28 98 32C99 28 103 24 109 24C119 24 128 32 128 44C128 60 118 72 98 86Z" stroke="#8FA7D8" fill="#8FA7D8" fill-opacity="0.22"/>
-    <path d="M142 16L164 84L186 16" stroke="#FFFFFF"/>
-    <circle cx="232" cy="50" r="35" stroke="#FFFFFF"/>
-    <circle cx="220" cy="42" r="5.5" fill="#FFFFFF" stroke="none"/>
-    <circle cx="244" cy="42" r="5.5" fill="#FFFFFF" stroke="none"/>
-    <path d="M217 58Q232 72 247 58" stroke="#8FA7D8" stroke-width="9"/>
-  </g></g>
+  <defs>
+    <linearGradient id="puff" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#DCE3EE"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5A6A8E"/>
+      <stop offset="1" stop-color="#1D2740"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+  </defs>
+  
+  <g transform="translate(225.27999999999997 387.75466666666665) scale(1.9114666666666669)">
+  <g filter="url(#shadow)">
+    <path d="M34 28V92H70" stroke="url(#puff)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M168 50L186 94L204 50" stroke="url(#puff)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <circle cx="254" cy="70" r="33" fill="url(#puff)"/>
+  </g>
+  <circle cx="243" cy="63" r="4.6" fill="#1D2740"/>
+  <circle cx="265" cy="63" r="4.6" fill="#1D2740"/>
+  <path d="M240 76Q254 90 268 76" stroke="#1D2740" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M117 101C93 86 82 72 82 56C82 42 92 33 104 33C110 33 115 37 117 42C119 37 124 33 130 33C142 33 152 42 152 56C152 72 141 86 117 101Z" fill="url(#glass)"/>
+  <path d="M117 101C93 86 82 72 82 56C82 42 92 33 104 33C110 33 115 37 117 42C119 37 124 33 130 33C142 33 152 42 152 56C152 72 141 86 117 101Z" stroke="#BFD3FF" stroke-width="8" fill="none" filter="url(#glow)" opacity="0.9"/>
+  <path d="M117 101C93 86 82 72 82 56C82 42 92 33 104 33C110 33 115 37 117 42C119 37 124 33 130 33C142 33 152 42 152 56C152 72 141 86 117 101Z" stroke="#F2F6FF" stroke-width="3.2" fill="none" stroke-linejoin="round"/></g>
 </svg>

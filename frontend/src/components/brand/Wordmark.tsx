@@ -1,32 +1,37 @@
 /**
- * Wordmark — chữ "LOVO" (đổi tên 07/10/2026, thay "nook"), vẽ bằng hình chứ
- * không gõ bằng phông: phông tải hụt thì tên thương hiệu không được phép rơi
- * về phông hệ thống, và nét phải đều nhau ở mọi cỡ.
+ * Wordmark — "LOVO" (bản 07/10/2026 theo logo mẫu): chữ PHỒNG nét dày bo
+ * tròn, chữ O đầu là TRÁI TIM KÍNH phát sáng, chữ "o" cuối là MẶT CƯỜI.
+ * Vẽ bằng hình chứ không gõ phông: phông tải hụt thì tên thương hiệu không
+ * được phép rơi về phông hệ thống.
  *
- * Chữ "O" đầu là TRÁI TIM màu nhấn — đúng logo trong bảng thiết kế. Chữ "O"
- * cuối TO hơn các chữ khác một chút và là MẶT CƯỜI (07/10/2026). Nét dày bo
- * tròn, cùng giọng với bộ icon.
+ * Phát sáng bằng ba nét chồng nhau (rộng → hẹp, mờ → rõ), KHÔNG dùng bộ lọc
+ * blur của SVG — Android vẽ lại bộ lọc mỗi khung hình. Icon app thì dùng blur
+ * thật, vì nó là ảnh tĩnh (`scripts/brand-icons.mjs`).
  *
- * Hình học: viewBox 280×100, đường giữa nét. Đổi số ở đây thì đổi cả
- * docs/01-brand.md và `assets/images/*.png` (dựng bằng scripts/brand-icons.mjs).
+ * Hình học: viewBox 300×130. Đổi số ở đây thì đổi cả `scripts/brand-icons.mjs`.
  */
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { space, useColors, useStyles } from '@design';
 
-const VB_W = 280;
-const VB_H = 100;
-const STROKE = 14;
+const VB_W = 300;
+const VB_H = 130;
+const STROKE = 26;
 
-/** Trái tim thay chữ "O" — hai thuỳ tròn, đáy nhọn mềm. */
+const L = 'M34 28V92H70';
+const V = 'M168 50L186 94L204 50';
 export const HEART =
-  'M98 86C78 72 68 60 68 44C68 32 77 24 87 24C93 24 97 28 98 32C99 28 103 24 109 24C119 24 128 32 128 44C128 60 118 72 98 86Z';
+  'M117 101C93 86 82 72 82 56C82 42 92 33 104 33C110 33 115 37 117 42C119 37 124 33 130 33C142 33 152 42 152 56C152 72 141 86 117 101Z';
+const O = { cx: 254, cy: 70, r: 33 } as const;
+const SMILE = 'M240 76Q254 90 268 76';
+/** Bóng chữ lệch xuống — cho cảm giác phồng mà không cần bộ lọc. */
+const DROP = 4;
 
 export type WordmarkProps = {
   /** Chiều CAO. Bề ngang tự tính theo — không kéo méo được. */
   size?: number;
-  /** Một màu chữ — dùng khi đặt trên nền màu, hoặc khi in một màu. */
+  /** Một màu — dùng khi in một màu. */
   mono?: boolean;
 };
 
@@ -34,18 +39,34 @@ export const Wordmark = memo(function Wordmark({ size = 34, mono = false }: Word
   const c = useColors();
   const width = (size * VB_W) / VB_H;
   const ink = c.text;
-  const heart = mono ? ink : c.accent;
+  const glow = mono ? ink : c.accentBright;
+  const shade = c.shadow;
 
   return (
     <View accessible accessibilityRole="header" accessibilityLabel="LOVO" collapsable={false}>
       <Svg width={width} height={size} viewBox={`0 0 ${VB_W} ${VB_H}`}>
-        <Path d="M14 16V84H52" stroke={ink} {...LINE} />
-        <Path d={HEART} stroke={heart} {...LINE} fill={heart} fillOpacity={0.18} />
-        <Path d="M142 16L164 84L186 16" stroke={ink} {...LINE} />
-        <Circle cx={232} cy={50} r={35} stroke={ink} {...LINE} />
-        <Circle cx={220} cy={42} r={5.5} fill={ink} />
-        <Circle cx={244} cy={42} r={5.5} fill={ink} />
-        <Path d="M217 58Q232 72 247 58" stroke={heart} {...LINE} strokeWidth={9} />
+        {/* bóng */}
+        <Path d={L} stroke={shade} {...LINE} opacity={0.18} translateY={DROP} />
+        <Path d={V} stroke={shade} {...LINE} opacity={0.18} translateY={DROP} />
+        <Circle cx={O.cx} cy={O.cy + DROP} r={O.r} fill={shade} opacity={0.18} />
+        {/* chữ */}
+        <Path d={L} stroke={ink} {...LINE} />
+        <Path d={V} stroke={ink} {...LINE} />
+        <Circle cx={O.cx} cy={O.cy} r={O.r} fill={ink} />
+        <Circle cx={O.cx - 11} cy={O.cy - 7} r={4.6} fill={c.bg} />
+        <Circle cx={O.cx + 11} cy={O.cy - 7} r={4.6} fill={c.bg} />
+        <Path d={SMILE} stroke={c.bg} strokeWidth={6} strokeLinecap="round" fill="none" />
+        {/* tim kính phát sáng */}
+        <Path d={HEART} fill={glow} fillOpacity={0.22} />
+        <Path d={HEART} stroke={glow} strokeWidth={14} strokeOpacity={0.12} fill="none" />
+        <Path d={HEART} stroke={glow} strokeWidth={8} strokeOpacity={0.28} fill="none" />
+        <Path
+          d={HEART}
+          stroke={mono ? ink : c.accent}
+          strokeWidth={3.6}
+          strokeLinejoin="round"
+          fill="none"
+        />
       </Svg>
     </View>
   );
@@ -67,5 +88,5 @@ export function Lockup({ children }: { children?: React.ReactNode }) {
 
 const make = () =>
   StyleSheet.create({
-  lockup: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-});
+    lockup: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  });

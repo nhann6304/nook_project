@@ -117,8 +117,9 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - Ba từ **cấm** trong chữ hiện cho người dùng: *điểm*, *hạng*, *nhiệm vụ*
   (tiếng Anh: *points*, *rank*, *quest*). Không chữ kỹ thuật ("OTP", "xác thực",
   "hợp lệ", "verify", "valid").
-- **Tên app: LOVO** (đổi 07/10/2026). Wordmark vẽ bằng SVG: chữ O đầu là trái
-  tim màu nhấn, chữ O cuối to hơn và là mặt cười. Icon app + splash dựng bằng
+- **Tên app: LOVO** (đổi 07/10/2026). Logo theo mẫu: chữ phồng nét dày, chữ O
+  đầu là trái tim KÍNH phát sáng, chữ "o" cuối là MẶT CƯỜI; icon nền navy.
+  Trong app phát sáng bằng nét chồng, không dùng bộ lọc blur (Android giật). Icon app + splash dựng bằng
   `node scripts/brand-icons.mjs`. Mã nội bộ (`@nook/shared`, bundle id, scheme)
   vẫn giữ chữ `nook` — đổi là vỡ cài đặt cũ và liên kết.
 
