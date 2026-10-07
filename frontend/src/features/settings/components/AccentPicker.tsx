@@ -6,7 +6,15 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon, Tap, Txt } from '@ui';
-import { ACCENT_KEYS, paletteOf, radius, space, useColors, useStyles, type AccentKey } from '@design';
+import {
+  ACCENT_KEYS,
+  paletteOf,
+  radius,
+  space,
+  useColors,
+  useStyles,
+  type AccentKey,
+} from '@design';
 
 const DOT = 36;
 

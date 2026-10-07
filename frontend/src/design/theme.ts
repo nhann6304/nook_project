@@ -59,6 +59,12 @@ function sceneOf({ mode, systemDark, raining }: Inputs): Scene {
 
 const resolve = (i: Inputs) => paletteOf(sceneOf(i), i.accent);
 
+/** Bảng màu cho một lựa chọn CHƯA lưu — trang Giao diện xem trước bằng cái này. */
+export function previewPalette(mode: ThemeMode, accent: AccentKey): Palette {
+  const { systemDark, raining } = useTheme.getState();
+  return resolve({ mode, accent, systemDark, raining });
+}
+
 export const useTheme = create<ThemeState>((set, get) => {
   /** Chỉ `set` khi bảng thật sự đổi — giữ tham chiếu cũ là không ai vẽ lại. */
   const apply = (patch: Partial<Inputs>) => {

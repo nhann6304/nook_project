@@ -44,6 +44,10 @@ export const API = {
     /** POST — gửi một khoảnh khắc cho cả góc (CHƯA có bên server) */
     create: '/v1/moments',
   },
+  setting: {
+    /** GET / PATCH — cài đặt của chính mình (CHƯA có bên server) */
+    mine: '/v1/me/settings',
+  },
   notification: {
     /** GET — thông báo của mình, mới nhất trước (CHƯA có bên server) */
     list: '/v1/notifications',

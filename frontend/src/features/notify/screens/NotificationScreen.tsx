@@ -1,12 +1,14 @@
 /**
- * Thông báo — mới nhất trước, chia "Mới" (chưa đọc) / "Trước đó". Mỗi dòng:
- * avatar · tên đậm + việc họ làm · giờ · ảnh nhỏ (nếu có). Dòng chưa đọc có nền
- * nhấn nhạt. Không có số like, không đếm ai xem — chỉ việc hai người làm với nhau.
+ * Thông báo — mới nhất trước, chia "Mới" / "Trước đó". Mỗi dòng là một thẻ
+ * RIÊNG, cách nhau (bản nền xanh liền dải bị chê "dính nhau, nhạt"): avatar có
+ * huy hiệu màu theo loại (tim đỏ, @ lam, người xanh lá, tin tím), tên đậm + việc
+ * họ làm, giờ, ảnh nhỏ. Chưa đọc: chấm màu nhấn + giờ màu nhấn, không tô nền.
+ * Không số like, không đếm ai xem — chỉ việc hai người làm với nhau.
  */
 import { memo, useCallback, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Avatar, EmptyState, Img, List, Screen, Tap, TopBar, Txt } from '@ui';
-import { radius, space, useStyles, type Palette } from '@design';
+import { Avatar, EmptyState, Icon, Img, List, Screen, Tap, TopBar, Txt, type IconName } from '@ui';
+import { radius, space, useColors, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
 import type { Notice } from '../types';
 
@@ -74,8 +76,18 @@ const NoticeRow = memo(function NoticeRow({
   onOpen: (n: Notice) => void;
 }) {
   const s = useStyles(make);
+  const c = useColors();
   const t = useT();
   const ago = useAgo();
+  const badge = BADGE[n.kind];
+  const tint =
+    badge.tone === 'danger'
+      ? c.danger
+      : badge.tone === 'mint'
+        ? c.mint
+        : badge.tone === 'violet'
+          ? c.violet
+          : c.accent;
   const action =
     n.kind === 'reacted'
       ? t('notify.reacted', { emoji: n.preview ?? '❤️' })
@@ -84,22 +96,44 @@ const NoticeRow = memo(function NoticeRow({
         : t(`notify.${n.kind}`);
 
   return (
-    <Tap onPress={() => onOpen(n)} scaleTo={0.99} style={[s.row, !n.read && s.unread]}>
-      <Avatar name={n.actorName} uri={n.actorUri} size={56} ring={false} recyclingKey={n.actorId} />
+    <Tap onPress={() => onOpen(n)} scaleTo={0.98} style={s.row}>
+      <View>
+        <Avatar
+          name={n.actorName}
+          uri={n.actorUri}
+          size={56}
+          ring={false}
+          recyclingKey={n.actorId}
+        />
+        <View style={[s.kind, { backgroundColor: tint }]}>
+          <Icon name={badge.icon} size={12} color={c.bg} />
+        </View>
+      </View>
       <View style={s.text}>
         <Txt variant="body" numberOfLines={3}>
           <Txt variant="label">{n.actorName}</Txt> {action}
         </Txt>
-        <Txt variant="faint" tone="muted">
+        <Txt variant="faint" tone={n.read ? 'muted' : 'accent'}>
           {ago(new Date(n.at))}
         </Txt>
       </View>
       {n.photo !== undefined ? (
         <Img source={n.photo} recyclingKey={`${n.id}-photo`} style={s.thumb} />
       ) : null}
+      {n.read ? null : <View style={s.dot} />}
     </Tap>
   );
 });
+
+const BADGE: Readonly<
+  Record<Notice['kind'], { icon: IconName; tone: 'accent' | 'danger' | 'mint' | 'violet' }>
+> = {
+  reacted: { icon: 'heart', tone: 'danger' },
+  tagged: { icon: 'at', tone: 'accent' },
+  invite: { icon: 'people', tone: 'mint' },
+  accepted: { icon: 'check', tone: 'mint' },
+  replied: { icon: 'chat', tone: 'violet' },
+};
 
 const make = (c: Palette) =>
   StyleSheet.create({
@@ -108,12 +142,27 @@ const make = (c: Palette) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: space.md,
-      marginHorizontal: space.md,
-      paddingHorizontal: space.md,
-      paddingVertical: space.md,
+      marginHorizontal: space.lg,
+      marginBottom: space.sm,
+      padding: space.md,
       borderRadius: radius.lg,
+      backgroundColor: c.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: c.borderSoft,
     },
-    unread: { backgroundColor: c.accentSoft },
+    kind: {
+      position: 'absolute',
+      right: -2,
+      bottom: -2,
+      width: 24,
+      height: 24,
+      borderRadius: radius.full,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: c.surface,
+    },
     text: { flex: 1, gap: 2 },
-    thumb: { width: 52, height: 58, borderRadius: radius.sm },
+    thumb: { width: 50, height: 56, borderRadius: radius.sm },
+    dot: { width: 9, height: 9, borderRadius: radius.full, backgroundColor: c.accent },
   });

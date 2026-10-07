@@ -49,7 +49,7 @@ export function TopBar({
           <Icon
             name={closeIcon === 'down' ? 'down' : 'back'}
             size={24}
-            color={c.text}
+            color={c.accent}
           />
         </IconButton>
       ) : (

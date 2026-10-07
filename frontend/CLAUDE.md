@@ -81,8 +81,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - **Mỗi màn đúng MỘT** nút `variant="primary"`.
 - Chữ trên nút primary là `c.onAccent`: **trắng** ở nền sáng (nút denim đặc),
   **navy** ở nền tối (nút lam nhạt). Nút đặc, không dải màu.
-- Khung ảnh **vuông 1:1** (`layout.cameraFrameRatio`, đổi 02/10/2026 — 3:4 dài
-  quá), CHUNG cho camera và mọi khoảnh khắc. Ảnh chụp / chọn từ máy được CẮT
+- Khung ảnh **rộng/cao 0.9** — đứng hơn vuông một chút (`layout.cameraFrameRatio`,
+  07/10/2026), CHUNG cho camera và mọi khoảnh khắc. Ảnh chụp / chọn từ máy được CẮT
   đúng khung (`camera/lib/squarePhoto.ts`) và camera trước để `mirror` — thấy
   gì gửi nấy. Máy cao thì khung nằm giữa phần dư (`frame.top`).
 - Chuyển cảnh chỉ dùng **transform + opacity**. Lướt trang đi thẳng theo ngón
@@ -93,7 +93,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - Bàn phím **không co khung** ở màn chính: chú thích tự nhích lên
   (`useAnimatedKeyboard`), trang giữ nguyên chiều cao.
 - **Thanh tab dưới đáy, bốn nút** (07/10/2026): Chụp · Bạn bè · Tin nhắn ·
-  Cài đặt (`app/(app)/(tabs)/`, `<TabBar>` liền mép, không viên thuốc nổi).
+  Cài đặt (`app/(app)/(tabs)/`, `<TabBar>`: thẻ nổi cách mép, bo vừa, icon
+  trần + vạch nhấn trên nút đang chọn — không viên thuốc, không dính đáy).
   Ảnh bạn bè KHÔNG là tab — vuốt lên từ camera như Locket (`<Pager>`); bấm
   "Chụp" khi đang ở màn chính thì về camera (`home/store/homeNav.ts`). Rời tab
   là camera tắt (`active`). Chuông thông báo ở góc phải màn chính.
@@ -101,8 +102,15 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   xem; mặc định riêng đặt ở Cài đặt → Riêng tư). Gửi đi là `hiddenFromUserIds`.
 - **Đèn camera trước chỉ sáng TRONG KHUNG**, không trắng cả màn hình.
 - **Icon: bộ RIÊNG `<Icon name>`** (`src/components/primitives/Icon.tsx`, 07/10/2026)
-  — nét 2.7 bo tròn + ruột tô 30%. **Không dùng Ionicons** nữa; thiếu icon thì
-  vẽ thêm vào bộ, cùng lưới 24 và độ dày.
+  — nét 2.1 bo tròn + ruột tô 16%, vẽ to hơn số được hỏi 15%. Màu icon theo
+  MÀU NHẤN của cảnh (`c.accent`), không `c.text` — nền sáng mà icon đen là xấu.
+  Nút tròn nền `c.accentSoft`, không viền, không ô vuông bo góc. **Không dùng
+  Ionicons**; thiếu icon thì vẽ thêm vào bộ, cùng lưới 24 và độ dày.
+- **Cài đặt = mục lục + trang con** (`app/(app)/prefs/*`): Giao diện · Riêng tư ·
+  Ngôn ngữ mở trang riêng giữ BẢN NHÁP, bấm **Lưu** mới áp dụng và gọi
+  `settingsApi.saveSettings` MỘT lần (không ghi server mỗi lần chạm). Giao diện
+  có hình xem trước vẽ bằng bảng nháp (`previewPalette`). Âm thanh là công tắc
+  tại chỗ. Danh sách đông người luôn có ô tìm (`AudienceSheet`, Tìm quanh đây).
 - **Chụp không có vòng chờ:** ảnh gốc hiện ngay, cắt vuông chạy ngầm
   (`squaring` trong `CameraPage`), tải lên server chạy nền sau khi gửi.
 - Chữ: **Poppins** đậm một nấc (chữ thường 500, tiêu đề 700, `display` 800) + **Caveat** cho lời nhấn viết

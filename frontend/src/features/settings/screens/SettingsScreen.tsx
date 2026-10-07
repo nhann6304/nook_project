@@ -1,52 +1,14 @@
 /**
- * Cài đặt — tab thứ ba của thanh dưới đáy. Bố cục 06/10/2026: trên cùng là
- * trang của mình (tên, ảnh, số ảnh 30 ngày), dưới là từng nhóm một thẻ, mỗi
- * hàng một icon tròn lam nhạt bên trái (kiểu ô "Một vài mẹo nhỏ"). CHỈ hiện hàng đã chạy được thật:
- * vẽ sẵn "Thông báo" rồi bấm không có gì thì người dùng tưởng app hỏng.
- *
- * Thứ tự theo đặc tả: Riêng tư trước, rồi Giao diện, Âm thanh, Ngôn ngữ.
+ * Cài đặt — tab thứ tư. Màn này CHỈ là mục lục (07/10/2026 — bản trải hết mọi
+ * lựa chọn ra một màn bị chê "khó nhìn, khó chỉnh"): trang của mình ở trên,
+ * rồi từng hàng mở một trang con có nút Lưu. Âm thanh là một công tắc nên để
+ * ngay tại chỗ — mở trang chỉ để bật/tắt một thứ là thừa.
  */
 import { StyleSheet, View } from 'react-native';
-import {
-  Avatar,
-  Button,
-  Card,
-  Divider,
-  IconBadge,
-  Row,
-  Screen,
-  Scroll,
-  Segmented,
-  Toggle,
-  TopBar,
-  Txt,
-  type IconName,
-} from '@ui';
-import {
-  layout,
-  radius,
-  space,
-  useStyles,
-  type AccentKey,
-  type Palette,
-  type ThemeMode,
-  type SkyScene,
-} from '@design';
-import {
-  LOCALES,
-  LOCALE_NAMES,
-  useFollowSystem,
-  useFollowingSystem,
-  useLocale,
-  useSetLocale,
-  useT,
-  type Locale,
-} from '@i18n';
-import { AccentPicker } from '../components/AccentPicker';
-import { SkyStrip } from '../components/SkyStrip';
-import { AudiencePicker, type AudiencePerson } from '@/features/camera/components/AudiencePicker';
-
-const LOCALE_OPTIONS = LOCALES.map((l) => ({ value: l, label: LOCALE_NAMES[l] }));
+import { Avatar, Card, Divider, IconBadge, Row, Screen, Scroll, Toggle, Txt } from '@ui';
+import { layout, radius, space, useStyles, type Palette } from '@design';
+import { useT } from '@i18n';
+import { NavRow } from '../components/Pref';
 
 export function SettingsScreen({
   name,
@@ -54,23 +16,14 @@ export function SettingsScreen({
   photo,
   friendCount,
   posts30,
-  mode,
-  onPickMode,
-  scene,
-  sceneNames,
-  rainReady,
-  onEnableRain,
-  audience,
-  defaultHidden,
-  onToggleHidden,
-  onToggleAllHidden,
-  accent,
-  accentNames,
-  onPickAccent,
-  locked,
-  onLockChange,
+  appearanceValue,
+  privacyValue,
+  languageValue,
   soundOn,
   onSoundChange,
+  onOpenAppearance,
+  onOpenPrivacy,
+  onOpenLanguage,
   onSignOut,
 }: {
   name: string;
@@ -79,38 +32,25 @@ export function SettingsScreen({
   friendCount: number;
   /** Số ảnh mình gửi trong 30 ngày — chỉ của chính mình, không so với ai. */
   posts30: number;
-  mode: ThemeMode;
-  onPickMode: (mode: ThemeMode) => void;
-  /** Cảnh đang dùng khi "Theo trời", để tô ô "bây giờ". */
-  scene: SkyScene | null;
-  sceneNames: Readonly<Record<SkyScene, string>>;
-  /** Đã có quyền vị trí — biết được trời mưa. */
-  rainReady: boolean;
-  onEnableRain: () => void;
-  audience: readonly AudiencePerson[];
-  defaultHidden: readonly string[];
-  onToggleHidden: (id: string) => void;
-  onToggleAllHidden: () => void;
-  accent: AccentKey;
-  accentNames: Readonly<Record<AccentKey, string>>;
-  onPickAccent: (key: AccentKey) => void;
-  /** Trang cá nhân đang khoá. */
-  locked: boolean;
-  onLockChange: (locked: boolean) => void;
+  /** Giá trị đang dùng, hiện dưới tên mỗi hàng: "Theo trời · Lam". */
+  appearanceValue: string;
+  privacyValue: string;
+  languageValue: string;
   soundOn: boolean;
   onSoundChange: (on: boolean) => void;
+  onOpenAppearance: () => void;
+  onOpenPrivacy: () => void;
+  onOpenLanguage: () => void;
   onSignOut: () => void;
 }) {
   const t = useT();
   const s = useStyles(make);
-  const locale = useLocale();
-  const following = useFollowingSystem();
-  const setLocale = useSetLocale();
-  const followSystem = useFollowSystem();
 
   return (
     <Screen edges={TOP}>
-      <TopBar title={t('common.settings')} />
+      <View style={s.header}>
+        <Txt variant="title">{t('common.settings')}</Txt>
+      </View>
 
       <Scroll>
         <View style={s.body}>
@@ -132,135 +72,44 @@ export function SettingsScreen({
             </Row>
           </Card>
 
-          <Group title={t('privacy.title')}>
-            <Line icon="lock">
-              <Toggle
-                value={locked}
-                onChange={onLockChange}
-                label={t('privacy.lock')}
-                hint={t('privacy.lockHint')}
-              />
-            </Line>
+          <Card style={s.list}>
+            <NavRow
+              icon="palette"
+              title={t('settings.appearance')}
+              value={appearanceValue}
+              onPress={onOpenAppearance}
+            />
             <Divider inset />
-            <Line
-              icon="eyeOff"
-              title={t('audience.settingsTitle')}
-              hint={t('audience.settingsHint')}
-            >
-              {audience.length === 0 ? (
-                <Txt variant="faint" tone="muted">
-                  {t('audience.empty')}
-                </Txt>
-              ) : (
-                <View style={s.bleed}>
-                  <AudiencePicker
-                    people={audience}
-                    hidden={defaultHidden}
-                    onToggle={onToggleHidden}
-                    onToggleAll={onToggleAllHidden}
-                    allLabel={t('audience.all')}
-                    hiddenLabel={(n) => t('audience.hiddenPerson', { name: n })}
-                    label={t('audience.settingsTitle')}
-                  />
-                </View>
-              )}
-            </Line>
-          </Group>
-
-          <Group title={t('theme.title')}>
-            <Line icon="contrast" title={t('theme.mode')}>
-              <Segmented<ThemeMode>
-                options={[
-                  { value: 'sky', label: t('theme.sky') },
-                  { value: 'light', label: t('theme.light') },
-                  { value: 'dark', label: t('theme.dark') },
-                  { value: 'system', label: t('theme.system') },
-                ]}
-                value={mode}
-                onChange={onPickMode}
-                label={t('theme.mode')}
-              />
-              {mode === 'system' ? (
-                <Txt variant="faint" tone="muted">
-                  {t('theme.systemNote')}
-                </Txt>
-              ) : null}
-              {mode === 'sky' ? (
-                <>
-                  <SkyStrip
-                    current={scene}
-                    accent={accent}
-                    names={sceneNames}
-                    nowLabel={t('theme.now')}
-                  />
-                  <Txt variant="faint" tone="muted">
-                    {t('theme.skyNote')}
-                  </Txt>
-                  {rainReady ? (
-                    <Txt variant="faint" tone="accent">
-                      {t('theme.rainReady')}
-                    </Txt>
-                  ) : (
-                    <>
-                      <Button
-                        label={t('theme.rainOn')}
-                        variant="secondary"
-                        onPress={onEnableRain}
-                        block
-                      />
-                      <Txt variant="faint" tone="muted">
-                        {t('theme.rainHint')}
-                      </Txt>
-                    </>
-                  )}
-                </>
-              ) : null}
-            </Line>
+            <NavRow
+              icon="lock"
+              title={t('settings.privacy')}
+              value={privacyValue}
+              onPress={onOpenPrivacy}
+            />
             <Divider inset />
-            <Line icon="palette" title={t('theme.locket')} hint={t('theme.locketHint')}>
-              <AccentPicker
-                current={accent}
-                names={accentNames}
-                label={t('theme.locket')}
-                onPick={onPickAccent}
-              />
-            </Line>
-          </Group>
+            <NavRow
+              icon="language"
+              title={t('settings.language')}
+              value={languageValue}
+              onPress={onOpenLanguage}
+            />
+            <Divider inset />
+            <View style={s.toggle}>
+              <IconBadge name="music" />
+              <View style={s.flex}>
+                <Toggle
+                  value={soundOn}
+                  onChange={onSoundChange}
+                  label={t('sound.title')}
+                  hint={t('sound.label')}
+                />
+              </View>
+            </View>
+          </Card>
 
-          <Group title={t('sound.title')}>
-            <Line icon="music">
-              <Toggle
-                value={soundOn}
-                onChange={onSoundChange}
-                label={t('sound.label')}
-                hint={t('sound.hint')}
-              />
-            </Line>
-          </Group>
-
-          <Group title={t('language.title')}>
-            <Line icon="language" title={t('language.label')}>
-              <Segmented<Locale>
-                options={LOCALE_OPTIONS}
-                value={locale}
-                onChange={setLocale}
-                label={t('language.label')}
-              />
-              {following ? (
-                <Txt variant="faint" tone="muted">
-                  {t('language.systemNote', { name: LOCALE_NAMES[locale] })}
-                </Txt>
-              ) : (
-                <Button label={t('language.system')} variant="ghost" onPress={followSystem} block />
-              )}
-            </Line>
-          </Group>
-
-          <Group title={t('account.title')}>
-            <Line icon="logout" title={t('account.signOut')} hint={t('account.signOutHint')}>
-              <Button label={t('account.signOut')} variant="danger" onPress={onSignOut} block />
-            </Line>
-          </Group>
+          <Card style={s.list}>
+            <NavRow icon="logout" title={t('account.signOut')} onPress={onSignOut} danger />
+          </Card>
         </View>
       </Scroll>
     </Screen>
@@ -281,56 +130,20 @@ function Stat({ value, label }: { value: number; label: string }) {
   );
 }
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
-  const s = useStyles(make);
-  return (
-    <View style={s.group}>
-      <Txt variant="label" tone="muted" style={s.groupTitle}>
-        {title}
-      </Txt>
-      <Card style={s.card}>{children}</Card>
-    </View>
-  );
-}
-
-/** Một hàng: icon tròn bên trái, nội dung bên phải. */
-function Line({
-  icon,
-  title,
-  hint,
-  children,
-}: {
-  icon: IconName;
-  title?: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  const s = useStyles(make);
-  return (
-    <View style={s.line}>
-      <IconBadge name={icon} />
-      <View style={s.content}>
-        {title ? (
-          <View style={s.head}>
-            <Txt variant="label">{title}</Txt>
-            {hint ? (
-              <Txt variant="faint" tone="muted">
-                {hint}
-              </Txt>
-            ) : null}
-          </View>
-        ) : null}
-        {children}
-      </View>
-    </View>
-  );
-}
-
 /** Tab gốc: thanh tab đã lo phần đáy máy. */
 const TOP = ['top'] as const;
 
 const make = (c: Palette) =>
   StyleSheet.create({
+    header: { height: 52, justifyContent: 'center' },
+    body: {
+      paddingTop: space.sm,
+      paddingBottom: space.huge,
+      gap: space.lg,
+      maxWidth: layout.maxTextWidth,
+      width: '100%',
+      alignSelf: 'center',
+    },
     me: { alignItems: 'center', gap: space.lg, paddingVertical: space.xxl },
     who: { alignItems: 'center', gap: 2, alignSelf: 'stretch' },
     stat: {
@@ -340,25 +153,12 @@ const make = (c: Palette) =>
       borderRadius: radius.md,
       backgroundColor: c.bg,
     },
-    body: {
-      paddingTop: space.lg,
-      paddingBottom: space.huge,
-      gap: space.xxl,
-      maxWidth: layout.maxTextWidth,
-      width: '100%',
-      alignSelf: 'center',
-    },
-    group: { gap: space.sm },
-    groupTitle: { paddingHorizontal: space.xs },
-    card: { paddingVertical: space.sm, gap: 0 },
-    line: { flexDirection: 'row', gap: space.md, paddingVertical: space.md },
-    content: {
-      flex: 1,
+    list: { paddingVertical: space.xs },
+    toggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
       gap: space.md,
-      justifyContent: 'center',
-      minHeight: layout.minTouch - space.sm,
+      paddingVertical: space.sm,
     },
-    head: { gap: 2 },
-    // Hàng avatar cuộn tới mép thẻ, không bị cắt cụt ở lề trong.
-    bleed: { marginLeft: -space.lg, marginRight: -space.lg },
+    flex: { flex: 1 },
   });

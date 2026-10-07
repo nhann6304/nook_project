@@ -37,11 +37,7 @@ export const FlashToggle = memo(function FlashToggle({
       scaleTo={0.9}
       style={[s.box, on && s.on]}
     >
-      <Icon
-        name={on ? 'flash' : 'flashOff'}
-        size={18}
-        color={on ? c.onAccent : c.onPhotoText}
-      />
+      <Icon name={on ? 'flash' : 'flashOff'} size={18} color={on ? c.onAccent : c.onPhotoText} />
     </Tap>
   );
 });

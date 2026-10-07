@@ -76,7 +76,7 @@ export function MomentGrid({
     <View style={s.root}>
       <View style={s.bar}>
         <IconButton label={backLabel} onPress={onClose} style={s.back}>
-          <Icon name="back" size={22} color={c.text} />
+          <Icon name="back" size={22} color={c.accent} />
         </IconButton>
         <Txt variant="title" style={s.title}>
           {title}
@@ -145,7 +145,7 @@ const make = (c: Palette) =>
       gap: space.sm,
       paddingHorizontal: space.sm,
     },
-    back: { borderRadius: radius.full, backgroundColor: c.surfaceRaised, borderWidth: 1, borderColor: c.border },
+    back: { borderRadius: radius.full, backgroundColor: c.accentSoft },
     title: { fontSize: 22, lineHeight: 30 },
     content: { paddingHorizontal: space.md - 2, paddingBottom: 140 },
     day: { paddingHorizontal: space.xs, paddingTop: space.lg, paddingBottom: space.sm },
@@ -165,5 +165,5 @@ const make = (c: Palette) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    whoText: { fontSize: 10, lineHeight: 12 },
+    whoText: { fontSize: 11, lineHeight: 14 },
   });

@@ -115,7 +115,7 @@ export function JournalScreen({
     <Screen padded={false}>
       <View style={s.bar}>
         <IconButton label={t('journal.close')} onPress={onClose} style={s.round}>
-          <Icon name="down" size={22} color={c.text} />
+          <Icon name="down" size={22} color={c.accent} />
         </IconButton>
         <Txt variant="section" style={s.barTitle}>
           {t('journal.title')}
@@ -127,7 +127,7 @@ export function JournalScreen({
             disabled={!canPrevYear}
             style={!canPrevYear && s.off}
           >
-            <Icon name="back" size={18} color={c.text} />
+            <Icon name="back" size={18} color={c.accent} />
           </IconButton>
           <Tap onPress={() => setMonth(null)} accessibilityLabel={t('journal.wholeYear', { year })}>
             <Txt variant="section">{year}</Txt>
@@ -138,7 +138,7 @@ export function JournalScreen({
             disabled={!canNextYear}
             style={!canNextYear && s.off}
           >
-            <Icon name="forward" size={18} color={c.text} />
+            <Icon name="forward" size={18} color={c.accent} />
           </IconButton>
         </View>
       </View>
@@ -163,7 +163,7 @@ export function JournalScreen({
               style={s.chip}
               accessibilityLabel={t('journal.wholeYear', { year })}
             >
-              <Icon name="more" size={14} color={c.text} />
+              <Icon name="more" size={14} color={c.accent} />
             </Tap>
             {MONTHS.map((m) => {
               const has = byMonth.has(`${year}-${m}`);
@@ -388,7 +388,7 @@ function MonthView({
           </Txt>
         </View>
         <IconButton label={t('journal.prevMonth')} onPress={onPrev} style={s.round}>
-          <Icon name="back" size={20} color={c.text} />
+          <Icon name="back" size={20} color={c.accent} />
         </IconButton>
         <IconButton
           label={t('journal.nextMonth')}
@@ -396,7 +396,7 @@ function MonthView({
           disabled={!canNext}
           style={[s.round, !canNext && s.off]}
         >
-          <Icon name="forward" size={20} color={c.text} />
+          <Icon name="forward" size={20} color={c.accent} />
         </IconButton>
       </Animated.View>
 
@@ -543,7 +543,7 @@ function Viewer({
         </Scroll>
       </Animated.View>
       <IconButton label={closeLabel} onPress={onClose} style={s.closeBig}>
-        <Icon name="close" size={22} color={c.text} />
+        <Icon name="close" size={22} color={c.accent} />
       </IconButton>
     </Animated.View>
   );
@@ -564,9 +564,7 @@ const make = (c: Palette) =>
       width: 52,
       height: 52,
       borderRadius: radius.full,
-      backgroundColor: c.surfaceRaised,
-      borderWidth: 1,
-      borderColor: c.border,
+      backgroundColor: c.accentSoft,
     },
     barTitle: { flex: 1 },
     yearSwitch: {

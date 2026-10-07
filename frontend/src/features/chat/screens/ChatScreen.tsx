@@ -79,7 +79,7 @@ export function ChatScreen({
     <Screen padded={false} keyboard>
       <View style={s.head}>
         <IconButton label={t('common.closeScreen')} onPress={onClose} style={s.round}>
-          <Icon name="back" size={22} color={c.text} />
+          <Icon name="back" size={22} color={c.accent} />
         </IconButton>
         <Tap onPress={onOpenFriend} scaleTo={0.97} style={s.who} accessibilityLabel={friend.name}>
           <Avatar
@@ -141,7 +141,7 @@ export function ChatScreen({
         onSend={onSend}
         left={
           <IconButton label={t('chat.openCamera')} onPress={onOpenCamera} style={s.camera}>
-            <Icon name="camera" size={21} color={c.text} />
+            <Icon name="camera" size={21} color={c.accent} />
           </IconButton>
         }
       />
@@ -206,9 +206,7 @@ const make = (c: Palette) =>
       width: 52,
       height: 52,
       borderRadius: radius.full,
-      backgroundColor: c.surfaceRaised,
-      borderWidth: 1,
-      borderColor: c.border,
+      backgroundColor: c.accentSoft,
     },
     who: { flexDirection: 'row', alignItems: 'center', gap: space.sm + 2, flexShrink: 1 },
     blank: {
@@ -246,5 +244,5 @@ const make = (c: Palette) =>
     },
     replyThumb: { width: 36, height: 48, borderRadius: radius.xs + 2 },
     replyText: { flex: 1, gap: 2 },
-    camera: { width: 46, height: 46, borderRadius: radius.full, backgroundColor: c.surface },
+    camera: { width: 48, height: 48, borderRadius: radius.full, backgroundColor: c.accentSoft },
   });

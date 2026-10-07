@@ -19,6 +19,8 @@ export const AudiencePicker = memo(function AudiencePicker({
   hidden,
   onToggle,
   onToggleAll,
+  onSearch,
+  searchLabel,
   allLabel,
   hiddenLabel,
   label,
@@ -27,6 +29,9 @@ export const AudiencePicker = memo(function AudiencePicker({
   hidden: readonly string[];
   onToggle: (id: string) => void;
   onToggleAll: () => void;
+  /** Mở bảng đầy đủ có ô tìm — góc đông người thì lướt hàng ngang không xuể. */
+  onSearch: () => void;
+  searchLabel: string;
   allLabel: string;
   /** Nhãn trợ năng cho người đang bị giấu, ví dụ "Yến — không xem được". */
   hiddenLabel: (name: string) => string;
@@ -44,6 +49,22 @@ export const AudiencePicker = memo(function AudiencePicker({
       accessibilityLabel={label}
     >
       <Tap
+        onPress={onSearch}
+        feedback="select"
+        scaleTo={0.92}
+        style={s.item}
+        accessibilityRole="button"
+        accessibilityLabel={searchLabel}
+      >
+        <View style={s.all}>
+          <Icon name="search" size={22} color={c.accent} />
+        </View>
+        <Txt variant="faint" tone="muted" numberOfLines={1}>
+          {searchLabel}
+        </Txt>
+      </Tap>
+
+      <Tap
         onPress={onToggleAll}
         feedback="select"
         scaleTo={0.92}
@@ -53,7 +74,7 @@ export const AudiencePicker = memo(function AudiencePicker({
         accessibilityLabel={allLabel}
       >
         <View style={[s.all, allOn && s.allOn]}>
-          <Icon name="people" size={24} color={allOn ? c.onAccent : c.textMuted} />
+          <Icon name="people" size={22} color={allOn ? c.onAccent : c.accent} />
         </View>
         <Txt variant="faint" tone={allOn ? 'accent' : 'muted'} numberOfLines={1}>
           {allLabel}
@@ -99,7 +120,7 @@ const make = (c: Palette) =>
       width: SIZE,
       height: SIZE,
       borderRadius: radius.full,
-      backgroundColor: c.surfaceRaised,
+      backgroundColor: c.accentSoft,
       alignItems: 'center',
       justifyContent: 'center',
     },

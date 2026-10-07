@@ -72,7 +72,7 @@ export function Segmented<T extends string>({
               onChange(o.value);
             }}
           >
-            <Txt variant="label" tone={on ? 'default' : 'muted'} style={s.label}>
+            <Txt variant="label" tone={on ? 'onAccent' : 'muted'} style={s.label}>
               {o.label}
             </Txt>
           </Tap>
@@ -82,13 +82,15 @@ export function Segmented<T extends string>({
   );
 }
 
-const PAD = 3;
+const PAD = 4;
 
 const make = (c: Palette) =>
   StyleSheet.create({
     track: {
       flexDirection: 'row',
-      backgroundColor: c.surfaceSunken,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.border,
       borderRadius: radius.full,
       padding: PAD,
     },
@@ -98,8 +100,9 @@ const make = (c: Palette) =>
       left: PAD,
       bottom: PAD,
       borderRadius: radius.full,
-      backgroundColor: c.surfaceRaised,
+      // Màu nhấn đặc: nền nhạt trên nền nhạt thì ô đang chọn "dính" vào rãnh.
+      backgroundColor: c.accent,
     },
     segment: { flex: 1, minHeight: 42, alignItems: 'center', justifyContent: 'center' },
-    label: { fontSize: 14 },
+    label: { fontSize: 15 },
   });

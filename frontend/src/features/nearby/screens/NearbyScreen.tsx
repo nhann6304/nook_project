@@ -5,10 +5,25 @@
  * ta lo nhất: chỉ người cũng đang bật mới thấy nhau · không ai thấy vị trí, chỉ
  * thấy "dưới 500 m" · tự tắt sau 5 phút.
  */
-import { memo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { Avatar, Button, Card, EmptyState, Flex, HelperText, Icon, Screen, Scroll, Tap, TopBar, Txt } from '@ui';
+import {
+  Avatar,
+  Button,
+  Card,
+  EmptyState,
+  Field,
+  Flex,
+  HelperText,
+  Icon,
+  Screen,
+  Scroll,
+  Tap,
+  TopBar,
+  Txt,
+} from '@ui';
+import { matches } from '@/lib/fold';
 import { motion, radius as rad, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import type { Person, Relation } from '@/features/circle/types';
@@ -53,6 +68,12 @@ export function NearbyScreen({
   const distance = (r: Radius) =>
     r < 1000 ? t('nearby.meters', { n: r }) : t('nearby.km', { n: r / 1000 });
   const active = status === 'active';
+  // Lọc tại chỗ theo tên / @tên — đông người quanh đây thì kéo tìm mỏi mắt.
+  const [query, setQuery] = useState('');
+  const shown = useMemo(
+    () => (query.trim() ? people.filter((p) => matches(query, p.name, p.username)) : people),
+    [people, query],
+  );
 
   return (
     <Screen padded={false}>
@@ -99,13 +120,36 @@ export function NearbyScreen({
             </Card>
           </Animated.View>
 
+          {people.length > 0 ? (
+            <View style={s.search}>
+              <Field
+                value={query}
+                onChangeText={setQuery}
+                placeholder={t('nearby.search')}
+                accessibilityLabel={t('nearby.search')}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="search"
+                prefix={
+                  <View style={s.searchIcon}>
+                    <Icon name="search" size={18} color={c.textFaint} />
+                  </View>
+                }
+              />
+            </View>
+          ) : null}
+
           {people.length === 0 ? (
             <EmptyState
               title={t('nearby.emptyTitle', { distance: distance(radius) })}
               message={t('nearby.emptyMessage')}
             />
+          ) : shown.length === 0 ? (
+            <Txt variant="body" tone="muted" center style={s.noMatch}>
+              {t('nearby.noMatch')}
+            </Txt>
           ) : (
-            people.map((p, i) => (
+            shown.map((p, i) => (
               <Animated.View key={p.id} entering={motion.rise(i)} layout={motion.reflow()}>
                 <NearbyItem
                   person={p}
@@ -202,6 +246,9 @@ const NearbyItem = memo(function NearbyItem({
 
 const make = (c: Palette) =>
   StyleSheet.create({
+    search: { paddingHorizontal: space.lg, paddingTop: space.md },
+    noMatch: { paddingTop: space.xxl, paddingHorizontal: space.xl },
+    searchIcon: { marginRight: space.sm },
     radii: {
       flexDirection: 'row',
       gap: space.sm,

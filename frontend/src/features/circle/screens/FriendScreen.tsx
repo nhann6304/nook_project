@@ -42,7 +42,7 @@ export function FriendScreen({
     <Screen padded={false}>
       <View style={s.bar}>
         <IconButton label={t('common.closeScreen')} onPress={onClose} style={s.round}>
-          <Icon name="back" size={22} color={c.text} />
+          <Icon name="back" size={22} color={c.accent} />
         </IconButton>
       </View>
 
@@ -154,9 +154,7 @@ const make = (c: Palette) =>
       width: 52,
       height: 52,
       borderRadius: radius.full,
-      backgroundColor: c.surfaceRaised,
-      borderWidth: 1,
-      borderColor: c.border,
+      backgroundColor: c.accentSoft,
     },
     head: { alignItems: 'center', paddingTop: space.xs },
     headText: { alignItems: 'center', marginTop: space.md + 2, gap: space.xs + 2 },

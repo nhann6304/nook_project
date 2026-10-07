@@ -2,9 +2,9 @@
  * Bộ icon RIÊNG của LOVO — vẽ tay trên lưới 24, thay Ionicons (07/10/2026:
  * "icon mảnh, nhìn như app nào cũng có").
  *
- * Một giọng nét cho cả bộ: nét DÀY (2.7), đầu + góc bo tròn, và phần thân tô
- * đậm (`soft`, 30%) để icon có khối, đọc được ngoài nắng. Ba kiểu nét:
- *   stroke — chỉ viền · soft — viền + ruột tô đậm · solid — tô kín (chấm, mắt).
+ * Một giọng nét cho cả bộ: nét vừa (2.1), đầu + góc bo tròn, và phần thân tô
+ * nhạt (`soft`, 16%) để icon có khối, đọc được ngoài nắng. Ba kiểu nét:
+ *   stroke — chỉ viền · soft — viền + ruột tô nhạt · solid — tô kín (chấm, mắt).
  *
  * Thêm icon: thêm một khoá vào `ICONS`, giữ lưới 24 và độ dày, đừng mượn
  * icon từ bộ khác — lệch giọng là thấy ngay.
@@ -18,8 +18,8 @@ type Part =
   | { c: readonly [cx: number, cy: number, r: number]; s?: Style }
   | { r: readonly [x: number, y: number, w: number, h: number, rx: number]; s?: Style };
 
-const STROKE = 2.7;
-const SOFT = 0.3;
+const STROKE = 2.1;
+const SOFT = 0.16;
 
 const ICONS = {
   home: [

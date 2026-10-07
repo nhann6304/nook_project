@@ -1,9 +1,10 @@
 /**
  * Thanh điều hướng dưới đáy — bốn nút (07/10/2026).
  *
- * Bản viên thuốc nổi trước bị chê "xấu, nhìn như AI". Giờ là thanh LIỀN mép
- * dưới, kẻ mảnh phía trên; nút đang chọn có icon trong một ô bo mềm màu nhấn,
- * chữ đậm. Mượt trước đã:
+ * Hai bản trước đều bị chê: viên thuốc nổi ("như AI") và thanh liền mép
+ * ("dính sát đáy"). Bản này là một THẺ nổi cách mép, bo vừa (không tròn hết),
+ * icon trần không ô bao; nút đang chọn có vạch ngắn màu nhấn phía trên + chữ
+ * đậm. Mượt trước đã:
  *   · nền ĐẶC, không blur — blur trên Android vẽ lại mỗi khung hình;
  *   · nằm TRONG dòng bố cục, không đè lên màn — nên mờ đi chứ không gỡ khi
  *     đang bận (gỡ ra là màn trên đổi cao, khung camera nhảy);
@@ -12,7 +13,7 @@
 import { memo, useEffect, useState } from 'react';
 import { Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { font, layout, radius, space, useColors, useStyles, type Palette } from '@design';
+import { font, layout, lift, radius, space, useColors, useStyles, type Palette } from '@design';
 import { Icon, type IconName } from '../primitives/Icon';
 import { Tap } from '../primitives/Tap';
 import { Txt } from '../primitives/Txt';
@@ -53,11 +54,13 @@ function TabBarInner<K extends string>({
       accessibilityRole="tablist"
       accessibilityLabel={label}
       pointerEvents={dimmed ? 'none' : 'auto'}
-      style={[s.bar, { paddingBottom: Math.max(insets.bottom, space.sm) }, dimmed && s.dimmed]}
+      style={[s.dock, { paddingBottom: Math.max(insets.bottom, space.md) }, dimmed && s.dimmed]}
     >
-      {items.map((it) => (
-        <Item key={it.key} item={it} selected={it.key === active} onPress={onPress} />
-      ))}
+      <View style={s.bar}>
+        {items.map((it) => (
+          <Item key={it.key} item={it} selected={it.key === active} onPress={onPress} />
+        ))}
+      </View>
     </View>
   );
 }
@@ -85,8 +88,9 @@ const Item = memo(function Item<K extends string>({
       scaleTo={0.92}
       style={s.item}
     >
-      <View style={[s.icon, selected && s.iconOn]}>
-        <Icon name={item.icon} size={24} color={selected ? c.accent : c.textMuted} />
+      <View style={[s.mark, selected && s.markOn]} />
+      <View style={s.icon}>
+        <Icon name={item.icon} size={24} color={selected ? c.accent : c.textFaint} />
         {item.badge ? <View style={s.badge} /> : null}
       </View>
       <Txt
@@ -120,35 +124,39 @@ function useKeyboardOpen() {
 
 const make = (c: Palette) =>
   StyleSheet.create({
+    dock: { paddingHorizontal: space.lg, paddingTop: space.xs, backgroundColor: c.bg },
+    dimmed: { opacity: 0.4 },
     bar: {
       flexDirection: 'row',
-      minHeight: TAB_BAR_HEIGHT,
-      paddingTop: space.sm,
-      paddingHorizontal: space.sm,
-      backgroundColor: c.bg,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: c.border,
+      height: TAB_BAR_HEIGHT,
+      borderRadius: radius.xl,
+      backgroundColor: c.glass,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: c.border,
+      ...lift(c),
     },
-    dimmed: { opacity: 0.4 },
-    item: { flex: 1, alignItems: 'center', gap: 3, minHeight: layout.minTouch },
-    icon: {
-      width: 60,
-      height: 34,
-      borderRadius: radius.md,
-      alignItems: 'center',
-      justifyContent: 'center',
+    item: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: layout.minTouch },
+    mark: {
+      position: 'absolute',
+      top: 0,
+      width: 22,
+      height: 3,
+      borderBottomLeftRadius: radius.xs,
+      borderBottomRightRadius: radius.xs,
+      backgroundColor: 'transparent',
     },
-    iconOn: { backgroundColor: c.accentSoft },
+    markOn: { backgroundColor: c.accent },
+    icon: { height: 30, alignItems: 'center', justifyContent: 'center' },
     badge: {
       position: 'absolute',
-      top: 3,
-      right: 14,
+      top: 0,
+      right: -6,
       width: 10,
       height: 10,
       borderRadius: radius.full,
       backgroundColor: c.danger,
       borderWidth: 2,
-      borderColor: c.bg,
+      borderColor: c.glass,
     },
     label: { fontFamily: font.bodySemi },
     labelOn: { fontFamily: font.bodyBold },

@@ -12,7 +12,5 @@ export default function Chats() {
     [router],
   );
 
-  return (
-    <ChatListScreen conversations={conversations} onOpen={open} />
-  );
+  return <ChatListScreen conversations={conversations} onOpen={open} />;
 }

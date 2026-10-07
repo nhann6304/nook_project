@@ -45,7 +45,7 @@ export function WelcomeScreen({
 
       <Screen clear>
         <View style={s.top}>
-          <Wordmark size={32} />
+          <Wordmark size={40} onPhoto />
         </View>
 
         <Animated.View

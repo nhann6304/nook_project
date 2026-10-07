@@ -15,6 +15,9 @@ export default function AppLayout() {
       <Stack.Screen name="friend/[id]" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="person/[id]" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="nearby" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="prefs/appearance" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="prefs/privacy" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="prefs/language" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="journal" options={{ animation: 'slide_from_bottom' }} />
     </Stack>

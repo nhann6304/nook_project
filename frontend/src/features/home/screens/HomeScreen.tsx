@@ -419,7 +419,7 @@ export function HomeScreen({
                 </Animated.View>
                 <Animated.View style={[s.layer, feedPill]} pointerEvents="none">
                   <View style={s.pill}>
-                    <Icon name="grid" size={16} color={c.text} />
+                    <Icon name="grid" size={16} color={c.accent} />
                     <Txt variant="label">{t('home.allFriends')}</Txt>
                   </View>
                 </Animated.View>
@@ -431,7 +431,7 @@ export function HomeScreen({
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
               <IconButton label={t('notify.open')} onPress={onOpenNotices} style={s.round}>
-                <Icon name="bell" size={24} color={c.text} />
+                <Icon name="bell" size={24} color={c.accent} />
                 {noticeUnread ? <View style={s.dot} /> : null}
               </IconButton>
             </Animated.View>

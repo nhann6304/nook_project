@@ -12,7 +12,7 @@
  * ── Đậm, không nhạt ────────────────────────────────────────────────────
  * Chữ phụ và sắc nhấn đẩy đậm hơn bản 06/10 ("nhìn nhạt nhoà"). Đo trên `bg`
  * của từng cảnh: chữ ≥ 14:1, chữ mờ ≥ 7.9:1, chữ nhạt ≥ 5.7:1 (≥ 5 trên
- * `surface`), sắc nhấn ≥ 5.3:1 (≥ 4.6 trên `surface`), chữ trên nút ≥ 6:1. `textDisabled` cố ý KHÔNG đạt — chỉ cho nét trang trí.
+ * `surface`), sắc nhấn ≥ 5.3:1 (≥ 4.5 trên `surface`), chữ trên nút ≥ 6:1. `textDisabled` cố ý KHÔNG đạt — chỉ cho nét trang trí.
  *
  * ── Nút chính ──────────────────────────────────────────────────────────
  * Cảnh sáng: nút đặc màu nhấn, chữ TRẮNG. Cảnh tối: nút lam nhạt, chữ tối.
@@ -132,9 +132,9 @@ const BASES: Readonly<Record<Scene, Base>> = {
     tone: 'light',
     sky: ['#FFD9C2', '#F4F7FF'],
     bg: '#F4F7FF',
-    surfaceSunken: '#ECF1FC',
-    surface: '#E2EAF9',
-    surfaceRaised: '#CFDDF5',
+    surfaceSunken: '#EAF0FB',
+    surface: '#DDE6F7',
+    surfaceRaised: '#CAD8F3',
     border: '#C3D2EE',
     borderSoft: '#DCE5F6',
     glass: '#FAFCFF',
@@ -150,9 +150,10 @@ const BASES: Readonly<Record<Scene, Base>> = {
     tone: 'light',
     sky: ['#C9DCFA', '#FFFFFF'],
     bg: '#FFFFFF',
-    surfaceSunken: '#F4F7FC',
-    surface: '#EDF2F8',
-    surfaceRaised: '#DCE7F7',
+    surfaceSunken: '#F2F5FB',
+    // Đậm hơn bảng gốc #EDF2F8 một nấc: thẻ nhạt quá trên nền trắng là chìm.
+    surface: '#E7EDF7',
+    surfaceRaised: '#D5E1F4',
     border: '#CDD9EC',
     borderSoft: '#E3EAF5',
     glass: '#F8FAFE',
@@ -168,9 +169,9 @@ const BASES: Readonly<Record<Scene, Base>> = {
     tone: 'light',
     sky: ['#F4BDB0', '#F8F2F8'],
     bg: '#F8F2F8',
-    surfaceSunken: '#F2EAF3',
-    surface: '#EBE0EE',
-    surfaceRaised: '#DDCCE4',
+    surfaceSunken: '#F1E8F2',
+    surface: '#E8DCEB',
+    surfaceRaised: '#D9C7E1',
     border: '#D3C1DB',
     borderSoft: '#E6DAEB',
     glass: '#FCF8FC',

@@ -50,5 +50,5 @@ const make = (c: Palette) =>
     tint0: { backgroundColor: c.accentBright },
     tint1: { backgroundColor: c.accent2 },
     tint2: { backgroundColor: c.honey },
-    letter: { fontSize: 10, lineHeight: 12, fontFamily: font.heavy },
+    letter: { fontSize: 11, lineHeight: 14, fontFamily: font.heavy },
   });

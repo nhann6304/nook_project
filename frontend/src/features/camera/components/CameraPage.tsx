@@ -49,6 +49,7 @@ import { ScreenFlash, WARMUP_MS, type ScreenFlashHandle } from './ScreenFlash';
 import { SendButton } from './SendButton';
 import { Shutter } from './Shutter';
 import { AudiencePicker, type AudiencePerson } from './AudiencePicker';
+import { AudienceSheet } from './AudienceSheet';
 import { squarePhoto } from '../lib/squarePhoto';
 import { TagSuggestions } from './TagSuggestions';
 import type { Tag } from '@/features/feed/types';
@@ -122,6 +123,7 @@ export function CameraPage({
   const [recording, setRecording] = useState(false);
   const [clip, setClip] = useState<string | null>(null);
   const [hidden, setHidden] = useState<readonly string[]>(defaultHidden);
+  const [sheet, setSheet] = useState(false);
   const holding = useRef(false);
   const recordingRef = useRef(false);
   const readyWait = useRef<(() => void) | null>(null);
@@ -428,7 +430,7 @@ export function CameraPage({
           <>
             <Animated.View key="discard" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('review.discard')} onPress={discard} style={s.round}>
-                <Icon name="close" size={28} color={c.text} />
+                <Icon name="close" size={28} color={c.accent} />
               </IconButton>
             </Animated.View>
             <Animated.View key="send" entering={FadeIn.duration(duration.base)}>
@@ -437,7 +439,7 @@ export function CameraPage({
             {taggable.length > 0 ? (
               <Animated.View key="tag" entering={FadeIn.duration(duration.base)}>
                 <IconButton label={t('review.tag')} onPress={startTag} style={s.round}>
-                  <Icon name="at" size={28} color={c.text} />
+                  <Icon name="at" size={28} color={c.accent} />
                 </IconButton>
               </Animated.View>
             ) : (
@@ -448,7 +450,7 @@ export function CameraPage({
           <>
             <Animated.View key="gallery" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('camera.gallery')} onPress={() => void pick()} style={s.square}>
-                <Icon name="image" size={28} color={c.text} />
+                <Icon name="image" size={28} color={c.accent} />
               </IconButton>
             </Animated.View>
             <Animated.View key="shutter" entering={FadeIn.duration(duration.base)}>
@@ -465,7 +467,7 @@ export function CameraPage({
             <Animated.View key="flip" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('camera.flip')} onPress={flip} style={s.round}>
                 <Animated.View style={spinStyle}>
-                  <Icon name="flip" size={30} color={c.text} />
+                  <Icon name="flip" size={30} color={c.accent} />
                 </Animated.View>
               </IconButton>
             </Animated.View>
@@ -480,9 +482,24 @@ export function CameraPage({
             hidden={hidden}
             onToggle={toggleHidden}
             onToggleAll={toggleAll}
+            onSearch={() => setSheet(true)}
+            searchLabel={t('audience.search')}
             allLabel={t('audience.all')}
             hiddenLabel={(name) => t('audience.hiddenPerson', { name })}
             label={t('audience.title')}
+          />
+          <AudienceSheet
+            visible={sheet}
+            people={audience}
+            hidden={hidden}
+            onToggle={toggleHidden}
+            onClose={() => setSheet(false)}
+            title={t('audience.title')}
+            searchLabel={t('audience.searchPlaceholder')}
+            doneLabel={t('audience.done')}
+            shownLabel={t('audience.shown')}
+            hiddenLabel={t('audience.hidden')}
+            emptyLabel={t('audience.noMatch')}
           />
         </Animated.View>
       ) : (
@@ -525,23 +542,14 @@ const make = (c: Palette) =>
       justifyContent: 'space-between',
       paddingHorizontal: space.huge - space.sm,
     },
-    // To, có viền: nền trắng mà nút cùng tông là chìm mất (07/10/2026).
+    // Nền ngả màu nhấn của cảnh — nút cùng tông nền trắng thì chìm, viền thì cứng.
     round: {
       width: 58,
       height: 58,
       borderRadius: radius.full,
-      backgroundColor: c.surfaceRaised,
-      borderWidth: 1,
-      borderColor: c.border,
+      backgroundColor: c.accentSoft,
     },
-    square: {
-      width: 58,
-      height: 58,
-      borderRadius: radius.md,
-      borderWidth: 1,
-      borderColor: c.border,
-      backgroundColor: c.surfaceRaised,
-    },
+    square: { width: 58, height: 58, borderRadius: radius.full, backgroundColor: c.accentSoft },
     slot: { width: 58 },
 
     footer: { height: FOOTER_HEIGHT, alignSelf: 'stretch' },

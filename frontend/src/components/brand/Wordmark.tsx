@@ -33,12 +33,20 @@ export type WordmarkProps = {
   size?: number;
   /** Một màu — dùng khi in một màu. */
   mono?: boolean;
+  /** Nằm trên ảnh: chữ trắng như icon app, không theo màu chữ của cảnh. */
+  onPhoto?: boolean;
 };
 
-export const Wordmark = memo(function Wordmark({ size = 34, mono = false }: WordmarkProps) {
+export const Wordmark = memo(function Wordmark({
+  size = 34,
+  mono = false,
+  onPhoto = false,
+}: WordmarkProps) {
   const c = useColors();
   const width = (size * VB_W) / VB_H;
-  const ink = c.text;
+  const ink = onPhoto ? c.onPhotoText : c.text;
+  /** Mắt + miệng khoét trên chữ o: màu tương phản với chữ. */
+  const face = onPhoto && c.light ? c.shadow : c.bg;
   const glow = mono ? ink : c.accentBright;
   const shade = c.shadow;
 
@@ -53,9 +61,9 @@ export const Wordmark = memo(function Wordmark({ size = 34, mono = false }: Word
         <Path d={L} stroke={ink} {...LINE} />
         <Path d={V} stroke={ink} {...LINE} />
         <Circle cx={O.cx} cy={O.cy} r={O.r} fill={ink} />
-        <Circle cx={O.cx - 11} cy={O.cy - 7} r={4.6} fill={c.bg} />
-        <Circle cx={O.cx + 11} cy={O.cy - 7} r={4.6} fill={c.bg} />
-        <Path d={SMILE} stroke={c.bg} strokeWidth={6} strokeLinecap="round" fill="none" />
+        <Circle cx={O.cx - 11} cy={O.cy - 7} r={4.6} fill={face} />
+        <Circle cx={O.cx + 11} cy={O.cy - 7} r={4.6} fill={face} />
+        <Path d={SMILE} stroke={face} strokeWidth={6} strokeLinecap="round" fill="none" />
         {/* tim kính phát sáng */}
         <Path d={HEART} fill={glow} fillOpacity={0.22} />
         <Path d={HEART} stroke={glow} strokeWidth={14} strokeOpacity={0.12} fill="none" />

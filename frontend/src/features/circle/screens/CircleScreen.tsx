@@ -450,9 +450,7 @@ const make = (c: Palette) =>
       width: 52,
       height: 52,
       borderRadius: radius.full,
-      backgroundColor: c.surfaceRaised,
-      borderWidth: 1,
-      borderColor: c.border,
+      backgroundColor: c.accentSoft,
     },
     title: { flex: 1, fontSize: 22, lineHeight: 30 },
 
