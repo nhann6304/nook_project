@@ -36,6 +36,7 @@ export default function Nearby() {
       busy={invites.busy}
       meName={myName ?? ME.name}
       meUri={myPhoto ?? undefined}
+      center={nearby.center}
       onRadius={nearby.setRadius}
       onStart={() => void nearby.start()}
       onStop={nearby.stop}

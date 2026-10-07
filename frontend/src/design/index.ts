@@ -12,3 +12,4 @@ export * from './palettes';
 export * from './theme';
 export * from './useStyles';
 export * from './motion';
+export * from './mapStyle';

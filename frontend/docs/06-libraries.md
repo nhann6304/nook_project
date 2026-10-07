@@ -87,6 +87,7 @@ thứ không ai hiểu.
 | `expo-location` | 57.0.20 | "Tìm quanh đây": xin quyền vị trí lúc dùng, lấy toạ độ MỘT lần rồi làm tròn ~11 m trước khi rời máy. Không chạy nền. | Có sẵn trong Expo Go. Chỉ xin quyền "khi đang dùng", không bao giờ "luôn luôn".
 | `expo-network` | 57.0.2 | Viên "Đang chờ mạng" (`src/hooks/useOnline.ts`). Chỉ là GỢI Ý — xem `.docs/04-offline-design.md` mục 7. | Có sẵn trong Expo Go. |
 | `expo-secure-store` | 57.0.4 | Cất thẻ dài hạn vào Keychain (iOS) / Keystore (Android) — `src/lib/api.ts`. | |
+| `react-native-maps` | 1.27.2 | Bản đồ đường phố NỀN của "Tìm quanh đây" — chỉ quanh chỗ của chính mình, không kéo/zoom, Android `liteMode` (ảnh tĩnh). Kiểu bản đồ dựng từ bảng màu (`design/mapStyle.ts`). | Có sẵn trong Expo Go. **Bản build Android thật cần khoá Google Maps** (`android.config.googleMaps.apiKey` trong app.json) — chưa có thì bản đồ trắng. iOS dùng Apple Maps, không cần khoá. |
 | `expo-video` | 57.0.5 | Phát video ngắn 3 giây (`<Clip>`). Chỉ trang đang xem dựng trình phát. | Có sẵn trong Expo Go. |
 | `expo-video-thumbnails` | 57.0.2 | Ảnh bìa của video — lưới, nhật ký, hiệu ứng bay vẫn dùng ảnh. | Có sẵn trong Expo Go. |
 | `@nook/shared` | `file:../shared` | Hợp đồng với server: `API`, mã lỗi, giới hạn, kiểu. App đọc bản dịch `shared/dist` — `npm run shared` dựng, tự chạy trước `dev`/`typecheck`/sau `install`. `metro.config.js` thêm `../shared` vào `watchFolders`. | Không phụ thuộc gì, nên không làm nặng bản app. |

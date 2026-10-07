@@ -23,6 +23,8 @@ export function useNearby() {
   const [people, setPeople] = useState<readonly NearbyPerson[]>([]);
   const [left, setLeft] = useState(ACTIVE_SECONDS);
   const spot = useRef<{ latitude: number; longitude: number } | null>(null);
+  /** Chỗ của MÌNH (đã làm tròn) — chỉ để vẽ bản đồ nền trên máy, không gửi ai. */
+  const [center, setCenter] = useState<{ latitude: number; longitude: number } | null>(null);
   const endsAt = useRef(0);
 
   const ask = useCallback(async (r: Radius) => {
@@ -35,6 +37,7 @@ export function useNearby() {
     setStatus('idle');
     setPeople([]);
     spot.current = null;
+    setCenter(null);
     void leave();
   }, []);
 
@@ -51,6 +54,7 @@ export function useNearby() {
         latitude: coarse(pos.coords.latitude),
         longitude: coarse(pos.coords.longitude),
       };
+      setCenter(spot.current);
     } catch {
       setStatus('failed');
       return;
@@ -87,5 +91,5 @@ export function useNearby() {
   // Rời màn là thôi hiện mình, kể cả khi chưa hết giờ.
   useEffect(() => () => void leave(), []);
 
-  return { status, radius, setRadius, people, left, start, stop };
+  return { status, radius, setRadius, people, left, center, start, stop };
 }

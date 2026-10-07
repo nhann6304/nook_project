@@ -39,6 +39,7 @@ export const Radar = memo(function Radar({
   people,
   meName,
   meUri,
+  background,
   onPick,
 }: {
   size: number;
@@ -46,6 +47,8 @@ export const Radar = memo(function Radar({
   people: readonly NearbyPerson[];
   meName: string;
   meUri?: string;
+  /** Bản đồ nền — có thì khung thành thẻ bo góc, vòng radar đè lên trên. */
+  background?: React.ReactNode;
   onPick: (id: string) => void;
 }) {
   const s = useStyles(make);
@@ -67,14 +70,15 @@ export const Radar = memo(function Radar({
   const reach = half - DOT / 2 - 4;
 
   return (
-    <View style={[s.box, { width: size, height: size }]}>
+    <View style={[s.box, background ? s.card : null, { width: size, height: size }]}>
+      {background}
       <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
         <Circle
           cx={half}
           cy={half}
           r={half - 1}
           fill={c.accent}
-          fillOpacity={0.06}
+          fillOpacity={background ? 0.12 : 0.06}
           stroke={c.accent}
           strokeOpacity={0.35}
           strokeWidth={1.5}
@@ -131,6 +135,7 @@ export const Radar = memo(function Radar({
 const make = (c: Palette) =>
   StyleSheet.create({
     box: { alignSelf: 'center' },
+    card: { borderRadius: radius.xl, overflow: 'hidden', borderWidth: 1, borderColor: c.border },
     wave: {
       position: 'absolute',
       borderRadius: radius.full,

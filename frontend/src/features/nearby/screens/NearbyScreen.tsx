@@ -29,6 +29,7 @@ import type { Person, Relation } from '@/features/circle/types';
 import { RADII, type NearbyPerson, type Radius } from '../lib/nearbyApi';
 import type { NearbyStatus } from '../lib/useNearby';
 import { Radar } from '../components/Radar';
+import { NearbyMap } from '../components/NearbyMap';
 import { PersonSheet } from '../components/PersonSheet';
 import { ChoiceRow } from '@/features/settings/components/Pref';
 
@@ -42,6 +43,7 @@ export function NearbyScreen({
   busy,
   meName,
   meUri,
+  center,
   onRadius,
   onStart,
   onStop,
@@ -59,6 +61,8 @@ export function NearbyScreen({
   busy: ReadonlySet<string>;
   meName: string;
   meUri?: string;
+  /** Chỗ của mình, đã làm tròn — chỉ để vẽ bản đồ nền. */
+  center: { latitude: number; longitude: number } | null;
   onRadius: (r: Radius) => void;
   onStart: () => void;
   onStop: () => void;
@@ -114,6 +118,7 @@ export function NearbyScreen({
               people={people}
               meName={meName}
               meUri={meUri}
+              background={center ? <NearbyMap center={center} radius={radius} /> : undefined}
               onPick={setPicked}
             />
             <View style={s.withinChip}>
