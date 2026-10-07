@@ -88,6 +88,12 @@ export const en: Mirror<typeof vi> = {
   },
 
   nearby: {
+    heroTitle: 'Turn on location to discover friends around you',
+    enable: 'Turn on location',
+    withinChip: 'Within {distance}',
+    away: 'Within {distance} of you',
+    openNow: 'Looking now',
+    viewProfile: 'View profile',
     noMatch: 'Nobody nearby matches that name.',
     search: 'Search name or @username',
     title: 'Nearby',
@@ -96,7 +102,7 @@ export const en: Mirror<typeof vi> = {
     meters: '{n} m',
     km: '{n} km',
     ruleMutual: 'Only people who also have Nearby open can see each other.',
-    ruleNoSpot: 'Nobody sees where you are — only “within 500 m”.',
+    ruleNoSpot: 'Nobody sees where you are — only “within 200 m”.',
     ruleAutoOff: 'Turns off after 5 minutes, or as soon as you leave.',
     start: 'Search within {distance}',
     stop: 'Stop',

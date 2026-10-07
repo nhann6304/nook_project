@@ -92,6 +92,12 @@ export const vi = {
   },
 
   nearby: {
+    heroTitle: 'Bật định vị để khám phá bạn bè xung quanh bạn',
+    enable: 'Bật định vị',
+    withinChip: 'Trong bán kính {distance}',
+    away: 'Cách bạn dưới {distance}',
+    openNow: 'Đang mở',
+    viewProfile: 'Xem trang',
     noMatch: 'Không ai quanh đây khớp tên này.',
     search: 'Tìm tên hoặc @tên',
     title: 'Tìm quanh đây',
@@ -100,7 +106,7 @@ export const vi = {
     meters: '{n} m',
     km: '{n} km',
     ruleMutual: 'Chỉ người cũng đang mở “Tìm quanh đây” mới thấy nhau.',
-    ruleNoSpot: 'Không ai thấy vị trí của bạn — chỉ thấy “dưới 500 m”.',
+    ruleNoSpot: 'Không ai thấy vị trí của bạn — chỉ thấy “dưới 200 m”.',
     ruleAutoOff: 'Tự tắt sau 5 phút, hoặc ngay khi bạn rời màn này.',
     start: 'Bật tìm trong {distance}',
     stop: 'Tắt',

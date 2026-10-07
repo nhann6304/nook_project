@@ -19,7 +19,7 @@ const REFRESH_MS = 15_000;
 
 export function useNearby() {
   const [status, setStatus] = useState<NearbyStatus>('idle');
-  const [radius, setRadiusState] = useState<Radius>(500);
+  const [radius, setRadiusState] = useState<Radius>(200);
   const [people, setPeople] = useState<readonly NearbyPerson[]>([]);
   const [left, setLeft] = useState(ACTIVE_SECONDS);
   const spot = useRef<{ latitude: number; longitude: number } | null>(null);

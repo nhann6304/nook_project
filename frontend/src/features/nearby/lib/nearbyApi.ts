@@ -4,14 +4,14 @@
  * Luật cho server khi làm thật — đây là chỗ dễ biến thành công cụ theo dõi:
  *   · chỉ người CŨNG đang bật mới thấy nhau; tắt màn là biến mất (`leave`);
  *   · vị trí giữ trong Redis tối đa `ACTIVE_SECONDS`, không ghi xuống bảng nào;
- *   · KHÔNG BAO GIỜ trả toạ độ hay số mét — chỉ trả nấc (`dưới 500 m`);
+ *   · KHÔNG BAO GIỜ trả toạ độ hay số mét — chỉ trả nấc (`dưới 200 m`);
  *   · trần số lần gọi theo người, kẻo ai đó đổi vị trí giả để dò người khác.
  */
 import { PEOPLE, NEARBY } from '@/mocks/people';
 import type { Person } from '@/features/circle/types';
 
 /** Bán kính người dùng chọn, mét. */
-export const RADII = [100, 500, 1000, 3000] as const;
+export const RADII = [100, 200, 300, 1000, 3000] as const;
 export type Radius = (typeof RADII)[number];
 
 /** Bật một lần hiện bạn trong chừng này giây, rồi tự tắt. */
