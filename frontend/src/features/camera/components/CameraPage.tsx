@@ -20,7 +20,6 @@ import {
 import { getThumbnailAsync } from 'expo-video-thumbnails';
 import { MEDIA_LIMITS } from '@nook/shared/model/constant';
 import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -30,7 +29,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { CaptionField, Clip, IconButton, Img, Loading, Spinner } from '@ui';
+import { CaptionField, Clip, Icon, IconButton, Img, Loading } from '@ui';
 import {
   common,
   duration,
@@ -117,7 +116,9 @@ export function CameraPage({
   const [shot, setShot] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
-  const [processing, setProcessing] = useState(false);
+  // Cắt vuông chạy NGẦM sau khi ảnh đã hiện — người dùng không bao giờ chờ nó.
+  // Bấm gửi trước khi cắt xong thì `send` chờ nốt (thường đã xong từ lâu).
+  const squaring = useRef<Promise<string> | null>(null);
   const cam = useRef<CameraView>(null);
   const screenFlash = useRef<ScreenFlashHandle>(null);
 
@@ -184,13 +185,14 @@ export function CameraPage({
     try {
       const shooting = cam.current.takePictureAsync({ quality: 0.8 });
       if (Platform.OS === 'ios') void cam.current.pausePreview();
-      setProcessing(true);
       const photo = await shooting;
-      if (photo?.uri) review(await toSquare(photo.uri));
-      else if (Platform.OS === 'ios') void cam.current?.resumePreview();
+      if (photo?.uri) {
+        // Hiện ảnh gốc NGAY (khung vuông `cover` cắt giống hệt), không vòng chờ.
+        review(photo.uri);
+        squaring.current = toSquare(photo.uri);
+      } else if (Platform.OS === 'ios') void cam.current?.resumePreview();
     } finally {
       screenFlash.current?.off();
-      setProcessing(false);
       setBusy(false);
     }
   }, [blink, busy, facing, flash, review, toSquare]);
@@ -207,8 +209,9 @@ export function CameraPage({
     const first = res.assets?.[0];
     if (res.canceled || !first) return;
     feel.select();
-    // Android có thể bỏ qua `aspect`, iOS thì luôn vuông — cắt lại cho chắc.
-    review(await toSquare(first.uri));
+    // Android có thể bỏ qua `aspect`, iOS thì luôn vuông — cắt lại cho chắc (ngầm).
+    review(first.uri);
+    squaring.current = toSquare(first.uri);
   }, [busy, review, toSquare]);
 
   /*
@@ -246,7 +249,8 @@ export function CameraPage({
       if (res?.uri) {
         const poster = await getThumbnailAsync(res.uri, { time: 0 }).catch(() => null);
         setClip(res.uri);
-        review(poster ? await toSquare(poster.uri) : res.uri);
+        review(poster?.uri ?? res.uri);
+        if (poster) squaring.current = toSquare(poster.uri);
       } else {
         setMode('picture');
       }
@@ -267,15 +271,17 @@ export function CameraPage({
   const discard = useCallback(() => {
     if (Platform.OS === 'ios') void cam.current?.resumePreview();
     review(null);
+    squaring.current = null;
     setClip(null);
     setMode('picture');
     setCaption('');
   }, [review]);
 
-  const send = useCallback(() => {
+  const send = useCallback(async () => {
     if (!shot) return;
     const text = caption.trim();
-    onSend({ uri: shot, caption: text, tags: tagsIn(text, taggable), video: clip ?? undefined });
+    const uri = squaring.current ? await squaring.current : shot;
+    onSend({ uri, caption: text, tags: tagsIn(text, taggable), video: clip ?? undefined });
     discard();
   }, [caption, clip, discard, onSend, shot, taggable]);
 
@@ -362,17 +368,6 @@ export function CameraPage({
 
         <Animated.View pointerEvents="none" style={[s.blink, blinkStyle]} />
 
-        {processing ? (
-          <Animated.View
-            entering={FadeIn.delay(duration.fast).duration(duration.fast)}
-            exiting={FadeOut.duration(duration.fast)}
-            style={s.processing}
-            pointerEvents="none"
-          >
-            <Spinner size={34} color={c.onPhotoText} />
-          </Animated.View>
-        ) : null}
-
         {reviewing ? (
           <Animated.View
             entering={FadeIn.delay(duration.fast).duration(duration.base)}
@@ -400,16 +395,16 @@ export function CameraPage({
           <>
             <Animated.View key="discard" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('review.discard')} onPress={discard} style={s.round}>
-                <Ionicons name="close" size={22} color={c.text} />
+                <Icon name="close" size={22} color={c.text} />
               </IconButton>
             </Animated.View>
             <Animated.View key="send" entering={FadeIn.duration(duration.base)}>
-              <SendButton onPress={send} label={t('review.send')} />
+              <SendButton onPress={() => void send()} label={t('review.send')} />
             </Animated.View>
             {taggable.length > 0 ? (
               <Animated.View key="tag" entering={FadeIn.duration(duration.base)}>
                 <IconButton label={t('review.tag')} onPress={startTag} style={s.round}>
-                  <Ionicons name="at" size={22} color={c.text} />
+                  <Icon name="at" size={22} color={c.text} />
                 </IconButton>
               </Animated.View>
             ) : (
@@ -420,7 +415,7 @@ export function CameraPage({
           <>
             <Animated.View key="gallery" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('camera.gallery')} onPress={() => void pick()} style={s.square}>
-                <Ionicons name="images-outline" size={20} color={c.text} />
+                <Icon name="image" size={20} color={c.text} />
               </IconButton>
             </Animated.View>
             <Animated.View key="shutter" entering={FadeIn.duration(duration.base)}>
@@ -437,7 +432,7 @@ export function CameraPage({
             <Animated.View key="flip" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('camera.flip')} onPress={flip} style={s.round}>
                 <Animated.View style={spinStyle}>
-                  <Ionicons name="sync" size={22} color={c.text} />
+                  <Icon name="flip" size={22} color={c.text} />
                 </Animated.View>
               </IconButton>
             </Animated.View>
@@ -470,12 +465,6 @@ const make = (c: Palette) =>
       position: 'absolute',
       borderRadius: radius.viewfinder + GLOW,
       backgroundColor: c.accentBright,
-    },
-    processing: {
-      ...StyleSheet.absoluteFill,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: c.scrimSoft,
     },
     captionSlot: {
       position: 'absolute',

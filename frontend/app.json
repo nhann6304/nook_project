@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Nook",
+    "name": "LOVO",
     "slug": "nook",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -16,10 +16,10 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.nook.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "Nook cần camera để bạn chụp khoảnh khắc gửi cho bạn bè trong góc của mình.",
-        "NSPhotoLibraryUsageDescription": "Nook cần thư viện ảnh để bạn chọn một tấm đã chụp sẵn.",
+        "NSCameraUsageDescription": "LOVO cần camera để bạn chụp khoảnh khắc gửi cho bạn bè trong góc của mình.",
+        "NSPhotoLibraryUsageDescription": "LOVO cần thư viện ảnh để bạn chọn một tấm đã chụp sẵn.",
         "ITSAppUsesNonExemptEncryption": false,
-        "NSMicrophoneUsageDescription": "Nook cần micro để video ngắn của bạn có tiếng. Không cho thì video vẫn quay, chỉ không có tiếng."
+        "NSMicrophoneUsageDescription": "LOVO cần micro để video ngắn của bạn có tiếng. Không cho thì video vẫn quay, chỉ không có tiếng."
       }
     },
     "android": {
@@ -27,7 +27,7 @@
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon-foreground.png",
-        "backgroundColor": "#151312"
+        "backgroundColor": "#1B263F"
       },
       "permissions": [
         "android.permission.CAMERA",
@@ -41,15 +41,15 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Nook cần camera để bạn chụp khoảnh khắc gửi cho bạn bè trong góc của mình.",
-          "microphonePermission": "Nook cần micro để video ngắn của bạn có tiếng. Không cho thì video vẫn quay, chỉ không có tiếng.",
+          "cameraPermission": "LOVO cần camera để bạn chụp khoảnh khắc gửi cho bạn bè trong góc của mình.",
+          "microphonePermission": "LOVO cần micro để video ngắn của bạn có tiếng. Không cho thì video vẫn quay, chỉ không có tiếng.",
           "recordAudioAndroid": true
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Nook cần thư viện ảnh để bạn chọn một tấm đã chụp sẵn gửi cho bạn bè."
+          "photosPermission": "LOVO cần thư viện ảnh để bạn chọn một tấm đã chụp sẵn gửi cho bạn bè."
         }
       ],
       [
@@ -64,7 +64,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Nook dùng vị trí chỉ khi bạn mở “Tìm quanh đây”, để gặp người ở gần cũng đang mở màn đó. Vị trí không được lưu lại."
+          "locationWhenInUsePermission": "LOVO dùng vị trí chỉ khi bạn mở “Tìm quanh đây”, để gặp người ở gần cũng đang mở màn đó. Vị trí không được lưu lại."
         }
       ],
       "expo-localization",

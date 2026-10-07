@@ -8,8 +8,7 @@
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
-import { Avatar, Button, Col, Field, Flex, HelperText, Screen, Tap, Txt } from '@ui';
+import { Avatar, Button, Col, Field, Flex, HelperText, Icon, Screen, Tap, Txt } from '@ui';
 import { radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import * as feel from '@/lib/haptics';
@@ -99,11 +98,11 @@ export function ProfileSetupScreen({
           />
           {!avatarUri && !trimmed ? (
             <View style={s.cameraIcon} pointerEvents="none">
-              <Ionicons name="camera-outline" size={30} color={c.textFaint} />
+              <Icon name="camera" size={30} color={c.textFaint} />
             </View>
           ) : null}
           <View style={s.badge} pointerEvents="none">
-            <Ionicons name={avatarUri ? 'pencil' : 'add'} size={18} color={c.onAccent} />
+            <Icon name={avatarUri ? 'edit' : 'add'} size={18} color={c.onAccent} />
           </View>
         </Tap>
       </View>

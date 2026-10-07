@@ -6,9 +6,8 @@
  * mũi tên — nhìn phát biết đây không còn là "bấm để chụp" nữa.
  */
 import { StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Spinner, Tap } from '@ui';
+import { Icon, Spinner, Tap } from '@ui';
 import { GRADIENT_END, GRADIENT_START, radius, useColors, useStyles, type Palette } from '@design';
 
 const SIZE = 84;
@@ -45,7 +44,7 @@ export function SendButton({
       {busy ? (
         <Spinner size={28} color={c.onAccent} />
       ) : (
-        <Ionicons name="arrow-up" size={34} color={c.onAccent} />
+        <Icon name="send" size={34} color={c.onAccent} />
       )}
     </Tap>
   );

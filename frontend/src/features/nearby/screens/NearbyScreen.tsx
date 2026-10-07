@@ -7,21 +7,8 @@
  */
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Animated from 'react-native-reanimated';
-import {
-  Avatar,
-  Button,
-  Card,
-  EmptyState,
-  Flex,
-  HelperText,
-  Scroll,
-  Screen,
-  Tap,
-  TopBar,
-  Txt,
-} from '@ui';
+import { Avatar, Button, Card, EmptyState, Flex, HelperText, Icon, Screen, Scroll, Tap, TopBar, Txt } from '@ui';
 import { motion, radius as rad, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import type { Person, Relation } from '@/features/circle/types';
@@ -143,7 +130,7 @@ export function NearbyScreen({
           {(['nearby.ruleMutual', 'nearby.ruleNoSpot', 'nearby.ruleAutoOff'] as const).map(
             (key, i) => (
               <View key={key} style={s.rule}>
-                <Ionicons name={RULE_ICONS[i]!} size={22} color={c.accent} />
+                <Icon name={RULE_ICONS[i]!} size={22} color={c.accent} />
                 <Txt variant="body" style={s.ruleText}>
                   {t(key)}
                 </Txt>
@@ -164,7 +151,7 @@ export function NearbyScreen({
   );
 }
 
-const RULE_ICONS = ['people-outline', 'eye-off-outline', 'timer-outline'] as const;
+const RULE_ICONS = ['people', 'eyeOff', 'timer'] as const;
 
 const NearbyItem = memo(function NearbyItem({
   person,

@@ -24,7 +24,7 @@ export const en: Mirror<typeof vi> = {
   },
 
   welcome: {
-    headline: 'Live photos from your little nook',
+    headline: 'Live photos from your little circle',
     sub: 'Ten close friends. No likes, no strangers.',
     create: 'Get started',
     signIn: 'I already have one',
@@ -33,7 +33,7 @@ export const en: Mirror<typeof vi> = {
   },
 
   signIn: {
-    signupTitle: 'Make your nook',
+    signupTitle: 'Make your circle',
     signupSub: 'We’ll send you a six-digit code so we know it’s really you.',
     signupCta: 'Continue',
     signinTitle: 'Welcome back',
@@ -48,12 +48,12 @@ export const en: Mirror<typeof vi> = {
 
     badEmail: 'That email doesn’t look right. Mind checking it?',
     badPhone: 'That number doesn’t look right. Vietnamese mobiles have 10 digits.',
-    terms: 'Tapping “Continue” means you agree to Nook’s Terms of Service and Privacy Policy.',
+    terms: 'Tapping “Continue” means you agree to LOVO’s Terms of Service and Privacy Policy.',
   },
 
   profile: {
     title: "What's your name?",
-    sub: 'Friends in your nook will see this name and photo.',
+    sub: 'Friends in your circle will see this name and photo.',
     nameLabel: 'Your name',
     namePlaceholder: 'Your name',
     usernameLabel: 'Username',
@@ -69,22 +69,22 @@ export const en: Mirror<typeof vi> = {
 
   person: {
     lockedTitle: 'This page is private',
-    lockedMessage: "Only people in {name}'s nook can see more.",
-    joined: 'On Nook since {month}',
+    lockedMessage: "Only people in {name}'s circle can see more.",
+    joined: 'On LOVO since {month}',
     mutual: 'Mutual friends: {names}',
     noMutual: 'No mutual friends yet',
-    invite: 'Invite to your nook',
+    invite: 'Invite to your circle',
     openPair: 'You and {name}',
     selfOpen: 'This is what others see about you. Make it private in Settings.',
-    selfLocked: 'Private: people outside your nook only see your name, photo and @username.',
+    selfLocked: 'Private: people outside your circle only see your name, photo and @username.',
     noUsername: 'no username yet',
-    notFound: "Couldn't find this person. They may have left Nook.",
+    notFound: "Couldn't find this person. They may have left LOVO.",
   },
 
   privacy: {
     title: 'Privacy',
     lock: 'Private profile',
-    lockHint: 'People outside your nook only see your name, photo and @username.',
+    lockHint: 'People outside your circle only see your name, photo and @username.',
   },
 
   nearby: {
@@ -101,11 +101,11 @@ export const en: Mirror<typeof vi> = {
     liveTitle: 'Visible to people nearby',
     liveLeft: 'Turns off in {time}',
     within: '@{username} · within {distance}',
-    inCircle: 'In your nook',
+    inCircle: 'In your circle',
     emptyTitle: 'No one within {distance} yet',
     emptyMessage: 'Ask friends to open this too, or widen the radius.',
     deniedTitle: 'Location is off',
-    deniedMessage: 'Allow location for Nook in your phone settings to find people nearby.',
+    deniedMessage: 'Allow location for LOVO in your phone settings to find people nearby.',
     failed: "Couldn't get your location. Try again somewhere more open.",
   },
 
@@ -128,24 +128,24 @@ export const en: Mirror<typeof vi> = {
   },
 
   camera: {
-    openCircle: 'Your nook',
+    openCircle: 'Your circle',
     openSettings: 'Settings',
     gallery: 'Pick a photo you already have',
     flash: 'Turn the light on or off',
     shutter: 'Tap for a photo, hold for video',
     flip: 'Flip camera',
-    peekHint: 'Photos only go to the people in your nook.',
+    peekHint: 'Photos only go to the people in your circle.',
     captionHint: 'Add a line…',
 
     permission: {
-      title: 'Nook needs the camera',
+      title: 'LOVO needs the camera',
       message:
-        'So you can capture moments for your friends. Photos only go to the people in your nook — nowhere else.',
+        'So you can capture moments for your friends. Photos only go to the people in your circle — nowhere else.',
       allow: 'Allow camera',
 
       blockedTitle: 'Camera is off',
       blockedMessage:
-        'You turned the camera off for Nook, and your phone won’t ask again. Turn it back on in your phone settings under Nook, then come back here.',
+        'You turned the camera off for LOVO, and your phone won’t ask again. Turn it back on in your phone settings under LOVO, then come back here.',
 
       skip: 'See your friends’ moments',
     },
@@ -154,17 +154,17 @@ export const en: Mirror<typeof vi> = {
   review: {
     discard: 'Discard this one',
     sendTo: {
-      one: 'Send to {count} person in your nook',
-      other: 'Send to {count} people in your nook',
+      one: 'Send to {count} person in your circle',
+      other: 'Send to {count} people in your circle',
     },
-    sendToNobody: 'Nobody in your nook to send to yet',
+    sendToNobody: 'Nobody in your circle to send to yet',
     captionPlaceholder: 'Add a line…',
     captionLabel: 'Add a line to this photo',
     tag: 'Tag friends in this photo',
     tagPerson: 'Tag {name}',
     privacy: {
-      one: 'This photo only goes to {count} person in your nook. Nobody else can see it.',
-      other: 'This photo only goes to {count} people in your nook. Nobody else can see it.',
+      one: 'This photo only goes to {count} person in your circle. Nobody else can see it.',
+      other: 'This photo only goes to {count} people in your circle. Nobody else can see it.',
     },
     send: 'Send',
   },
@@ -173,7 +173,7 @@ export const en: Mirror<typeof vi> = {
     title: 'Moments',
     emptyTitle: 'All caught up. Go shoot something.',
     emptyMessage:
-      'When friends in your nook send a photo, it shows up here. Want to send the first one?',
+      'When friends in your circle send a photo, it shows up here. Want to send the first one?',
     openCamera: 'Open camera',
     window: 'Only the last 48 hours.',
     replyTo: 'Message {name}…',
@@ -188,10 +188,10 @@ export const en: Mirror<typeof vi> = {
     title: 'Friends',
     slots: '{filled} / {total}',
     inviteTitle: 'Invite more friends',
-    inviteLeft: { one: '{count} spot left in your nook', other: '{count} spots left in your nook' },
-    full: 'Your nook is full',
+    inviteLeft: { one: '{count} spot left in your circle', other: '{count} spots left in your circle' },
+    full: 'Your circle is full',
     sendLink: 'Send link',
-    shareMessage: 'Join my little nook on Nook: {link}',
+    shareMessage: 'Join my little circle on LOVO: {link}',
     sentPhoto: 'Sent a photo {ago}',
     messaged: 'Messaged you {ago}',
     dormant: 'Quiet for a while · send one?',
@@ -209,14 +209,14 @@ export const en: Mirror<typeof vi> = {
     search: {
       placeholder: 'Search by name or @name',
       clear: 'Clear search',
-      inCircle: 'In your nook',
-      onNook: 'On Nook',
+      inCircle: 'In your circle',
+      onNook: 'On LOVO',
       add: 'Invite',
       requested: 'Invited',
-      addLabel: 'Invite {name} to your nook',
-      typeMore: 'Type one more letter to search Nook',
+      addLabel: 'Invite {name} to your circle',
+      typeMore: 'Type one more letter to search LOVO',
       noneTitle: 'No one called “{query}” yet',
-      noneMessage: 'They may not be on Nook. Send them a link instead.',
+      noneMessage: 'They may not be on LOVO. Send them a link instead.',
       failed: "Couldn't send the invite. Please try again.",
     },
     invites: {
@@ -236,12 +236,12 @@ export const en: Mirror<typeof vi> = {
       l7: 'Tight',
       l8: 'Super tight',
       l9: 'Soulmates',
-      l10: 'Inner nook',
+      l10: 'Inner circle',
     },
   },
 
   circle: {
-    title: 'Your nook',
+    title: 'Your circle',
     slots: '{filled} / {total} spots',
     emptySlot: 'Empty spot',
     waitingTitle: {
@@ -366,7 +366,7 @@ export const en: Mirror<typeof vi> = {
       not_found: 'Couldn’t find that. Try again later.',
       rate_limited: 'That was quick. Wait a moment and try again.',
       payload_too_large: 'That file is too big. Pick a smaller one.',
-      server_error: 'Nook is having trouble. Try again in a few minutes.',
+      server_error: 'LOVO is having trouble. Try again in a few minutes.',
       not_implemented: 'This isn’t open yet. Coming soon.',
     },
     auth: {
@@ -378,7 +378,7 @@ export const en: Mirror<typeof vi> = {
       code_too_many_here: 'Too many codes from this phone. Try again in an hour.',
       verify_too_many_here: 'Too many wrong codes. Try again in an hour.',
       target_invalid: 'That email doesn’t look right. Check it again.',
-      target_not_allowed: 'That email can’t get Nook’s mail. Use another one.',
+      target_not_allowed: 'That email can’t get LOVO’s mail. Use another one.',
       send_failed: 'Couldn’t send the code. Try again in a few minutes.',
       method_unavailable: 'That isn’t open yet. Use email instead.',
       account_not_found: 'No account with this email yet. Create one.',
@@ -394,12 +394,12 @@ export const en: Mirror<typeof vi> = {
     },
     username: {
       invalid: 'Use plain letters, numbers, dots and underscores only.',
-      reserved: 'Nook keeps that name. Try another.',
+      reserved: 'LOVO keeps that name. Try another.',
       taken: 'That name is taken. Try another.',
     },
     media: {
       not_found: 'Couldn’t find this photo.',
-      type_unsupported: 'Nook can’t read this kind of file yet.',
+      type_unsupported: 'LOVO can’t read this kind of file yet.',
       too_large: 'That file is too big. Pick a smaller one.',
       not_uploaded: 'The photo didn’t finish uploading. Send it again.',
       forbidden: 'You can’t see this photo.',

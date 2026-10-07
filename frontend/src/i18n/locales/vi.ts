@@ -51,7 +51,7 @@ export const vi = {
 
     badEmail: 'Email này trông chưa đúng. Bạn xem lại giúp mình nhé.',
     badPhone: 'Số này chưa đúng. Số di động Việt Nam có 10 chữ số.',
-    terms: 'Chạm “Tiếp tục” là bạn đồng ý với Điều khoản dịch vụ và Chính sách riêng tư của Nook.',
+    terms: 'Chạm “Tiếp tục” là bạn đồng ý với Điều khoản dịch vụ và Chính sách riêng tư của LOVO.',
   },
 
   /* ---------- Màn 3 — Nhập mã ---------- */
@@ -74,7 +74,7 @@ export const vi = {
   person: {
     lockedTitle: 'Trang này đã khoá',
     lockedMessage: 'Chỉ bạn trong góc của {name} mới xem được thêm.',
-    joined: 'Ở Nook từ {month}',
+    joined: 'Ở LOVO từ {month}',
     mutual: 'Bạn chung: {names}',
     noMutual: 'Chưa có bạn chung',
     invite: 'Mời vào góc',
@@ -82,7 +82,7 @@ export const vi = {
     selfOpen: 'Đây là trang người khác thấy về bạn. Khoá trang trong Cài đặt.',
     selfLocked: 'Trang đang khoá: người ngoài góc chỉ thấy tên, ảnh và @tên.',
     noUsername: 'chưa có tên riêng',
-    notFound: 'Không tìm thấy người này. Có thể họ đã rời Nook.',
+    notFound: 'Không tìm thấy người này. Có thể họ đã rời LOVO.',
   },
 
   privacy: {
@@ -109,7 +109,7 @@ export const vi = {
     emptyTitle: 'Chưa thấy ai trong {distance}',
     emptyMessage: 'Rủ bạn bè cùng mở màn này, hoặc nới rộng bán kính.',
     deniedTitle: 'Chưa có quyền vị trí',
-    deniedMessage: 'Bật vị trí cho Nook trong Cài đặt máy để tìm người quanh đây.',
+    deniedMessage: 'Bật vị trí cho LOVO trong Cài đặt máy để tìm người quanh đây.',
     failed: 'Chưa lấy được vị trí. Bạn ra chỗ thoáng hơn rồi thử lại nhé.',
   },
 
@@ -144,7 +144,7 @@ export const vi = {
 
     permission: {
       /* Chưa hỏi lần nào: giải thích LÝ DO trước, rồi mới bung hộp thoại máy. */
-      title: 'Nook cần camera',
+      title: 'LOVO cần camera',
       message:
         'Để bạn chụp khoảnh khắc gửi cho bạn bè. Ảnh chỉ đi tới những người trong góc của bạn, không đi đâu khác.',
       allow: 'Cho phép camera',
@@ -152,7 +152,7 @@ export const vi = {
       /* Đã từ chối: hộp thoại máy KHÔNG bung lại nữa, phải vào Cài đặt máy. */
       blockedTitle: 'Camera đang tắt',
       blockedMessage:
-        'Bạn đã tắt camera cho Nook. Máy sẽ không hỏi lại nữa — mở lại trong Cài đặt máy, phần Nook, rồi quay về đây.',
+        'Bạn đã tắt camera cho LOVO. Máy sẽ không hỏi lại nữa — mở lại trong Cài đặt máy, phần LOVO, rồi quay về đây.',
 
       skip: 'Xem khoảnh khắc của bạn bè',
     },
@@ -195,7 +195,7 @@ export const vi = {
     inviteLeft: { other: 'Còn {count} chỗ trong góc' },
     full: 'Góc đã đủ mười người',
     sendLink: 'Gửi link',
-    shareMessage: 'Vào góc nhỏ của mình trên Nook nhé: {link}',
+    shareMessage: 'Vào góc nhỏ của mình trên LOVO nhé: {link}',
     sentPhoto: 'Gửi ảnh {ago}',
     messaged: 'Nhắn cho bạn {ago}',
     dormant: 'Lâu rồi chưa có gì mới · gửi một tấm?',
@@ -214,13 +214,13 @@ export const vi = {
       placeholder: 'Tìm theo tên hoặc @tên',
       clear: 'Xoá chữ đã gõ',
       inCircle: 'Trong góc của bạn',
-      onNook: 'Trên Nook',
+      onNook: 'Trên LOVO',
       add: 'Mời',
       requested: 'Đã mời',
       addLabel: 'Mời {name} vào góc',
-      typeMore: 'Gõ thêm một chữ để tìm trên Nook',
+      typeMore: 'Gõ thêm một chữ để tìm trên LOVO',
       noneTitle: 'Chưa thấy ai tên “{query}”',
-      noneMessage: 'Có thể họ chưa dùng Nook. Gửi link để rủ họ vào nhé.',
+      noneMessage: 'Có thể họ chưa dùng LOVO. Gửi link để rủ họ vào nhé.',
       failed: 'Chưa gửi được lời mời. Bạn thử lại giúp mình nhé.',
     },
     invites: {
@@ -376,7 +376,7 @@ export const vi = {
       not_found: 'Không tìm thấy thứ bạn cần. Thử lại sau nhé.',
       rate_limited: 'Bạn thao tác nhanh quá. Chờ một chút rồi thử lại nhé.',
       payload_too_large: 'Tệp nặng quá. Bạn chọn tệp nhỏ hơn nhé.',
-      server_error: 'Nook đang trục trặc. Thử lại sau ít phút nhé.',
+      server_error: 'LOVO đang trục trặc. Thử lại sau ít phút nhé.',
       not_implemented: 'Phần này chưa mở. Chờ bản sau nhé.',
     },
     auth: {
@@ -388,7 +388,7 @@ export const vi = {
       code_too_many_here: 'Máy này xin mã nhiều quá. Thử lại sau một giờ nhé.',
       verify_too_many_here: 'Nhập sai nhiều quá. Thử lại sau một giờ nhé.',
       target_invalid: 'Email này chưa đúng dạng. Bạn xem lại nhé.',
-      target_not_allowed: 'Email này không nhận được thư của Nook. Bạn dùng email khác nhé.',
+      target_not_allowed: 'Email này không nhận được thư của LOVO. Bạn dùng email khác nhé.',
       send_failed: 'Chưa gửi được mã. Thử lại sau ít phút nhé.',
       method_unavailable: 'Cách này chưa mở. Bạn dùng email nhé.',
       account_not_found: 'Email này chưa có tài khoản. Bạn tạo mới nhé.',
@@ -404,12 +404,12 @@ export const vi = {
     },
     username: {
       invalid: 'Chỉ dùng chữ không dấu, số, dấu chấm và gạch dưới.',
-      reserved: 'Tên riêng này Nook giữ lại. Bạn thử tên khác nhé.',
+      reserved: 'Tên riêng này LOVO giữ lại. Bạn thử tên khác nhé.',
       taken: 'Tên riêng này có người dùng rồi. Bạn thử tên khác nhé.',
     },
     media: {
       not_found: 'Không tìm thấy ảnh này.',
-      type_unsupported: 'Nook chưa đọc được loại tệp này.',
+      type_unsupported: 'LOVO chưa đọc được loại tệp này.',
       too_large: 'Tệp nặng quá. Bạn chọn tệp nhỏ hơn nhé.',
       not_uploaded: 'Ảnh chưa lên hết. Thử gửi lại nhé.',
       forbidden: 'Bạn không xem được ảnh này.',

@@ -6,9 +6,8 @@
  */
 import { memo } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { Avatar, Button, IconButton, Img, Scroll, Screen, Txt } from '@ui';
+import { Avatar, Button, Icon, IconButton, Img, Screen, Scroll, Txt } from '@ui';
 import { duration, font, layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import type { Moment } from '@/features/feed/types';
@@ -43,7 +42,7 @@ export function FriendScreen({
     <Screen padded={false}>
       <View style={s.bar}>
         <IconButton label={t('common.closeScreen')} onPress={onClose} style={s.round}>
-          <Ionicons name="chevron-back" size={22} color={c.text} />
+          <Icon name="back" size={22} color={c.text} />
         </IconButton>
       </View>
 

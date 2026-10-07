@@ -5,8 +5,7 @@
  */
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Tap, Txt } from '@ui';
+import { Icon, Tap, Txt } from '@ui';
 import { ACCENT_KEYS, paletteOf, radius, space, useColors, useStyles, type AccentKey } from '@design';
 
 const DOT = 36;
@@ -60,7 +59,7 @@ const Dot = memo(function Dot({
     >
       <View style={[s.ring, selected && { borderColor: swatch.accent }]}>
         <View style={[s.dot, { backgroundColor: swatch.accent }]}>
-          {selected ? <Ionicons name="checkmark" size={16} color={swatch.onAccent} /> : null}
+          {selected ? <Icon name="check" size={16} color={swatch.onAccent} /> : null}
         </View>
       </View>
       <Txt variant="faint" tone={selected ? 'default' : 'muted'} numberOfLines={1}>

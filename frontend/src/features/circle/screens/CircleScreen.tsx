@@ -14,21 +14,8 @@
  */
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Animated from 'react-native-reanimated';
-import {
-  Avatar,
-  Button,
-  EmptyState,
-  Field,
-  HelperText,
-  IconButton,
-  Scroll,
-  Screen,
-  Spinner,
-  Tap,
-  Txt,
-} from '@ui';
+import { Avatar, Button, EmptyState, Field, HelperText, Icon, IconButton, Screen, Scroll, Spinner, Tap, Txt } from '@ui';
 import { motion, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
 import { CIRCLE_SIZE, type Friend, type Invite, type Person, type PersonResult } from '../types';
@@ -89,7 +76,7 @@ export function CircleScreen({
     <Screen padded={false} keyboard>
       <View style={s.bar}>
         <IconButton label={t('home.backToCamera')} onPress={onClose} style={s.round}>
-          <Ionicons name="chevron-back" size={22} color={c.text} />
+          <Icon name="back" size={22} color={c.text} />
         </IconButton>
         <Txt variant="title" style={s.title}>
           {t('friends.title')}
@@ -108,11 +95,15 @@ export function CircleScreen({
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="search"
-          prefix={<Ionicons name="search" size={18} color={c.textFaint} style={s.searchIcon} />}
+          prefix={
+            <View style={s.searchIcon}>
+              <Icon name="search" size={18} color={c.textFaint} />
+            </View>
+          }
           suffix={
             query ? (
               <IconButton label={t('friends.search.clear')} onPress={() => onQueryChange('')}>
-                <Ionicons name="close-circle" size={18} color={c.textFaint} />
+                <Icon name="clear" size={18} color={c.textFaint} />
               </IconButton>
             ) : null
           }
@@ -172,14 +163,14 @@ export function CircleScreen({
             style={s.nearby}
             accessibilityLabel={t('nearby.title')}
           >
-            <Ionicons name="location-outline" size={22} color={c.accent} />
+            <Icon name="pin" size={22} color={c.accent} />
             <View style={s.inviteText}>
               <Txt variant="label">{t('nearby.title')}</Txt>
               <Txt variant="faint" tone="muted">
                 {t('nearby.entryHint')}
               </Txt>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={c.textFaint} />
+            <Icon name="forward" size={18} color={c.textFaint} />
           </Tap>
 
           <View style={s.invite}>
@@ -395,7 +386,7 @@ const InviteRow = memo(function InviteRow({
         </Txt>
       </View>
       <IconButton label={declineA11y} onPress={() => onDecline(invite.id)} disabled={busy}>
-        <Ionicons name="close" size={20} color={c.textMuted} />
+        <Icon name="close" size={20} color={c.textMuted} />
       </IconButton>
       <Button
         label={acceptLabel}
@@ -446,7 +437,7 @@ const FriendRow = memo(function FriendRow({
           {sub}
         </Txt>
       </View>
-      <Ionicons name="chevron-forward" size={18} color={c.textFaint} />
+      <Icon name="forward" size={18} color={c.textFaint} />
     </Tap>
   );
 });

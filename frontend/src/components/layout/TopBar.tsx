@@ -14,7 +14,7 @@
  * nằm giữa mà lệch sang phải một nửa nút.
  */
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '../primitives/Icon';
 import { layout, space, useColors, useStyles } from '@design';
 import { Txt } from '../primitives/Txt';
 import { IconButton } from '../primitives/IconButton';
@@ -46,8 +46,8 @@ export function TopBar({
     <View style={s.bar}>
       {onClose && closeLabel ? (
         <IconButton label={closeLabel} onPress={onClose} style={s.edge}>
-          <Ionicons
-            name={closeIcon === 'down' ? 'chevron-down' : 'chevron-back'}
+          <Icon
+            name={closeIcon === 'down' ? 'down' : 'back'}
             size={24}
             color={c.text}
           />

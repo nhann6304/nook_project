@@ -97,7 +97,12 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   nút đầu là HAI vị trí của cùng màn `home` (camera trang 0, ảnh bạn bè từ
   trang 1, `<Pager>`) — nối qua `home/store/homeNav.ts`, chung một camera.
   Rời tab là camera tắt (`active`). Góc trái → bạn bè, góc phải → tin nhắn,
-  vẫn mở chồng lên. Icon dùng bản **đặc** (`home`, không `home-outline`).
+  vẫn mở chồng lên.
+- **Icon: bộ RIÊNG `<Icon name>`** (`src/components/primitives/Icon.tsx`, 07/10/2026)
+  — nét 2.4 bo tròn + ruột tô nhạt. **Không dùng Ionicons** nữa; thiếu icon thì
+  vẽ thêm vào bộ, cùng lưới 24 và độ dày.
+- **Chụp không có vòng chờ:** ảnh gốc hiện ngay, cắt vuông chạy ngầm
+  (`squaring` trong `CameraPage`), tải lên server chạy nền sau khi gửi.
 - Chữ: **Poppins** (tiêu đề 600–700, không 800) + **Caveat** cho lời nhấn viết
   tay (`variant="hand"`, mỗi màn tối đa một chỗ).
 - **Không có linh vật** (bỏ 31/08/2026). Chỗ trống dùng `<GhostFrame>` hoặc
@@ -110,8 +115,10 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - Ba từ **cấm** trong chữ hiện cho người dùng: *điểm*, *hạng*, *nhiệm vụ*
   (tiếng Anh: *points*, *rank*, *quest*). Không chữ kỹ thuật ("OTP", "xác thực",
   "hợp lệ", "verify", "valid").
-- Wordmark "nook" vẽ bằng SVG, **hai chữ "o" chính là hai vòng của dấu hiệu** —
-  nên không đặt `<Rings>` cạnh `<Wordmark>` nữa.
+- **Tên app: LOVO** (đổi 07/10/2026). Wordmark vẽ bằng SVG: chữ O đầu là trái
+  tim màu nhấn, chữ O cuối to hơn và là mặt cười. Icon app + splash dựng bằng
+  `node scripts/brand-icons.mjs`. Mã nội bộ (`@nook/shared`, bundle id, scheme)
+  vẫn giữ chữ `nook` — đổi là vỡ cài đặt cũ và liên kết.
 
 **Hai nền tảng** — bẫy đã gặp, đừng đạp lại
 

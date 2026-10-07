@@ -6,8 +6,7 @@
  */
 import { memo, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Avatar, EmptyState, IconButton, Img, List, Screen, Tap, Txt } from '@ui';
+import { Avatar, EmptyState, Icon, IconButton, Img, List, Screen, Tap, Txt } from '@ui';
 import { radius, space, useColors, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
 import { lastAbout, lastMessage, type Conversation } from '../types';
@@ -50,7 +49,7 @@ export function ChatListScreen({
     <Screen padded={false} edges={['top']}>
       <View style={s.bar}>
         <IconButton label={t('home.backToCamera')} onPress={onClose} style={s.back}>
-          <Ionicons name="chevron-back" size={22} color={c.text} />
+          <Icon name="back" size={22} color={c.text} />
         </IconButton>
         <Txt variant="title" style={s.title}>
           {t('chat.title')}

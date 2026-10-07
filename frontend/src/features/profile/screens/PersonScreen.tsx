@@ -6,9 +6,8 @@
  * Không bao giờ có cấp thân ở đây — cấp thân nằm ở trang riêng của một cặp.
  */
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Avatar, Button, Card, EmptyState, Flex, Loading, Screen, TopBar, Txt } from '@ui';
+import { Avatar, Button, Card, EmptyState, Flex, Icon, Loading, Screen, TopBar, Txt } from '@ui';
 import { duration, space, useColors, useStyles } from '@design';
 import { useDate, useT } from '@i18n';
 import type { Relation } from '@/features/circle/types';
@@ -59,7 +58,7 @@ export function PersonScreen({
 
         {closed ? (
           <Card style={s.card}>
-            <Ionicons name="lock-closed" size={22} color={c.textMuted} />
+            <Icon name="lock" size={22} color={c.textMuted} />
             <View style={s.cardText}>
               <Txt variant="label">{t('person.lockedTitle')}</Txt>
               <Txt variant="faint" tone="muted">

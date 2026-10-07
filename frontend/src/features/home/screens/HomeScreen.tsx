@@ -17,7 +17,6 @@ import {
   View,
   type LayoutChangeEvent,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   Easing,
   Extrapolation,
@@ -29,18 +28,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import {
-  AvatarStack,
-  IconButton,
-  Img,
-  OfflineBar,
-  Pager,
-  Screen,
-  Tap,
-  Toast,
-  Txt,
-  type PagerHandle,
-} from '@ui';
+import { AvatarStack, Icon, IconButton, Img, OfflineBar, Pager, Screen, Tap, Toast, Txt, type PagerHandle } from '@ui';
 import {
   duration,
   ease,
@@ -396,7 +384,7 @@ export function HomeScreen({
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
               <IconButton label={t('home.openFriends')} onPress={onOpenFriends} style={s.round}>
-                <Ionicons name="people" size={21} color={c.accent} />
+                <Icon name="people" size={21} color={c.accent} />
               </IconButton>
             </Animated.View>
 
@@ -421,7 +409,7 @@ export function HomeScreen({
                 <Animated.View style={[s.layer, camPill]} pointerEvents="none">
                   {count === 0 ? (
                     <View style={[s.pill, s.pillAccent]}>
-                      <Ionicons name="add" size={18} color={c.onAccent} />
+                      <Icon name="add" size={18} color={c.onAccent} />
                       <Txt variant="label" tone="onAccent">
                         {t('home.inviteFirst')}
                       </Txt>
@@ -435,7 +423,7 @@ export function HomeScreen({
                 </Animated.View>
                 <Animated.View style={[s.layer, feedPill]} pointerEvents="none">
                   <View style={s.pill}>
-                    <Ionicons name="grid-outline" size={16} color={c.text} />
+                    <Icon name="grid" size={16} color={c.text} />
                     <Txt variant="label">{t('home.allFriends')}</Txt>
                   </View>
                 </Animated.View>
@@ -447,7 +435,7 @@ export function HomeScreen({
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
               <IconButton label={t('home.openChats')} onPress={onOpenChats} style={s.round}>
-                <Ionicons name="chatbubble-ellipses" size={20} color={c.accent} />
+                <Icon name="chat" size={20} color={c.accent} />
                 {unread ? <View style={s.dot} /> : null}
               </IconButton>
             </Animated.View>

@@ -10,8 +10,7 @@
  */
 import { memo } from 'react';
 import { StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Tap } from '@ui';
+import { Icon, Tap } from '@ui';
 import { radius, useColors, useStyles, type Palette } from '@design';
 
 export type FlashMode = 'off' | 'on';
@@ -38,8 +37,8 @@ export const FlashToggle = memo(function FlashToggle({
       scaleTo={0.9}
       style={[s.box, on && s.on]}
     >
-      <Ionicons
-        name={on ? 'flash' : 'flash-off'}
+      <Icon
+        name={on ? 'flash' : 'flashOff'}
         size={18}
         color={on ? c.onAccent : c.onPhotoText}
       />

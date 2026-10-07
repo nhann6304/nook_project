@@ -12,16 +12,15 @@
 import { memo, useEffect, useState } from 'react';
 import { Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '../primitives/Icon';
 import { font, layout, lift, radius, space, useColors, useStyles, type Palette } from '@design';
 import { Tap } from '../primitives/Tap';
 import { Txt } from '../primitives/Txt';
-import type { IconName } from '../primitives/IconBadge';
+import type { IconName } from '../primitives/Icon';
 
 export type TabItem<K extends string> = {
   key: K;
   label: string;
-  /** Bản ĐẶC (`home`, không `home-outline`) — nét mảnh khó nhìn ngoài nắng. */
   icon: IconName;
 };
 
@@ -88,7 +87,7 @@ const Item = memo(function Item<K extends string>({
       style={s.item}
     >
       <View style={[s.icon, selected && s.iconOn]}>
-        <Ionicons name={item.icon} size={22} color={selected ? c.onAccent : c.textFaint} />
+        <Icon name={item.icon} size={22} color={selected ? c.onAccent : c.textFaint} />
       </View>
       <Txt variant="faint" tone={selected ? 'accent' : 'faint'} numberOfLines={1} style={s.label}>
         {item.label}

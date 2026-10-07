@@ -1,5 +1,10 @@
 # Nook — Thương hiệu
 
+> **07/10/2026 — đổi tên thành LOVO.** Logo mới: chữ O đầu là trái tim, chữ O cuối
+> là mặt cười to hơn (`src/components/brand/Wordmark.tsx`). Các tệp `logo*.svg`,
+> `app-icon.svg` nói ở dưới đã bỏ; icon app dựng bằng `scripts/brand-icons.mjs`.
+> Phần dưới là lịch sử thương hiệu Nook.
+
 Logo, app icon, màu, kiểu chữ, linh vật. Đây là những thứ ít thay đổi nhất trong dự án —
 sửa một thứ ở đây là sửa cả app, nên sửa thì ghi lý do vào phần cuối file.
 

@@ -36,7 +36,7 @@ function AppTabBar({ state, navigation }: BottomTabBarProps) {
   const items = useMemo<TabItem<Key>[]>(
     () => [
       { key: 'home', label: t('tabs.home'), icon: 'home' },
-      { key: 'feed', label: t('tabs.feed'), icon: 'images' },
+      { key: 'feed', label: t('tabs.feed'), icon: 'gallery' },
       { key: 'settings', label: t('tabs.settings'), icon: 'settings' },
     ],
     [t],

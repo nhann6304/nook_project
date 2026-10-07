@@ -34,12 +34,12 @@ export const radius = {
   lg: 20,
   xl: 24,
   /** Thẻ ảnh trong feed. */
-  frame: 24,
+  frame: 28,
   /**
    * Khung ảnh chính (camera + khoảnh khắc). Theo bảng thiết kế: 36 trên khung
    * 374pt. Khung đứng 3:4 nên bo vừa phải, bo 56 như trước trông thành viên thuốc.
    */
-  viewfinder: 36,
+  viewfinder: 40,
   full: 999,
 } as const;
 

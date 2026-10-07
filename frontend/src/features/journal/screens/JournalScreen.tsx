@@ -11,10 +11,9 @@
  */
 import { memo, useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
-import { EmptyState, IconButton, Img, Screen, Scroll, Tap, Txt } from '@ui';
+import { EmptyState, Icon, IconButton, Img, Screen, Scroll, Tap, Txt } from '@ui';
 import { duration, layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useDate, useLocale, useT } from '@i18n';
 import { dayKey, type Entry } from '../types';
@@ -116,7 +115,7 @@ export function JournalScreen({
     <Screen padded={false}>
       <View style={s.bar}>
         <IconButton label={t('journal.close')} onPress={onClose} style={s.round}>
-          <Ionicons name="chevron-down" size={22} color={c.text} />
+          <Icon name="down" size={22} color={c.text} />
         </IconButton>
         <Txt variant="section" style={s.barTitle}>
           {t('journal.title')}
@@ -128,7 +127,7 @@ export function JournalScreen({
             disabled={!canPrevYear}
             style={!canPrevYear && s.off}
           >
-            <Ionicons name="chevron-back" size={18} color={c.text} />
+            <Icon name="back" size={18} color={c.text} />
           </IconButton>
           <Tap onPress={() => setMonth(null)} accessibilityLabel={t('journal.wholeYear', { year })}>
             <Txt variant="section">{year}</Txt>
@@ -139,7 +138,7 @@ export function JournalScreen({
             disabled={!canNextYear}
             style={!canNextYear && s.off}
           >
-            <Ionicons name="chevron-forward" size={18} color={c.text} />
+            <Icon name="forward" size={18} color={c.text} />
           </IconButton>
         </View>
       </View>
@@ -164,7 +163,7 @@ export function JournalScreen({
               style={s.chip}
               accessibilityLabel={t('journal.wholeYear', { year })}
             >
-              <Ionicons name="apps" size={14} color={c.text} />
+              <Icon name="more" size={14} color={c.text} />
             </Tap>
             {MONTHS.map((m) => {
               const has = byMonth.has(`${year}-${m}`);
@@ -389,7 +388,7 @@ function MonthView({
           </Txt>
         </View>
         <IconButton label={t('journal.prevMonth')} onPress={onPrev} style={s.round}>
-          <Ionicons name="chevron-back" size={20} color={c.text} />
+          <Icon name="back" size={20} color={c.text} />
         </IconButton>
         <IconButton
           label={t('journal.nextMonth')}
@@ -397,7 +396,7 @@ function MonthView({
           disabled={!canNext}
           style={[s.round, !canNext && s.off]}
         >
-          <Ionicons name="chevron-forward" size={20} color={c.text} />
+          <Icon name="forward" size={20} color={c.text} />
         </IconButton>
       </Animated.View>
 
@@ -544,7 +543,7 @@ function Viewer({
         </Scroll>
       </Animated.View>
       <IconButton label={closeLabel} onPress={onClose} style={s.closeBig}>
-        <Ionicons name="close" size={22} color={c.text} />
+        <Icon name="close" size={22} color={c.text} />
       </IconButton>
     </Animated.View>
   );

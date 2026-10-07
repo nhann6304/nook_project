@@ -8,8 +8,7 @@
  */
 import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Img, Tap, Txt } from '@ui';
+import { Icon, Img, Tap, Txt } from '@ui';
 import { layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { dayKey, type Entry } from '../types';
 
@@ -57,7 +56,7 @@ export const JournalStrip = memo(function JournalStrip({
   return (
     <View style={s.root}>
       <Tap onPress={onHint} feedback={null} style={s.hint} accessibilityLabel={hint}>
-        <Ionicons name="chevron-up" size={16} color={c.textFaint} />
+        <Icon name="up" size={16} color={c.textFaint} />
       </Tap>
       <Tap onPress={onOpen} scaleTo={0.97} style={s.row} accessibilityLabel={label}>
         {days.map((d) => (

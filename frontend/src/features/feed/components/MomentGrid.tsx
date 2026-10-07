@@ -4,8 +4,7 @@
  */
 import { memo, useCallback, useMemo, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { IconButton, Img, List, Tap, Txt } from '@ui';
+import { Icon, IconButton, Img, List, Tap, Txt } from '@ui';
 import { layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import type { Moment } from '../types';
 
@@ -77,7 +76,7 @@ export function MomentGrid({
     <View style={s.root}>
       <View style={s.bar}>
         <IconButton label={backLabel} onPress={onClose} style={s.back}>
-          <Ionicons name="chevron-back" size={22} color={c.text} />
+          <Icon name="back" size={22} color={c.text} />
         </IconButton>
         <Txt variant="title" style={s.title}>
           {title}

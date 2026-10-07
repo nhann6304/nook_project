@@ -104,7 +104,7 @@ export function SettingsScreen({
           </Card>
 
           <Group title={t('privacy.title')}>
-            <Line icon="lock-closed">
+            <Line icon="lock">
               <Toggle
                 value={locked}
                 onChange={onLockChange}
@@ -133,7 +133,7 @@ export function SettingsScreen({
               ) : null}
             </Line>
             <Divider inset />
-            <Line icon="color-palette" title={t('theme.locket')} hint={t('theme.locketHint')}>
+            <Line icon="palette" title={t('theme.locket')} hint={t('theme.locketHint')}>
               <AccentPicker
                 current={accent}
                 names={accentNames}
@@ -144,7 +144,7 @@ export function SettingsScreen({
           </Group>
 
           <Group title={t('sound.title')}>
-            <Line icon="musical-notes">
+            <Line icon="music">
               <Toggle
                 value={soundOn}
                 onChange={onSoundChange}
@@ -173,7 +173,7 @@ export function SettingsScreen({
           </Group>
 
           <Group title={t('account.title')}>
-            <Line icon="log-out" title={t('account.signOut')} hint={t('account.signOutHint')}>
+            <Line icon="logout" title={t('account.signOut')} hint={t('account.signOutHint')}>
               <Button label={t('account.signOut')} variant="danger" onPress={onSignOut} block />
             </Line>
           </Group>

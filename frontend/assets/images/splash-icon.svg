@@ -1,6 +1,13 @@
-<!-- Nook — hình trên màn splash. Nền trong suốt; màu nền do
-     expo-splash-screen đặt (backgroundColor trong app.json). -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512" role="img" aria-label="Nook">
-  <path d="M50.9 34.7A20 20 0 1 0 50.9 65.3" fill="none" stroke="#E8834F" stroke-width="9" stroke-linecap="round"/>
-  <circle cx="56" cy="50" r="20" fill="none" stroke="#F7A97A" stroke-width="9"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="LOVO">
+  
+  <g transform="translate(28 138.57142857142856) scale(1.2285714285714286)">
+  <g fill="none" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 16V84H52" stroke="#1B263F"/>
+    <path d="M98 86C78 72 68 60 68 44C68 32 77 24 87 24C93 24 97 28 98 32C99 28 103 24 109 24C119 24 128 32 128 44C128 60 118 72 98 86Z" stroke="#3C5B91" fill="#3C5B91" fill-opacity="0.22"/>
+    <path d="M142 16L164 84L186 16" stroke="#1B263F"/>
+    <circle cx="232" cy="50" r="35" stroke="#1B263F"/>
+    <circle cx="220" cy="42" r="5.5" fill="#1B263F" stroke="none"/>
+    <circle cx="244" cy="42" r="5.5" fill="#1B263F" stroke="none"/>
+    <path d="M217 58Q232 72 247 58" stroke="#3C5B91" stroke-width="9"/>
+  </g></g>
 </svg>

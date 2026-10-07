@@ -14,7 +14,7 @@
  */
 import { useCallback, useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from './Icon';
 import { Tap } from './Tap';
 import { radius, space, type, useColors, useStyles, type Palette } from '@design';
 
@@ -71,7 +71,7 @@ export function ComposerField({
           scaleTo={0.9}
           style={[s.send, ready ? s.sendOn : s.sendOff]}
         >
-          <Ionicons name="arrow-up" size={18} color={ready ? c.onAccent : c.textFaint} />
+          <Icon name="send" size={18} color={ready ? c.onAccent : c.textFaint} />
         </Tap>
       </View>
     </View>

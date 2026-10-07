@@ -19,7 +19,7 @@
  */
 import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from './Icon';
 import { radius, space, useColors, useStyles, type, type Palette } from '@design';
 
 export const CAPTION_MAX = 80;
@@ -56,7 +56,9 @@ export const CaptionField = forwardRef<TextInput, CaptionFieldProps>(function Ca
       style={[s.pill, focused && s.pillFocused]}
     >
       {showIcon ? (
-        <Ionicons name="create-outline" size={16} color={c.onPhotoText} style={s.icon} />
+        <View style={s.icon}>
+          <Icon name="edit" size={16} color={c.onPhotoText} />
+        </View>
       ) : null}
 
       <View style={s.inputBox}>

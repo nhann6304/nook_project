@@ -10,8 +10,6 @@
  */
 import { memo, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -19,7 +17,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { Avatar, Clip, Img, Tap, Txt } from '@ui';
+import { Avatar, Clip, Icon, Img, Tap, Txt } from '@ui';
 import {
   duration,
   media,
@@ -38,8 +36,8 @@ import { splitCaption } from '../lib/tags';
 /** Ba cảm xúc, không hơn. Gửi đi dưới dạng emoji trong cuộc trò chuyện. */
 export const REACTIONS = [
   { key: 'heart', emoji: '❤️', icon: 'heart' },
-  { key: 'laugh', emoji: '😂', icon: 'happy' },
-  { key: 'fire', emoji: '🔥', icon: 'flame' },
+  { key: 'laugh', emoji: '😂', icon: 'laugh' },
+  { key: 'fire', emoji: '🔥', icon: 'fire' },
 ] as const;
 export type Reaction = (typeof REACTIONS)[number];
 
@@ -85,24 +83,6 @@ export const MomentPage = memo(function MomentPage({
         <Img source={moment.photo} recyclingKey={moment.id} style={media.fill} shimmer />
         {/* Chỉ trang đang xem mới dựng trình phát — lướt nhanh không đẻ ra năm cái. */}
         {moment.video && active ? <Clip uri={moment.video} playing /> : null}
-        <LinearGradient colors={[c.scrim, 'transparent']} style={s.topShade} pointerEvents="none" />
-
-        <View style={s.author}>
-          <Avatar
-            name={moment.author.name}
-            level={moment.author.level}
-            dormant={moment.author.dormant}
-            size={36}
-            recyclingKey={moment.author.id}
-          />
-          <Txt variant="label" tone="onPhoto">
-            {moment.mine ? yoursLabel : moment.author.name}
-          </Txt>
-          <Txt variant="faint" tone="onPhoto" style={s.dim}>
-            {ago}
-          </Txt>
-        </View>
-
         {moment.tags?.some((tg) => tg.id === ME_ID) ? (
           <View style={s.mentioned} pointerEvents="none">
             <Txt variant="faint" tone="onAccent">
@@ -137,29 +117,51 @@ export const MomentPage = memo(function MomentPage({
         ) : null}
       </View>
 
-      {moment.mine ? null : (
-        <View style={s.reply}>
-          <Tap
-            onPress={() => onReply(moment, null)}
-            scaleTo={0.99}
-            style={s.replyField}
-            accessibilityLabel={replyHint}
-          >
-            <Txt variant="body" tone="faint" numberOfLines={1}>
-              {replyHint}
+      {/* Dưới khung: ai gửi + ô trả lời, dàn đều phần còn lại của trang — trước đây
+          tên nằm đè lên ảnh và dưới ô trả lời là một khoảng trống to. */}
+      <View style={s.below}>
+        <View style={s.author}>
+          <Avatar
+            name={moment.author.name}
+            level={moment.author.level}
+            dormant={moment.author.dormant}
+            size={40}
+            recyclingKey={moment.author.id}
+          />
+          <View style={s.who}>
+            <Txt variant="label" numberOfLines={1}>
+              {moment.mine ? yoursLabel : moment.author.name}
             </Txt>
-          </Tap>
-          {REACTIONS.map((r) => (
-            <ReactButton
-              key={r.key}
-              reaction={r}
-              label={reactionLabels[r.key]}
-              color={r.key === 'heart' ? c.accent2 : r.key === 'laugh' ? c.honey : c.accent}
-              onPress={() => onReply(moment, r)}
-            />
-          ))}
+            <Txt variant="faint" tone="muted">
+              {ago}
+            </Txt>
+          </View>
         </View>
-      )}
+
+        {moment.mine ? null : (
+          <View style={s.reply}>
+            <Tap
+              onPress={() => onReply(moment, null)}
+              scaleTo={0.99}
+              style={s.replyField}
+              accessibilityLabel={replyHint}
+            >
+              <Txt variant="body" tone="faint" numberOfLines={1}>
+                {replyHint}
+              </Txt>
+            </Tap>
+            {REACTIONS.map((r) => (
+              <ReactButton
+                key={r.key}
+                reaction={r}
+                label={reactionLabels[r.key]}
+                color={r.key === 'heart' ? c.accent2 : r.key === 'laugh' ? c.honey : c.accent}
+                onPress={() => onReply(moment, r)}
+              />
+            ))}
+          </View>
+        )}
+      </View>
     </View>
   );
 });
@@ -198,10 +200,10 @@ function ReactButton({
   return (
     <Tap onPress={press} feedback={null} scaleTo={1} style={s.react} accessibilityLabel={label}>
       <Animated.View pointerEvents="none" style={[s.ghost, ghostStyle]}>
-        <Ionicons name={reaction.icon} size={22} color={color} />
+        <Icon name={reaction.icon} size={22} color={color} />
       </Animated.View>
       <Animated.View style={iconStyle}>
-        <Ionicons name={reaction.icon} size={23} color={color} />
+        <Icon name={reaction.icon} size={23} color={color} />
       </Animated.View>
     </Tap>
   );
@@ -215,16 +217,21 @@ const make = (c: Palette) =>
       backgroundColor: c.surfaceRaised,
       overflow: 'hidden',
     },
-    topShade: { position: 'absolute', left: 0, right: 0, top: 0, height: 96 },
+    below: {
+      flex: 1,
+      alignSelf: 'stretch',
+      justifyContent: 'center',
+      gap: space.md,
+      paddingHorizontal: space.lg,
+      paddingBottom: space.sm,
+    },
     author: {
-      position: 'absolute',
-      top: space.lg,
-      left: space.lg,
-      right: space.lg,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: space.sm + 2,
+      gap: space.md,
+      paddingHorizontal: space.xs,
     },
+    who: { flex: 1, gap: 0 },
     captionSlot: {
       position: 'absolute',
       left: 0,
@@ -243,9 +250,6 @@ const make = (c: Palette) =>
     },
 
     reply: {
-      marginTop: space.md + 2,
-      alignSelf: 'stretch',
-      marginHorizontal: space.lg,
       height: REPLY_HEIGHT,
       borderRadius: radius.full,
       backgroundColor: c.surface,
@@ -257,11 +261,10 @@ const make = (c: Palette) =>
     replyField: { flex: 1, height: '100%', justifyContent: 'center' },
     react: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
     ghost: { position: 'absolute' },
-    dim: { opacity: 0.75 },
     tag: { textDecorationLine: 'underline' },
     mentioned: {
       position: 'absolute',
-      top: space.lg + 44,
+      top: space.lg,
       left: space.lg,
       borderRadius: radius.full,
       backgroundColor: c.accent,

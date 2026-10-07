@@ -11,10 +11,9 @@
  */
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import type { FlashListRef } from '@shopify/flash-list';
 import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
-import { Avatar, ComposerField, IconButton, Img, List, Screen, Tap, Txt } from '@ui';
+import { Avatar, ComposerField, Icon, IconButton, Img, List, Screen, Tap, Txt } from '@ui';
 import { duration, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import { Bubble } from '../components/Bubble';
@@ -80,7 +79,7 @@ export function ChatScreen({
     <Screen padded={false} keyboard>
       <View style={s.head}>
         <IconButton label={t('common.closeScreen')} onPress={onClose} style={s.round}>
-          <Ionicons name="chevron-back" size={22} color={c.text} />
+          <Icon name="back" size={22} color={c.text} />
         </IconButton>
         <Tap onPress={onOpenFriend} scaleTo={0.97} style={s.who} accessibilityLabel={friend.name}>
           <Avatar
@@ -131,7 +130,7 @@ export function ChatScreen({
             ) : null}
           </View>
           <IconButton label={t('chat.cancelReply')} onPress={onClearReply}>
-            <Ionicons name="close" size={18} color={c.textMuted} />
+            <Icon name="close" size={18} color={c.textMuted} />
           </IconButton>
         </Animated.View>
       ) : null}
@@ -142,7 +141,7 @@ export function ChatScreen({
         onSend={onSend}
         left={
           <IconButton label={t('chat.openCamera')} onPress={onOpenCamera} style={s.camera}>
-            <Ionicons name="camera-outline" size={21} color={c.text} />
+            <Icon name="camera" size={21} color={c.text} />
           </IconButton>
         }
       />

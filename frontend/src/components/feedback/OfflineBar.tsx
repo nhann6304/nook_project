@@ -7,7 +7,7 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '../primitives/Icon';
 import { duration, radius, space, useColors, useStyles, type Palette } from '@design';
 import { Txt } from '../primitives/Txt';
 
@@ -29,7 +29,7 @@ export const OfflineBar = memo(function OfflineBar({
         style={s.pill}
         accessibilityLiveRegion="polite"
       >
-        <Ionicons name="cloud-offline-outline" size={14} color={c.textMuted} />
+        <Icon name="offline" size={14} color={c.textMuted} />
         <Txt variant="faint" tone="muted">
           {label}
         </Txt>

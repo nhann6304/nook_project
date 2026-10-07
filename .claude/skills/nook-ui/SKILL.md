@@ -26,6 +26,7 @@ Trước khi viết một component mới, tra bảng này. Cột phải là th�
 |---|---|---|
 | Chữ | `<Txt variant tone>` | `<Text>` của react-native |
 | Nút chữ | `<Button label variant>` | `<TouchableOpacity>` |
+| Icon | `<Icon name size color>` — bộ riêng, nét dày bo tròn | `Ionicons` / `@expo/vector-icons` |
 | Nút icon | `<IconButton label>` | `<Pressable>` trần |
 | Icon trong nền tròn (hàng cài đặt) | `<IconBadge name>` — icon bản đặc | tự bo `<View>` + icon |
 | Thanh điều hướng dưới đáy | `<TabBar>` (đã có ở `app/(app)/(tabs)/`) | tab bar mặc định của expo-router, blur |

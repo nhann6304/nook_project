@@ -59,7 +59,7 @@ export function Divider({ inset }: { inset?: boolean }) {
 
 const make = (c: Palette) =>
   StyleSheet.create({
-  card: { backgroundColor: c.surface, borderRadius: radius.lg, padding: space.lg },
+  card: { backgroundColor: c.surface, borderRadius: radius.xl, padding: space.lg },
   raised: { backgroundColor: c.surfaceRaised },
 
   pill: {
