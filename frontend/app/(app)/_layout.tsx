@@ -9,8 +9,6 @@ export default function AppLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-      <Stack.Screen name="circle" options={{ animation: 'slide_from_left' }} />
-      <Stack.Screen name="chats" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="chat/[id]" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="friend/[id]" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="person/[id]" options={{ animation: 'slide_from_right' }} />

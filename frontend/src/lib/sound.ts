@@ -59,12 +59,13 @@ export function setSoundEnabled(on: boolean): void {
 function play(name: Name) {
   const p = players[name];
   if (!enabled || !p) return;
-  try {
-    // Phát lại từ đầu: bấm hai lần liền thì nghe hai tiếng, không phải nửa tiếng.
-    void p.seekTo(0).then(() => p.play());
-  } catch {
-    /* thiếu tiếng không được làm hỏng thao tác */
-  }
+  // Phát lại từ đầu: bấm hai lần liền thì nghe hai tiếng, không phải nửa tiếng.
+  // Lỗi đến TRỄ (promise) — try/catch thường không bắt được, phải `.catch`.
+  // Thiếu tiếng không được làm hỏng thao tác: iOS từ chối bật phiên âm thanh
+  // lúc camera đang giữ micro ("Session activation failed").
+  p.seekTo(0)
+    .then(() => p.play())
+    .catch(() => undefined);
 }
 
 /** Bấm nút chụp. */

@@ -10,7 +10,7 @@
  * khung trang, bay không ra khỏi được.
  */
 import { useCallback, useRef, useState, type ComponentRef } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {
   CameraView,
   useCameraPermissions,
@@ -174,11 +174,9 @@ export function CameraPage({
    * Máy bắt ảnh NGAY lúc gọi `takePictureAsync`; phần chậm (0,3–0,8s) là xử lý
    * ảnh độ phân giải đầy đủ SAU đó. Trước đây khung ngắm vẫn chạy trong lúc
    * chờ và rung "đã chụp" tới muộn, nên người dùng tưởng phải giữ yên máy.
-   * Giờ: rung + nháy ngay khi bấm, iPhone đứng hình khung ngắm đúng khoảnh
-   * khắc đó, và có vòng xoay tới khi ảnh về.
-   *
-   * Android KHÔNG đứng hình: `pausePreview` bên đó tháo cả camera, gọi lúc
-   * đang chụp là mất ảnh.
+   * Giờ: rung + nháy ngay khi bấm, ảnh về là hiện liền, không vòng chờ.
+   * KHÔNG đứng hình khung ngắm (`pausePreview`) nữa: Android tháo cả camera,
+   * iOS thì cắt ngang ảnh đang chụp.
    */
   const capture = useCallback(async () => {
     if (busy || !cam.current) return;
@@ -192,7 +190,6 @@ export function CameraPage({
     }
 
     feel.capture();
-    sound.capture();
     blink.set(
       withSequence(
         withTiming(0.85, { duration: duration.instant }),
@@ -201,14 +198,20 @@ export function CameraPage({
     );
 
     try {
-      const shooting = cam.current.takePictureAsync({ quality: 0.8 });
-      if (Platform.OS === 'ios') void cam.current.pausePreview();
-      const photo = await shooting;
+      // KHÔNG pausePreview trước khi ảnh về, và tiếng "tách" phát SAU: iOS
+      // 07/10/2026 báo "Image could not be captured" — dừng khung ngắm hay
+      // bật phiên âm thanh giữa lúc chụp đều cắt ngang phiên camera.
+      const photo = await cam.current.takePictureAsync({ quality: 0.8 });
       if (photo?.uri) {
-        // Hiện ảnh gốc NGAY (khung vuông `cover` cắt giống hệt), không vòng chờ.
+        sound.capture();
+        // Hiện ảnh gốc NGAY (khung cắt bằng `cover` giống hệt), không vòng chờ.
         review(photo.uri);
         squaring.current = toSquare(photo.uri);
-      } else if (Platform.OS === 'ios') void cam.current?.resumePreview();
+      }
+    } catch {
+      // Máy từ chối chụp (phiên camera vừa bị ngắt) — rung báo, giữ nguyên khung
+      // ngắm để bấm lại, không văng lỗi đỏ.
+      feel.reject();
     } finally {
       screenFlash.current?.off();
       setBusy(false);
@@ -287,7 +290,6 @@ export function CameraPage({
   }, []);
 
   const discard = useCallback(() => {
-    if (Platform.OS === 'ios') void cam.current?.resumePreview();
     review(null);
     squaring.current = null;
     setClip(null);
@@ -372,7 +374,9 @@ export function CameraPage({
           mode={mode}
           // Quay video bằng camera sau: "đèn" là đèn pin bật suốt lúc quay.
           enableTorch={recording && facing === 'back' && flash === 'on'}
-          mute={!mic?.granted}
+          // Chỉ mở micro lúc QUAY. Chụp ảnh mà camera giữ micro thì phiên âm
+          // thanh của tiếng "tách" không bật được, và cắt ngang luôn ảnh đang chụp.
+          mute={mode !== 'video' || !mic?.granted}
           onCameraReady={onReady}
           style={common.absoluteFill}
           facing={facing}
