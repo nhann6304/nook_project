@@ -292,7 +292,7 @@ export const vi = {
     mentioned: 'Nhắc tới bạn',
     openFriends: 'Bạn bè',
     openChats: 'Tin nhắn',
-    friendsPill: { other: '{count} bạn' },
+    friendsPill: { other: '{count} Bạn bè' },
     inviteFirst: 'Mời bạn đầu tiên',
     allFriends: 'Tất cả bạn bè',
     sendToAll: { other: 'Gửi cho cả {count} bạn' },

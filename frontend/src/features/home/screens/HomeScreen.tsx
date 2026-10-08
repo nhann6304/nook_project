@@ -30,7 +30,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import {
   Avatar,
-  AvatarStack,
   Icon,
   IconButton,
   Img,
@@ -46,6 +45,7 @@ import {
 import {
   duration,
   ease,
+  font,
   layout,
   media,
   radius,
@@ -417,22 +417,28 @@ export function HomeScreen({
                 <Animated.View style={[s.layer, camPill]} pointerEvents="none">
                   {count === 0 ? (
                     <View style={[s.pill, s.pillAccent]}>
-                      <Icon name="add" size={18} color={c.onAccent} />
-                      <Txt variant="label" tone="onAccent">
+                      <Icon name="add" size={20} color={c.onAccent} />
+                      <Txt variant="label" tone="onAccent" style={s.pillText}>
                         {t('home.inviteFirst')}
                       </Txt>
                     </View>
                   ) : (
+                    // Theo Locket: icon người + số bạn chữ đậm. Chấm avatar tí hon
+                    // trước đó bị chê "nhỏ, xấu".
                     <View style={s.pill}>
-                      <AvatarStack names={friendNames} />
-                      <Txt variant="label">{t('home.friendsPill', { count })}</Txt>
+                      <Icon name="people" size={20} color={c.text} />
+                      <Txt variant="label" style={s.pillText}>
+                        {t('home.friendsPill', { count })}
+                      </Txt>
                     </View>
                   )}
                 </Animated.View>
                 <Animated.View style={[s.layer, feedPill]} pointerEvents="none">
                   <View style={s.pill}>
-                    <Icon name="grid" size={16} color={c.accent} />
-                    <Txt variant="label">{t('home.allFriends')}</Txt>
+                    <Icon name="grid" size={20} color={c.text} />
+                    <Txt variant="label" style={s.pillText}>
+                      {t('home.allFriends')}
+                    </Txt>
                   </View>
                 </Animated.View>
               </Tap>
@@ -604,8 +610,9 @@ const make = (c: Palette) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: space.sm,
-      paddingHorizontal: space.lg,
+      paddingHorizontal: space.lg + space.xs,
     },
+    pillText: { fontFamily: font.bodyBold, fontSize: 17 },
     pillAccent: { backgroundColor: c.accent },
 
     area: { flex: 1 },
