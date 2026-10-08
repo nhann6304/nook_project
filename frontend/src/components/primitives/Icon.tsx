@@ -1,35 +1,25 @@
 /**
- * Icon — nét Phosphor, kiểu DUOTONE (08/10/2026, nhánh thử giao diện).
+ * Icon — bộ SOLAR (08/10/2026, nhánh thử giao diện).
  *
- * Bộ tự vẽ trước đó bị chê "chưa đủ sức thuyết phục": dày quá thì thô, mảnh quá
- * thì nhạt. Duotone giải cả hai — nét vừa, ruột tô nhạt CÙNG MÀU với nét, nên
- * icon có khối mà không đen, và đổi màu theo nhấn của người dùng.
+ * Hai bộ trước đều bị chê: tự vẽ thì "chưa thuyết phục", Phosphor thì "sơ xài"
+ * (khiên Riêng tư chỉ là một cái viền). Solar có chi tiết thật (khiên có lỗ
+ * khoá, camera có ống kính + đèn) và hai tông sẵn: phần phụ mờ 50%, phần chính
+ * đậm — rõ mà không nặng.
  *
- * Nét nằm ở `iconPaths.ts`, sinh bằng `node scripts/phosphor-icons.mjs` — thêm
- * icon ở đó. `weight="fill"` cho trạng thái đang chọn (tab đang mở, tim đã thả).
+ *   duotone (mặc định) — nét mảnh hai tông, cho thanh công cụ, nút thao tác
+ *   fill / bold        — khối đặc hai tông, cho thứ đang chọn và icon đứng một
+ *                        mình (hàng cài đặt, tab đang mở)
+ *
+ * Nét sinh vào `iconPaths.ts` bằng `node scripts/icons.mjs` — thêm icon ở đó.
  */
 import { memo } from 'react';
-import Svg, { Path } from 'react-native-svg';
-import { ICON_PATHS } from './iconPaths';
+import Svg, { Circle, Ellipse, G, Path, Rect } from 'react-native-svg';
+import { ICON_PATHS, type IconNode } from './iconPaths';
 
 export type IconName = keyof typeof ICON_PATHS;
 export type IconWeight = 'duotone' | 'fill' | 'bold';
 
-const SOFT = 0.3;
-
-/** Nét đơn (✓, ×, mũi tên, +): duotone của Phosphor lót thêm ô vuông/tròn mờ
- *  phía sau — đúng cái "ô bao" bị chê. Những icon này luôn đi nét đậm. */
-const LINE_ONLY: ReadonlySet<IconName> = new Set([
-  'check',
-  'close',
-  'add',
-  'back',
-  'forward',
-  'up',
-  'down',
-  'send',
-  'more',
-]);
+const TAGS = { path: Path, circle: Circle, rect: Rect, ellipse: Ellipse, g: G } as const;
 
 export const Icon = memo(function Icon({
   name,
@@ -42,21 +32,29 @@ export const Icon = memo(function Icon({
   color: string;
   weight?: IconWeight;
 }) {
-  const p = ICON_PATHS[name];
+  const def = ICON_PATHS[name];
   // Vẽ to hơn số được hỏi 15% (07/10/2026: "icon nhỏ xíu") — một chỗ thay vì
   // sửa cỡ ở hàng trăm chỗ gọi.
   const px = Math.round(size * 1.15);
-  const w = weight === 'duotone' && (!p.soft || LINE_ONLY.has(name)) ? 'bold' : weight;
+  const nodes = weight === 'duotone' ? def.line : def.bold;
   return (
-    <Svg width={px} height={px} viewBox="0 0 256 256" pointerEvents="none">
-      {w === 'duotone' ? (
-        <>
-          <Path d={p.soft} fill={color} opacity={SOFT} />
-          <Path d={p.line} fill={color} />
-        </>
-      ) : (
-        <Path d={w === 'fill' ? p.fill : p.bold} fill={color} />
-      )}
+    <Svg width={px} height={px} viewBox={`0 0 ${def.vb} ${def.vb}`} pointerEvents="none">
+      {nodes.map((n, i) => draw(n, i, color))}
     </Svg>
   );
 });
+
+function draw([tag, attrs, children]: IconNode, key: number, color: string): React.ReactNode {
+  const Tag = TAGS[tag as keyof typeof TAGS];
+  if (!Tag) return null;
+  const props: Record<string, string | number> = {};
+  for (const k in attrs) {
+    const v = attrs[k]!;
+    props[k] = v === 'currentColor' ? color : v;
+  }
+  return (
+    <Tag key={key} {...props}>
+      {children?.map((c, i) => draw(c, i, color))}
+    </Tag>
+  );
+}

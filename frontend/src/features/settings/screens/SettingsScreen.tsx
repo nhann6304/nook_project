@@ -127,7 +127,7 @@ export function SettingsScreen({
   );
 }
 
-/** Thẻ Pro: khối nổi màu nhấn có gờ đậm như nút, vương miện màu mật ong. */
+/** Thẻ Pro: khối nổi màu nhấn có gờ đậm như nút, vương miện vàng không khung. */
 function ProCard({ title, sub, onPress }: { title: string; sub: string; onPress: () => void }) {
   const s = useStyles(make);
   const c = useColors();
@@ -139,9 +139,7 @@ function ProCard({ title, sub, onPress }: { title: string; sub: string; onPress:
       accessibilityRole="button"
       accessibilityLabel={title}
     >
-      <View style={s.proCrown}>
-        <Icon name="crown" size={26} color={c.honey} weight="fill" />
-      </View>
+      <Icon name="crown" size={32} color={c.vivid.yellow} weight="fill" />
       <View style={s.flex}>
         <Txt variant="section" tone="onAccent">
           {title}
@@ -209,13 +207,5 @@ const make = (c: Palette) =>
       backgroundColor: c.accent,
       borderBottomWidth: 5,
       borderBottomColor: c.accentDeep,
-    },
-    proCrown: {
-      width: 48,
-      height: 48,
-      borderRadius: radius.full,
-      backgroundColor: c.bg,
-      alignItems: 'center',
-      justifyContent: 'center',
     },
   });

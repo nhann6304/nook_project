@@ -1,12 +1,13 @@
 /**
- * Icon trong viên tròn ĐẶC màu tươi — hàng cài đặt, danh sách đặc quyền.
- * Mỗi hàng một sắc (`hue`) để mắt tìm theo màu trước khi đọc chữ (08/10/2026:
- * bản nền nhạt + nét màu nhấn bị chê "không tươi"). Tròn, không ô vuông.
+ * Icon đứng đầu hàng cài đặt / danh sách đặc quyền — KHÔNG khung (08/10/2026:
+ * viên tròn bọc icon bị chê). Khối đặc hai tông của Solar, mỗi hàng một sắc
+ * tươi (`hue`) để mắt tìm theo màu trước khi đọc chữ. Giữ ô vuông vô hình
+ * cùng cỡ để chữ các hàng thẳng cột.
  */
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon, type IconName } from './Icon';
-import { radius, useColors, useStyles, type Vivid } from '@design';
+import { useColors, useStyles, type Vivid } from '@design';
 
 const SIZE = 40;
 
@@ -20,19 +21,13 @@ export const IconBadge = memo(function IconBadge({
   const s = useStyles(make);
   const c = useColors();
   return (
-    <View style={[s.badge, { backgroundColor: c.vivid[hue] }]}>
-      <Icon name={name} size={19} color={c.onVivid} weight="fill" />
+    <View style={s.slot}>
+      <Icon name={name} size={26} color={c.vivid[hue]} weight="fill" />
     </View>
   );
 });
 
 const make = () =>
   StyleSheet.create({
-    badge: {
-      width: SIZE,
-      height: SIZE,
-      borderRadius: radius.full,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
+    slot: { width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center' },
   });

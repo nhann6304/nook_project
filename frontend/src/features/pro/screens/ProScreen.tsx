@@ -70,9 +70,7 @@ export function ProScreen({
       <Scroll>
         <View style={s.body}>
           <Animated.View entering={FadeInDown.duration(duration.base)} style={s.hero}>
-            <View style={s.crown}>
-              <Icon name="crown" size={44} color={c.honey} weight="fill" />
-            </View>
+            <Icon name="crown" size={64} color={c.vivid.yellow} weight="fill" />
             <Txt variant="display" center>
               {t('pro.title')}
             </Txt>
@@ -207,15 +205,6 @@ const make = (c: Palette) =>
       alignSelf: 'center',
     },
     hero: { alignItems: 'center', gap: space.xs, paddingTop: space.sm },
-    crown: {
-      width: 88,
-      height: 88,
-      borderRadius: radius.full,
-      backgroundColor: c.accentSoft,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: space.sm,
-    },
     plans: { flexDirection: 'row', gap: space.md },
     plan: {
       flex: 1,

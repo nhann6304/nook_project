@@ -101,14 +101,16 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - **Chụp xong:** hàng avatar dưới ảnh chọn ai KHÔNG được xem (mặc định ai cũng
   xem; mặc định riêng đặt ở Cài đặt → Riêng tư). Gửi đi là `hiddenFromUserIds`.
 - **Đèn camera trước chỉ sáng TRONG KHUNG**, không trắng cả màn hình.
-- **Icon: nét Phosphor kiểu DUOTONE** (`<Icon name>`, 08/10/2026) — nét vừa + ruột
-  tô 30% cùng màu; `weight="fill"` cho thứ đang chọn (tab đang mở). Nét đơn
-  (✓ × mũi tên +) tự đi nét đậm, không ô nền. Nét sinh vào `iconPaths.ts` bằng
-  `node scripts/phosphor-icons.mjs` — thêm icon ở script, đừng sửa tay, đừng
-  nhập gói lúc chạy. Màu icon: **sắc tươi `c.vivid.*`** cho icon mang nghĩa (tab,
-  hàng cài đặt, chuông, thông báo, đặc quyền — mỗi thứ một sắc cố định), `c.accent`
-  cho icon thao tác (quay lại, đóng). `c.vivid` chỉ cho icon/huy hiệu, KHÔNG cho chữ.
-  Hàng cài đặt: `<IconBadge hue>` — viên tròn đặc màu tươi, glyph đặc `c.onVivid`.
+- **Icon: bộ SOLAR hai tông** (`<Icon name>`, 08/10/2026 — Phosphor bị chê "sơ
+  xài"). Mặc định nét mảnh hai tông (thanh công cụ, nút thao tác); `weight="fill"`
+  là khối đặc hai tông (tab đang mở, icon đứng đầu hàng). Năm dấu nét đơn
+  (✓ × + ↑ ⋯) lấy nét đậm Phosphor. Sinh vào `iconPaths.ts` bằng
+  `node scripts/icons.mjs` — thêm icon ở script, đừng sửa tay. Solar là CC BY 4.0
+  → giữ dòng ghi công ở đầu `iconPaths.ts` và trong màn Giới thiệu khi có.
+  Màu: **sắc tươi `c.vivid.*`** cho icon mang nghĩa (tab, hàng cài đặt, chuông,
+  thông báo, đặc quyền — mỗi thứ một sắc cố định), `c.accent` cho icon thao tác
+  (quay lại, đóng). `c.vivid` chỉ cho icon, KHÔNG cho chữ. **Không bọc icon
+  trong khung tròn/vuông** — `<IconBadge hue>` là icon trần khối đặc.
 - **Nút KHỐI NỔI** (`<Button>`, 08/10/2026): mặt + gờ đáy đậm hơn, nhấn thì mặt
   lún phủ gờ (luồng UI). Thẻ nổi bật (Pro) đi cùng giọng: gờ `accentDeep`.
 - **"Theo ảnh" là màu mặc định** (08/10/2026): gửi ảnh xong app rút màu chủ đạo
