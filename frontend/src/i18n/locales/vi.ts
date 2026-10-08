@@ -285,13 +285,8 @@ export const vi = {
 
   /* ---------- Màn chính: camera + ảnh bạn bè lướt dọc ---------- */
   home: {
-    sky: {
-      dawn: 'Nắng sớm đẹp lắm — chụp một tấm?',
-      noon: 'Trời trong veo — khoe chút đi.',
-      dusk: 'Hoàng hôn rồi, đừng bỏ lỡ.',
-      night: 'Khuya rồi — chúc ai đó ngủ ngon?',
-      rain: 'Trời mưa — một tấm cửa sổ là đủ.',
-    },
+    history: 'Lịch sử',
+    openMe: 'Trang của bạn và cài đặt',
     sentTagged: 'Đã gửi · đã báo cho {names}',
     offline: 'Đang chờ mạng',
     mentioned: 'Nhắc tới bạn',

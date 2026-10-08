@@ -36,10 +36,11 @@ export const radius = {
   /** Thẻ ảnh trong feed. */
   frame: 28,
   /**
-   * Khung ảnh chính (camera + khoảnh khắc). Theo bảng thiết kế: 36 trên khung
-   * 374pt. Khung đứng 3:4 nên bo vừa phải, bo 56 như trước trông thành viên thuốc.
+   * Khung ảnh chính (camera + khoảnh khắc). 08/10/2026 theo Locket: khung VUÔNG
+   * bo lớn, đường cong liền (`borderCurve: 'continuous'` trên iOS) — nhìn dịu
+   * hơn bo 40 trên khung đứng.
    */
-  viewfinder: 40,
+  viewfinder: 60,
   full: 999,
 } as const;
 
@@ -84,13 +85,13 @@ export const type = {
 
 export const layout = {
   /**
-   * Rộng / cao = 0.9 — đứng hơn vuông một chút (07/10/2026: "dài xuống nhẹ").
-   * Trước đó 1:1 (02/10/2026 — 3:4 dài quá trên điện thoại). Ảnh chụp
+   * Rộng / cao = 1 — VUÔNG như Locket (08/10/2026: khung 0.9 "cảm giác to quá").
+   * Trước đó 0.9 (07/10) và 1:1 (02/10). Ảnh chụp
    * được cắt đúng khung này (`squarePhoto`), nên thấy gì gửi nấy. Bề ngang là
    * máy trừ 2×`frameInset`; máy ngắn thì chiều cao chặn trước. Camera và
    * khoảnh khắc dùng CHUNG khung, lướt từ camera sang ảnh bạn bè khung đứng yên.
    */
-  cameraFrameRatio: 0.9,
+  cameraFrameRatio: 1,
   frameInset: 8,
   /** Vùng chạm tối thiểu. Apple khuyến nghị 44pt, Android 48dp — lấy số lớn hơn. */
   minTouch: 48,

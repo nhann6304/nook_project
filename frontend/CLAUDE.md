@@ -81,8 +81,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - **Mỗi màn đúng MỘT** nút `variant="primary"`.
 - Chữ trên nút primary là `c.onAccent`: **trắng** ở nền sáng (nút denim đặc),
   **navy** ở nền tối (nút lam nhạt). Nút đặc, không dải màu.
-- Khung ảnh **rộng/cao 0.9** — đứng hơn vuông một chút (`layout.cameraFrameRatio`,
-  07/10/2026), CHUNG cho camera và mọi khoảnh khắc. Ảnh chụp / chọn từ máy được CẮT
+- Khung ảnh **VUÔNG, bo 60 đường cong liền** như Locket (`layout.cameraFrameRatio`
+  = 1, `radius.viewfinder`, `borderCurve: 'continuous'` — 08/10/2026), CHUNG cho camera và mọi khoảnh khắc. Ảnh chụp / chọn từ máy được CẮT
   đúng khung (`camera/lib/squarePhoto.ts`) và camera trước để `mirror` — thấy
   gì gửi nấy. Máy cao thì khung nằm giữa phần dư (`frame.top`).
 - Chuyển cảnh chỉ dùng **transform + opacity**. Lướt trang đi thẳng theo ngón
@@ -92,25 +92,22 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   `spring.*` đã tắt dần tới hạn — đổi số thì giữ `damping ≥ 2·√(stiffness·mass)`.
 - Bàn phím **không co khung** ở màn chính: chú thích tự nhích lên
   (`useAnimatedKeyboard`), trang giữ nguyên chiều cao.
-- **Thanh tab dưới đáy, bốn nút** (07/10/2026): Chụp · Bạn bè · Tin nhắn ·
-  Cài đặt (`app/(app)/(tabs)/`, `<TabBar>`: thẻ nổi cách mép, bo vừa, mỗi nút
-  một sắc tươi, nút đang chọn tô đặc + vạch cùng sắc — không viên thuốc, không dính đáy).
-  Ảnh bạn bè KHÔNG là tab — vuốt lên từ camera như Locket (`<Pager>`); bấm
-  "Chụp" khi đang ở màn chính thì về camera (`home/store/homeNav.ts`). Rời tab
-  là camera tắt (`active`). Chuông thông báo ở góc phải màn chính.
+- **Ba trang VUỐT NGANG như Locket** (08/10/2026): Bạn bè · Chụp · Tin nhắn
+  (`app/(app)/(tabs)/` dùng `TopTabs` = react-native-pager-view, thanh ở đáy;
+  khoá vuốt khi đang xem lại ảnh). `<TabBar>` là MỘT viên nhỏ ở giữa, ba icon
+  khối đặc, không chữ, nút đang chọn có nền tròn. Ảnh bạn bè vuốt LÊN từ camera
+  (`<Pager>`). Màn Chụp: chuông bên trái, viên bạn bè giữa, **avatar của mình
+  bên phải → `me` (trang cá nhân + Cài đặt)** — Cài đặt không còn là tab. Dưới
+  nút chụp là viên **"Lịch sử"** (`HistoryPill`), không còn dải 7 ngày.
 - **Chụp xong:** hàng avatar dưới ảnh chọn ai KHÔNG được xem (mặc định ai cũng
   xem; mặc định riêng đặt ở Cài đặt → Riêng tư). Gửi đi là `hiddenFromUserIds`.
 - **Đèn camera trước chỉ sáng TRONG KHUNG**, không trắng cả màn hình.
-- **Icon: bộ SOLAR hai tông** (`<Icon name>`, 08/10/2026 — Phosphor bị chê "sơ
-  xài"). Mặc định nét mảnh hai tông (thanh công cụ, nút thao tác); `weight="fill"`
-  là khối đặc hai tông (tab đang mở, icon đứng đầu hàng). Năm dấu nét đơn
-  (✓ × + ↑ ⋯) lấy nét đậm Phosphor. Sinh vào `iconPaths.ts` bằng
-  `node scripts/icons.mjs` — thêm icon ở script, đừng sửa tay. Solar là CC BY 4.0
-  → giữ dòng ghi công ở đầu `iconPaths.ts` và trong màn Giới thiệu khi có.
-  Màu: **sắc tươi `c.vivid.*`** cho icon mang nghĩa (tab, hàng cài đặt, chuông,
-  thông báo, đặc quyền — mỗi thứ một sắc cố định), `c.accent` cho icon thao tác
-  (quay lại, đóng). `c.vivid` chỉ cho icon, KHÔNG cho chữ. **Không bọc icon
-  trong khung tròn/vuông** — `<IconBadge hue>` là icon trần khối đặc.
+- **Icon: bộ MINGCUTE khối đặc, MỘT màu** (`<Icon name>`, 08/10/2026 theo Locket;
+  Phosphor bị chê "sơ xài", Solar "AI hoá"). `weight="line"` khi cần bản viền.
+  Màu icon theo chữ: `c.text` / `c.textMuted`, đang chọn hoặc cần nhấn mới
+  `c.accent`. Không sắc màu mè, **không bọc icon trong khung tròn/vuông**
+  (`<IconBadge>` là icon trần). Nét sinh vào `iconPaths.ts` bằng
+  `node scripts/icons.mjs` — thêm icon ở script, đừng sửa tay.
 - **Nút KHỐI NỔI** (`<Button>`, 08/10/2026): mặt + gờ đáy đậm hơn, nhấn thì mặt
   lún phủ gờ (luồng UI). Thẻ nổi bật (Pro) đi cùng giọng: gờ `accentDeep`.
 - **"Theo ảnh" là màu mặc định** (08/10/2026): gửi ảnh xong app rút màu chủ đạo

@@ -89,8 +89,9 @@ thứ không ai hiểu.
 | `expo-secure-store` | 57.0.4 | Cất thẻ dài hạn vào Keychain (iOS) / Keystore (Android) — `src/lib/api.ts`. | |
 | `react-native-maps` | 1.27.2 | Bản đồ đường phố NỀN của "Tìm quanh đây" — chỉ quanh chỗ của chính mình, không kéo/zoom, Android `liteMode` (ảnh tĩnh). Kiểu bản đồ dựng từ bảng màu (`design/mapStyle.ts`). | Có sẵn trong Expo Go. **Bản build Android thật cần khoá Google Maps** (`android.config.googleMaps.apiKey` trong app.json) — chưa có thì bản đồ trắng. iOS dùng Apple Maps, không cần khoá. |
 | `fflate` | 0.8.3 | Giải nén PNG 16×16 để rút màu chủ đạo của ảnh vừa gửi ("Theo ảnh", `camera/lib/photoColor.ts`). JS thuần, chạy trong Expo Go. | ~8 KB. |
-| `@iconify-json/solar` (dev) | 1.2.13 | Nguồn icon chính (Solar, CC BY 4.0 — phải ghi công). `node scripts/icons.mjs` chép nét vào `iconPaths.ts`. | Không vào bản app. |
-| `phosphor-react-native` (dev) | 3.0.6 | Chỉ lấy năm dấu nét đơn (✓ × + ↑ ⋯) cho `scripts/icons.mjs`. Không nhập lúc chạy — gói lỗi kiểu với tsc và gốc gói kéo 1500 icon. | Không vào bản app. |
+| `@iconify-json/mingcute` (dev) | 1.2.8 | Nguồn icon (MingCute, Apache-2.0). `node scripts/icons.mjs` chép nét vào `iconPaths.ts`. | Không vào bản app. |
+| `react-native-pager-view` | 8.0.2 | Vuốt ngang giữa ba trang (Bạn bè · Chụp · Tin nhắn), trang chạy theo ngón tay trên luồng gốc. Có sẵn trong Expo Go. | Gói gốc. |
+| `react-native-tab-view` | 4.3.3 | Cầu nối `TopTabs` của expo-router với pager-view. JS thuần. | |
 | `expo-video` | 57.0.5 | Phát video ngắn 3 giây (`<Clip>`). Chỉ trang đang xem dựng trình phát. | Có sẵn trong Expo Go. |
 | `expo-video-thumbnails` | 57.0.2 | Ảnh bìa của video — lưới, nhật ký, hiệu ứng bay vẫn dùng ảnh. | Có sẵn trong Expo Go. |
 | `@nook/shared` | `file:../shared` | Hợp đồng với server: `API`, mã lỗi, giới hạn, kiểu. App đọc bản dịch `shared/dist` — `npm run shared` dựng, tự chạy trước `dev`/`typecheck`/sau `install`. `metro.config.js` thêm `../shared` vào `watchFolders`. | Không phụ thuộc gì, nên không làm nặng bản app. |

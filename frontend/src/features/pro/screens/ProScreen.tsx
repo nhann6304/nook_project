@@ -20,19 +20,18 @@ import {
   useColors,
   useStyles,
   type Palette,
-  type Vivid,
 } from '@design';
 import { useT } from '@i18n';
 import type { ProPlan } from '../lib/proApi';
 
 const PERKS = [
-  { icon: 'sparkle', key: 'beads', hue: 'pink' },
-  { icon: 'palette', key: 'icon', hue: 'purple' },
-  { icon: 'video', key: 'video', hue: 'red' },
-  { icon: 'film', key: 'recap', hue: 'orange' },
-  { icon: 'pinTop', key: 'pin', hue: 'teal' },
-  { icon: 'gift', key: 'gift', hue: 'green' },
-] as const satisfies readonly { icon: IconName; key: string; hue: Vivid }[];
+  { icon: 'sparkle', key: 'beads' },
+  { icon: 'palette', key: 'icon' },
+  { icon: 'video', key: 'video' },
+  { icon: 'film', key: 'recap' },
+  { icon: 'pinTop', key: 'pin' },
+  { icon: 'gift', key: 'gift' },
+] as const satisfies readonly { icon: IconName; key: string }[];
 
 const FREE = ['photo', 'memories', 'bracelet', 'friends'] as const;
 
@@ -105,7 +104,7 @@ export function ProScreen({
                 entering={FadeInDown.delay(duration.fast + i * 50).duration(duration.base)}
                 style={s.perk}
               >
-                <IconBadge name={p.icon} hue={p.hue} />
+                <IconBadge name={p.icon} />
                 <View style={s.flex}>
                   <Txt variant="label">{t(`pro.perk.${p.key}.title`)}</Txt>
                   <Txt variant="faint" tone="muted">

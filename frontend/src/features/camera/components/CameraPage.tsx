@@ -443,7 +443,7 @@ export function CameraPage({
           <>
             <Animated.View key="discard" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('review.discard')} onPress={discard} style={s.round}>
-                <Icon name="close" size={28} color={c.accent} />
+                <Icon name="close" size={30} color={c.text} />
               </IconButton>
             </Animated.View>
             <Animated.View key="send" entering={FadeIn.duration(duration.base)}>
@@ -452,7 +452,7 @@ export function CameraPage({
             {taggable.length > 0 ? (
               <Animated.View key="tag" entering={FadeIn.duration(duration.base)}>
                 <IconButton label={t('review.tag')} onPress={startTag} style={s.round}>
-                  <Icon name="at" size={28} color={c.accent} />
+                  <Icon name="at" size={30} color={c.text} />
                 </IconButton>
               </Animated.View>
             ) : (
@@ -463,7 +463,7 @@ export function CameraPage({
           <>
             <Animated.View key="gallery" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('camera.gallery')} onPress={() => void pick()} style={s.square}>
-                <Icon name="image" size={28} color={c.accent} />
+                <Icon name="image" size={30} color={c.text} />
               </IconButton>
             </Animated.View>
             <Animated.View key="shutter" entering={FadeIn.duration(duration.base)}>
@@ -480,7 +480,7 @@ export function CameraPage({
             <Animated.View key="flip" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('camera.flip')} onPress={flip} style={s.round}>
                 <Animated.View style={spinStyle}>
-                  <Icon name="flip" size={30} color={c.accent} />
+                  <Icon name="flip" size={32} color={c.text} />
                 </Animated.View>
               </IconButton>
             </Animated.View>
@@ -529,6 +529,7 @@ const make = (c: Palette) =>
     root: { flex: 1, alignItems: 'center' },
     frame: {
       borderRadius: radius.viewfinder,
+      borderCurve: 'continuous',
       backgroundColor: c.surfaceRaised,
       overflow: 'hidden',
     },
@@ -555,14 +556,9 @@ const make = (c: Palette) =>
       justifyContent: 'space-between',
       paddingHorizontal: space.huge - space.sm,
     },
-    // Nền ngả màu nhấn của cảnh — nút cùng tông nền trắng thì chìm, viền thì cứng.
-    round: {
-      width: 58,
-      height: 58,
-      borderRadius: radius.full,
-      backgroundColor: c.accentSoft,
-    },
-    square: { width: 58, height: 58, borderRadius: radius.full, backgroundColor: c.accentSoft },
+    // Icon trần một màu, không viên nền (08/10/2026, theo Locket).
+    round: { width: 58, height: 58 },
+    square: { width: 58, height: 58 },
     slot: { width: 58 },
 
     footer: { height: FOOTER_HEIGHT, alignSelf: 'stretch' },

@@ -283,13 +283,8 @@ export const en: Mirror<typeof vi> = {
   },
 
   home: {
-    sky: {
-      dawn: 'Lovely morning light — snap one?',
-      noon: 'Clear skies — show it off.',
-      dusk: 'Sunset time, don’t miss it.',
-      night: 'Late already — say goodnight to someone?',
-      rain: 'Rainy day — one window shot is enough.',
-    },
+    history: 'History',
+    openMe: 'Your page and settings',
     sentTagged: 'Sent · {names} will be notified',
     offline: 'Waiting for connection',
     mentioned: 'Mentions you',

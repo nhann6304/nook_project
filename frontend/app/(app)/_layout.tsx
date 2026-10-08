@@ -1,9 +1,9 @@
 import { Stack } from 'expo-router';
 
 /**
- * Gốc của app sau đăng nhập: `(tabs)` là bốn nút dưới đáy (Chụp · Bạn bè ·
- * Tin nhắn · Cài đặt). Mọi màn khác CHỒNG lên: trang chi tiết trượt từ phải,
- * màn "mở ra" (nhật ký, Pro) trượt từ dưới.
+ * Gốc của app sau đăng nhập: `(tabs)` là ba nút dưới đáy (Bạn bè · Chụp ·
+ * Tin nhắn). Mọi màn khác CHỒNG lên: trang chi tiết trượt từ phải, màn "mở
+ * ra" (nhật ký, Pro) trượt từ dưới. Trang cá nhân + cài đặt là `me`.
  */
 export default function AppLayout() {
   return (
@@ -12,6 +12,7 @@ export default function AppLayout() {
       <Stack.Screen name="chat/[id]" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="friend/[id]" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="person/[id]" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="me" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="nearby" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="prefs/appearance" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="prefs/privacy" options={{ animation: 'slide_from_right' }} />

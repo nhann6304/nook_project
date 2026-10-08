@@ -1,44 +1,33 @@
 /**
- * Thanh điều hướng dưới đáy — bốn nút (07/10/2026).
+ * Thanh điều hướng dưới đáy — theo Locket (08/10/2026).
  *
- * Hai bản trước đều bị chê: viên thuốc nổi ("như AI") và thanh liền mép
- * ("dính sát đáy"). Bản này là một THẺ nổi cách mép, bo vừa (không tròn hết),
- * icon trần không ô bao. Mỗi nút một sắc tươi (`hue`); nút đang chọn tô đặc,
- * có vạch ngắn cùng sắc phía trên + chữ đậm cùng sắc. Mượt trước đã:
- *   · nền ĐẶC, không blur — blur trên Android vẽ lại mỗi khung hình;
- *   · nằm TRONG dòng bố cục, không đè lên màn — nên mờ đi chứ không gỡ khi
- *     đang bận (gỡ ra là màn trên đổi cao, khung camera nhảy);
- *   · Android: bàn phím bật thì gỡ hẳn, nếu không thanh bị đẩy lên trên phím.
+ * Bản thẻ bốn nút có chữ bị chê "cực phức tạp". Bản này là MỘT VIÊN NHỎ nằm
+ * giữa: ba icon khối đặc, không chữ (nhãn chỉ cho trình đọc màn hình), nút
+ * đang chọn có nền tròn sáng hơn. Một màu — đang chọn `c.text`, còn lại
+ * `c.textMuted`. Cài đặt không còn là tab: nó nằm trong trang cá nhân (avatar
+ * góc phải màn Chụp).
+ *
+ * Mượt trước đã: nền ĐẶC, không blur; nằm TRONG dòng bố cục nên mờ đi chứ
+ * không gỡ khi đang bận (gỡ ra là khung camera nhảy); Android bàn phím bật
+ * thì gỡ hẳn, nếu không thanh bị đẩy lên trên phím.
  */
 import { memo, useEffect, useState } from 'react';
 import { Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  font,
-  layout,
-  lift,
-  radius,
-  space,
-  useColors,
-  useStyles,
-  type Palette,
-  type Vivid,
-} from '@design';
+import { layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { Icon, type IconName } from '../primitives/Icon';
 import { Tap } from '../primitives/Tap';
-import { Txt } from '../primitives/Txt';
 
 export type TabItem<K extends string> = {
   key: K;
   label: string;
   icon: IconName;
-  /** Sắc riêng của nút (08/10/2026: icon một màu nhấn "không tươi"). */
-  hue: Vivid;
   /** Chấm báo có thứ mới (tin nhắn chưa đọc). */
   badge?: boolean;
 };
 
-export const TAB_BAR_HEIGHT = 64;
+export const TAB_BAR_HEIGHT = 56;
+const ITEM = 48;
 
 function TabBarInner<K extends string>({
   items,
@@ -65,10 +54,10 @@ function TabBarInner<K extends string>({
     <View
       accessibilityRole="tablist"
       accessibilityLabel={label}
-      pointerEvents={dimmed ? 'none' : 'auto'}
+      pointerEvents={dimmed ? 'none' : 'box-none'}
       style={[s.dock, { paddingBottom: Math.max(insets.bottom, space.md) }, dimmed && s.dimmed]}
     >
-      <View style={s.bar}>
+      <View style={s.pill}>
         {items.map((it) => (
           <Item key={it.key} item={it} selected={it.key === active} onPress={onPress} />
         ))}
@@ -97,27 +86,11 @@ const Item = memo(function Item<K extends string>({
       accessibilityLabel={item.label}
       onPress={() => onPress(item.key)}
       feedback="select"
-      scaleTo={0.92}
-      style={s.item}
+      scaleTo={0.9}
+      style={[s.item, selected && s.itemOn]}
     >
-      <View style={[s.mark, selected && { backgroundColor: c.vivid[item.hue] }]} />
-      <View style={s.icon}>
-        <Icon
-          name={item.icon}
-          size={24}
-          color={c.vivid[item.hue]}
-          weight={selected ? 'fill' : 'duotone'}
-        />
-        {item.badge ? <View style={s.badge} /> : null}
-      </View>
-      <Txt
-        variant="faint"
-        tone="muted"
-        numberOfLines={1}
-        style={selected ? [s.labelOn, { color: c.vivid[item.hue] }] : s.label}
-      >
-        {item.label}
-      </Txt>
+      <Icon name={item.icon} size={22} color={selected ? c.text : c.textMuted} />
+      {item.badge ? <View style={s.badge} /> : null}
     </Tap>
   );
 }) as <K extends string>(p: {
@@ -141,39 +114,32 @@ function useKeyboardOpen() {
 
 const make = (c: Palette) =>
   StyleSheet.create({
-    dock: { paddingHorizontal: space.lg, paddingTop: space.xs, backgroundColor: c.bg },
+    dock: { alignItems: 'center', paddingTop: space.xs, backgroundColor: c.bg },
     dimmed: { opacity: 0.4 },
-    bar: {
+    pill: {
       flexDirection: 'row',
+      alignItems: 'center',
+      gap: space.xs,
       height: TAB_BAR_HEIGHT,
-      borderRadius: radius.xl,
-      backgroundColor: c.glass,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: c.border,
-      ...lift(c),
+      paddingHorizontal: (TAB_BAR_HEIGHT - ITEM) / 2,
+      borderRadius: radius.full,
+      backgroundColor: c.surface,
     },
-    item: { flex: 1, alignItems: 'center', justifyContent: 'center', minHeight: layout.minTouch },
-    mark: {
-      position: 'absolute',
-      top: 0,
-      width: 22,
-      height: 3,
-      borderBottomLeftRadius: radius.xs,
-      borderBottomRightRadius: radius.xs,
-      backgroundColor: 'transparent',
+    item: {
+      width: layout.minTouch + space.md,
+      height: ITEM,
+      borderRadius: radius.full,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    icon: { height: 30, alignItems: 'center', justifyContent: 'center' },
+    itemOn: { backgroundColor: c.surfaceRaised },
     badge: {
       position: 'absolute',
-      top: 0,
-      right: -6,
-      width: 10,
-      height: 10,
+      top: 10,
+      right: 16,
+      width: 9,
+      height: 9,
       borderRadius: radius.full,
       backgroundColor: c.danger,
-      borderWidth: 2,
-      borderColor: c.glass,
     },
-    label: { fontFamily: font.bodySemi },
-    labelOn: { fontFamily: font.bodyBold },
   });

@@ -214,6 +214,7 @@ const make = (c: Palette) =>
     root: { flex: 1, alignItems: 'center' },
     frame: {
       borderRadius: radius.viewfinder,
+      borderCurve: 'continuous',
       backgroundColor: c.surfaceRaised,
       overflow: 'hidden',
     },

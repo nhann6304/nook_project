@@ -10,6 +10,8 @@ import { useAudience } from '@/features/camera/store/audienceStore';
 import { useNotify } from '@/features/notify/store/notifyStore';
 import { useChats } from '@/features/chat/store/chatStore';
 import { useJournal } from '@/features/journal/store/journalStore';
+import { useProfile } from '@/features/profile/store/profileStore';
+import { ME } from '@/mocks/moments';
 import { useCircle } from '@/features/circle/store/circleStore';
 import { useOnline } from '@/hooks/useOnline';
 import { useHomeNav } from '@/features/home/store/homeNav';
@@ -39,7 +41,8 @@ export default function Home() {
   );
   const moments = useMoments((s) => s.moments);
   const add = useMoments((s) => s.add);
-  const journal = useJournal((s) => s.entries);
+  const myName = useProfile((s) => s.name);
+  const myPhoto = useProfile((s) => s.avatarUri);
   const addEntry = useJournal((s) => s.add);
   const markReplied = useMoments((s) => s.markReplied);
   const openAbout = useChats((s) => s.openAbout);
@@ -90,8 +93,9 @@ export default function Home() {
       onOpenFriends={() => router.navigate('/(app)/(tabs)/circle')}
       onOpenNotices={() => router.push('/(app)/notifications')}
       noticeUnread={noticeUnread}
-      journal={journal}
-      onOpenJournal={() => router.push('/(app)/journal')}
+      myName={myName ?? ME.name}
+      myPhoto={myPhoto ?? undefined}
+      onOpenMe={() => router.push('/(app)/me')}
       active={focused}
       audience={audience}
       defaultHidden={defaultHidden}

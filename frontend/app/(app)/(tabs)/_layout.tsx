@@ -1,37 +1,48 @@
 import { useCallback, useMemo } from 'react';
-import { Tabs, type BottomTabBarProps } from 'expo-router/tabs';
+import TopTabs from 'expo-router/js-top-tabs';
 import { TabBar, type TabItem } from '@ui';
 import { useT } from '@i18n';
 import { useHomeNav } from '@/features/home/store/homeNav';
 import { useChats } from '@/features/chat/store/chatStore';
 import { lastMessage } from '@/features/chat/types';
 
-type Key = 'home' | 'circle' | 'chats' | 'settings';
+type Key = 'circle' | 'home' | 'chats';
 
 /**
- * Bốn nút: Chụp · Bạn bè · Tin nhắn · Cài đặt (07/10/2026). Ảnh bạn bè KHÔNG
- * phải tab — vuốt lên từ camera như Locket. Bấm "Chụp" khi đang ở màn chính
- * thì về camera (`homeNav.go`).
+ * Ba nút như Locket (08/10/2026): Bạn bè · Chụp (giữa) · Tin nhắn. Cài đặt nằm
+ * trong trang cá nhân (avatar góc phải màn Chụp → `me`). Ảnh bạn bè KHÔNG phải
+ * tab — vuốt lên từ camera. Bấm "Chụp" khi đang ở màn chính thì về camera.
  *
- * `freezeOnBlur` cho ba tab sau: nằm sau thì không vẽ lại. Màn chính KHÔNG
- * đóng băng — nó phải kịp nhận `active=false` để tắt camera khi rời đi.
+ * VUỐT NGANG giữa ba trang như Locket (TopTabs = react-native-pager-view, trang
+ * chạy theo ngón tay trên luồng gốc). Thanh tab đặt ở đáy. Đang xem lại ảnh vừa
+ * chụp thì khoá vuốt — hàng avatar bên dưới cũng lướt ngang. Hai tab bên `lazy`:
+ * chưa mở thì chưa dựng. Camera tắt khi rời màn chính nhờ `useIsFocused`.
  */
 export default function TabsLayout() {
+  const reviewing = useHomeNav((s) => s.reviewing);
   return (
-    <Tabs tabBar={renderBar} screenOptions={{ headerShown: false, animation: 'none' }}>
-      <Tabs.Screen name="home" />
-      <Tabs.Screen name="circle" options={FROZEN} />
-      <Tabs.Screen name="chats" options={FROZEN} />
-      <Tabs.Screen name="settings" options={FROZEN} />
-    </Tabs>
+    <TopTabs
+      initialRouteName="home"
+      tabBarPosition="bottom"
+      tabBar={renderBar}
+      screenOptions={{ swipeEnabled: !reviewing, lazy: true }}
+    >
+      <TopTabs.Screen name="circle" />
+      <TopTabs.Screen name="home" />
+      <TopTabs.Screen name="chats" />
+    </TopTabs>
   );
 }
 
-const FROZEN = { freezeOnBlur: true } as const;
+/** Phần của props thanh tab mà mình dùng (kiểu gốc của TopTabs là `any`). */
+type BarProps = {
+  state: { index: number; routes: readonly { name: string }[] };
+  navigation: { navigate: (name: string) => void };
+};
 
-const renderBar = (props: BottomTabBarProps) => <AppTabBar {...props} />;
+const renderBar = (props: BarProps) => <AppTabBar {...props} />;
 
-function AppTabBar({ state, navigation }: BottomTabBarProps) {
+function AppTabBar({ state, navigation }: BarProps) {
   const t = useT();
   const reviewing = useHomeNav((s) => s.reviewing);
   const go = useHomeNav((s) => s.go);
@@ -40,10 +51,9 @@ function AppTabBar({ state, navigation }: BottomTabBarProps) {
 
   const items = useMemo<TabItem<Key>[]>(
     () => [
-      { key: 'home', label: t('tabs.home'), icon: 'camera', hue: 'blue' },
-      { key: 'circle', label: t('tabs.friends'), icon: 'people', hue: 'green' },
-      { key: 'chats', label: t('tabs.chats'), icon: 'chat', hue: 'purple', badge: unread },
-      { key: 'settings', label: t('tabs.settings'), icon: 'settings', hue: 'orange' },
+      { key: 'circle', label: t('tabs.friends'), icon: 'people' },
+      { key: 'home', label: t('tabs.home'), icon: 'home' },
+      { key: 'chats', label: t('tabs.chats'), icon: 'chat', badge: unread },
     ],
     [t, unread],
   );

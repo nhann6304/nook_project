@@ -29,6 +29,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import {
+  Avatar,
   AvatarStack,
   Icon,
   IconButton,
@@ -40,21 +41,18 @@ import {
   Tap,
   Toast,
   Txt,
-  type IconName,
   type PagerHandle,
 } from '@ui';
 import {
   duration,
   ease,
   layout,
-  lift,
   media,
   radius,
   space,
   useColors,
   useStyles,
   type Palette,
-  type Vivid,
 } from '@design';
 import { useAgo, useT } from '@i18n';
 import * as feel from '@/lib/haptics';
@@ -70,8 +68,7 @@ import { MomentGrid, type Rect } from '@/features/feed/components/MomentGrid';
 import { Shutter } from '@/features/camera/components/Shutter';
 import type { AudiencePerson } from '@/features/camera/components/AudiencePicker';
 import type { Moment, Tag } from '@/features/feed/types';
-import { JournalStrip } from '@/features/journal/components/JournalStrip';
-import type { Entry } from '@/features/journal/types';
+import { HistoryPill } from '../components/HistoryPill';
 
 const BAR = 52;
 const OUT = Easing.bezier(...ease.out);
@@ -88,8 +85,9 @@ export function HomeScreen({
   onOpenFriends,
   onOpenNotices,
   noticeUnread,
-  journal,
-  onOpenJournal,
+  myName,
+  myPhoto,
+  onOpenMe,
   active,
   audience,
   defaultHidden,
@@ -112,8 +110,10 @@ export function HomeScreen({
   /** Có thông báo chưa đọc — chấm đỏ trên chuông. */
   noticeUnread: boolean;
   /** Ảnh mình đã gửi — cho dải 7 ngày dưới nút chụp. */
-  journal: readonly Entry[];
-  onOpenJournal: () => void;
+  /** Tên + ảnh của mình cho avatar góc phải — chạm mở trang cá nhân + cài đặt. */
+  myName: string;
+  myPhoto?: string;
+  onOpenMe: () => void;
   /** Màn đang hiện — `false` thì tắt camera (đỡ pin, đỡ nóng máy, đỡ giật). */
   active: boolean;
   audience: readonly AudiencePerson[];
@@ -328,8 +328,6 @@ export function HomeScreen({
     [t],
   );
 
-  const weekdays = useMemo(() => t('journal.weekdays').split(','), [t]);
-
   const renderPage = useCallback(
     (i: number) => {
       if (i === 0) {
@@ -345,14 +343,7 @@ export function HomeScreen({
             onSend={send}
             onOpenFeed={toFeed}
             footer={
-              <JournalStrip
-                entries={journal}
-                weekdays={weekdays}
-                label={t('journal.open')}
-                hint={t('home.swipeHint')}
-                onOpen={onOpenJournal}
-                onHint={toFeed}
-              />
+              <HistoryPill count={moments.length} label={t('home.history')} onPress={toFeed} />
             }
           />
         );
@@ -382,9 +373,7 @@ export function HomeScreen({
       defaultHidden,
       page,
       frame,
-      journal,
       moments,
-      onOpenJournal,
       onOpenPerson,
       react,
       reactionLabels,
@@ -393,7 +382,6 @@ export function HomeScreen({
       t,
       taggable,
       toFeed,
-      weekdays,
       windowH,
     ],
   );
@@ -405,22 +393,15 @@ export function HomeScreen({
         <View ref={root} style={s.root} collapsable={false}>
           {/* 1 — Thanh trên */}
           <View style={s.bar}>
-            {/* Trời đang thế nào — chạm là một lời rủ chụp hợp cảnh. Cũng cân
-                hai bên để viên thuốc nằm đúng giữa. */}
+            {/* Trái: chuông thông báo. Phải: avatar của mình → trang cá nhân + cài
+                đặt (theo Locket). Hai bên cùng cỡ để viên bạn bè nằm đúng giữa. */}
             <Animated.View
               style={[s.side, reviewing && s.hidden]}
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
-              <IconButton
-                label={t(`home.sky.${skyOf(c.scene)}`)}
-                onPress={() => say(t(`home.sky.${skyOf(c.scene)}`))}
-                style={s.round}
-              >
-                <Icon
-                  name={SKY_ICON[skyOf(c.scene)]}
-                  size={24}
-                  color={c.vivid[SKY_HUE[skyOf(c.scene)]]}
-                />
+              <IconButton label={t('notify.open')} onPress={onOpenNotices} style={s.round}>
+                <Icon name="bell" size={22} color={c.text} />
+                {noticeUnread ? <View style={s.dot} /> : null}
               </IconButton>
             </Animated.View>
             {/* Lúc xem lại ảnh: người nhận chọn ở hàng avatar dưới ảnh, trên này để trống. */}
@@ -461,10 +442,13 @@ export function HomeScreen({
               style={[s.side, reviewing && s.hidden]}
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
-              <IconButton label={t('notify.open')} onPress={onOpenNotices} style={s.round}>
-                <Icon name="bell" size={24} color={c.vivid.yellow} />
-                {noticeUnread ? <View style={s.dot} /> : null}
-              </IconButton>
+              <Avatar
+                name={myName}
+                uri={myPhoto}
+                size={44}
+                onPress={onOpenMe}
+                label={t('home.openMe')}
+              />
             </Animated.View>
           </View>
 
@@ -579,23 +563,6 @@ function EndPage({ frame, title, message }: { frame: Frame; title: string; messa
   );
 }
 
-type SkyMood = 'dawn' | 'noon' | 'dusk' | 'night' | 'rain';
-const skyOf = (scene: Palette['scene']): SkyMood => (scene === 'rainNight' ? 'rain' : scene);
-const SKY_HUE: Readonly<Record<SkyMood, Vivid>> = {
-  dawn: 'orange',
-  noon: 'yellow',
-  dusk: 'pink',
-  night: 'purple',
-  rain: 'blue',
-};
-const SKY_ICON: Readonly<Record<SkyMood, IconName>> = {
-  dawn: 'sun',
-  noon: 'sun',
-  dusk: 'sun',
-  night: 'moon',
-  rain: 'rain',
-};
-
 const make = (c: Palette) =>
   StyleSheet.create({
     page: { flex: 1, backgroundColor: c.bg },
@@ -612,34 +579,28 @@ const make = (c: Palette) =>
     hidden: { opacity: 0 },
     side: { width: 52 },
     round: {
-      width: 52,
-      height: 52,
+      width: 44,
+      height: 44,
       borderRadius: radius.full,
-      backgroundColor: c.glass,
-      borderWidth: 1,
-      borderColor: c.glassBorder,
-      ...lift(c),
+      backgroundColor: c.surface,
     },
     dot: {
       position: 'absolute',
-      top: 11,
-      right: 12,
-      width: 11,
-      height: 11,
+      top: 8,
+      right: 9,
+      width: 10,
+      height: 10,
       borderRadius: radius.full,
       backgroundColor: c.danger,
       borderWidth: 2,
-      borderColor: c.glass,
+      borderColor: c.surface,
     },
     center: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center' },
     layer: { position: 'absolute' },
     pill: {
       height: 44,
       borderRadius: radius.full,
-      backgroundColor: c.glass,
-      borderWidth: 1,
-      borderColor: c.glassBorder,
-      ...lift(c),
+      backgroundColor: c.surface,
       flexDirection: 'row',
       alignItems: 'center',
       gap: space.sm,

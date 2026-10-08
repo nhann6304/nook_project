@@ -1,11 +1,11 @@
 /**
- * Cài đặt — tab thứ tư. Màn này CHỈ là mục lục (07/10/2026 — bản trải hết mọi
- * lựa chọn ra một màn bị chê "khó nhìn, khó chỉnh"): trang của mình ở trên,
- * rồi từng hàng mở một trang con có nút Lưu. Âm thanh là một công tắc nên để
+ * Trang cá nhân + Cài đặt — mở từ avatar góc phải màn Chụp (08/10/2026, theo
+ * Locket: cài đặt nằm trong trang cá nhân, không chiếm một tab). Màn này CHỈ là
+ * mục lục: trang của mình ở trên, rồi từng hàng mở một trang con có nút Lưu. Âm thanh là một công tắc nên để
  * ngay tại chỗ — mở trang chỉ để bật/tắt một thứ là thừa.
  */
 import { StyleSheet, View } from 'react-native';
-import { Avatar, Card, Divider, Icon, IconBadge, Row, Screen, Scroll, Tap, Toggle, Txt } from '@ui';
+import { Avatar, Card, Divider, Icon, IconBadge, Row, Screen, Scroll, Tap, Toggle, TopBar, Txt } from '@ui';
 import { layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import { NavRow } from '../components/Pref';
@@ -28,6 +28,7 @@ export function SettingsScreen({
   proTitle,
   proSub,
   onSignOut,
+  onBack,
 }: {
   name: string;
   username: string | null;
@@ -48,15 +49,14 @@ export function SettingsScreen({
   proTitle: string;
   proSub: string;
   onSignOut: () => void;
+  onBack: () => void;
 }) {
   const t = useT();
   const s = useStyles(make);
 
   return (
-    <Screen edges={TOP}>
-      <View style={s.header}>
-        <Txt variant="title">{t('common.settings')}</Txt>
-      </View>
+    <Screen>
+      <TopBar title={t('common.settings')} closeLabel={t('settings.back')} onClose={onBack} />
 
       <Scroll>
         <View style={s.body}>
@@ -83,7 +83,6 @@ export function SettingsScreen({
           <Card style={s.list}>
             <NavRow
               icon="palette"
-              hue="pink"
               title={t('settings.appearance')}
               value={appearanceValue}
               onPress={onOpenAppearance}
@@ -91,7 +90,6 @@ export function SettingsScreen({
             <Divider inset />
             <NavRow
               icon="shield"
-              hue="teal"
               title={t('settings.privacy')}
               value={privacyValue}
               onPress={onOpenPrivacy}
@@ -99,14 +97,13 @@ export function SettingsScreen({
             <Divider inset />
             <NavRow
               icon="language"
-              hue="blue"
               title={t('settings.language')}
               value={languageValue}
               onPress={onOpenLanguage}
             />
             <Divider inset />
             <View style={s.toggle}>
-              <IconBadge name="music" hue="purple" />
+              <IconBadge name="music" />
               <View style={s.flex}>
                 <Toggle
                   value={soundOn}
@@ -167,12 +164,8 @@ function Stat({ value, label }: { value: number; label: string }) {
   );
 }
 
-/** Tab gốc: thanh tab đã lo phần đáy máy. */
-const TOP = ['top'] as const;
-
 const make = (c: Palette) =>
   StyleSheet.create({
-    header: { height: 52, justifyContent: 'center' },
     body: {
       paddingTop: space.sm,
       paddingBottom: space.huge,

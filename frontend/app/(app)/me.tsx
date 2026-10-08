@@ -16,7 +16,7 @@ import { useAudience } from '@/features/camera/store/audienceStore';
 import { useJournal } from '@/features/journal/store/journalStore';
 import { postedWithin } from '@/features/journal/types';
 
-export default function Settings() {
+export default function Me() {
   const router = useRouter();
   const t = useT();
   const names = useThemeNames();
@@ -70,6 +70,7 @@ export default function Settings() {
         price: t('pro.vnd', { amount: num(monthly) }),
         days: TRIAL_DAYS,
       })}
+      onBack={() => router.back()}
       onSignOut={() => {
         void signOut();
         leave();
