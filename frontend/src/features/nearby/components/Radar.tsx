@@ -126,7 +126,7 @@ export const Radar = memo(function Radar({
       })}
 
       <View style={[s.me, { left: half - ME / 2, top: half - ME / 2 }]} pointerEvents="none">
-        <Avatar name={meName} uri={meUri} size={ME} level={10} />
+        <Avatar name={meName} uri={meUri} size={ME} />
       </View>
     </View>
   );

@@ -176,7 +176,9 @@ export const vi = {
     captionLabel: 'Thêm một dòng cho ảnh',
     tag: 'Tag bạn vào ảnh',
     tagPerson: 'Tag {name}',
-    privacy: { other: 'Ảnh này chỉ đi tới {count} người trong góc của bạn. Không ai khác thấy được.' },
+    privacy: {
+      other: 'Ảnh này chỉ đi tới {count} người trong góc của bạn. Không ai khác thấy được.',
+    },
     send: 'Gửi đi',
   },
 
@@ -211,6 +213,25 @@ export const vi = {
     level: 'Cấp {level} · {name}',
     together: '{memories} ký ức · {days} ngày',
     toNext: 'Còn {count} ký ức tới cấp {level}',
+    tierPill: '{tier} · {name}',
+    bracelet: 'Vòng tay của hai đứa',
+    braceletThicker: 'Mỗi hạt là một ký ức. Thêm {count} ký ức nữa là vòng dày thêm.',
+    braceletUpgrade: 'Mỗi hạt là một ký ức. Thêm {count} ký ức nữa là hạt hoá {material}.',
+    braceletDone: 'Vòng vàng đủ hạt — thứ hiếm nhất ở LOVO.',
+    tier: {
+      wood: 'Vòng gỗ',
+      shell: 'Vòng vỏ sò',
+      ours: 'Vòng màu riêng',
+      jade: 'Vòng ngọc',
+      gold: 'Vòng vàng',
+    },
+    material: {
+      wood: 'gỗ',
+      shell: 'vỏ sò',
+      ours: 'màu riêng của hai đứa',
+      jade: 'ngọc',
+      gold: 'vàng',
+    },
     message: 'Nhắn tin',
     album: 'Album chung',
     albumSoon: 'Album chung sắp có',
@@ -264,6 +285,13 @@ export const vi = {
 
   /* ---------- Màn chính: camera + ảnh bạn bè lướt dọc ---------- */
   home: {
+    sky: {
+      dawn: 'Nắng sớm đẹp lắm — chụp một tấm?',
+      noon: 'Trời trong veo — khoe chút đi.',
+      dusk: 'Hoàng hôn rồi, đừng bỏ lỡ.',
+      night: 'Khuya rồi — chúc ai đó ngủ ngon?',
+      rain: 'Trời mưa — một tấm cửa sổ là đủ.',
+    },
     sentTagged: 'Đã gửi · đã báo cho {names}',
     offline: 'Đang chờ mạng',
     mentioned: 'Nhắc tới bạn',
@@ -320,8 +348,7 @@ export const vi = {
   chat: {
     title: 'Tin nhắn',
     emptyTitle: 'Chưa nói chuyện với ai',
-    emptyMessage:
-      'Chạm vào ô nhắn dưới một khoảnh khắc là mở được cuộc trò chuyện với người gửi.',
+    emptyMessage: 'Chạm vào ô nhắn dưới một khoảnh khắc là mở được cuộc trò chuyện với người gửi.',
     openFeed: 'Xem khoảnh khắc',
     placeholder: 'Nhắn cho {name}…',
     send: 'Gửi',
@@ -342,7 +369,8 @@ export const vi = {
     system: 'Theo máy',
     systemNote: 'Tự đổi theo chế độ sáng, tối của điện thoại.',
     sky: 'Theo trời',
-    skyNote: 'Màu đổi theo buổi trong ngày; trời mưa thì chuyển sang màu mưa. Ảnh luôn giữ màu thật.',
+    skyNote:
+      'Màu đổi theo buổi trong ngày; trời mưa thì chuyển sang màu mưa. Ảnh luôn giữ màu thật.',
     dawn: 'Sáng',
     noon: 'Trưa',
     dusk: 'Chiều',
@@ -353,7 +381,9 @@ export const vi = {
     rainHint: 'Dùng vị trí thô (khoảng 10 km) để hỏi dự báo. Không lưu, không gửi cho ai.',
     rainReady: 'Đã bật: trời mưa là màu đổi theo.',
     locket: 'Màu locket',
-    locketHint: 'Màu của nút, viền ảnh và vòng bạn bè. Ảnh thì luôn giữ màu thật.',
+    locketHint:
+      '"Theo ảnh": app tự lấy màu từ tấm bạn gửi gần nhất — chụp hoàng hôn là app ngả cam. Ảnh thì luôn giữ màu thật.',
+    photo: 'Theo ảnh',
     denim: 'Lam',
     rose: 'Hồng',
     sage: 'Lá',
@@ -370,7 +400,8 @@ export const vi = {
     all: 'Tất cả',
     hiddenPerson: '{name} — không xem được',
     settingsTitle: 'Người xem mặc định',
-    settingsHint: 'Bạn nào bị bỏ chọn sẽ không thấy ảnh mới của bạn. Lúc gửi vẫn đổi được từng tấm.',
+    settingsHint:
+      'Bạn nào bị bỏ chọn sẽ không thấy ảnh mới của bạn. Lúc gửi vẫn đổi được từng tấm.',
     empty: 'Góc của bạn chưa có ai.',
     search: 'Tìm',
     searchPlaceholder: 'Tìm tên bạn bè',
@@ -392,6 +423,45 @@ export const vi = {
     emptyTitle: 'Chưa có gì mới',
     emptyMessage: 'Khi bạn bè thả cảm xúc, nhắc tới bạn hay mời bạn, nó sẽ hiện ở đây.',
   },
+  /* ---------- LOVO Pro (nhánh thử) ---------- */
+  pro: {
+    title: 'LOVO Pro',
+    tagline: 'cho những ai muốn giữ kỷ niệm thật đẹp',
+    card: 'LOVO Pro',
+    cardSub: '{price}/tháng · dùng thử {days} ngày',
+    vnd: '{amount}đ',
+    perMonth: 'chỉ {price}/tháng',
+    cancelAnytime: 'huỷ lúc nào cũng được',
+    save: 'Tiết kiệm 17%',
+    plan: { month: 'Theo tháng', year: 'Theo năm' },
+    start: 'Dùng thử {days} ngày miễn phí',
+    soon: 'Sắp mở — thanh toán qua App Store và Google Play.',
+    perk: {
+      beads: {
+        title: 'Hạt vòng đặc biệt',
+        sub: 'Pha lê, ngọc trai, đá mặt trăng cho vòng tay với bạn thân.',
+      },
+      icon: {
+        title: 'Icon app & khung ảnh riêng',
+        sub: 'Đổi icon LOVO, khung ảnh, chữ viết tay nhiều màu.',
+      },
+      video: { title: 'Video 10 giây', sub: 'Giữ nút chụp lâu hơn — bản thường là 3 giây.' },
+      recap: {
+        title: 'Recap có nhạc',
+        sub: 'Video kỷ niệm theo tháng, theo năm cho từng người bạn.',
+      },
+      pin: { title: 'Ghim bạn thân', sub: 'Ảnh của họ luôn nằm đầu tiên.' },
+      gift: { title: 'Tặng một tháng Pro', sub: 'Cho một người bạn, mỗi năm một lần.' },
+    },
+    freeTitle: 'Ai cũng có, không cần Pro',
+    free: {
+      photo: 'Ảnh chất lượng gốc — không bóp, không nén nát.',
+      memories: 'Mọi kỷ niệm giữ mãi, không giới hạn.',
+      bracelet: 'Vòng tay và độ thân không bao giờ mua được.',
+      friends: 'Chỗ cho bạn bè không bán — chỉ mở thêm khi hai người thân thật.',
+    },
+  },
+
   settings: {
     appearance: 'Giao diện',
     privacy: 'Riêng tư',

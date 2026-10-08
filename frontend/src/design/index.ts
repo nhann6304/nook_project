@@ -13,3 +13,4 @@ export * from './theme';
 export * from './useStyles';
 export * from './motion';
 export * from './mapStyle';
+export * from './beads';

@@ -12,6 +12,7 @@ import {
   radius,
   space,
   useStyles,
+  useTheme,
   type AccentKey,
   type Palette,
   type SkyScene,
@@ -29,10 +30,11 @@ export const SkyStrip = memo(function SkyStrip({
   nowLabel: string;
 }) {
   const s = useStyles(make);
+  const seed = useTheme((st) => st.seed);
   return (
     <View style={s.row}>
       {SKY_SCENES.map((k) => {
-        const p = paletteOf(k, accent);
+        const p = paletteOf(k, accent, seed);
         const now = k === current;
         return (
           <View key={k} style={[s.card, now && s.cardNow]}>

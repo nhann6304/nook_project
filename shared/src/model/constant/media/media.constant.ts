@@ -88,7 +88,7 @@ export const MEDIA_VARIANTS = ['feed', 'thumb'] as const;
 
 export const VARIANT_SPEC = {
   /** Ảnh trên bảng tin. Đủ nét cho màn hình điện thoại to nhất hiện nay. */
-  feed: { width: 1290, quality: 82 },
+  feed: { width: 1290, quality: 88 },
   /** Mặt bạn bè ở hàng trên, và ảnh đại diện. */
   thumb: { width: 320, quality: 78 },
 } as const;

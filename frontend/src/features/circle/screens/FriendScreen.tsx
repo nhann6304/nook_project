@@ -7,14 +7,28 @@
 import { memo } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { Avatar, Button, Icon, IconButton, Img, Screen, Scroll, Txt } from '@ui';
-import { duration, font, layout, radius, space, useColors, useStyles, type Palette } from '@design';
+import { Avatar, BeadStrand, Button, Icon, IconButton, Img, Screen, Scroll, Txt } from '@ui';
+import {
+  beadTier,
+  duration,
+  font,
+  layout,
+  lift,
+  radius,
+  space,
+  useColors,
+  useStyles,
+  type Palette,
+} from '@design';
 import { useT } from '@i18n';
 import type { Moment } from '@/features/feed/types';
 import type { Friend } from '../types';
 
 const LEVEL_KEYS = ['l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7', 'l8', 'l9', 'l10'] as const;
 const COLS = 3;
+/** Số hạt trên chuỗi ở trang hai người, và tối đa bao nhiêu ổ trống. */
+const STRAND = 14;
+const STRAND_EMPTY = 5;
 const GAP = 3;
 
 export function FriendScreen({
@@ -37,6 +51,19 @@ export function FriendScreen({
   const cell = Math.floor((width - GAP * (COLS - 1)) / COLS);
   const level = Math.min(Math.max(friend.level, 1), 10);
   const levelName = t(`friends.levels.${LEVEL_KEYS[level - 1] ?? 'l1'}`);
+  const tier = beadTier(level);
+  const nextTier = beadTier(level + 1);
+  const empty = level < 10 ? Math.min(friend.toNext ?? 3, STRAND_EMPTY) : 0;
+  const filled = Math.min(friend.memories ?? level * 5, STRAND - empty);
+  const hint =
+    level >= 10
+      ? t('friends.braceletDone')
+      : nextTier === tier
+        ? t('friends.braceletThicker', { count: friend.toNext ?? empty })
+        : t('friends.braceletUpgrade', {
+            count: friend.toNext ?? empty,
+            material: t(`friends.material.${nextTier}`),
+          });
 
   return (
     <Screen padded={false}>
@@ -62,7 +89,7 @@ export function FriendScreen({
             <View style={s.meta}>
               <View style={s.levelPill}>
                 <Txt variant="faint" tone="honey" style={s.levelText}>
-                  {t('friends.level', { level, name: levelName })}
+                  {t('friends.tierPill', { tier: t(`friends.tier.${tier}`), name: levelName })}
                 </Txt>
               </View>
               {friend.memories !== undefined && friend.days !== undefined ? (
@@ -89,15 +116,24 @@ export function FriendScreen({
           />
         </Animated.View>
 
+        <Animated.View entering={FadeInDown.delay(duration.slow)} style={s.bracelet}>
+          <Txt variant="label">{t('friends.bracelet')}</Txt>
+          <BeadStrand
+            width={width - space.lg * 4}
+            filled={filled}
+            empty={empty}
+            tier={friend.dormant ? 'shell' : tier}
+            label={hint}
+          />
+          <Txt variant="faint" tone="muted">
+            {hint}
+          </Txt>
+        </Animated.View>
+
         <View style={s.section}>
           <Txt variant="faint" tone="muted" style={s.sectionTitle}>
             {t('friends.photos')}
           </Txt>
-          {friend.toNext !== undefined && level < 10 ? (
-            <Txt variant="faint" tone="faint">
-              {t('friends.toNext', { count: friend.toNext, level: level + 1 })}
-            </Txt>
-          ) : null}
         </View>
 
         {photos.length === 0 ? (
@@ -174,6 +210,17 @@ const make = (c: Palette) =>
       marginTop: space.xl,
     },
     action: { flex: 1, minHeight: 46, borderRadius: radius.sm + 2 },
+    bracelet: {
+      marginHorizontal: space.lg,
+      marginTop: space.xl,
+      padding: space.lg,
+      gap: space.sm,
+      borderRadius: radius.xl,
+      backgroundColor: c.glass,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: c.glassBorder,
+      ...lift(c),
+    },
     section: {
       flexDirection: 'row',
       justifyContent: 'space-between',

@@ -38,6 +38,7 @@ import {
   space,
   useColors,
   useStyles,
+  useTheme,
   type Palette,
 } from '@design';
 import { useT } from '@i18n';
@@ -50,6 +51,7 @@ import { SendButton } from './SendButton';
 import { Shutter } from './Shutter';
 import { AudiencePicker, type AudiencePerson } from './AudiencePicker';
 import { AudienceSheet } from './AudienceSheet';
+import { photoSeed } from '../lib/photoColor';
 import { squarePhoto } from '../lib/squarePhoto';
 import { TagSuggestions } from './TagSuggestions';
 import type { Tag } from '@/features/feed/types';
@@ -201,7 +203,7 @@ export function CameraPage({
       // KHÔNG pausePreview trước khi ảnh về, và tiếng "tách" phát SAU: iOS
       // 07/10/2026 báo "Image could not be captured" — dừng khung ngắm hay
       // bật phiên âm thanh giữa lúc chụp đều cắt ngang phiên camera.
-      const photo = await cam.current.takePictureAsync({ quality: 0.8 });
+      const photo = await cam.current.takePictureAsync({ quality: 1 });
       if (photo?.uri) {
         sound.capture();
         // Hiện ảnh gốc NGAY (khung cắt bằng `cover` giống hệt), không vòng chờ.
@@ -225,7 +227,7 @@ export function CameraPage({
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [9, 10],
-      quality: 0.8,
+      quality: 1,
     });
     const first = res.assets?.[0];
     if (res.canceled || !first) return;
@@ -309,6 +311,13 @@ export function CameraPage({
       hiddenFrom: [...hidden],
     });
     discard();
+    // "Theo ảnh": app ngả theo màu tấm vừa gửi. Chạy sau khi gửi — lỗi hay ảnh
+    // không có màu thì giữ màu cũ, không ai biết.
+    void photoSeed(uri)
+      .then((seed) => {
+        if (seed) useTheme.getState().setSeed(seed);
+      })
+      .catch(() => undefined);
   }, [caption, clip, discard, hidden, onSend, shot, taggable]);
 
   const toggleHidden = useCallback((id: string) => {

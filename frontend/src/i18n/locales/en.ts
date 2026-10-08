@@ -196,7 +196,10 @@ export const en: Mirror<typeof vi> = {
     title: 'Friends',
     slots: '{filled} / {total}',
     inviteTitle: 'Invite more friends',
-    inviteLeft: { one: '{count} spot left in your circle', other: '{count} spots left in your circle' },
+    inviteLeft: {
+      one: '{count} spot left in your circle',
+      other: '{count} spots left in your circle',
+    },
     full: 'Your circle is full',
     sendLink: 'Send link',
     shareMessage: 'Join my little circle on LOVO: {link}',
@@ -207,6 +210,25 @@ export const en: Mirror<typeof vi> = {
     level: 'Level {level} · {name}',
     together: '{memories} memories · {days} days',
     toNext: '{count} memories to level {level}',
+    tierPill: '{tier} · {name}',
+    bracelet: 'Your bracelet together',
+    braceletThicker: 'Every bead is a memory. {count} more and it grows thicker.',
+    braceletUpgrade: 'Every bead is a memory. {count} more and the beads turn to {material}.',
+    braceletDone: 'A full gold bracelet — the rarest thing on LOVO.',
+    tier: {
+      wood: 'Wood bracelet',
+      shell: 'Shell bracelet',
+      ours: 'Your-colour bracelet',
+      jade: 'Jade bracelet',
+      gold: 'Gold bracelet',
+    },
+    material: {
+      wood: 'wood',
+      shell: 'shell',
+      ours: 'your own colour',
+      jade: 'jade',
+      gold: 'gold',
+    },
     message: 'Message',
     album: 'Shared album',
     albumSoon: 'Shared album is coming soon',
@@ -261,6 +283,13 @@ export const en: Mirror<typeof vi> = {
   },
 
   home: {
+    sky: {
+      dawn: 'Lovely morning light — snap one?',
+      noon: 'Clear skies — show it off.',
+      dusk: 'Sunset time, don’t miss it.',
+      night: 'Late already — say goodnight to someone?',
+      rain: 'Rainy day — one window shot is enough.',
+    },
     sentTagged: 'Sent · {names} will be notified',
     offline: 'Waiting for connection',
     mentioned: 'Mentions you',
@@ -334,7 +363,8 @@ export const en: Mirror<typeof vi> = {
     system: 'Phone',
     systemNote: 'Follows your phone’s light or dark mode.',
     sky: 'Sky',
-    skyNote: 'Colours follow the time of day, and switch to rainy tones when it rains. Photos keep their true colours.',
+    skyNote:
+      'Colours follow the time of day, and switch to rainy tones when it rains. Photos keep their true colours.',
     dawn: 'Morning',
     noon: 'Midday',
     dusk: 'Evening',
@@ -345,7 +375,9 @@ export const en: Mirror<typeof vi> = {
     rainHint: 'Uses a rough location (about 10 km) to check the forecast. Not stored, not shared.',
     rainReady: 'On: colours change when it rains.',
     locket: 'Locket colour',
-    locketHint: 'Colours buttons, photo edges and friend rings. Photos keep their true colours.',
+    locketHint:
+      '"My photo": the app takes its colour from the last photo you sent — shoot a sunset and it turns warm. Photos keep their true colours.',
+    photo: 'My photo',
     denim: 'Blue',
     rose: 'Rose',
     sage: 'Sage',
@@ -362,7 +394,8 @@ export const en: Mirror<typeof vi> = {
     all: 'Everyone',
     hiddenPerson: '{name} — can’t see',
     settingsTitle: 'Default viewers',
-    settingsHint: 'Friends you untick won’t see your new photos. You can still change it per photo.',
+    settingsHint:
+      'Friends you untick won’t see your new photos. You can still change it per photo.',
     empty: 'Nobody in your circle yet.',
     search: 'Search',
     searchPlaceholder: 'Search friends',
@@ -384,6 +417,45 @@ export const en: Mirror<typeof vi> = {
     emptyTitle: 'Nothing new yet',
     emptyMessage: 'When friends react, mention you or invite you, it shows up here.',
   },
+  /* ---------- LOVO Pro (trial branch) ---------- */
+  pro: {
+    title: 'LOVO Pro',
+    tagline: 'for keeping memories beautiful',
+    card: 'LOVO Pro',
+    cardSub: '{price}/month · {days}-day free trial',
+    vnd: '{amount} VND',
+    perMonth: 'just {price}/month',
+    cancelAnytime: 'cancel anytime',
+    save: 'Save 17%',
+    plan: { month: 'Monthly', year: 'Yearly' },
+    start: 'Try {days} days free',
+    soon: 'Coming soon — billed through the App Store and Google Play.',
+    perk: {
+      beads: {
+        title: 'Special bracelet beads',
+        sub: 'Crystal, pearl and moonstone for bracelets with your closest friends.',
+      },
+      icon: {
+        title: 'Custom app icon & frames',
+        sub: 'Change the LOVO icon, photo frames and handwriting colours.',
+      },
+      video: { title: '10-second videos', sub: 'Hold the shutter longer — standard is 3 seconds.' },
+      recap: {
+        title: 'Recaps with music',
+        sub: 'Monthly and yearly memory videos for each friend.',
+      },
+      pin: { title: 'Pin best friends', sub: 'Their photos always come first.' },
+      gift: { title: 'Gift a month of Pro', sub: 'To one friend, once a year.' },
+    },
+    freeTitle: 'Everyone gets this, no Pro needed',
+    free: {
+      photo: 'Original-quality photos — never squashed or crushed.',
+      memories: 'Every memory kept forever, no limits.',
+      bracelet: 'Bracelets and closeness can never be bought.',
+      friends: 'Friend spots are never for sale — they open as friendships grow.',
+    },
+  },
+
   settings: {
     appearance: 'Appearance',
     privacy: 'Privacy',

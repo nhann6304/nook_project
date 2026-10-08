@@ -90,7 +90,12 @@ const Item = memo(function Item<K extends string>({
     >
       <View style={[s.mark, selected && s.markOn]} />
       <View style={s.icon}>
-        <Icon name={item.icon} size={24} color={selected ? c.accent : c.textFaint} />
+        <Icon
+          name={item.icon}
+          size={24}
+          color={selected ? c.accent : c.textFaint}
+          weight={selected ? 'fill' : 'duotone'}
+        />
         {item.badge ? <View style={s.badge} /> : null}
       </View>
       <Txt

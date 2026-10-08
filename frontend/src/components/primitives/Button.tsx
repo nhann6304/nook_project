@@ -1,27 +1,18 @@
 /**
- * Button — nút bấm. Bốn dáng, không hơn.
+ * Button — nút KHỐI NỔI (08/10/2026, nhánh thử giao diện).
  *
- *   primary   dải màu, chữ tối. MỖI MÀN CHỈ MỘT CÁI. Đây là luật, không phải gợi ý.
- *   secondary viền mảnh, nền trong. Việc quan trọng thứ hai.
- *   ghost     không viền không nền. Việc phụ, huỷ, bỏ qua.
- *   danger    viền đỏ. Xoá, rời góc.
+ * Nút phẳng bị chê "nhìn sao sao". Bản này có một gờ đậm hơn ở đáy; nhấn thì
+ * mặt nút LÚN XUỐNG phủ kín gờ — ngón tay thấy mình vừa ấn một thứ thật. Lún
+ * chạy trên luồng UI (Reanimated), JS kẹt nút vẫn lún.
  *
- * Chữ trên nút primary là màu TỐI (#1A0E08), không phải trắng. Số đo trên ba
- * chặng của dải: chữ tối cho 8.37 / 6.85 / 6.47:1, chữ trắng chỉ 2.26 / 2.76 /
- * 2.92:1 — trượt chuẩn ở mọi chặng. Xem `c.onAccent` trong tokens.
+ *   primary   mặt màu nhấn, gờ màu nhấn đậm. MỖI MÀN CHỈ MỘT CÁI.
+ *   secondary mặt kính, viền + gờ màu đường kẻ. Việc quan trọng thứ hai.
+ *   ghost     phẳng, không gờ. Việc phụ, huỷ, bỏ qua.
+ *   danger    mặt kính, viền + gờ đỏ. Xoá, rời góc.
  */
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import {
-  GRADIENT_END,
-  GRADIENT_START,
-  layout,
-  radius,
-  space,
-  useColors,
-  useStyles,
-  type Palette,
-} from '@design';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { font, layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { Txt } from './Txt';
 import { Tap, type TapProps } from './Tap';
 import { Spinner } from '../feedback/Spinner';
@@ -39,6 +30,10 @@ export type ButtonProps = Omit<TapProps, 'children' | 'style'> & {
   style?: StyleProp<ViewStyle>;
 };
 
+/** Độ dày gờ đáy — cũng là quãng mặt nút lún xuống. */
+const EDGE = 4;
+const PRESS_MS = 70;
+
 export function Button({
   label,
   variant = 'primary',
@@ -48,12 +43,19 @@ export function Button({
   disabled,
   style,
   feedback = variant === 'primary' ? 'confirm' : 'tap',
+  onPressIn,
+  onPressOut,
   ...rest
 }: ButtonProps) {
   const s = useStyles(make);
   const c = useColors();
   const off = disabled === true || loading;
-  const primary = variant === 'primary';
+  const raised = variant !== 'ghost' && !off;
+  const pressed = useSharedValue(0);
+
+  const face = useAnimatedStyle(() => ({
+    transform: [{ translateY: pressed.value * EDGE }],
+  }));
 
   return (
     <Tap
@@ -62,32 +64,31 @@ export function Button({
       accessibilityState={{ disabled: off, busy: loading }}
       disabled={off}
       feedback={off ? null : feedback}
-      scaleTo={0.965}
-      style={[s.base, block && s.block, primary ? s.primary : s[variant], off && s.off, style]}
+      scaleTo={1}
+      onPressIn={(e) => {
+        pressed.set(withTiming(1, { duration: PRESS_MS }));
+        onPressIn?.(e);
+      }}
+      onPressOut={(e) => {
+        pressed.set(withTiming(0, { duration: PRESS_MS * 2 }));
+        onPressOut?.(e);
+      }}
+      style={[s.wrap, block && s.block, off && s.off, style]}
       {...rest}
     >
-      {/* Dải màu là lớp nền, nằm dưới chữ. Nút một màu phẳng trên nền gần đen
-          trông như miếng dán; dải màu làm nó trông có ánh sáng chiếu vào. */}
-      {primary ? (
-        <LinearGradient
-          colors={c.gradient}
-          start={GRADIENT_START}
-          end={GRADIENT_END}
-          style={s.fill}
-          pointerEvents="none"
-        />
-      ) : null}
-
-      {loading ? (
-        <Spinner size={20} color={primary ? c.onAccent : c.text} />
-      ) : (
-        <View style={s.content}>
-          {icon}
-          <Txt variant="label" tone={TONE[variant]} style={s.label} numberOfLines={1}>
-            {label}
-          </Txt>
-        </View>
-      )}
+      {raised ? <View style={[s.edge, s[EDGE_STYLE[variant]]]} /> : null}
+      <Animated.View style={[s.face, s[variant], raised && face]}>
+        {loading ? (
+          <Spinner size={20} color={variant === 'primary' ? c.onAccent : c.text} />
+        ) : (
+          <View style={s.content}>
+            {icon}
+            <Txt variant="label" tone={TONE[variant]} style={s.label} numberOfLines={1}>
+              {label}
+            </Txt>
+          </View>
+        )}
+      </Animated.View>
     </Tap>
   );
 }
@@ -99,27 +100,41 @@ const TONE = {
   danger: 'danger',
 } as const;
 
+const EDGE_STYLE = {
+  primary: 'edgePrimary',
+  secondary: 'edgeSecondary',
+  danger: 'edgeDanger',
+} as const;
+
 const make = (c: Palette) =>
   StyleSheet.create({
-    base: {
+    wrap: { paddingBottom: EDGE },
+    block: { alignSelf: 'stretch' },
+    edge: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: EDGE,
+      bottom: 0,
+      borderRadius: radius.lg,
+    },
+    edgePrimary: { backgroundColor: c.accentDeep },
+    edgeSecondary: { backgroundColor: c.border },
+    edgeDanger: { backgroundColor: c.danger },
+    face: {
       minHeight: layout.controlHeight,
-      borderRadius: radius.md,
+      borderRadius: radius.lg,
       paddingHorizontal: space.xxl,
       alignItems: 'center',
       justifyContent: 'center',
-      // overflow hidden để dải màu bị cắt theo góc bo
-      overflow: 'hidden',
     },
-    block: { alignSelf: 'stretch' },
-    fill: StyleSheet.absoluteFill,
-
     primary: { backgroundColor: c.accent },
-    secondary: { borderWidth: 1, borderColor: c.border, backgroundColor: c.surface },
+    secondary: { borderWidth: 2, borderColor: c.border, backgroundColor: c.glass },
     ghost: { backgroundColor: 'transparent' },
-    danger: { borderWidth: 1, borderColor: c.danger, backgroundColor: 'transparent' },
+    danger: { borderWidth: 2, borderColor: c.danger, backgroundColor: c.glass },
 
     off: { opacity: 0.4 },
 
     content: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-    label: { fontSize: 16 },
+    label: { fontSize: 16, fontFamily: font.bodyBold },
   });

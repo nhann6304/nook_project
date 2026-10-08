@@ -43,6 +43,8 @@ export { Wordmark, Lockup } from './brand/Wordmark';
 export { Halo } from './brand/Halo';
 export { GhostFrame } from './brand/GhostFrame';
 export { Avatar, type AvatarProps } from './brand/Avatar';
+export { Bracelet, type BraceletProps } from './brand/Bracelet';
+export { BeadStrand } from './brand/BeadStrand';
 export { AvatarStack } from './brand/AvatarStack';
 
 /* — Phản hồi — */

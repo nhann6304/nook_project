@@ -101,11 +101,23 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - **Chụp xong:** hàng avatar dưới ảnh chọn ai KHÔNG được xem (mặc định ai cũng
   xem; mặc định riêng đặt ở Cài đặt → Riêng tư). Gửi đi là `hiddenFromUserIds`.
 - **Đèn camera trước chỉ sáng TRONG KHUNG**, không trắng cả màn hình.
-- **Icon: bộ RIÊNG `<Icon name>`** (`src/components/primitives/Icon.tsx`, 07/10/2026)
-  — nét 2.1 bo tròn + ruột tô 16%, vẽ to hơn số được hỏi 15%. Màu icon theo
-  MÀU NHẤN của cảnh (`c.accent`), không `c.text` — nền sáng mà icon đen là xấu.
-  Nút tròn nền `c.accentSoft`, không viền, không ô vuông bo góc. **Không dùng
-  Ionicons**; thiếu icon thì vẽ thêm vào bộ, cùng lưới 24 và độ dày.
+- **Icon: nét Phosphor kiểu DUOTONE** (`<Icon name>`, 08/10/2026) — nét vừa + ruột
+  tô 24% cùng màu; `weight="fill"` cho thứ đang chọn (tab đang mở). Nét đơn
+  (✓ × mũi tên +) tự đi nét đậm, không ô nền. Nét sinh vào `iconPaths.ts` bằng
+  `node scripts/phosphor-icons.mjs` — thêm icon ở script, đừng sửa tay, đừng
+  nhập gói lúc chạy. Màu icon theo `c.accent`, không `c.text`.
+- **Nút KHỐI NỔI** (`<Button>`, 08/10/2026): mặt + gờ đáy đậm hơn, nhấn thì mặt
+  lún phủ gờ (luồng UI). Thẻ nổi bật (Pro) đi cùng giọng: gờ `accentDeep`.
+- **"Theo ảnh" là màu mặc định** (08/10/2026): gửi ảnh xong app rút màu chủ đạo
+  (`camera/lib/photoColor.ts`) → `setSeed` → sắc nhấn + cảnh ngả theo màu đó,
+  tương phản ĐO lúc dựng (`seedSwatch` trong `palettes.ts`). Năm màu locket vẫn chọn được.
+- **Vòng tay hạt thay vòng cấp thân** (`<Bracelet>` quanh `<Avatar level>`,
+  `<BeadStrand>` ở trang hai người): mỗi hạt một ký ức, chất liệu nói độ thân
+  (gỗ → vỏ sò → màu riêng → ngọc → vàng, `design/beads.ts`). Không số.
+- **Trời có cảnh** (`<SkyWash>`): mây trôi / mặt trời / sao / mưa — chỉ
+  transform + opacity, mỗi lớp một Svg vẽ một lần.
+- **Ảnh gốc cho mọi người**: chụp `quality: 1`, cắt khung rồi nén JPEG MỘT lần
+  0.92, KHÔNG thu nhỏ. Không bao giờ đưa chất lượng ảnh vào gói Pro.
 - **Cài đặt = mục lục + trang con** (`app/(app)/prefs/*`): Giao diện · Riêng tư ·
   Ngôn ngữ mở trang riêng giữ BẢN NHÁP, bấm **Lưu** mới áp dụng và gọi
   `settingsApi.saveSettings` MỘT lần (không ghi server mỗi lần chạm). Giao diện

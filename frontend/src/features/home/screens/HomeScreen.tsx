@@ -28,7 +28,21 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { AvatarStack, Icon, IconButton, Img, SkyWash, OfflineBar, Pager, Screen, Tap, Toast, Txt, type PagerHandle } from '@ui';
+import {
+  AvatarStack,
+  Icon,
+  IconButton,
+  Img,
+  SkyWash,
+  OfflineBar,
+  Pager,
+  Screen,
+  Tap,
+  Toast,
+  Txt,
+  type IconName,
+  type PagerHandle,
+} from '@ui';
 import {
   duration,
   ease,
@@ -390,8 +404,20 @@ export function HomeScreen({
         <View ref={root} style={s.root} collapsable={false}>
           {/* 1 — Thanh trên */}
           <View style={s.bar}>
-            {/* Cân hai bên để viên thuốc nằm đúng giữa. */}
-            <View style={s.side} />
+            {/* Trời đang thế nào — chạm là một lời rủ chụp hợp cảnh. Cũng cân
+                hai bên để viên thuốc nằm đúng giữa. */}
+            <Animated.View
+              style={[s.side, reviewing && s.hidden]}
+              pointerEvents={reviewing ? 'none' : 'auto'}
+            >
+              <IconButton
+                label={t(`home.sky.${skyOf(c.scene)}`)}
+                onPress={() => say(t(`home.sky.${skyOf(c.scene)}`))}
+                style={s.round}
+              >
+                <Icon name={SKY_ICON[skyOf(c.scene)]} size={24} color={c.accent} />
+              </IconButton>
+            </Animated.View>
             {/* Lúc xem lại ảnh: người nhận chọn ở hàng avatar dưới ảnh, trên này để trống. */}
             {reviewing ? null : (
               // MỘT vùng bấm phủ cả hai viên thuốc. Hai viên chồng lên nhau chỉ là
@@ -451,7 +477,6 @@ export function HomeScreen({
                 keep={KEEP}
               />
             ) : null}
-
           </View>
 
           {/* 4 — Lưới tất cả ảnh */}
@@ -548,6 +573,16 @@ function EndPage({ frame, title, message }: { frame: Frame; title: string; messa
     </View>
   );
 }
+
+type SkyMood = 'dawn' | 'noon' | 'dusk' | 'night' | 'rain';
+const skyOf = (scene: Palette['scene']): SkyMood => (scene === 'rainNight' ? 'rain' : scene);
+const SKY_ICON: Readonly<Record<SkyMood, IconName>> = {
+  dawn: 'sun',
+  noon: 'sun',
+  dusk: 'sun',
+  night: 'moon',
+  rain: 'rain',
+};
 
 const make = (c: Palette) =>
   StyleSheet.create({

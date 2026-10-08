@@ -24,10 +24,20 @@ export type Scene = (typeof SCENES)[number];
 export const SKY_SCENES = ['dawn', 'noon', 'dusk', 'night', 'rain'] as const;
 export type SkyScene = (typeof SKY_SCENES)[number];
 
-export const ACCENT_KEYS = ['denim', 'rose', 'sage', 'lavender', 'apricot'] as const;
+/**
+ * `photo` = "Theo ảnh" (08/10/2026, mặc định): sắc nhấn lấy từ tấm ảnh gần nhất
+ * người dùng gửi, cảnh nền cũng ngả nhẹ theo màu đó — hai người không bao giờ
+ * có app giống nhau. Chưa có ảnh nào thì đi như `denim`.
+ */
+export const ACCENT_KEYS = ['photo', 'denim', 'rose', 'sage', 'lavender', 'apricot'] as const;
 export type AccentKey = (typeof ACCENT_KEYS)[number];
+type FixedAccent = Exclude<AccentKey, 'photo'>;
 
-export type ThemeKey = `${Scene}-${AccentKey}`;
+/** Màu hạt giống rút từ ảnh — đã làm tròn (hue bước 10°, ba nấc độ đậm) để
+ *  số bảng màu có hạn và `useStyles` nhớ được. */
+export type Seed = { h: number; s: number };
+
+export type ThemeKey = `${Scene}-${string}`;
 type Tone = 'light' | 'dark';
 
 /** Một bảng màu đầy đủ. Thêm khoá ở đây là phải khai ở `build`. */
@@ -121,9 +131,23 @@ type Base = Pick<
   | 'textDisabled'
 > & { tone: Tone };
 
-const SEMANTIC: Readonly<Record<Tone, Pick<Palette, 'honey' | 'mint' | 'violet' | 'danger' | 'core'>>> = {
-  light: { honey: '#8A6100', mint: '#1F7556', violet: '#5E44A6', danger: '#B3262E', core: '#FFFFFF' },
-  dark: { honey: '#EDCF8C', mint: '#86D6B8', violet: '#C2AEF2', danger: '#F08C8C', core: '#EEF3FB' },
+const SEMANTIC: Readonly<
+  Record<Tone, Pick<Palette, 'honey' | 'mint' | 'violet' | 'danger' | 'core'>>
+> = {
+  light: {
+    honey: '#8A6100',
+    mint: '#1F7556',
+    violet: '#5E44A6',
+    danger: '#B3262E',
+    core: '#FFFFFF',
+  },
+  dark: {
+    honey: '#EDCF8C',
+    mint: '#86D6B8',
+    violet: '#C2AEF2',
+    danger: '#F08C8C',
+    core: '#EEF3FB',
+  },
 };
 
 const BASES: Readonly<Record<Scene, Base>> = {
@@ -243,7 +267,7 @@ const BASES: Readonly<Record<Scene, Base>> = {
 /** [nhấn, đậm, sáng, phụ] cho từng tông nền. */
 type Swatch = readonly [accent: string, deep: string, bright: string, second: string];
 
-const ACCENTS: Readonly<Record<AccentKey, Readonly<Record<Tone, Swatch>>>> = {
+const ACCENTS: Readonly<Record<FixedAccent, Readonly<Record<Tone, Swatch>>>> = {
   denim: {
     light: ['#2E549A', '#18356E', '#5B80D8', '#6F8FD9'],
     dark: ['#9AB4EA', '#7A9BE0', '#CCDCFA', '#AAB6CB'],
@@ -290,16 +314,88 @@ const PHOTO = {
   onPhotoText: '#FFFFFF',
 } as const;
 
-function build(scene: Scene, key: AccentKey): Palette {
-  const { tone, ...base } = BASES[scene];
-  const [accent, deep, bright, second] = ACCENTS[key][tone];
+/* ── Màu theo ảnh ── */
+
+const hsl = (h: number, sat: number, l: number) => {
+  const k = (n: number) => (n + h / 30) % 12;
+  const a = sat * Math.min(l, 1 - l);
+  const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+  return `#${[f(0), f(8), f(4)]
+    .map((v) =>
+      Math.round(v * 255)
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`;
+};
+
+const lum = (hex: string) => {
+  const [r = 0, g = 0, b = 0] = rgb(hex).map((v) => {
+    const x = v / 255;
+    return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a: string, b: string) => {
+  const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m) as [number, number];
+  return (x + 0.05) / (y + 0.05);
+};
+
+/**
+ * Bốn sắc từ một hạt giống, ĐO TƯƠNG PHẢN chứ không đoán: nền sáng thì hạ độ
+ * sáng tới khi nhấn đạt 5.3:1 trên nền và chữ trắng trên nút đạt 6:1; nền tối
+ * thì nâng lên tới khi đạt trên nền tối. Ảnh màu gì cũng ra chữ đọc được.
+ */
+function seedSwatch({ h, s: sat }: Seed, tone: Tone, base: Base): Swatch {
+  if (tone === 'light') {
+    let l = 0.46;
+    while (
+      l > 0.12 &&
+      (contrast(hsl(h, sat, l), base.bg) < 5.3 ||
+        contrast(hsl(h, sat, l), base.surface) < 4.5 ||
+        contrast(hsl(h, sat, l), '#FFFFFF') < 6)
+    ) {
+      l -= 0.02;
+    }
+    return [hsl(h, sat, l), hsl(h, sat, l - 0.12), hsl(h, sat, 0.66), hsl(h, sat * 0.5, 0.62)];
+  }
+  let l = 0.7;
+  while (l < 0.95 && contrast(hsl(h, sat, l), base.bg) < 5.3) l += 0.02;
+  return [hsl(h, sat, l), hsl(h, sat, l - 0.08), hsl(h, sat, 0.88), hsl(h, sat * 0.35, 0.72)];
+}
+
+/** Ngả cả cảnh về màu ảnh — nhẹ thôi (nền 4%, mặt 7%): đủ thấy "app của mình"
+ *  mà chữ vẫn giữ tương phản đã đo ở BASES. */
+function tintBase(base: Base, { h, s: sat }: Seed): Base {
+  const light = base.tone === 'light';
+  const hue = hsl(h, Math.max(sat, 0.55), light ? 0.62 : 0.32);
+  const t = (x: string, k: number) => mix(x, hue, k);
+  return {
+    ...base,
+    sky: [mix(base.sky[0], hsl(h, 0.6, light ? 0.8 : 0.3), 0.55), t(base.sky[1], 0.04)],
+    bg: t(base.bg, 0.04),
+    surfaceSunken: t(base.surfaceSunken, 0.06),
+    surface: t(base.surface, 0.07),
+    surfaceRaised: t(base.surfaceRaised, 0.08),
+    border: t(base.border, 0.08),
+    borderSoft: t(base.borderSoft, 0.07),
+    glass: t(base.glass, 0.04),
+  };
+}
+
+function build(scene: Scene, key: FixedAccent | Seed): Palette {
+  const seeded = typeof key === 'object';
+  const { tone, ...base } = seeded ? tintBase(BASES[scene], key) : BASES[scene];
+  const [accent, deep, bright, second] = seeded
+    ? seedSwatch(key, tone, { tone, ...base })
+    : ACCENTS[key][tone];
   const flat = (x: string) => [x, x, x] as const;
   const light = tone === 'light';
   return {
     ...PHOTO,
     ...SEMANTIC[tone],
     ...base,
-    key: `${scene}-${key}`,
+    key: `${scene}-${seeded ? `h${key.h}s${key.s}` : key}`,
     scene,
     light,
     accent,
@@ -320,13 +416,43 @@ function build(scene: Scene, key: AccentKey): Palette {
   };
 }
 
-export const PALETTES: Readonly<Record<ThemeKey, Palette>> = Object.fromEntries(
-  SCENES.flatMap((scene) => ACCENT_KEYS.map((k) => [`${scene}-${k}`, build(scene, k)])),
-) as Record<ThemeKey, Palette>;
+const FIXED = ACCENT_KEYS.filter((k): k is FixedAccent => k !== 'photo');
 
-export const paletteOf = (scene: Scene, key: AccentKey): Palette => PALETTES[`${scene}-${key}`];
+const PALETTES: Readonly<Record<string, Palette>> = Object.fromEntries(
+  SCENES.flatMap((scene) => FIXED.map((k) => [`${scene}-${k}`, build(scene, k)])),
+);
 
-export const DEFAULT_ACCENT: AccentKey = 'denim';
+/** Bảng theo ảnh dựng khi cần rồi nhớ lại — hạt giống đã làm tròn nên có hạn. */
+const seeded = new Map<string, Palette>();
+
+export function paletteOf(scene: Scene, key: AccentKey, seed?: Seed | null): Palette {
+  if (key !== 'photo') return PALETTES[`${scene}-${key}`]!;
+  if (!seed) return PALETTES[`${scene}-denim`]!;
+  const id = `${scene}-h${seed.h}s${seed.s}`;
+  let p = seeded.get(id);
+  if (!p) {
+    p = build(scene, seed);
+    seeded.set(id, p);
+  }
+  return p;
+}
+
+export const DEFAULT_ACCENT: AccentKey = 'photo';
+
+/** Làm tròn màu thô (hue 0–360, độ đậm 0–1) thành hạt giống. */
+export function toSeed(h: number, sat: number): Seed {
+  const s = sat < 0.45 ? 0.45 : sat < 0.62 ? 0.6 : 0.72;
+  return { h: (Math.round(h / 10) * 10) % 360, s };
+}
+
+export function isSeed(v: unknown): v is Seed {
+  return (
+    typeof v === 'object' &&
+    v !== null &&
+    typeof (v as Seed).h === 'number' &&
+    typeof (v as Seed).s === 'number'
+  );
+}
 
 export function isAccentKey(v: string | null | undefined): v is AccentKey {
   return ACCENT_KEYS.includes(v as AccentKey);

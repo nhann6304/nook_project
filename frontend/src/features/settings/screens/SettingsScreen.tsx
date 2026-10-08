@@ -5,8 +5,8 @@
  * ngay tại chỗ — mở trang chỉ để bật/tắt một thứ là thừa.
  */
 import { StyleSheet, View } from 'react-native';
-import { Avatar, Card, Divider, IconBadge, Row, Screen, Scroll, Toggle, Txt } from '@ui';
-import { layout, radius, space, useStyles, type Palette } from '@design';
+import { Avatar, Card, Divider, Icon, IconBadge, Row, Screen, Scroll, Tap, Toggle, Txt } from '@ui';
+import { layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import { NavRow } from '../components/Pref';
 
@@ -24,6 +24,9 @@ export function SettingsScreen({
   onOpenAppearance,
   onOpenPrivacy,
   onOpenLanguage,
+  onOpenPro,
+  proTitle,
+  proSub,
   onSignOut,
 }: {
   name: string;
@@ -41,6 +44,9 @@ export function SettingsScreen({
   onOpenAppearance: () => void;
   onOpenPrivacy: () => void;
   onOpenLanguage: () => void;
+  onOpenPro: () => void;
+  proTitle: string;
+  proSub: string;
   onSignOut: () => void;
 }) {
   const t = useT();
@@ -55,7 +61,7 @@ export function SettingsScreen({
       <Scroll>
         <View style={s.body}>
           <Card style={s.me}>
-            <Avatar name={name} uri={photo ?? undefined} level={10} size={84} />
+            <Avatar name={name} uri={photo ?? undefined} size={84} />
             <View style={s.who}>
               <Txt variant="title" center numberOfLines={1}>
                 {name}
@@ -71,6 +77,8 @@ export function SettingsScreen({
               <Stat value={friendCount} label={t('me.friends')} />
             </Row>
           </Card>
+
+          <ProCard title={proTitle} sub={proSub} onPress={onOpenPro} />
 
           <Card style={s.list}>
             <NavRow
@@ -113,6 +121,34 @@ export function SettingsScreen({
         </View>
       </Scroll>
     </Screen>
+  );
+}
+
+/** Thẻ Pro: khối nổi màu nhấn có gờ đậm như nút, vương miện màu mật ong. */
+function ProCard({ title, sub, onPress }: { title: string; sub: string; onPress: () => void }) {
+  const s = useStyles(make);
+  const c = useColors();
+  return (
+    <Tap
+      onPress={onPress}
+      scaleTo={0.98}
+      style={s.pro}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+    >
+      <View style={s.proCrown}>
+        <Icon name="crown" size={26} color={c.honey} weight="fill" />
+      </View>
+      <View style={s.flex}>
+        <Txt variant="section" tone="onAccent">
+          {title}
+        </Txt>
+        <Txt variant="faint" tone="onAccent" numberOfLines={1}>
+          {sub}
+        </Txt>
+      </View>
+      <Icon name="forward" size={20} color={c.onAccent} />
+    </Tap>
   );
 }
 
@@ -161,4 +197,22 @@ const make = (c: Palette) =>
       paddingVertical: space.sm,
     },
     flex: { flex: 1 },
+    pro: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: space.md,
+      padding: space.lg,
+      borderRadius: radius.xl,
+      backgroundColor: c.accent,
+      borderBottomWidth: 5,
+      borderBottomColor: c.accentDeep,
+    },
+    proCrown: {
+      width: 48,
+      height: 48,
+      borderRadius: radius.full,
+      backgroundColor: c.bg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   });

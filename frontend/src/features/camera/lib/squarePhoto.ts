@@ -5,12 +5,17 @@
  * thêm hai dải trên dưới mà người chụp chưa từng thấy. Đi qua bộ xử lý ảnh
  * cũng "nướng" luôn hướng xoay EXIF vào điểm ảnh — có máy Android chỉ ghi
  * hướng vào EXIF, chỗ hiển thị nào bỏ qua EXIF là thấy ảnh nằm ngược.
+ *
+ * ẢNH GỐC CHO MỌI NGƯỜI, không riêng Pro (08/10/2026): giữ nguyên độ phân giải
+ * của phần cắt, chỉ nén JPEG MỘT lần ở 0.92 (máy chụp ở 1.0). Bản cũ nén hai
+ * lần 0.8 → 0.85 rồi thu về 1440 — ảnh bết là người ta bỏ app. Bảng tin vẫn
+ * nhẹ vì server dựng bản `feed` riêng (`VARIANT_SPEC`), bản gốc giữ để tải về.
  */
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { layout } from '@design';
 
-/** Cạnh dài nhất gửi đi. Đủ nét trên màn điện thoại, nhẹ cho mạng. */
-const MAX_SIDE = 1440;
+/** Nén một lần, gần như không thấy được bằng mắt. */
+const JPEG_QUALITY = 0.92;
 
 /** Cắt đúng tỉ lệ khung (`layout.cameraFrameRatio`, rộng / cao), lấy phần giữa. */
 export async function squarePhoto(uri: string): Promise<string> {
@@ -24,13 +29,10 @@ export async function squarePhoto(uri: string): Promise<string> {
     width,
     height,
   });
-  if (height > MAX_SIDE) {
-    ctx.resize({ width: Math.round(MAX_SIDE * ratio), height: MAX_SIDE });
-  }
   const out = await (
     await ctx.renderAsync()
   ).saveAsync({
-    compress: 0.85,
+    compress: JPEG_QUALITY,
     format: SaveFormat.JPEG,
   });
   return out.uri;

@@ -1,9 +1,9 @@
 import { Stack } from 'expo-router';
 
 /**
- * Gốc của app sau đăng nhập: `(tabs)` là ba nút dưới đáy (Trang chủ · Lướt ảnh
- * · Cài đặt). Mọi màn khác CHỒNG lên, hướng trượt nói nó nằm ở đâu: bạn bè bên
- * TRÁI (nút góc trái màn chính), tin nhắn bên PHẢI (nút góc phải).
+ * Gốc của app sau đăng nhập: `(tabs)` là bốn nút dưới đáy (Chụp · Bạn bè ·
+ * Tin nhắn · Cài đặt). Mọi màn khác CHỒNG lên: trang chi tiết trượt từ phải,
+ * màn "mở ra" (nhật ký, Pro) trượt từ dưới.
  */
 export default function AppLayout() {
   return (
@@ -17,6 +17,7 @@ export default function AppLayout() {
       <Stack.Screen name="prefs/privacy" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="prefs/language" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="pro" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="journal" options={{ animation: 'slide_from_bottom' }} />
     </Stack>
   );

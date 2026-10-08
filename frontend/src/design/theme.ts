@@ -6,7 +6,8 @@
  *
  * Hai lựa chọn độc lập:
  *   · `mode`   — Theo trời (mặc định) · Sáng · Tối · Theo máy.
- *   · `accent` — màu locket, năm màu.
+ *   · `accent` — "Theo ảnh" (mặc định, màu rút từ ảnh gửi gần nhất — `seed`)
+ *                hoặc một trong năm màu locket.
  * "Theo trời": cảnh đổi theo giờ máy (`sceneAt`), mưa thì sang cảnh mưa —
  * `raining` do `features/sky` đặt, app không tự đoán thời tiết.
  */
@@ -15,15 +16,18 @@ import { readText, writeText } from '@/lib/storage';
 import {
   DEFAULT_ACCENT,
   isAccentKey,
+  isSeed,
   paletteOf,
   sceneAt,
   type AccentKey,
   type Palette,
   type Scene,
+  type Seed,
 } from './palettes';
 
 const MODE_KEY = 'themeMode';
 const ACCENT_KEY = 'accent';
+const SEED_KEY = 'photoSeed';
 
 export const THEME_MODES = ['sky', 'light', 'dark', 'system'] as const;
 export type ThemeMode = (typeof THEME_MODES)[number];
@@ -37,18 +41,21 @@ type ThemeState = {
   /** Máy đang tối — chỉ có nghĩa khi `mode = 'system'`. */
   systemDark: boolean;
   raining: boolean;
+  /** Màu rút từ ảnh gửi gần nhất. `null` = chưa gửi tấm nào. */
+  seed: Seed | null;
   /** `false` cho tới khi đọc xong lựa chọn cũ dưới đĩa. */
   ready: boolean;
   setMode: (mode: ThemeMode) => void;
   setAccent: (accent: AccentKey) => void;
   setSystemDark: (dark: boolean) => void;
   setRaining: (raining: boolean) => void;
+  setSeed: (seed: Seed) => void;
   /** Đọc lại giờ; đổi bảng nếu đã sang cảnh mới. */
   tick: () => void;
   hydrate: () => Promise<void>;
 };
 
-type Inputs = Pick<ThemeState, 'mode' | 'accent' | 'systemDark' | 'raining'>;
+type Inputs = Pick<ThemeState, 'mode' | 'accent' | 'systemDark' | 'raining' | 'seed'>;
 
 function sceneOf({ mode, systemDark, raining }: Inputs): Scene {
   if (mode === 'light') return 'noon';
@@ -57,12 +64,12 @@ function sceneOf({ mode, systemDark, raining }: Inputs): Scene {
   return sceneAt(new Date().getHours(), raining);
 }
 
-const resolve = (i: Inputs) => paletteOf(sceneOf(i), i.accent);
+const resolve = (i: Inputs) => paletteOf(sceneOf(i), i.accent, i.seed);
 
 /** Bảng màu cho một lựa chọn CHƯA lưu — trang Giao diện xem trước bằng cái này. */
 export function previewPalette(mode: ThemeMode, accent: AccentKey): Palette {
-  const { systemDark, raining } = useTheme.getState();
-  return resolve({ mode, accent, systemDark, raining });
+  const { systemDark, raining, seed } = useTheme.getState();
+  return resolve({ mode, accent, systemDark, raining, seed });
 }
 
 export const useTheme = create<ThemeState>((set, get) => {
@@ -74,11 +81,18 @@ export const useTheme = create<ThemeState>((set, get) => {
   };
 
   return {
-    palette: resolve({ mode: 'sky', accent: DEFAULT_ACCENT, systemDark: false, raining: false }),
+    palette: resolve({
+      mode: 'sky',
+      accent: DEFAULT_ACCENT,
+      systemDark: false,
+      raining: false,
+      seed: null,
+    }),
     mode: 'sky',
     accent: DEFAULT_ACCENT,
     systemDark: false,
     raining: false,
+    seed: null,
     ready: false,
 
     setMode: (mode) => {
@@ -91,11 +105,23 @@ export const useTheme = create<ThemeState>((set, get) => {
     },
     setSystemDark: (systemDark) => apply({ systemDark }),
     setRaining: (raining) => apply({ raining }),
+    setSeed: (seed) => {
+      apply({ seed });
+      void writeText(SEED_KEY, JSON.stringify(seed));
+    },
     tick: () => apply({}),
 
     hydrate: async () => {
-      const [m, a] = await Promise.all([readText(MODE_KEY), readText(ACCENT_KEY)]);
-      apply({ mode: isMode(m) ? m : 'sky', accent: isAccentKey(a) ? a : DEFAULT_ACCENT });
+      const [m, a, sd] = await Promise.all([
+        readText(MODE_KEY),
+        readText(ACCENT_KEY),
+        readText(SEED_KEY),
+      ]);
+      apply({
+        mode: isMode(m) ? m : 'sky',
+        accent: isAccentKey(a) ? a : DEFAULT_ACCENT,
+        seed: parseSeed(sd),
+      });
       set({ ready: true });
     },
   };
@@ -104,4 +130,14 @@ export const useTheme = create<ThemeState>((set, get) => {
 /** Đọc bảng màu ngoài React — cho hằng số ở tầng module. Dùng rất ít. */
 export function currentPalette(): Palette {
   return useTheme.getState().palette;
+}
+
+function parseSeed(raw: string | null): Seed | null {
+  if (!raw) return null;
+  try {
+    const v: unknown = JSON.parse(raw);
+    return isSeed(v) ? v : null;
+  } catch {
+    return null;
+  }
 }

@@ -6,7 +6,8 @@ import { SettingsScreen } from '@/features/settings/screens/SettingsScreen';
 import { useThemeNames } from '@/features/settings/lib/useThemeNames';
 import { saveSettings } from '@/features/settings/lib/settingsApi';
 import { useTheme } from '@design';
-import { LOCALE_NAMES, useFollowingSystem, useLocale, useT } from '@i18n';
+import { LOCALE_NAMES, useFollowingSystem, useLocale, useNumber, useT } from '@i18n';
+import { PRO_PLANS, TRIAL_DAYS } from '@/features/pro/lib/proApi';
 import { useCircle } from '@/features/circle/store/circleStore';
 import { ME } from '@/mocks/moments';
 import { useProfile } from '@/features/profile/store/profileStore';
@@ -34,6 +35,8 @@ export default function Settings() {
   const hiddenCount = useAudience((s) => s.defaultHidden.length);
   const locale = useLocale();
   const following = useFollowingSystem();
+  const num = useNumber();
+  const monthly = PRO_PLANS.find((p) => p.id === 'month')?.price ?? 0;
 
   const modeName = t(`theme.${mode}`);
 
@@ -61,6 +64,12 @@ export default function Settings() {
       onOpenAppearance={() => router.push('/(app)/prefs/appearance')}
       onOpenPrivacy={() => router.push('/(app)/prefs/privacy')}
       onOpenLanguage={() => router.push('/(app)/prefs/language')}
+      onOpenPro={() => router.push('/(app)/pro')}
+      proTitle={t('pro.card')}
+      proSub={t('pro.cardSub', {
+        price: t('pro.vnd', { amount: num(monthly) }),
+        days: TRIAL_DAYS,
+      })}
       onSignOut={() => {
         void signOut();
         leave();
