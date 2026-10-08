@@ -141,6 +141,7 @@ export const vi = {
 
   /* ---------- Màn 7 — Camera ---------- */
   camera: {
+    zoom: 'Đổi mức zoom',
     openCircle: 'Góc của bạn',
     openSettings: 'Cài đặt',
     gallery: 'Chọn ảnh có sẵn',
@@ -205,6 +206,7 @@ export const vi = {
     inviteLeft: { other: 'Còn {count} chỗ trong góc' },
     full: 'Góc đã đủ mười người',
     sendLink: 'Gửi link',
+    myQr: 'Mã QR',
     shareMessage: 'Vào góc nhỏ của mình trên LOVO nhé: {link}',
     sentPhoto: 'Gửi ảnh {ago}',
     messaged: 'Nhắn cho bạn {ago}',
@@ -311,6 +313,10 @@ export const vi = {
   },
 
   /* ---------- Nhật ký ảnh của mình ---------- */
+  memories: {
+    title: 'Ký ức',
+  },
+
   journal: {
     title: 'Nhật ký của bạn',
     open: 'Mở nhật ký ảnh của bạn',
@@ -457,6 +463,14 @@ export const vi = {
     },
   },
 
+  /* ---------- Mã QR ---------- */
+  qr: {
+    hint: 'Bạn bè quét mã này bằng camera là thêm được bạn trên LOVO.',
+    share: 'Chia sẻ link',
+    shareMessage: 'Thêm mình trên LOVO nhé: {link}',
+    open: 'Mã QR của bạn',
+  },
+
   settings: {
     appearance: 'Giao diện',
     privacy: 'Riêng tư',
@@ -480,6 +494,7 @@ export const vi = {
     followPhoneHint: 'Đổi theo ngôn ngữ điện thoại.',
   },
   tabs: {
+    memories: 'Ký ức',
     label: 'Chuyển màn',
     home: 'Chụp',
     friends: 'Bạn bè',

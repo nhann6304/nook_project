@@ -6,12 +6,13 @@ import { useHomeNav } from '@/features/home/store/homeNav';
 import { useChats } from '@/features/chat/store/chatStore';
 import { lastMessage } from '@/features/chat/types';
 
-type Key = 'circle' | 'home' | 'chats';
+type Key = 'journal' | 'home' | 'chats';
 
 /**
- * Ba nút như Locket (08/10/2026): Bạn bè · Chụp (giữa) · Tin nhắn. Cài đặt nằm
- * trong trang cá nhân (avatar góc phải màn Chụp → `me`). Ảnh bạn bè KHÔNG phải
- * tab — vuốt lên từ camera. Bấm "Chụp" khi đang ở màn chính thì về camera.
+ * Ba nút như Locket (08/10/2026): Ký ức · Chụp (giữa) · Tin nhắn. Bạn bè mở
+ * từ viên "N Bạn bè" trên cùng màn Chụp (`circle`); Cài đặt nằm trong trang cá
+ * nhân (avatar góc phải → `me`). Ảnh bạn bè KHÔNG phải tab — vuốt lên từ
+ * camera. Bấm "Chụp" khi đang ở màn chính thì về camera.
  *
  * VUỐT NGANG giữa ba trang như Locket (TopTabs = react-native-pager-view, trang
  * chạy theo ngón tay trên luồng gốc). Thanh tab đặt ở đáy. Đang xem lại ảnh vừa
@@ -27,7 +28,7 @@ export default function TabsLayout() {
       tabBar={renderBar}
       screenOptions={{ swipeEnabled: !reviewing, lazy: true }}
     >
-      <TopTabs.Screen name="circle" />
+      <TopTabs.Screen name="journal" />
       <TopTabs.Screen name="home" />
       <TopTabs.Screen name="chats" />
     </TopTabs>
@@ -51,7 +52,7 @@ function AppTabBar({ state, navigation }: BarProps) {
 
   const items = useMemo<TabItem<Key>[]>(
     () => [
-      { key: 'circle', label: t('tabs.friends'), icon: 'people' },
+      { key: 'journal', label: t('tabs.memories'), icon: 'grid' },
       { key: 'home', label: t('tabs.home'), icon: 'home' },
       { key: 'chats', label: t('tabs.chats'), icon: 'chat', badge: unread },
     ],

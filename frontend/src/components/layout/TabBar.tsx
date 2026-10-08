@@ -7,14 +7,16 @@
  * `c.textMuted`. Cài đặt không còn là tab: nó nằm trong trang cá nhân (avatar
  * góc phải màn Chụp).
  *
- * Mượt trước đã: nền ĐẶC, không blur; nằm TRONG dòng bố cục nên mờ đi chứ
- * không gỡ khi đang bận (gỡ ra là khung camera nhảy); Android bàn phím bật
- * thì gỡ hẳn, nếu không thanh bị đẩy lên trên phím.
+ * NỔI trên nội dung (08/10/2026, như Locket): viên là `<Glass>`, nội dung cuộn
+ * xuống bên dưới lớp kính. Mỗi tab tự chừa đáy bằng `useTabBarSpace()`.
+ * Đang bận thì mờ đi chứ không gỡ; Android bàn phím bật thì gỡ hẳn, nếu không
+ * thanh bị đẩy lên trên phím.
  */
 import { memo, useEffect, useState } from 'react';
 import { Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { layout, radius, space, useColors, useStyles, type Palette } from '@design';
+import { Glass } from './Glass';
 import { Icon, type IconName } from '../primitives/Icon';
 import { Tap } from '../primitives/Tap';
 
@@ -57,11 +59,11 @@ function TabBarInner<K extends string>({
       pointerEvents={dimmed ? 'none' : 'box-none'}
       style={[s.dock, { paddingBottom: Math.max(insets.bottom, space.md) }, dimmed && s.dimmed]}
     >
-      <View style={s.pill}>
+      <Glass radius={radius.full} style={s.pill}>
         {items.map((it) => (
           <Item key={it.key} item={it} selected={it.key === active} onPress={onPress} />
         ))}
-      </View>
+      </Glass>
     </View>
   );
 }
@@ -99,6 +101,19 @@ const Item = memo(function Item<K extends string>({
   onPress: (key: K) => void;
 }) => React.ReactElement;
 
+/** Khoảng đáy mỗi tab phải chừa cho thanh nổi. */
+export function useTabBarSpace() {
+  const insets = useSafeAreaInsets();
+  return TAB_BAR_HEIGHT + Math.max(insets.bottom, space.md) + space.xs;
+}
+
+/** Ô trống cao đúng bằng thanh tab nổi — đặt cuối mỗi tab. */
+export function TabBarSpacer() {
+  const h = useTabBarSpace();
+  return <View pointerEvents="none" style={[SPACER, { height: h }]} />;
+}
+const SPACER = { alignSelf: 'stretch' } as const;
+
 function useKeyboardOpen() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -114,7 +129,7 @@ function useKeyboardOpen() {
 
 const make = (c: Palette) =>
   StyleSheet.create({
-    dock: { alignItems: 'center', paddingTop: space.xs, backgroundColor: c.bg },
+    dock: { position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center' },
     dimmed: { opacity: 0.4 },
     pill: {
       flexDirection: 'row',
@@ -122,8 +137,6 @@ const make = (c: Palette) =>
       gap: space.xs,
       height: TAB_BAR_HEIGHT,
       paddingHorizontal: (TAB_BAR_HEIGHT - ITEM) / 2,
-      borderRadius: radius.full,
-      backgroundColor: c.surface,
     },
     item: {
       width: layout.minTouch + space.md,
@@ -132,7 +145,7 @@ const make = (c: Palette) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    itemOn: { backgroundColor: c.surfaceRaised },
+    itemOn: { backgroundColor: c.glassEdge },
     badge: {
       position: 'absolute',
       top: 10,

@@ -14,3 +14,10 @@ export function postedWithin(entries: readonly Entry[], days: number): number {
   const since = Date.now() - days * 86_400_000;
   return entries.filter((e) => e.at >= since).length;
 }
+
+/** Ngày `d` còn ở phía trước (sau hôm nay) — ô lịch của nó để trống, không chấm. */
+export function afterToday(d: Date): boolean {
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+  return d.getTime() > end.getTime();
+}

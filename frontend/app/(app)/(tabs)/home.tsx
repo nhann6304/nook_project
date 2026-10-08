@@ -90,7 +90,7 @@ export default function Home() {
       moments={moments}
       onSend={send}
       onReply={reply}
-      onOpenFriends={() => router.navigate('/(app)/(tabs)/circle')}
+      onOpenFriends={() => router.push('/(app)/circle')}
       onOpenNotices={() => router.push('/(app)/notifications')}
       noticeUnread={noticeUnread}
       myName={myName ?? ME.name}

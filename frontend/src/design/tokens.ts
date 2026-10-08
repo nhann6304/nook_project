@@ -48,17 +48,16 @@ export const radius = {
 
 export const font = {
   /**
-   * Poppins — theo bảng thiết kế 06/10/2026 (thay Plus Jakarta Sans). Chỉ
-   * `display` dùng 800; tiêu đề thường 700 — 800 tràn lan thì nặng như quảng cáo.
+   * NUNITO (08/10/2026, thay Poppins — "font xấu"): đầu nét bo tròn, nét dày,
+   * hợp icon MingCute và giọng Locket; dấu tiếng Việt đặt gọn, Poppins thì dấu
+   * chồng lên nhau trông vụng. Chữ thường đã là 600, tiêu đề 800, `display` 900.
    * Chỉ nạp các nét dưới đây — mỗi nét thêm là thêm thời gian giữ màn chờ.
    */
-  // 07/10/2026: cả thang lên một nấc ("chữ nhạt quá") — chữ thường là 500,
-  // không còn 400; tiêu đề lớn 800.
-  body: 'Poppins_500Medium',
-  bodyMedium: 'Poppins_600SemiBold',
-  bodySemi: 'Poppins_600SemiBold',
-  bodyBold: 'Poppins_700Bold',
-  heavy: 'Poppins_800ExtraBold',
+  body: 'Nunito_600SemiBold',
+  bodyMedium: 'Nunito_700Bold',
+  bodySemi: 'Nunito_700Bold',
+  bodyBold: 'Nunito_800ExtraBold',
+  heavy: 'Nunito_900Black',
   /** Chữ viết tay — chỉ cho lời nhấn ngắn ("Một vài mẹo nhỏ"), không cho đoạn văn. */
   hand: 'Caveat_700Bold',
 } as const;
@@ -68,16 +67,16 @@ export const font = {
  *
  * maxScale giới hạn phóng chữ để layout không vỡ khi người dùng bật cỡ chữ lớn,
  * nhưng vẫn cho phóng — không bao giờ khoá allowFontScaling.
- * Poppins có phần đầu/đuôi chữ cao hơn Jakarta nên lineHeight ≈ 1.45× cỡ chữ;
- * thấp hơn là dấu tiếng Việt (ỗ, ẫ) bị cắt trên Android.
+ * Nunito mặt chữ nhỏ hơn Poppins nên cả thang lớn hơn một nấc; lineHeight
+ * ≈ 1.4× cỡ chữ — thấp hơn là dấu tiếng Việt (ỗ, ẫ) bị cắt trên Android.
  */
 export const type = {
-  display: { fontSize: 34, lineHeight: 46, fontFamily: font.heavy, letterSpacing: -0.6, maxScale: 1.25 },
-  title: { fontSize: 24, lineHeight: 34, fontFamily: font.bodyBold, letterSpacing: -0.3, maxScale: 1.4 },
-  section: { fontSize: 18, lineHeight: 26, fontFamily: font.bodyBold, letterSpacing: -0.1, maxScale: 1.4 },
-  body: { fontSize: 16, lineHeight: 24, fontFamily: font.body, letterSpacing: 0, maxScale: 1.5 },
-  label: { fontSize: 15, lineHeight: 22, fontFamily: font.bodySemi, letterSpacing: 0, maxScale: 1.5 },
-  faint: { fontSize: 13, lineHeight: 19, fontFamily: font.body, letterSpacing: 0, maxScale: 1.5 },
+  display: { fontSize: 36, lineHeight: 48, fontFamily: font.heavy, letterSpacing: -0.6, maxScale: 1.25 },
+  title: { fontSize: 26, lineHeight: 36, fontFamily: font.bodyBold, letterSpacing: -0.3, maxScale: 1.4 },
+  section: { fontSize: 19, lineHeight: 27, fontFamily: font.bodyBold, letterSpacing: -0.1, maxScale: 1.4 },
+  body: { fontSize: 17, lineHeight: 24, fontFamily: font.body, letterSpacing: 0, maxScale: 1.5 },
+  label: { fontSize: 16, lineHeight: 22, fontFamily: font.bodySemi, letterSpacing: 0, maxScale: 1.5 },
+  faint: { fontSize: 14, lineHeight: 20, fontFamily: font.body, letterSpacing: 0, maxScale: 1.5 },
   hand: { fontSize: 26, lineHeight: 32, fontFamily: font.hand, letterSpacing: 0, maxScale: 1.3 },
 } as const;
 

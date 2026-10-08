@@ -5,7 +5,7 @@
  * câm trên Android — và câm không báo lỗi, chỉ là không có gì xảy ra.
  *
  * Splash được giữ tới khi BỐN thứ xong: bộ chữ, ngôn ngữ, bảng màu đã chọn, và
- * phiên đăng nhập cất trên máy. Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Poppins;
+ * phiên đăng nhập cất trên máy. Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Nunito;
  * thả sớm vì ngôn ngữ thì thấy màn đầu sai tiếng; thả sớm vì bảng màu thì cả
  * app nháy một cái đổi màu. Mỗi cái chỉ khoảng 30ms, nhưng là 30ms đầu tiên
  * người dùng nhìn thấy.
@@ -22,11 +22,11 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
 import {
-  Poppins_500Medium,
-  Poppins_600SemiBold,
-  Poppins_700Bold,
-  Poppins_800ExtraBold,
-} from '@expo-google-fonts/poppins';
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+  Nunito_900Black,
+} from '@expo-google-fonts/nunito';
 import { Caveat_700Bold } from '@expo-google-fonts/caveat';
 import { useColors, useStyles, useThemeReady, type Palette } from '@design';
 import { useI18nReady } from '@i18n';
@@ -44,10 +44,10 @@ export default function RootLayout() {
   const localeReady = useI18nReady();
   const themeReady = useThemeReady();
   const [fontsReady, error] = useFonts({
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
-    Poppins_800ExtraBold,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+    Nunito_800ExtraBold,
+    Nunito_900Black,
     Caveat_700Bold,
   });
 

@@ -48,6 +48,8 @@ export type Palette = {
   light: boolean;
   /** Vệt trời ở đầu màn chính: [màu trời, màu tan vào nền]. */
   sky: readonly [string, string];
+  /** Chân trời ở đáy màn — nửa đường giữa hai màu trời, để đáy không trống. */
+  skyLow: string;
 
   /* — Nền, xếp từ sâu nhất lên trên — */
   bg: string;
@@ -64,6 +66,11 @@ export type Palette = {
   glassBorder: string;
   /** Màu bóng đổ của mặt nổi. */
   shadow: string;
+  /** KÍNH MỜ thật (`<Glass>`): lớp phủ trên blur (iOS), viền sáng, và nền đặc
+   *  trong mờ thay blur trên Android. */
+  glassFill: string;
+  glassEdge: string;
+  glassSolid: string;
 
   /* — Sắc chính (màu locket) — */
   accent: string;
@@ -449,6 +456,10 @@ function build(scene: Scene, key: FixedAccent | Seed): Palette {
     glassBorder: light ? base.border : base.glassBorder,
     onAccent: light ? '#FFFFFF' : base.bg,
     vivid: VIVID[tone],
+    skyLow: mix(base.sky[0], base.sky[1], 0.6),
+    glassFill: light ? 'rgba(255,255,255,0.38)' : 'rgba(255,255,255,0.07)',
+    glassEdge: light ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.14)',
+    glassSolid: alpha(light ? base.glass : base.surface, 0.9),
     onVivid: light ? '#FFFFFF' : base.bg,
     accentSoft: light ? mix(bright, base.bg, 0.68) : alpha(accent, 0.2),
     glowStrong: alpha(accent, 0.16),

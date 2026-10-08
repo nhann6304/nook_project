@@ -24,6 +24,8 @@ import { fold, matches } from '@/lib/fold';
 
 export function CircleScreen({
   friends,
+  onBack,
+  onOpenQr,
   onInvite,
   onOpenNearby,
   onOpenFriend,
@@ -39,6 +41,9 @@ export function CircleScreen({
   error,
 }: {
   friends: readonly Friend[];
+  onBack: () => void;
+  /** Mở mã QR của mình — người kia quét là thêm bạn. */
+  onOpenQr: () => void;
   onInvite: () => void;
   onOpenNearby: () => void;
   onOpenFriend: (id: string) => void;
@@ -71,8 +76,11 @@ export function CircleScreen({
   };
 
   return (
-    <Screen padded={false} keyboard edges={TOP}>
+    <Screen padded={false} keyboard>
       <View style={s.bar}>
+        <IconButton label={t('common.closeScreen')} onPress={onBack}>
+          <Icon name="back" size={24} color={c.text} />
+        </IconButton>
         <Txt variant="title" style={s.title}>
           {t('friends.title')}
         </Txt>
@@ -175,12 +183,24 @@ export function CircleScreen({
                 {left > 0 ? t('friends.inviteLeft', { count: left }) : t('friends.full')}
               </Txt>
             </View>
-            <Button
-              label={t('friends.sendLink')}
-              onPress={onInvite}
-              disabled={left <= 0}
-              style={s.inviteBtn}
-            />
+            <View style={s.inviteRow}>
+              <Button
+                flat
+                label={t('friends.sendLink')}
+                icon={<Icon name="link" size={18} color={c.onAccent} />}
+                onPress={onInvite}
+                disabled={left <= 0}
+                style={s.inviteBtn}
+              />
+              <Button
+                flat
+                variant="secondary"
+                label={t('friends.myQr')}
+                icon={<Icon name="qr" size={18} color={c.text} />}
+                onPress={onOpenQr}
+                style={s.inviteBtn}
+              />
+            </View>
           </View>
 
           {friends.length === 0 ? (
@@ -455,8 +475,6 @@ const make = (c: Palette) =>
     title: { flex: 1, fontSize: 22, lineHeight: 30 },
 
     invite: {
-      flexDirection: 'row',
-      alignItems: 'center',
       gap: space.md,
       marginHorizontal: space.lg,
       marginTop: space.md,
@@ -475,7 +493,8 @@ const make = (c: Palette) =>
       borderRadius: radius.lg,
       backgroundColor: c.surface,
     },
-    inviteBtn: { minHeight: 44, paddingHorizontal: space.lg, borderRadius: radius.sm + 2 },
+    inviteRow: { flexDirection: 'row', gap: space.sm },
+    inviteBtn: { flex: 1 },
 
     list: { marginTop: space.md },
     row: {
@@ -497,4 +516,3 @@ const make = (c: Palette) =>
   });
 
 /** Màn gốc của một tab: thanh tab đã lo phần đáy máy. */
-const TOP = ['top'] as const;

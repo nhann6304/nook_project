@@ -91,6 +91,9 @@ thứ không ai hiểu.
 | `fflate` | 0.8.3 | Giải nén PNG 16×16 để rút màu chủ đạo của ảnh vừa gửi ("Theo ảnh", `camera/lib/photoColor.ts`). JS thuần, chạy trong Expo Go. | ~8 KB. |
 | `@iconify-json/mingcute` (dev) | 1.2.8 | Nguồn icon (MingCute, Apache-2.0). `node scripts/icons.mjs` chép nét vào `iconPaths.ts`. | Không vào bản app. |
 | `react-native-pager-view` | 8.0.2 | Vuốt ngang giữa ba trang (Bạn bè · Chụp · Tin nhắn), trang chạy theo ngón tay trên luồng gốc. Có sẵn trong Expo Go. | Gói gốc. |
+| `expo-blur` | 57.0.3 | `<Glass>` — kính mờ thật, CHỈ iOS (Android nền đặc trong mờ). Có sẵn trong Expo Go. | Blur tốn GPU — chỉ dùng cho mặt nhỏ nổi trên trời / ảnh. |
+| `qrcode` | 1.5.4 | Dựng ma trận cho `<QrCode>` (tự vẽ bằng react-native-svg: chấm tròn + logo giữa). JS thuần. | |
+| `@expo-google-fonts/nunito` | 0.4.2 | Chữ chính (thay Poppins 08/10/2026). | Nạp 4 nét: 600 · 700 · 800 · 900. |
 | `react-native-tab-view` | 4.3.3 | Cầu nối `TopTabs` của expo-router với pager-view. JS thuần. | |
 | `expo-video` | 57.0.5 | Phát video ngắn 3 giây (`<Clip>`). Chỉ trang đang xem dựng trình phát. | Có sẵn trong Expo Go. |
 | `expo-video-thumbnails` | 57.0.2 | Ảnh bìa của video — lưới, nhật ký, hiệu ứng bay vẫn dùng ảnh. | Có sẵn trong Expo Go. |

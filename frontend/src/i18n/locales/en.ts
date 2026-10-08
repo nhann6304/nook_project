@@ -136,6 +136,7 @@ export const en: Mirror<typeof vi> = {
   },
 
   camera: {
+    zoom: 'Change zoom',
     openCircle: 'Your circle',
     openSettings: 'Settings',
     gallery: 'Pick a photo you already have',
@@ -202,6 +203,7 @@ export const en: Mirror<typeof vi> = {
     },
     full: 'Your circle is full',
     sendLink: 'Send link',
+    myQr: 'QR code',
     shareMessage: 'Join my little circle on LOVO: {link}',
     sentPhoto: 'Sent a photo {ago}',
     messaged: 'Messaged you {ago}',
@@ -306,6 +308,10 @@ export const en: Mirror<typeof vi> = {
     heart: 'Heart',
     laugh: 'Laugh',
     fire: 'Fire',
+  },
+
+  memories: {
+    title: 'Memories',
   },
 
   journal: {
@@ -451,6 +457,14 @@ export const en: Mirror<typeof vi> = {
     },
   },
 
+  /* ---------- QR code ---------- */
+  qr: {
+    hint: 'Friends scan this with their camera to add you on LOVO.',
+    share: 'Share link',
+    shareMessage: 'Add me on LOVO: {link}',
+    open: 'Your QR code',
+  },
+
   settings: {
     appearance: 'Appearance',
     privacy: 'Privacy',
@@ -474,6 +488,7 @@ export const en: Mirror<typeof vi> = {
     followPhoneHint: 'Follows your phone’s language.',
   },
   tabs: {
+    memories: 'Memories',
     label: 'Switch screen',
     home: 'Camera',
     friends: 'Friends',

@@ -6,9 +6,8 @@ import { relationOf, useCircle } from '@/features/circle/store/circleStore';
 import { useFriendSearch } from '@/features/circle/lib/useFriendSearch';
 import { useInvites } from '@/features/circle/lib/useInvites';
 import { useT } from '@i18n';
+import { INVITE_LINK } from '@/features/circle/lib/inviteLink';
 
-/** Link mời giả — khi có server thì lấy link thật (hạn 7 ngày) từ API. */
-const INVITE_LINK = 'https://nook.app/i/demo';
 
 export default function Circle() {
   const router = useRouter();
@@ -36,6 +35,8 @@ export default function Circle() {
   return (
     <CircleScreen
       friends={friends}
+      onBack={() => router.back()}
+      onOpenQr={() => router.push('/(app)/qr')}
       onInvite={invite}
       onOpenNearby={() => router.push('/(app)/nearby')}
       onOpenFriend={(id) => router.push({ pathname: '/(app)/friend/[id]', params: { id } })}

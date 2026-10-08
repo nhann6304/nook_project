@@ -1,8 +1,9 @@
 /**
- * Vệt trời ở đầu màn chính — màu của cảnh đang dùng, tan dần vào nền, và
- * (08/10/2026) có CẢNH: ban ngày mây trôi, chiều/sáng có mặt trời, đêm sao
- * nhấp nháy, trời mưa thì có mưa rơi. Đổi màu thôi thì "không khác gì" —
- * cảnh làm người dùng thấy app đang sống cùng trời của họ.
+ * Trời phủ CẢ MÀN (08/10/2026 — bản chỉ nửa trên bị chê "trên dưới trống
+ * trống"): màu cảnh ở đỉnh, tan vào nền giữa màn, ngả lại màu trời ở đáy như
+ * chân trời. Có CẢNH: ban ngày mây trôi (cả trên lẫn dưới), sáng/chiều có mặt
+ * trời, đêm sao rải khắp màn + trăng nằm ở khe giữa viên bạn bè và avatar
+ * (chỗ trước đó bị avatar che), mưa rơi suốt chiều cao.
  *
  * Mượt trước đã: mỗi lớp là MỘT Svg vẽ một lần, chỉ chạy transform/opacity
  * trên luồng UI (Reanimated). Sao chia ba nhóm nhấp nháy lệch nhịp thay vì
@@ -10,6 +11,7 @@
  */
 import { memo, useEffect } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   Easing,
@@ -23,22 +25,20 @@ import Animated, {
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { useColors, useStyles, type Palette } from '@design';
 
-const STOPS = [0, 1] as const;
-const SHARE = 0.45;
+const STOPS = [0, 0.5, 1] as const;
 
 export const SkyWash = memo(function SkyWash() {
   const s = useStyles(make);
   const c = useColors();
   const { width, height } = useWindowDimensions();
-  const h = Math.round(height * SHARE);
   return (
     <View pointerEvents="none" style={s.wash}>
       <LinearGradient
-        colors={[c.sky[0], c.sky[1]]}
+        colors={[c.sky[0], c.sky[1], c.skyLow]}
         locations={STOPS}
         style={StyleSheet.absoluteFill}
       />
-      <Scene c={c} width={width} height={h} />
+      <Scene c={c} width={width} height={height} />
     </View>
   );
 });
@@ -71,9 +71,10 @@ function Day({ c, width, height }: { c: Palette; width: number; height: number }
           <Circle cx={70} cy={70} r={28} fill={c.onPhotoText} opacity={0.55} />
         </Svg>
       ) : null}
-      <Drift width={width} top={height * 0.12} scale={1.4} seconds={70} start={0.1} c={c} />
-      <Drift width={width} top={height * 0.3} scale={1} seconds={95} start={0.6} c={c} />
-      <Drift width={width} top={height * 0.05} scale={0.7} seconds={120} start={0.35} c={c} />
+      <Drift width={width} top={height * 0.07} scale={1.4} seconds={70} start={0.1} c={c} />
+      <Drift width={width} top={height * 0.03} scale={0.7} seconds={120} start={0.55} c={c} />
+      <Drift width={width} top={height * 0.74} scale={1.1} seconds={95} start={0.7} c={c} />
+      <Drift width={width} top={height * 0.86} scale={0.8} seconds={110} start={0.25} c={c} />
     </>
   );
 }
@@ -131,16 +132,21 @@ const STARS = (() => {
     seed = (seed * 16807) % 2147483647;
     return seed / 2147483647;
   };
-  return Array.from({ length: 36 }, () => ({ x: rnd(), y: rnd() * 0.85, r: 0.6 + rnd() * 1.2 }));
+  return Array.from({ length: 70 }, () => ({ x: rnd(), y: rnd(), r: 0.6 + rnd() * 1.2 }));
 })();
 
 function Stars({ c, width, height }: { c: Palette; width: number; height: number }) {
   const s = useStyles(make);
+  const insets = useSafeAreaInsets();
   return (
     <>
-      <Svg style={s.moon} width={56} height={56}>
-        <Circle cx={28} cy={28} r={20} fill={c.onPhotoText} opacity={0.85} />
-        <Circle cx={37} cy={22} r={17} fill={c.sky[0]} />
+      {/* Khe giữa viên bạn bè và avatar góc phải — chỗ duy nhất trên cùng không
+          bị gì che (avatar 44 + lề 16 + khe 8 tính từ mép phải). */}
+      <Svg style={[s.moon, { top: insets.top + 2 }]} width={MOON} height={MOON}>
+        <Circle cx={MOON / 2} cy={MOON / 2} r={MOON / 2} fill={c.onPhotoText} opacity={0.08} />
+        <Circle cx={MOON / 2} cy={MOON / 2} r={MOON * 0.36} fill={c.onPhotoText} opacity={0.12} />
+        <Circle cx={MOON / 2} cy={MOON / 2} r={MOON * 0.24} fill={c.onPhotoText} opacity={0.95} />
+        <Circle cx={MOON / 2 + MOON * 0.11} cy={MOON / 2 - MOON * 0.08} r={MOON * 0.2} fill={c.sky[0]} />
       </Svg>
       {[0, 1, 2].map((g) => (
         <Twinkle key={g} group={g} c={c} width={width} height={height} />
@@ -197,13 +203,15 @@ function Fade({ o, children }: { o: SharedValue<number>; children: React.ReactNo
 
 /* ── Mưa: hai tấm vạch nghiêng trượt xuống, lặp không thấy mối nối ── */
 
+const MOON = 56;
+
 const DROPS = (() => {
   let seed = 11;
   const rnd = () => {
     seed = (seed * 16807) % 2147483647;
     return seed / 2147483647;
   };
-  return Array.from({ length: 40 }, () => ({ x: rnd(), y: rnd(), l: 10 + rnd() * 10 }));
+  return Array.from({ length: 70 }, () => ({ x: rnd(), y: rnd(), l: 10 + rnd() * 12 }));
 })();
 
 function Rain({ c, width, height }: { c: Palette; width: number; height: number }) {
@@ -266,16 +274,9 @@ function Fall({
 
 const make = () =>
   StyleSheet.create({
-    wash: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      top: 0,
-      height: `${SHARE * 100}%`,
-      overflow: 'hidden',
-    },
+    wash: { ...StyleSheet.absoluteFill, overflow: 'hidden' },
     layer: { position: 'absolute', left: 0 },
     sun: { position: 'absolute', right: -30, top: -20 },
-    moon: { position: 'absolute', right: 28, top: 52 },
+    moon: { position: 'absolute', right: 68 },
     fall: { position: 'absolute', left: 0, right: 0, top: 0 },
   });

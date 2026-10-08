@@ -40,6 +40,8 @@ import {
   Tap,
   Toast,
   Txt,
+  Glass,
+  TabBarSpacer,
   type PagerHandle,
 } from '@ui';
 import {
@@ -399,10 +401,12 @@ export function HomeScreen({
               style={[s.side, reviewing && s.hidden]}
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
-              <IconButton label={t('notify.open')} onPress={onOpenNotices} style={s.round}>
-                <Icon name="bell" size={22} color={c.text} />
-                {noticeUnread ? <View style={s.dot} /> : null}
-              </IconButton>
+              <Glass radius={radius.full} style={s.round}>
+                <IconButton label={t('notify.open')} onPress={onOpenNotices} style={s.round}>
+                  <Icon name="bell" size={22} color={c.text} />
+                </IconButton>
+              </Glass>
+              {noticeUnread ? <View style={s.dot} pointerEvents="none" /> : null}
             </Animated.View>
             {/* Lúc xem lại ảnh: người nhận chọn ở hàng avatar dưới ảnh, trên này để trống. */}
             {reviewing ? null : (
@@ -425,21 +429,21 @@ export function HomeScreen({
                   ) : (
                     // Theo Locket: icon người + số bạn chữ đậm. Chấm avatar tí hon
                     // trước đó bị chê "nhỏ, xấu".
-                    <View style={s.pill}>
+                    <Glass radius={radius.full} style={s.pill}>
                       <Icon name="people" size={20} color={c.text} />
                       <Txt variant="label" style={s.pillText}>
                         {t('home.friendsPill', { count })}
                       </Txt>
-                    </View>
+                    </Glass>
                   )}
                 </Animated.View>
                 <Animated.View style={[s.layer, feedPill]} pointerEvents="none">
-                  <View style={s.pill}>
+                  <Glass radius={radius.full} style={s.pill}>
                     <Icon name="grid" size={20} color={c.text} />
                     <Txt variant="label" style={s.pillText}>
                       {t('home.allFriends')}
                     </Txt>
-                  </View>
+                  </Glass>
                 </Animated.View>
               </Tap>
             )}
@@ -473,6 +477,8 @@ export function HomeScreen({
               />
             ) : null}
           </View>
+          {/* Chừa đáy cho thanh tab nổi. */}
+          <TabBarSpacer />
 
           {/* 4 — Lưới tất cả ảnh */}
           {gridOpen ? (
@@ -584,36 +590,29 @@ const make = (c: Palette) =>
     },
     hidden: { opacity: 0 },
     side: { width: 52 },
-    round: {
-      width: 44,
-      height: 44,
-      borderRadius: radius.full,
-      backgroundColor: c.surface,
-    },
+    round: { width: 44, height: 44 },
     dot: {
       position: 'absolute',
-      top: 8,
-      right: 9,
+      top: 4,
+      left: 32,
       width: 10,
       height: 10,
       borderRadius: radius.full,
       backgroundColor: c.danger,
       borderWidth: 2,
-      borderColor: c.surface,
+      borderColor: c.bg,
     },
     center: { flex: 1, height: 44, alignItems: 'center', justifyContent: 'center' },
     layer: { position: 'absolute' },
     pill: {
       height: 44,
-      borderRadius: radius.full,
-      backgroundColor: c.surface,
       flexDirection: 'row',
       alignItems: 'center',
       gap: space.sm,
       paddingHorizontal: space.lg + space.xs,
     },
     pillText: { fontFamily: font.bodyBold, fontSize: 17 },
-    pillAccent: { backgroundColor: c.accent },
+    pillAccent: { backgroundColor: c.accent, borderRadius: radius.full },
 
     area: { flex: 1 },
 

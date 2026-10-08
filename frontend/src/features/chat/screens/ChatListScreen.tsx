@@ -6,7 +6,7 @@
  */
 import { memo, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Avatar, EmptyState, Img, List, Screen, Tap, Txt } from '@ui';
+import { Avatar, EmptyState, Img, List, Screen, TabBarSpacer, Tap, Txt } from '@ui';
 import { radius, space, useStyles, type Palette } from '@design';
 import { useAgo, useT } from '@i18n';
 import { lastAbout, lastMessage, type Conversation } from '../types';
@@ -53,7 +53,12 @@ export function ChatListScreen({
       {conversations.length === 0 ? (
         <EmptyState title={t('chat.emptyTitle')} message={t('chat.emptyMessage')} />
       ) : (
-        <List data={conversations} renderItem={renderItem} keyExtractor={keyOf} />
+        <List
+          data={conversations}
+          renderItem={renderItem}
+          keyExtractor={keyOf}
+          ListFooterComponent={<TabBarSpacer />}
+        />
       )}
     </Screen>
   );

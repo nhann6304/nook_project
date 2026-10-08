@@ -65,6 +65,7 @@ export default function Me() {
       onOpenPrivacy={() => router.push('/(app)/prefs/privacy')}
       onOpenLanguage={() => router.push('/(app)/prefs/language')}
       onOpenPro={() => router.push('/(app)/pro')}
+      onOpenQr={() => router.push('/(app)/qr')}
       proTitle={t('pro.card')}
       proSub={t('pro.cardSub', {
         price: t('pro.vnd', { amount: num(monthly) }),

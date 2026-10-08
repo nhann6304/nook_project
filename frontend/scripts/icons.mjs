@@ -67,6 +67,10 @@ const NAMES = {
   film: 'film',
   link: 'link',
   shield: 'shield',
+  qr: 'qrcode',
+  share: 'share-2',
+  scan: 'scan',
+  zoom: 'zoom-in',
 };
 
 const CAMEL = (a) => a.replace(/-([a-z])/g, (_, c) => c.toUpperCase());

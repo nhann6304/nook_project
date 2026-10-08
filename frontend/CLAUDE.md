@@ -77,7 +77,7 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 
 **Giao diện**
 
-- Màu **xanh lam pastel, THEO TRỜI** (07/10/2026, mặc định): sáng · trưa · chiều · tối theo giờ máy, trời mưa thì sang màu mưa (`sceneAt` trong `palettes.ts`; mưa hỏi Open-Meteo ở `features/sky`, CHỈ khi người dùng đã cho quyền vị trí — không bao giờ tự xin). Hoặc cố định Sáng · Tối · Theo máy. Cộng **năm màu locket**. Chữ trên ảnh dùng `tone="onPhoto"`. Mặt nổi dùng `c.glass` + `lift(c)`, **không blur thật** (Android giật).
+- Màu **xanh lam pastel, THEO TRỜI** (07/10/2026, mặc định): sáng · trưa · chiều · tối theo giờ máy, trời mưa thì sang màu mưa (`sceneAt` trong `palettes.ts`; mưa hỏi Open-Meteo ở `features/sky`, CHỈ khi người dùng đã cho quyền vị trí — không bao giờ tự xin). Hoặc cố định Sáng · Tối · Theo máy. Cộng **năm màu locket**. Chữ trên ảnh dùng `tone="onPhoto"`. Mặt nổi trên trời / ảnh dùng **`<Glass>`** (08/10/2026): iOS blur thật (expo-blur), Android nền đặc trong mờ `glassSolid` — **không blur trên Android** (giật). Thẻ thường vẫn `c.glass` + `lift(c)`.
 - **Mỗi màn đúng MỘT** nút `variant="primary"`.
 - Chữ trên nút primary là `c.onAccent`: **trắng** ở nền sáng (nút denim đặc),
   **navy** ở nền tối (nút lam nhạt). Nút đặc, không dải màu.
@@ -92,13 +92,17 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   `spring.*` đã tắt dần tới hạn — đổi số thì giữ `damping ≥ 2·√(stiffness·mass)`.
 - Bàn phím **không co khung** ở màn chính: chú thích tự nhích lên
   (`useAnimatedKeyboard`), trang giữ nguyên chiều cao.
-- **Ba trang VUỐT NGANG như Locket** (08/10/2026): Bạn bè · Chụp · Tin nhắn
-  (`app/(app)/(tabs)/` dùng `TopTabs` = react-native-pager-view, thanh ở đáy;
-  khoá vuốt khi đang xem lại ảnh). `<TabBar>` là MỘT viên nhỏ ở giữa, ba icon
-  khối đặc, không chữ, nút đang chọn có nền tròn. Ảnh bạn bè vuốt LÊN từ camera
-  (`<Pager>`). Màn Chụp: chuông bên trái, viên bạn bè giữa, **avatar của mình
-  bên phải → `me` (trang cá nhân + Cài đặt)** — Cài đặt không còn là tab. Dưới
-  nút chụp là viên **"Lịch sử"** (`HistoryPill`), không còn dải 7 ngày.
+- **Ba trang VUỐT NGANG như Locket** (08/10/2026): **Ký ức · Chụp · Tin nhắn**
+  (`app/(app)/(tabs)/` dùng `TopTabs` = react-native-pager-view; khoá vuốt khi
+  đang xem lại ảnh). `<TabBar>` là MỘT viên kính nhỏ NỔI trên nội dung, ba icon
+  không chữ; mỗi tab chừa đáy bằng `<TabBarSpacer />`. Ảnh bạn bè vuốt LÊN từ
+  camera (`<Pager>`). Màn Chụp: chuông trái · viên "N Bạn bè" giữa (mở `circle`)
+  · **avatar phải → `me`** (trang cá nhân + Cài đặt + Mã QR). Dưới nút chụp là
+  viên **"Lịch sử"**. **Ký ức** (`MemoriesScreen`): mỗi tháng một thẻ kính, lưới
+  ngày có ảnh to, ngày trống là chấm, nét đứt nối các tháng, mở ra ở tháng này.
+- **Mã QR** (`qr`, `<QrCode>`): chấm tròn, logo LOVO giữa (mức sửa lỗi H). Link
+  là hàng giả `circle/lib/inviteLink.ts`. Nút trong thẻ dùng `<Button flat>`.
+- **Zoom** góc phải khung: 1× → 2× → 0.5× (0.5× = ống siêu rộng, chỉ iOS camera sau).
 - **Chụp xong:** hàng avatar dưới ảnh chọn ai KHÔNG được xem (mặc định ai cũng
   xem; mặc định riêng đặt ở Cài đặt → Riêng tư). Gửi đi là `hiddenFromUserIds`.
 - **Đèn camera trước chỉ sáng TRONG KHUNG**, không trắng cả màn hình.
@@ -117,8 +121,9 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   liệu (gỗ → vỏ sò → màu riêng → ngọc → vàng, `design/beads.ts`) + MỘT hạt charm
   góc dưới phải. Chuỗi hạt quanh avatar đã bỏ (rối ở cỡ nhỏ); chuỗi hạt đầy đủ
   chỉ ở trang hai người (`<BeadStrand>`, mỗi hạt một ký ức). Không số.
-- **Trời có cảnh** (`<SkyWash>`): mây trôi / mặt trời / sao / mưa — chỉ
-  transform + opacity, mỗi lớp một Svg vẽ một lần.
+- **Trời phủ CẢ MÀN** (`<SkyWash>`): đỉnh màu cảnh, giữa tan vào nền, đáy ngả
+  `skyLow`; mây trên + dưới / mặt trời / sao khắp màn / mưa suốt chiều cao; trăng
+  ở khe giữa viên bạn bè và avatar. Chỉ transform + opacity, mỗi lớp một Svg.
 - **Ảnh gốc cho mọi người**: chụp `quality: 1`, cắt khung rồi nén JPEG MỘT lần
   0.92, KHÔNG thu nhỏ. Không bao giờ đưa chất lượng ảnh vào gói Pro.
 - **Cài đặt = mục lục + trang con** (`app/(app)/prefs/*`): Giao diện · Riêng tư ·
@@ -128,7 +133,7 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   tại chỗ. Danh sách đông người luôn có ô tìm (`AudienceSheet`, Tìm quanh đây).
 - **Chụp không có vòng chờ:** ảnh gốc hiện ngay, cắt vuông chạy ngầm
   (`squaring` trong `CameraPage`), tải lên server chạy nền sau khi gửi.
-- Chữ: **Poppins** đậm một nấc (chữ thường 500, tiêu đề 700, `display` 800) + **Caveat** cho lời nhấn viết
+- Chữ: **Nunito** (08/10/2026, thay Poppins — dấu tiếng Việt đẹp hơn, đầu nét tròn): chữ thường 600, tiêu đề 800, `display` 900 + **Caveat** cho lời nhấn viết
   tay (`variant="hand"`, mỗi màn tối đa một chỗ).
 - **Không có linh vật** (bỏ 31/08/2026). Chỗ trống dùng `<GhostFrame>` hoặc
   lưới mười chỗ.

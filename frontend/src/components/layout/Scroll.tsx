@@ -12,9 +12,18 @@
 import { ScrollView, StyleSheet, type ScrollViewProps } from 'react-native';
 import { space } from '@design';
 
-export function Scroll({ contentContainerStyle, horizontal, ...rest }: ScrollViewProps) {
+/** Tay cầm của `<Scroll>` — để gọi `scrollToEnd` / `scrollTo`. */
+export type ScrollHandle = ScrollView;
+
+export function Scroll({
+  contentContainerStyle,
+  horizontal,
+  ref,
+  ...rest
+}: ScrollViewProps & { ref?: React.Ref<ScrollHandle> }) {
   return (
     <ScrollView
+      ref={ref}
       horizontal={horizontal}
       keyboardDismissMode="on-drag"
       keyboardShouldPersistTaps="handled"

@@ -25,6 +25,7 @@ export function SettingsScreen({
   onOpenPrivacy,
   onOpenLanguage,
   onOpenPro,
+  onOpenQr,
   proTitle,
   proSub,
   onSignOut,
@@ -46,6 +47,7 @@ export function SettingsScreen({
   onOpenPrivacy: () => void;
   onOpenLanguage: () => void;
   onOpenPro: () => void;
+  onOpenQr: () => void;
   proTitle: string;
   proSub: string;
   onSignOut: () => void;
@@ -81,6 +83,8 @@ export function SettingsScreen({
           <ProCard title={proTitle} sub={proSub} onPress={onOpenPro} />
 
           <Card style={s.list}>
+            <NavRow icon="qr" title={t('qr.open')} onPress={onOpenQr} />
+            <Divider inset />
             <NavRow
               icon="palette"
               title={t('settings.appearance')}

@@ -27,6 +27,8 @@ export type ButtonProps = Omit<TapProps, 'children' | 'style'> & {
   icon?: React.ReactNode;
   /** Kéo dài hết bề ngang cha. */
   block?: boolean;
+  /** Nút PHẲNG bình thường, không gờ, không lún — cho nút nhỏ nằm trong thẻ. */
+  flat?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -40,6 +42,7 @@ export function Button({
   loading = false,
   icon,
   block = false,
+  flat = false,
   disabled,
   style,
   feedback = variant === 'primary' ? 'confirm' : 'tap',
@@ -50,7 +53,7 @@ export function Button({
   const s = useStyles(make);
   const c = useColors();
   const off = disabled === true || loading;
-  const raised = variant !== 'ghost' && !off;
+  const raised = variant !== 'ghost' && !off && !flat;
   const pressed = useSharedValue(0);
 
   const face = useAnimatedStyle(() => ({
@@ -73,7 +76,7 @@ export function Button({
         pressed.set(withTiming(0, { duration: PRESS_MS * 2 }));
         onPressOut?.(e);
       }}
-      style={[s.wrap, block && s.block, off && s.off, style]}
+      style={[s.wrap, block && s.block, flat && s.flatWrap, off && s.off, style]}
       {...rest}
     >
       {raised ? <View style={[s.edge, s[EDGE_STYLE[variant]]]} /> : null}
@@ -110,6 +113,7 @@ const make = (c: Palette) =>
   StyleSheet.create({
     wrap: { paddingBottom: EDGE },
     block: { alignSelf: 'stretch' },
+    flatWrap: { paddingBottom: 0 },
     edge: {
       position: 'absolute',
       left: 0,

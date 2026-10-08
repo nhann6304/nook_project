@@ -46,6 +46,7 @@ import * as feel from '@/lib/haptics';
 import * as sound from '@/lib/sound';
 import { CameraPermission } from './CameraPermission';
 import { FlashToggle, type FlashMode } from './FlashToggle';
+import { ZoomChip, type ZoomLevel } from './ZoomChip';
 import { ScreenFlash, WARMUP_MS, type ScreenFlashHandle } from './ScreenFlash';
 import { SendButton } from './SendButton';
 import { Shutter } from './Shutter';
@@ -75,6 +76,13 @@ export type Shot = {
 
 /** Chiều cao hàng chụp. Màn chính cần số này để tính cỡ khung. */
 export const CONTROLS_HEIGHT = 128;
+
+/**
+ * "2×" bằng zoom số. `zoom` của expo-camera là 0–1 theo thang LOGARIT tới
+ * zoom tối đa của máy (iOS: hệ số = max^zoom); max ống chính thường ~16 →
+ * 0.25 ≈ 2×. Gần đúng, đủ cho một nút bấm nhanh như Locket.
+ */
+const ZOOM_2X = 0.25;
 /** Chỗ dành cho dải dưới hàng chụp (nhật ký 7 ngày). */
 export const FOOTER_HEIGHT = 92;
 
@@ -131,6 +139,9 @@ export function CameraPage({
   const readyWait = useRef<(() => void) | null>(null);
   const [facing, setFacing] = useState<CameraType>('front');
   const [flash, setFlash] = useState<FlashMode>('off');
+  const [zoom, setZoom] = useState<ZoomLevel>(1);
+  // Tên ống góc siêu rộng nếu máy có (iOS báo qua `onAvailableLensesChanged`).
+  const [ultraWide, setUltraWide] = useState<string | null>(null);
   const [shot, setShot] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
@@ -346,7 +357,16 @@ export function CameraPage({
   const flip = useCallback(() => {
     spin.set(withTiming(spin.get() + 180, { duration: duration.slow }));
     setFacing((f) => (f === 'front' ? 'back' : 'front'));
+    setZoom(1);
   }, [spin]);
+
+  // 1× → 2× → 0.5× (khi có ống siêu rộng ở camera sau) → 1×.
+  const cycleZoom = useCallback(() => {
+    setZoom((z) => (z === 1 ? 2 : z === 2 && facing === 'back' && ultraWide ? 0.5 : 1));
+  }, [facing, ultraWide]);
+  const onLenses = useCallback((e: { lenses: string[] }) => {
+    setUltraWide(e.lenses.find((l) => /ultra ?wide/i.test(l)) ?? null);
+  }, []);
 
   const toggleFlash = useCallback(() => setFlash((f) => (f === 'off' ? 'on' : 'off')), []);
 
@@ -394,6 +414,10 @@ export function CameraPage({
           mirror
           // Camera sau dùng đèn thật; camera trước đã có đèn màn hình lo.
           flash={facing === 'back' ? flash : 'off'}
+          // 0.5× = đổi sang ỐNG góc siêu rộng (iOS), không phải zoom số.
+          selectedLens={zoom === 0.5 && ultraWide ? ultraWide : undefined}
+          onAvailableLensesChanged={onLenses}
+          zoom={zoom === 2 ? ZOOM_2X : 0}
         />
 
         {reviewing ? (
@@ -408,6 +432,15 @@ export function CameraPage({
             style={s.corner}
           >
             <FlashToggle mode={flash} label={t('camera.flash')} onToggle={toggleFlash} />
+          </Animated.View>
+        )}
+        {reviewing ? null : (
+          <Animated.View
+            entering={FadeIn.duration(duration.base)}
+            exiting={FadeOut.duration(duration.fast)}
+            style={s.cornerRight}
+          >
+            <ZoomChip level={zoom} label={t('camera.zoom')} onPress={cycleZoom} />
           </Animated.View>
         )}
 
@@ -534,6 +567,7 @@ const make = (c: Palette) =>
       overflow: 'hidden',
     },
     corner: { position: 'absolute', top: space.md + 2, left: space.md + 2 },
+    cornerRight: { position: 'absolute', top: space.md + 2, right: space.md + 2 },
     blink: { ...StyleSheet.absoluteFill, backgroundColor: c.onPhotoText },
     glow: {
       position: 'absolute',

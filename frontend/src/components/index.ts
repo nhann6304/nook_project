@@ -31,10 +31,11 @@ export { Screen, type ScreenProps } from './layout/Screen';
 export { Row, Col, Spacer, Flex } from './layout/Stack';
 export { Card, Pill, Divider } from './layout/Surface';
 export { List, type ListProps } from './layout/List';
-export { Scroll } from './layout/Scroll';
+export { Scroll, type ScrollHandle } from './layout/Scroll';
 export { TopBar, type TopBarProps } from './layout/TopBar';
 export { Pager, type PagerHandle, type PagerProps } from './layout/Pager';
-export { TabBar, TAB_BAR_HEIGHT, type TabItem } from './layout/TabBar';
+export { TabBar, TAB_BAR_HEIGHT, useTabBarSpace, TabBarSpacer, type TabItem } from './layout/TabBar';
+export { Glass } from './layout/Glass';
 
 /* — Thương hiệu — */
 export { Rings, type RingsProps } from './brand/Rings';
@@ -44,6 +45,7 @@ export { Halo } from './brand/Halo';
 export { GhostFrame } from './brand/GhostFrame';
 export { Avatar, type AvatarProps } from './brand/Avatar';
 export { BeadStrand } from './brand/BeadStrand';
+export { QrCode } from './brand/QrCode';
 export { AvatarStack } from './brand/AvatarStack';
 
 /* — Phản hồi — */

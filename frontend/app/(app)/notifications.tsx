@@ -15,7 +15,7 @@ export default function Notifications() {
 
   const open = useCallback(
     (n: Notice) => {
-      if (n.kind === 'invite' || n.kind === 'accepted') router.navigate('/(app)/(tabs)/circle');
+      if (n.kind === 'invite' || n.kind === 'accepted') router.navigate('/(app)/circle');
       else if (n.kind === 'tagged') {
         router.navigate('/(app)/(tabs)/home');
         useHomeNav.getState().go('feed');
