@@ -40,10 +40,10 @@ function AppTabBar({ state, navigation }: BottomTabBarProps) {
 
   const items = useMemo<TabItem<Key>[]>(
     () => [
-      { key: 'home', label: t('tabs.home'), icon: 'camera' },
-      { key: 'circle', label: t('tabs.friends'), icon: 'people' },
-      { key: 'chats', label: t('tabs.chats'), icon: 'chat', badge: unread },
-      { key: 'settings', label: t('tabs.settings'), icon: 'settings' },
+      { key: 'home', label: t('tabs.home'), icon: 'camera', hue: 'blue' },
+      { key: 'circle', label: t('tabs.friends'), icon: 'people', hue: 'green' },
+      { key: 'chats', label: t('tabs.chats'), icon: 'chat', hue: 'purple', badge: unread },
+      { key: 'settings', label: t('tabs.settings'), icon: 'settings', hue: 'orange' },
     ],
     [t, unread],
   );

@@ -24,16 +24,19 @@ import {
   Txt,
   type IconName,
 } from '@ui';
-import { layout, radius, space, useColors, useStyles, type Palette } from '@design';
+import { layout, radius, space, useColors, useStyles, type Palette, type Vivid } from '@design';
 
 export const NavRow = memo(function NavRow({
   icon,
+  hue,
   title,
   value,
   onPress,
   danger,
 }: {
   icon: IconName;
+  /** Sắc của viên icon. Hàng nguy hiểm luôn đỏ. */
+  hue?: Vivid;
   title: string;
   value?: string;
   onPress: () => void;
@@ -49,7 +52,7 @@ export const NavRow = memo(function NavRow({
       accessibilityRole="button"
       accessibilityLabel={title}
     >
-      <IconBadge name={icon} />
+      <IconBadge name={icon} hue={danger ? 'red' : hue} />
       <View style={s.navText}>
         <Txt variant="label" tone={danger ? 'danger' : 'default'}>
           {title}

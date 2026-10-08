@@ -93,8 +93,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - Bàn phím **không co khung** ở màn chính: chú thích tự nhích lên
   (`useAnimatedKeyboard`), trang giữ nguyên chiều cao.
 - **Thanh tab dưới đáy, bốn nút** (07/10/2026): Chụp · Bạn bè · Tin nhắn ·
-  Cài đặt (`app/(app)/(tabs)/`, `<TabBar>`: thẻ nổi cách mép, bo vừa, icon
-  trần + vạch nhấn trên nút đang chọn — không viên thuốc, không dính đáy).
+  Cài đặt (`app/(app)/(tabs)/`, `<TabBar>`: thẻ nổi cách mép, bo vừa, mỗi nút
+  một sắc tươi, nút đang chọn tô đặc + vạch cùng sắc — không viên thuốc, không dính đáy).
   Ảnh bạn bè KHÔNG là tab — vuốt lên từ camera như Locket (`<Pager>`); bấm
   "Chụp" khi đang ở màn chính thì về camera (`home/store/homeNav.ts`). Rời tab
   là camera tắt (`active`). Chuông thông báo ở góc phải màn chính.
@@ -102,18 +102,22 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   xem; mặc định riêng đặt ở Cài đặt → Riêng tư). Gửi đi là `hiddenFromUserIds`.
 - **Đèn camera trước chỉ sáng TRONG KHUNG**, không trắng cả màn hình.
 - **Icon: nét Phosphor kiểu DUOTONE** (`<Icon name>`, 08/10/2026) — nét vừa + ruột
-  tô 24% cùng màu; `weight="fill"` cho thứ đang chọn (tab đang mở). Nét đơn
+  tô 30% cùng màu; `weight="fill"` cho thứ đang chọn (tab đang mở). Nét đơn
   (✓ × mũi tên +) tự đi nét đậm, không ô nền. Nét sinh vào `iconPaths.ts` bằng
   `node scripts/phosphor-icons.mjs` — thêm icon ở script, đừng sửa tay, đừng
-  nhập gói lúc chạy. Màu icon theo `c.accent`, không `c.text`.
+  nhập gói lúc chạy. Màu icon: **sắc tươi `c.vivid.*`** cho icon mang nghĩa (tab,
+  hàng cài đặt, chuông, thông báo, đặc quyền — mỗi thứ một sắc cố định), `c.accent`
+  cho icon thao tác (quay lại, đóng). `c.vivid` chỉ cho icon/huy hiệu, KHÔNG cho chữ.
+  Hàng cài đặt: `<IconBadge hue>` — viên tròn đặc màu tươi, glyph đặc `c.onVivid`.
 - **Nút KHỐI NỔI** (`<Button>`, 08/10/2026): mặt + gờ đáy đậm hơn, nhấn thì mặt
   lún phủ gờ (luồng UI). Thẻ nổi bật (Pro) đi cùng giọng: gờ `accentDeep`.
 - **"Theo ảnh" là màu mặc định** (08/10/2026): gửi ảnh xong app rút màu chủ đạo
   (`camera/lib/photoColor.ts`) → `setSeed` → sắc nhấn + cảnh ngả theo màu đó,
   tương phản ĐO lúc dựng (`seedSwatch` trong `palettes.ts`). Năm màu locket vẫn chọn được.
-- **Vòng tay hạt thay vòng cấp thân** (`<Bracelet>` quanh `<Avatar level>`,
-  `<BeadStrand>` ở trang hai người): mỗi hạt một ký ức, chất liệu nói độ thân
-  (gỗ → vỏ sò → màu riêng → ngọc → vàng, `design/beads.ts`). Không số.
+- **Vòng chất liệu thay vòng cấp thân** (`<Avatar level>`): vòng dải màu của chất
+  liệu (gỗ → vỏ sò → màu riêng → ngọc → vàng, `design/beads.ts`) + MỘT hạt charm
+  góc dưới phải. Chuỗi hạt quanh avatar đã bỏ (rối ở cỡ nhỏ); chuỗi hạt đầy đủ
+  chỉ ở trang hai người (`<BeadStrand>`, mỗi hạt một ký ức). Không số.
 - **Trời có cảnh** (`<SkyWash>`): mây trôi / mặt trời / sao / mưa — chỉ
   transform + opacity, mỗi lớp một Svg vẽ một lần.
 - **Ảnh gốc cho mọi người**: chụp `quality: 1`, cắt khung rồi nén JPEG MỘT lần

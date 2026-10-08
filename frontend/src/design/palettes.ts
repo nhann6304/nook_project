@@ -109,7 +109,26 @@ export type Palette = {
   core: string;
   /** Chữ NẰM TRÊN ảnh. Luôn trắng — dưới chữ luôn có lớp `onPhoto` tối. */
   onPhotoText: string;
+
+  /** Tám sắc TƯƠI cho icon (08/10/2026: icon theo màu nhấn "không tươi" — màu
+   *  nhấn bị ép tối cho chữ đọc được, icon chỉ cần ~3:1). Chỉ cho icon/huy hiệu,
+   *  KHÔNG cho chữ. */
+  vivid: Readonly<Record<Vivid, string>>;
+  /** Hình vẽ nằm TRÊN nền `vivid` đặc. */
+  onVivid: string;
 };
+
+export const VIVIDS = [
+  'pink',
+  'orange',
+  'yellow',
+  'green',
+  'teal',
+  'blue',
+  'purple',
+  'red',
+] as const;
+export type Vivid = (typeof VIVIDS)[number];
 
 /* ══════════════ CẢNH ══════════════ */
 
@@ -147,6 +166,30 @@ const SEMANTIC: Readonly<
     violet: '#C2AEF2',
     danger: '#F08C8C',
     core: '#EEF3FB',
+  },
+};
+
+/** Đo trên nền sáng ≥ 3:1 (vàng 2.7 — vàng đủ 3:1 là thành nâu), nền tối ≥ 7:1. */
+const VIVID: Readonly<Record<Tone, Readonly<Record<Vivid, string>>>> = {
+  light: {
+    pink: '#EC3F7C',
+    orange: '#EE6A12',
+    yellow: '#D08700',
+    green: '#16A35F',
+    teal: '#0A9DAE',
+    blue: '#2F7BEF',
+    purple: '#8152F0',
+    red: '#E5383B',
+  },
+  dark: {
+    pink: '#FF7FAA',
+    orange: '#FFA25E',
+    yellow: '#FFD25C',
+    green: '#5FDDA0',
+    teal: '#55D6E4',
+    blue: '#82B4FF',
+    purple: '#B9A0FF',
+    red: '#FF8C8C',
   },
 };
 
@@ -405,6 +448,8 @@ function build(scene: Scene, key: FixedAccent | Seed): Palette {
     // Nền sáng: viền kính lấy màu đường kẻ, viền trắng trên nền trắng là chìm mất.
     glassBorder: light ? base.border : base.glassBorder,
     onAccent: light ? '#FFFFFF' : base.bg,
+    vivid: VIVID[tone],
+    onVivid: light ? '#FFFFFF' : base.bg,
     accentSoft: light ? mix(bright, base.bg, 0.68) : alpha(accent, 0.2),
     glowStrong: alpha(accent, 0.16),
     glowSoft: alpha(accent, 0.1),

@@ -15,7 +15,7 @@ import { ICON_PATHS } from './iconPaths';
 export type IconName = keyof typeof ICON_PATHS;
 export type IconWeight = 'duotone' | 'fill' | 'bold';
 
-const SOFT = 0.24;
+const SOFT = 0.3;
 
 /** Nét đơn (✓, ×, mũi tên, +): duotone của Phosphor lót thêm ô vuông/tròn mờ
  *  phía sau — đúng cái "ô bao" bị chê. Những icon này luôn đi nét đậm. */

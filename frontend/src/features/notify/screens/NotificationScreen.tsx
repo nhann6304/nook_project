@@ -8,7 +8,7 @@
 import { memo, useCallback, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Avatar, EmptyState, Icon, Img, List, Screen, Tap, TopBar, Txt, type IconName } from '@ui';
-import { radius, space, useColors, useStyles, type Palette } from '@design';
+import { radius, space, useColors, useStyles, type Palette, type Vivid } from '@design';
 import { useAgo, useT } from '@i18n';
 import type { Notice } from '../types';
 
@@ -80,14 +80,7 @@ const NoticeRow = memo(function NoticeRow({
   const t = useT();
   const ago = useAgo();
   const badge = BADGE[n.kind];
-  const tint =
-    badge.tone === 'danger'
-      ? c.danger
-      : badge.tone === 'mint'
-        ? c.mint
-        : badge.tone === 'violet'
-          ? c.violet
-          : c.accent;
+  const tint = c.vivid[badge.hue];
   const action =
     n.kind === 'reacted'
       ? t('notify.reacted', { emoji: n.preview ?? '❤️' })
@@ -106,7 +99,7 @@ const NoticeRow = memo(function NoticeRow({
           recyclingKey={n.actorId}
         />
         <View style={[s.kind, { backgroundColor: tint }]}>
-          <Icon name={badge.icon} size={12} color={c.bg} />
+          <Icon name={badge.icon} size={12} color={c.onVivid} weight="fill" />
         </View>
       </View>
       <View style={s.text}>
@@ -125,14 +118,12 @@ const NoticeRow = memo(function NoticeRow({
   );
 });
 
-const BADGE: Readonly<
-  Record<Notice['kind'], { icon: IconName; tone: 'accent' | 'danger' | 'mint' | 'violet' }>
-> = {
-  reacted: { icon: 'heart', tone: 'danger' },
-  tagged: { icon: 'at', tone: 'accent' },
-  invite: { icon: 'people', tone: 'mint' },
-  accepted: { icon: 'check', tone: 'mint' },
-  replied: { icon: 'chat', tone: 'violet' },
+const BADGE: Readonly<Record<Notice['kind'], { icon: IconName; hue: Vivid }>> = {
+  reacted: { icon: 'heart', hue: 'pink' },
+  tagged: { icon: 'at', hue: 'blue' },
+  invite: { icon: 'people', hue: 'green' },
+  accepted: { icon: 'check', hue: 'teal' },
+  replied: { icon: 'chat', hue: 'purple' },
 };
 
 const make = (c: Palette) =>

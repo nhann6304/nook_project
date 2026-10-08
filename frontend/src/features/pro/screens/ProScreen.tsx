@@ -9,7 +9,7 @@
 import { memo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Button, Icon, Screen, Scroll, Tap, TopBar, Txt, type IconName } from '@ui';
+import { Button, Icon, IconBadge, Screen, Scroll, Tap, TopBar, Txt, type IconName } from '@ui';
 import {
   duration,
   font,
@@ -20,18 +20,19 @@ import {
   useColors,
   useStyles,
   type Palette,
+  type Vivid,
 } from '@design';
 import { useT } from '@i18n';
 import type { ProPlan } from '../lib/proApi';
 
 const PERKS = [
-  { icon: 'sparkle', key: 'beads' },
-  { icon: 'palette', key: 'icon' },
-  { icon: 'video', key: 'video' },
-  { icon: 'film', key: 'recap' },
-  { icon: 'pinTop', key: 'pin' },
-  { icon: 'gift', key: 'gift' },
-] as const satisfies readonly { icon: IconName; key: string }[];
+  { icon: 'sparkle', key: 'beads', hue: 'pink' },
+  { icon: 'palette', key: 'icon', hue: 'purple' },
+  { icon: 'video', key: 'video', hue: 'red' },
+  { icon: 'film', key: 'recap', hue: 'orange' },
+  { icon: 'pinTop', key: 'pin', hue: 'teal' },
+  { icon: 'gift', key: 'gift', hue: 'green' },
+] as const satisfies readonly { icon: IconName; key: string; hue: Vivid }[];
 
 const FREE = ['photo', 'memories', 'bracelet', 'friends'] as const;
 
@@ -106,9 +107,7 @@ export function ProScreen({
                 entering={FadeInDown.delay(duration.fast + i * 50).duration(duration.base)}
                 style={s.perk}
               >
-                <View style={s.perkIcon}>
-                  <Icon name={p.icon} size={24} color={c.accent} />
-                </View>
+                <IconBadge name={p.icon} hue={p.hue} />
                 <View style={s.flex}>
                   <Txt variant="label">{t(`pro.perk.${p.key}.title`)}</Txt>
                   <Txt variant="faint" tone="muted">
@@ -249,14 +248,6 @@ const make = (c: Palette) =>
       ...lift(c),
     },
     perk: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-    perkIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: radius.full,
-      backgroundColor: c.accentSoft,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     flex: { flex: 1 },
     free: { gap: space.sm, paddingHorizontal: space.xs },
     freeRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },

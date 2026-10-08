@@ -88,14 +88,14 @@ export const BeadStrand = memo(function BeadStrand({
               cx={last.x}
               cy={last.y + r * 0.14}
               animatedProps={lastProps}
-              fill={tone[2]}
+              fill={tone[1]}
             />
             <AnimatedCircle cx={last.x} cy={last.y} animatedProps={lastProps} fill={tone[0]} />
             <Circle
               cx={last.x - r * 0.3}
               cy={last.y - r * 0.32}
               r={r * 0.34}
-              fill={tone[1]}
+              fill={tone[2]}
               opacity={0.9}
             />
           </>
@@ -118,9 +118,9 @@ function Bead({
 }) {
   return (
     <>
-      <Circle cx={x} cy={y + r * 0.14} r={r} fill={tone[2]} />
+      <Circle cx={x} cy={y + r * 0.14} r={r} fill={tone[1]} />
       <Circle cx={x} cy={y} r={r * 0.9} fill={tone[0]} />
-      <Circle cx={x - r * 0.3} cy={y - r * 0.32} r={r * 0.34} fill={tone[1]} opacity={0.9} />
+      <Circle cx={x - r * 0.3} cy={y - r * 0.32} r={r * 0.34} fill={tone[2]} opacity={0.9} />
     </>
   );
 }

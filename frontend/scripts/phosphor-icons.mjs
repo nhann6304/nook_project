@@ -32,7 +32,7 @@ const NAMES = {
   camera: 'Camera',
   flip: 'CameraRotate',
   search: 'MagnifyingGlass',
-  lock: 'LockSimple',
+  lock: 'Lock',
   pin: 'MapPin',
   edit: 'PencilSimple',
   offline: 'CloudSlash',
@@ -62,6 +62,7 @@ const NAMES = {
   film: 'FilmStrip',
   infinity: 'Infinity',
   link: 'LinkSimple',
+  shield: 'ShieldCheck',
 };
 
 /** Cắt khối của một kiểu nét: từ `'tên',` tới kiểu kế tiếp. */

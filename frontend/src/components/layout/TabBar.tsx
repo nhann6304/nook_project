@@ -3,8 +3,8 @@
  *
  * Hai bản trước đều bị chê: viên thuốc nổi ("như AI") và thanh liền mép
  * ("dính sát đáy"). Bản này là một THẺ nổi cách mép, bo vừa (không tròn hết),
- * icon trần không ô bao; nút đang chọn có vạch ngắn màu nhấn phía trên + chữ
- * đậm. Mượt trước đã:
+ * icon trần không ô bao. Mỗi nút một sắc tươi (`hue`); nút đang chọn tô đặc,
+ * có vạch ngắn cùng sắc phía trên + chữ đậm cùng sắc. Mượt trước đã:
  *   · nền ĐẶC, không blur — blur trên Android vẽ lại mỗi khung hình;
  *   · nằm TRONG dòng bố cục, không đè lên màn — nên mờ đi chứ không gỡ khi
  *     đang bận (gỡ ra là màn trên đổi cao, khung camera nhảy);
@@ -13,7 +13,17 @@
 import { memo, useEffect, useState } from 'react';
 import { Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { font, layout, lift, radius, space, useColors, useStyles, type Palette } from '@design';
+import {
+  font,
+  layout,
+  lift,
+  radius,
+  space,
+  useColors,
+  useStyles,
+  type Palette,
+  type Vivid,
+} from '@design';
 import { Icon, type IconName } from '../primitives/Icon';
 import { Tap } from '../primitives/Tap';
 import { Txt } from '../primitives/Txt';
@@ -22,6 +32,8 @@ export type TabItem<K extends string> = {
   key: K;
   label: string;
   icon: IconName;
+  /** Sắc riêng của nút (08/10/2026: icon một màu nhấn "không tươi"). */
+  hue: Vivid;
   /** Chấm báo có thứ mới (tin nhắn chưa đọc). */
   badge?: boolean;
 };
@@ -88,21 +100,21 @@ const Item = memo(function Item<K extends string>({
       scaleTo={0.92}
       style={s.item}
     >
-      <View style={[s.mark, selected && s.markOn]} />
+      <View style={[s.mark, selected && { backgroundColor: c.vivid[item.hue] }]} />
       <View style={s.icon}>
         <Icon
           name={item.icon}
           size={24}
-          color={selected ? c.accent : c.textFaint}
+          color={c.vivid[item.hue]}
           weight={selected ? 'fill' : 'duotone'}
         />
         {item.badge ? <View style={s.badge} /> : null}
       </View>
       <Txt
         variant="faint"
-        tone={selected ? 'accent' : 'muted'}
+        tone="muted"
         numberOfLines={1}
-        style={selected ? s.labelOn : s.label}
+        style={selected ? [s.labelOn, { color: c.vivid[item.hue] }] : s.label}
       >
         {item.label}
       </Txt>
@@ -150,7 +162,6 @@ const make = (c: Palette) =>
       borderBottomRightRadius: radius.xs,
       backgroundColor: 'transparent',
     },
-    markOn: { backgroundColor: c.accent },
     icon: { height: 30, alignItems: 'center', justifyContent: 'center' },
     badge: {
       position: 'absolute',

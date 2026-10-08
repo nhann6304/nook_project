@@ -54,6 +54,7 @@ import {
   useColors,
   useStyles,
   type Palette,
+  type Vivid,
 } from '@design';
 import { useAgo, useT } from '@i18n';
 import * as feel from '@/lib/haptics';
@@ -415,7 +416,11 @@ export function HomeScreen({
                 onPress={() => say(t(`home.sky.${skyOf(c.scene)}`))}
                 style={s.round}
               >
-                <Icon name={SKY_ICON[skyOf(c.scene)]} size={24} color={c.accent} />
+                <Icon
+                  name={SKY_ICON[skyOf(c.scene)]}
+                  size={24}
+                  color={c.vivid[SKY_HUE[skyOf(c.scene)]]}
+                />
               </IconButton>
             </Animated.View>
             {/* Lúc xem lại ảnh: người nhận chọn ở hàng avatar dưới ảnh, trên này để trống. */}
@@ -457,7 +462,7 @@ export function HomeScreen({
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
               <IconButton label={t('notify.open')} onPress={onOpenNotices} style={s.round}>
-                <Icon name="bell" size={24} color={c.accent} />
+                <Icon name="bell" size={24} color={c.vivid.yellow} />
                 {noticeUnread ? <View style={s.dot} /> : null}
               </IconButton>
             </Animated.View>
@@ -576,6 +581,13 @@ function EndPage({ frame, title, message }: { frame: Frame; title: string; messa
 
 type SkyMood = 'dawn' | 'noon' | 'dusk' | 'night' | 'rain';
 const skyOf = (scene: Palette['scene']): SkyMood => (scene === 'rainNight' ? 'rain' : scene);
+const SKY_HUE: Readonly<Record<SkyMood, Vivid>> = {
+  dawn: 'orange',
+  noon: 'yellow',
+  dusk: 'pink',
+  night: 'purple',
+  rain: 'blue',
+};
 const SKY_ICON: Readonly<Record<SkyMood, IconName>> = {
   dawn: 'sun',
   noon: 'sun',

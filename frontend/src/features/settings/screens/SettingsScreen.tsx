@@ -83,13 +83,15 @@ export function SettingsScreen({
           <Card style={s.list}>
             <NavRow
               icon="palette"
+              hue="pink"
               title={t('settings.appearance')}
               value={appearanceValue}
               onPress={onOpenAppearance}
             />
             <Divider inset />
             <NavRow
-              icon="lock"
+              icon="shield"
+              hue="teal"
               title={t('settings.privacy')}
               value={privacyValue}
               onPress={onOpenPrivacy}
@@ -97,13 +99,14 @@ export function SettingsScreen({
             <Divider inset />
             <NavRow
               icon="language"
+              hue="blue"
               title={t('settings.language')}
               value={languageValue}
               onPress={onOpenLanguage}
             />
             <Divider inset />
             <View style={s.toggle}>
-              <IconBadge name="music" />
+              <IconBadge name="music" hue="purple" />
               <View style={s.flex}>
                 <Toggle
                   value={soundOn}
