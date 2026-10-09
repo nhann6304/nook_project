@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Redis } from 'ioredis';
+import { Redis, type RedisOptions } from 'ioredis';
 import { Env } from '../../../config/env/index.js';
 
 /**
@@ -39,8 +39,8 @@ export class RedisService implements OnModuleDestroy {
   }
 
   /** Kết nối RIÊNG. Bên đăng/nhận tin của socket cần connection của nó. */
-  duplicate(): Redis {
-    return this.client.duplicate();
+  duplicate(override?: Partial<RedisOptions>): Redis {
+    return this.client.duplicate(override);
   }
 
   async ttl(key: string): Promise<number> {

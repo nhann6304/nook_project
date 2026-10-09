@@ -57,8 +57,10 @@ services:
   # Kho ảnh của máy dev. Nói cùng thứ tiếng với Cloudflare R2 (giao thức S3),
   # nên đường tải lên ở máy dev là ĐƯỜNG THẬT — không phải một bản giả rồi lên
   # thật mới phát hiện lệch.
+  # `minio/minio` · `minio/mc` đã rời Docker Hub — bản dựng cộng đồng, ghim phiên
+  # bản, có cả `mc` (xem compose.yml).
   minio:
-    image: minio/minio:latest
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     container_name: nook-minio
     restart: unless-stopped
     command: ['server', '/data', '--console-address', ':9001']
@@ -79,7 +81,7 @@ services:
   # Tạo sẵn thùng chứa rồi thoát. Không có nó thì lần tải lên đầu tiên hỏng vì
   # thùng chưa tồn tại, và câu lỗi của S3 lúc đó không chỉ ra được điều đó.
   minio-init:
-    image: minio/mc:latest
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     container_name: nook-minio-init
     depends_on:
       minio:

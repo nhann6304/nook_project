@@ -83,7 +83,7 @@ export async function bootstrap(): Promise<void> {
   app.useLogger(buildLogger(config));
 
   await setupHttp(app, config);
-  setupRealtime(app);
+  await setupRealtime(app);
   if (config.get('SWAGGER_ENABLED', { infer: true })) setupSwagger(app);
 
   const port = config.get('PORT', { infer: true });

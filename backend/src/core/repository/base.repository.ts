@@ -19,11 +19,11 @@ import { RequestContext } from '../context/index.js';
  * chế ra một con trỏ. Đây không phải bảo mật: ai muốn mở ra vẫn mở được, và
  * cũng không có gì bí mật bên trong.
  */
-function encodeCursor(at: Date, id: string): string {
+export function encodeCursor(at: Date, id: string): string {
   return Buffer.from(`${at.toISOString()}|${id}`).toString('base64url');
 }
 
-function decodeCursor(cursor?: string): { at: Date; id: string } | null {
+export function decodeCursor(cursor?: string): { at: Date; id: string } | null {
   if (!cursor) return null;
   const [at, id] = Buffer.from(cursor, 'base64url').toString().split('|');
   if (!at || !id) return null;

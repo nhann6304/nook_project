@@ -1,0 +1,18 @@
+# Bối cảnh build là GỐC KHO (`docker build -f backend/Dockerfile .`), nên tệp
+# bỏ qua phải nằm cạnh Dockerfile với tên này — `backend/.dockerignore` chỉ ăn
+# khi bối cảnh là `backend/`. Không có nó thì cả `frontend/` lẫn `node_modules`
+# của máy bị đẩy vào bối cảnh, và `.env` thật lọt vào tầng build.
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+.git
+frontend
+.docs
+.claude
+setup
+**/.env
+**/.env.*
+!**/.env.example
+**/.logs
+**/*.log
+backend/docker

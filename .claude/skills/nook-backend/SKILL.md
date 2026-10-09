@@ -37,6 +37,8 @@ soi — đó là lý do file này tồn tại.
 | **Bảy chỗ đã vấp — đừng vấp lại** | 9 |
 | Cổng thẻ, `@Public`, ai vào được gì | 10 |
 | Ranh giới với frontend | 11 |
+| Chat 1-1: `seq`, `clientId`, socket + ack, online qua Redis | 12 |
+| Chạy cả cụm bằng Docker, migration từ image, `--scale api=N` | 13 |
 
 Luật chung cho cả hai bên nằm ở `CLAUDE.md` gốc (131 dòng, đọc cả cũng được).
 Luật sản phẩm ở `.docs/01-product-system.md` — **mục 0 và mục 3 trước tiên**.
@@ -92,13 +94,18 @@ Ba câu, **ít nhất hai câu "có" mới tách**:
 |---|---|
 | 0 | `media` |
 | 1 | `user` · `setting` |
-| 2 | `circle` · `moment` · `thread` · `memory` |
+| 2 | `circle` · `moment` · `chat` · `memory` |
 | 3 | `achievement` · `notification` |
 
 **Cùng tầng thì cấm gọi nhau.** Gặp là một trong hai đang sai chỗ; ba lối thoát
 theo thứ tự nên thử: **gộp lại** · **hạ câu truy vấn xuống `repository/`** ·
 **tầng dưới phát sự kiện, tầng trên nghe**. Tính năng mới phải khai tầng trong
 `backend/scripts/check-arch.mjs`, không khai là `npm run check` đỏ.
+
+Ống socket (`realtime/`) đứng NGOÀI bảng tầng: tính năng nhập nó để BẮN
+(`toUser`/`toUsers`), nó phát vào/rời mạng qua `onPresence` cho tính năng nghe —
+xem `ChatGateway`. Gateway tính năng dùng `GATEWAY_OPTIONS`, và nhớ: cổng thẻ +
+bộ chặn toàn cục CÓ chạy cho socket, bộ lọc lỗi và `ValidationPipe` thì KHÔNG.
 
 Chọn giữa sự kiện và gọi thẳng: **sự kiện** cho việc *có thể trễ và thử lại
 được* (đếm thành tích) · **gọi thẳng xuống** cho việc *phải xong hết hoặc không

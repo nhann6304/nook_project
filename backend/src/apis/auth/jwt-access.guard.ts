@@ -48,6 +48,16 @@ export class JwtAccessGuard implements CanActivate {
     ]);
     if (isPublic) return true;
 
+    // Nest gắn cổng toàn cục cho cả gateway socket. Thẻ đã soi MỘT lần lúc bắt
+    // tay (`RealtimeGateway.handleConnection`); ở đây chỉ chặn tin tới trước khi
+    // bắt tay xong — chưa có `userId`. App nhận sự kiện `exception` của Nest,
+    // không có ack: phải đợi `rt.ready` rồi mới gửi.
+    if (ctx.getType() === 'ws') {
+      const client = ctx.switchToWs().getClient<{ data?: { userId?: string } }>();
+      if (!client.data?.userId) throw new AppException(ERR.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+      return true;
+    }
+
     const req = ctx.switchToHttp().getRequest<FastifyRequest & { user?: IAuthUser }>();
 
     const token = BEARER.exec(req.headers.authorization ?? '')?.[1];

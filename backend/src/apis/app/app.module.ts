@@ -3,6 +3,7 @@ import { UserModule } from './user/index.js';
 import { MediaModule } from './media/index.js';
 import { AchievementModule } from './achievement/index.js';
 import { SettingModule } from './setting/index.js';
+import { ChatModule } from './chat/index.js';
 
 /**
  * Cửa cho **app React Native**. Không phải cho web quản trị.
@@ -11,9 +12,9 @@ import { SettingModule } from './setting/index.js';
  * họ. Không đường nào trả về dữ liệu của người thứ ba, không đường nào cần vai
  * quản trị.
  *
- * Chặng sau thêm vào đây: circle · moment · thread · media · memory · push.
+ * Chặng sau thêm vào đây: circle · moment · memory · push.
  */
 @Module({
-  imports: [UserModule, MediaModule, AchievementModule, SettingModule],
+  imports: [UserModule, MediaModule, AchievementModule, SettingModule, ChatModule],
 })
 export class AppApiModule {}

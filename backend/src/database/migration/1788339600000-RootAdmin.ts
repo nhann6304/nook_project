@@ -75,7 +75,9 @@ export class RootAdmin1788339600000 implements MigrationInterface {
     );
     if (existing.length > 0) return;
 
-    const email = (process.env.ROOT_ADMIN_EMAIL ?? FALLBACK).trim().toLowerCase();
+    // `||` chứ không `??`: compose nạp `ROOT_ADMIN_EMAIL=` thành chuỗi RỖNG, và
+    // `??` cho chuỗi rỗng lọt qua thành một đích đăng nhập rỗng.
+    const email = (process.env.ROOT_ADMIN_EMAIL?.trim() || FALLBACK).toLowerCase();
 
     // Chèn người trước, rồi đích đăng nhập, rồi dòng đếm — đúng thứ tự khoá
     // ngoại.

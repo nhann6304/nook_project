@@ -4,3 +4,4 @@ export * from './media.mapper.js';
 export * from './media.processor.js';
 export * from './media.service.js';
 export * from './media.module.js';
+export * from './media.constant.js';

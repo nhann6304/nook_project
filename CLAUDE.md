@@ -56,7 +56,7 @@ trước — nó là bản đồ, và nó chỉ bạn đọc ĐÚNG mục nào t
   khác nhau nằm lẫn trong một thư mục.
   Import: cùng thư mục thì thẳng tệp, qua thư mục khác thì đi qua `index.js`.
 - **Trong `apis/app/`, import chỉ đi XUỐNG tầng.** `media`(0) ← `user`,
-  `setting`(1) ← `circle`, `moment`, `thread`, `memory`(2) ← `achievement`,
+  `setting`(1) ← `circle`, `moment`, `chat`, `memory`(2) ← `achievement`,
   `notification`(3). **Cùng tầng thì cấm gọi nhau** — gặp là một trong hai đang
   sai chỗ, và có ba lối thoát theo thứ tự: gộp lại · hạ câu truy vấn xuống
   `repository/` · tầng dưới phát sự kiện cho tầng trên nghe. Tính năng mới phải

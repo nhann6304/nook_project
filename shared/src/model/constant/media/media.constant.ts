@@ -13,7 +13,8 @@
  * Bản nhẹ cho bảng tin và cho widget là **bản sao thêm**, dựng ra từ bản gốc và
  * xoá lúc nào cũng được vì dựng lại được. Bản gốc thì không.
  */
-export const MEDIA_KINDS = ['avatar', 'moment'] as const;
+/** `chat`: ảnh gửi trong chat 1-1 — hai người trong cuộc xem được, vẫn là bản GỐC. */
+export const MEDIA_KINDS = ['avatar', 'moment', 'chat'] as const;
 
 /** Trạng thái một tấm ảnh. Dùng tên, đừng gõ chuỗi trần trong mã. */
 export const MEDIA_STATUS = {

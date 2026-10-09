@@ -12,7 +12,12 @@ import {
 import { AppException } from '../../../core/error/app.exception.js';
 import { Transactional } from '../../../core/transaction/transactional.decorator.js';
 import { StorageService } from '../../../infra/storage/service/storage.service.js';
-import { MediaRepository, MediaVariantRepository } from '../../../repository/index.js';
+import {
+  ChatMessageRepository,
+  ChatRepository,
+  MediaRepository,
+  MediaVariantRepository,
+} from '../../../repository/index.js';
 import { QUEUE, type IBuildVariantsJob } from '../../../queue/constant/queue.constant.js';
 import { Media } from '../../../database/entity/media/media.entity.js';
 import { extFor, isVideo } from './media.constant.js';
@@ -36,9 +41,9 @@ const SIZE_TOLERANCE_BYTES = 1024;
  *
  * ── Không bóp ảnh ───────────────────────────────────────────────────────────
  *
- * Không có `sharp`, không có `resize`, không có `quality`. Bytes vào kho đúng
- * bằng bytes máy ảnh chụp ra. Bản nhẹ cho bảng tin là chuyện của chặng sau và
- * là **bản sao thêm**, không phải thay bản gốc.
+ * Tệp này không có `sharp`, `resize` hay `quality`. Bytes vào kho đúng bằng
+ * bytes máy ảnh chụp ra (PUT thẳng, chữ ký khoá `content-length`). Bản nhẹ là
+ * **bản sao thêm** ở `media_variants`, dựng ở `MediaProcessor` vào khoá khác.
  */
 @Injectable()
 export class MediaService {
@@ -47,6 +52,8 @@ export class MediaService {
   constructor(
     private readonly media: MediaRepository,
     private readonly variants: MediaVariantRepository,
+    private readonly chats: ChatRepository,
+    private readonly chatMessages: ChatMessageRepository,
     private readonly storage: StorageService,
     private readonly mapper: MediaMapper,
     @InjectQueue(QUEUE.media) private readonly queue: Queue<IBuildVariantsJob>,
@@ -55,7 +62,8 @@ export class MediaService {
   /** Bước 1 — ghi dòng chờ và ký giấy phép tải lên. */
   @Transactional()
   async createUpload(ownerId: string, dto: CreateUploadDto): Promise<ICreateUploadResult> {
-    if (dto.kind === 'avatar' && isVideo(dto.contentType)) {
+    // Video chỉ cho khoảnh khắc: ảnh đại diện và ảnh chat là ẢNH.
+    if (dto.kind !== 'moment' && isVideo(dto.contentType)) {
       throw new AppException(ERR.MEDIA_TYPE_UNSUPPORTED, HttpStatus.BAD_REQUEST);
     }
     const row = await this.media.create({
@@ -146,11 +154,8 @@ export class MediaService {
    *
    * ── Ai được xem ─────────────────────────────────────────────────────────
    *
-   * Chặng này: **chỉ chủ ảnh.** Chưa có góc bạn bè nên chưa có ai khác để mở.
-   *
-   * Chặng sau, luật theo `kind` chứ không theo bảng `media`:
-   *   avatar  người trong góc của chủ ảnh
-   *   moment  chỉ những người khoảnh khắc đó gửi tới
+   * Luật theo CHỖ tấm ảnh được gắn vào, không theo bảng `media` — xem `canView`.
+   * Không truyền `variant` là **bản GỐC**, đúng từng byte đã tải lên.
    *
    * Đặt luật ở đây — MỘT chỗ — chứ không rải ở từng cửa gọi tới ảnh. Rải ra thì
    * sẽ có một cửa quên kiểm, và cửa đó là chỗ ảnh riêng tư rò ra ngoài.
@@ -165,7 +170,7 @@ export class MediaService {
     if (row.status !== 'ready') {
       throw new AppException(ERR.MEDIA_NOT_UPLOADED, HttpStatus.CONFLICT);
     }
-    if (row.ownerId !== viewerId) {
+    if (!(await this.canView(viewerId, row))) {
       throw new AppException(ERR.MEDIA_FORBIDDEN, HttpStatus.FORBIDDEN);
     }
 
@@ -187,6 +192,21 @@ export class MediaService {
       row.storageKey,
       MEDIA_LIMITS.readUrlTtlSeconds,
     );
+  }
+
+  /**
+   * Ai được xem tấm này. Chặng này (chưa có góc bạn bè):
+   *   chủ ảnh                                luôn
+   *   ảnh đại diện                           người đang có cuộc chat với chủ
+   *   ảnh gắn vào một tin chat               hai người của cuộc đó
+   * TODO(circle): avatar → người trong góc; moment → người được gửi tới.
+   *
+   * Câu hỏi về chat nằm ở `repository/` — `media` (tầng 0) không nhập `chat`.
+   */
+  private async canView(viewerId: string, row: Media): Promise<boolean> {
+    if (row.ownerId === viewerId) return true;
+    if (row.kind === 'avatar' && (await this.chats.sharesChat(viewerId, row.ownerId))) return true;
+    return this.chatMessages.isMediaVisibleTo(row.id, viewerId);
   }
 
   /** Mấy bản nhẹ đã dựng xong của một tấm. Cho bên gọi nắn ra DTO. */

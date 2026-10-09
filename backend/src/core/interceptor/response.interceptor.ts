@@ -46,7 +46,11 @@ function isCursorPage(value: unknown): value is CursorShape {
 export class ResponseInterceptor implements NestInterceptor {
   constructor(private readonly reflector: Reflector) {}
 
-  intercept(ctx: ExecutionContext, next: CallHandler): Observable<IApiEnvelope<unknown>> {
+  intercept(ctx: ExecutionContext, next: CallHandler): Observable<IApiEnvelope<unknown> | unknown> {
+    // Nest gắn bộ chặn toàn cục cho cả gateway socket (bộ lọc lỗi thì không).
+    // Ack của socket có hình dạng riêng (`TChatSendAck`) — bọc vỏ HTTP vào là app đọc sai.
+    if (ctx.getType() !== 'http') return next.handle();
+
     const code =
       this.reflector.getAllAndOverride<TMsgCode>(MESSAGE_CODE, [ctx.getHandler(), ctx.getClass()]) ??
       MSG.OK;

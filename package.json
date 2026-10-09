@@ -19,6 +19,9 @@
     "down": "docker compose -f backend/docker/compose.dev.yml down",
     "logs": "docker compose -f backend/docker/compose.dev.yml logs -f",
     "reset:db": "docker compose -f backend/docker/compose.dev.yml down -v && docker compose -f backend/docker/compose.dev.yml up -d",
+    "stack:up": "docker compose -f backend/docker/compose.yml up -d --build",
+    "stack:down": "docker compose -f backend/docker/compose.yml down",
+    "stack:logs": "docker compose -f backend/docker/compose.yml logs -f",
     "migration:run": "npm run migration:run -w @nook/backend",
     "migration:revert": "npm run migration:revert -w @nook/backend"
   },

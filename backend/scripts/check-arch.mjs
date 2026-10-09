@@ -49,7 +49,9 @@ const APP_LAYERS = new Map([
   ['setting', 1],      // cai dat cua nguoi dung
   ['circle', 2],       // goc 10 nguoi ban
   ['moment', 2],       // khoanh khac gui vao goc
-  ['thread', 2],       // tra loi mot khoanh khac
+  ['chat', 2],         // chat 1-1 theo CAP. Thay cho `thread` du kien: tra loi mot
+                       // khoanh khac se la mot tin chat tro toi khoanh khac do,
+                       // khong phai bang rieng (mot thu muc = mot bang).
   ['memory', 2],       // ky uc - don vi duy nhat cua he tien trinh
   ['achievement', 3],  // PHAI SINH: doc ket qua tang 2, khong ai goi thang
   ['notification', 3], // PHAI SINH: nghe su kien roi day di

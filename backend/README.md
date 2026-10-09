@@ -1,7 +1,8 @@
 # Nook — backend
 
 NestJS trên Fastify · PostgreSQL · Redis · TypeORM · Socket.IO · BullMQ.
-**Đăng nhập bằng email đã chạy được đầu-tới-cuối.**
+**Đăng nhập bằng email và chat 1-1 realtime đã chạy được đầu-tới-cuối.**
+Cả cụm chạy bằng Docker được: mục 13.
 
 > File này dài 1000 dòng và không phải để đọc từ đầu. Cần luật viết mã, chỗ đặt
 > tệp, hay danh sách bẫy thì đọc skill
@@ -50,7 +51,7 @@ cứng trong script thì sớm muộn lệch với `.env` của máy thật.
 
 ## 1. Đã có gì, chưa có gì
 
-Tám đường, **tất cả đã chạy được**:
+Mười bốn đường, **tất cả đã chạy được** (thêm sáu đường chat — mục 12):
 
 | | Đường | |
 |---|---|---|
@@ -62,6 +63,10 @@ Tám đường, **tất cả đã chạy được**:
 | `PATCH` | `/v1/me` | đặt tên |
 | `GET` | `/v1/me/achievements` | thành tích + sức chứa của góc |
 | `GET` | `/health` | dò sống chết |
+| `GET` `POST` | `/v1/chats` | danh sách cuộc · mở cuộc với một người |
+| `GET` `POST` | `/v1/chats/:id/messages` | lịch sử · gửi tin (dự phòng của socket) |
+| `POST` | `/v1/chats/:id/read` | đã đọc tới `seq` |
+| `PUT` | `/v1/chats/:id/background` | nền khung chat, chỉ phía mình |
 
 ### Đăng nhập KHÔNG có mật khẩu
 
@@ -265,7 +270,7 @@ src/
 │   │   ├── dto/        3 tệp thật → đủ để thành thư mục
 │   │   └── service/    auth · code · session
 │   ├── app/          app React Native   → /v1/...
-│   │   └── media/ user/ setting/ achievement/
+│   │   └── media/ user/ setting/ chat/ achievement/
 │   ├── admin/        web quản trị       → /v1/admin/...  (đều @Roles)
 │   │   ├── root-admin.service.ts    không có cửa nào, chạy lúc bật server
 │   │   └── stats/ user/
@@ -318,7 +323,7 @@ qua `index.js`.
 |---|---|---|
 | 0 | `media` | bytes và giấy phép. Không biết ai đang dùng |
 | 1 | `user` · `setting` | hồ sơ + tên riêng |
-| 2 | `circle` · `moment` · `thread` · `memory` | góc bạn bè và ký ức |
+| 2 | `circle` · `moment` · `chat` · `memory` | góc bạn bè, chat và ký ức |
 | 3 | `achievement` · `notification` | PHÁI SINH: đọc kết quả của tầng 2 |
 
 **Cùng tầng thì CẤM gọi nhau**, và đó là chỗ đắt giá của luật này: hai tính năng
@@ -506,6 +511,14 @@ câu tiếng Việt. Khai ở controller bằng ba decorator, không tả tay:
 
 ## 4. Ảnh — bản gốc giữ nguyên, mãi mãi
 
+> **Soát lại 09/10/2026 — bản gốc 100%:** cả đường ảnh không có chỗ nào thu nhỏ,
+> nén lại hay đổi định dạng bản gốc. App PUT thẳng bytes lên kho (chữ ký khoá
+> `content-length`), `complete` chỉ `HeadObject`, `sharp` chỉ có ở
+> `MediaProcessor` và ghi bản nhẹ vào khoá KHÁC (`feed/…`, `thumb/…` — dòng
+> `media_variants`), `storage:migrate` chép nguyên bytes. **Lấy bản gốc:**
+> `GET /v1/media/<id>` không kèm `variant` (cũng là `url` trong `IMedia`,
+> `mediaId` trong tin chat). Đã đo bằng sha256 qua tin chat ở mục 12.
+>
 > **Video ngắn (06/10/2026):** `video/mp4`, `video/quicktime` đi CÙNG đường này
 > (`MEDIA_VIDEO_TYPES`), chỉ cho `kind: 'moment'` — ảnh đại diện là video thì
 > `media.type_unsupported`. Video KHÔNG dựng bản nhẹ (`sharp` chỉ đọc ảnh);
@@ -547,12 +560,16 @@ nó nằm ở chỗ tấm ảnh được gắn vào:
 |---|---|
 | `avatar` | người trong góc của chủ ảnh *(chặng sau)* |
 | `moment` | chỉ những người khoảnh khắc đó gửi tới *(chặng sau)* |
+| `chat` | hai người của cuộc chat có tin trỏ tới tấm ảnh |
 
 Cùng một tấm gắn vào hai khoảnh khắc là hai tập người xem khác nhau. Chép danh
 sách quyền vào bảng ảnh là chép lại một sự thật đã nằm chỗ khác, và hai bản chép
 thì sẽ có ngày lệch nhau.
 
-**Chặng này chưa có góc bạn bè nên luật tạm là: chỉ chủ ảnh xem được.** Luật đặt
+**Chặng này chưa có góc bạn bè nên luật tạm là:** chủ ảnh; ảnh đại diện thì thêm
+người đang có cuộc chat với chủ; ảnh đã gửi trong chat thì thêm người cùng cuộc.
+Câu hỏi "có chung cuộc chat không" nằm ở `repository/chat/` — `media` (tầng 0)
+không nhập `chat` (tầng 2). Luật đặt
 ở MỘT chỗ (`MediaService.readUrl`), không rải ở từng cửa gọi tới ảnh — rải ra thì
 sẽ có một cửa quên kiểm, và cửa đó là chỗ ảnh riêng tư rò ra ngoài.
 
@@ -775,7 +792,7 @@ thắng**, người kia nhận `username.taken`.
 
 ## 6. Bảng
 
-Bảy bảng. Ba nhóm.
+Mười bảng. Bốn nhóm (chat — `chats` · `chat_members` · `chat_messages` — ở mục 12).
 
 **Người và phiên** — `users` · `user_identities` · `sessions`
 
@@ -816,7 +833,7 @@ npm run migration:revert
 npm run migration:show
 ```
 
-## 7. Redis làm sáu việc
+## 7. Redis làm bảy việc
 
 1. Mã đăng nhập 6 số, tự chết sau 5 phút — cất **dấu vân HMAC-SHA256**, không
    phải argon2. Mã sống 300 giây và sai 5 lần là chết, nên cái argon2 chống
@@ -834,6 +851,10 @@ npm run migration:show
    nó còn nằm trong WAL và trong mọi bản sao lưu; "đã xoá" ở đó không có nghĩa
    là đã mất.
 
+7. **Ai đang online** — `rt:presence:<user>` là ZSET id socket → nhịp tim cuối,
+   đếm qua MỌI bản server. Bản server chết thì socket của nó không kịp tự xoá;
+   điểm cũ quá 3 phút là không tính nữa (mục 12).
+
 Việc gì cần **nhớ lâu** thì đi Postgres. Redis là chỗ của thứ được phép quên.
 
 ## 8. Socket là đường tắt, không phải lời hứa giao hàng
@@ -844,6 +865,9 @@ thông báo đẩy**. Socket chỉ làm người đang mở app thấy nhanh hơ
 
 Hệ quả: nối lại thì **hỏi lại bằng REST**, đừng phát lại qua ống. Ống không nhớ
 nó đã bỏ lỡ những gì.
+
+Chat đi đúng luật này: tin ghi vào bảng TRƯỚC rồi mới bắn, nối lại thì app hỏi
+bù `GET /v1/chats/:id/messages?after=<seq>` — mục 12.
 
 ## 9. Bảy chỗ đã vấp — đừng vấp lại
 
@@ -1073,13 +1097,13 @@ thật vào **từng cửa một** không cầm thẻ, và đòi đúng `401 aut
 bịa đều phải bị cắt.
 
 ```
-DAT - 15/15   (13 cửa HTTP + 2 lối vào socket)
+DAT - 22/22   (20 cửa HTTP + 2 lối vào socket)
 ```
 
 ## 11. Ranh giới với frontend
 
 **Màn hình không biết server tồn tại.** Mọi lệnh gọi mạng của app nằm gọn trong
-`frontend/src/features/<tên>/lib/*Api.ts`. Hiện có đúng một file như vậy:
+`frontend/src/features/<tên>/api/*Api.ts`. Hiện có đúng một file như vậy:
 `authApi.ts`, và nó vẫn là **hàng giả** (mã đúng: `123456`).
 
 Nối backend = **thay ruột file đó**, không sửa một màn hình nào. Nếu thấy mình
@@ -1087,3 +1111,110 @@ Nối backend = **thay ruột file đó**, không sửa một màn hình nào. N
 dừng lại, ranh giới đang bị cắt qua.
 
 Đường dẫn, mã lỗi, giới hạn thì lấy từ `@nook/shared`, đừng gõ lại chuỗi.
+
+## 12. Chat 1-1 — nhanh như Telegram, không trùng, không lệch thứ tự
+
+`apis/app/chat/` (tầng 2). Hợp đồng ở `@nook/shared`: `API.chat.*`,
+`CHAT_SOCKET_IN/OUT`, `IChat`, `IChatMessage`, `TChatSendAck`.
+
+> `thread` trong bảng tầng cũ đổi thành `chat`: chat theo CẶP, mỗi cặp một
+> cuộc. Trả lời một khoảnh khắc sẽ là một tin chat trỏ tới khoảnh khắc đó (thêm
+> cột), không phải bảng riêng — một thư mục là một bảng.
+
+**Socket là đường nhanh, REST là dự phòng — cùng `ChatService.send()`.**
+
+| App → server (ack) | Server → app |
+|---|---|
+| `chat.send` `{chatId, clientId, kind, body?, mediaId?, replyToId?}` → `{ok:true,data:IChatMessage}` \| `{ok:false,code}` | `chat.message` — tới MỌI máy của cả hai người (máy gửi khác cũng nhận) |
+| `chat.read` `{chatId, seq}` → `{ok}` | `chat.read` `{chatId,userId,seq}` — tới cả hai (người kia vẽ ✓✓, máy khác của mình tắt chấm) |
+| `chat.typing` `{chatId}` — không ack, không ghi DB, chặn dày hơn 1 lần/giây/cuộc | `chat.typing` — chỉ người kia |
+| | `chat.presence` `{userId,online}` — khi máy ĐẦU vào / máy CUỐI rời; lúc nối, socket nhận riêng danh sách người cùng chat đang online |
+
+Bảng: `chats` (cặp lưu theo thứ tự chuẩn `user_a_id < user_b_id`, `UNIQUE`,
+bộ đếm `last_seq`) · `chat_members` (đọc tới đâu, nền gì — từng người) ·
+`chat_messages` (chỉ ghi thêm; `UNIQUE(chat_id, seq)` vừa là thứ tự vừa là
+đường lật trang; `UNIQUE(chat_id, sender_id, client_id)` chống gửi trùng).
+
+**Gửi một tin, trong MỘT giao dịch:**
+
+1. đã có `(chat, người gửi, clientId)` → trả lại tin đó, không bắn lại
+2. soi hình dạng (`text` có chữ · `sticker` đúng dạng mã · `image` là ảnh CỦA
+   người gửi, đã `ready`, không phải video) và `replyToId` cùng cuộc
+3. `UPDATE chats SET last_seq = last_seq + 1 … RETURNING` — cấp `seq` và KHOÁ
+   dòng cuộc tới hết giao dịch, nên hai tin cùng lúc không bao giờ trùng số
+4. `INSERT … ON CONFLICT (chat_id, sender_id, client_id) DO NOTHING` — đụng là
+   một lần gửi lại song song đã thắng: trả số vừa lấy (còn giữ khoá nên không
+   ai chen) và trả tin của bên thắng → `seq` không thủng lỗ
+5. COMMIT, **rồi** mới bắn socket — bắn trong giao dịch là app nhận tin mà hỏi
+   lại REST không thấy
+
+Lịch sử `GET /v1/chats/:id/messages` LUÔN mới nhất trước. `before=<seq>` lật về
+trước, `after=<seq>` hỏi bù sau khi nối lại (lấy phần gần `after` nhất trước);
+`metadata.nextCursor` là `seq` để truyền lại vào ĐÚNG tham số vừa dùng.
+`limit` mặc định `CHAT_LIMITS.chatPageSize`, trần 100.
+
+**Ống socket:** `ChatGateway` đứng cùng không gian `/rt` với `RealtimeGateway`
+(`GATEWAY_OPTIONS`). Ống lo bắt tay + đếm online, phát vào/rời qua `onPresence`;
+chat nghe — ống không nhập chat. Chat nhập ống để BẮN (`toUsers`). Hai bẫy đã
+gặp khi nối:
+
+- **Nest gắn cổng và bộ chặn TOÀN CỤC cho cả gateway.** `JwtAccessGuard` từng đọc
+  `req.headers` trên socket → ném, nên cả `rt.ping` cũng hỏng. Nay nhánh `ws` chỉ
+  đòi `client.data.userId` (bắt tay xong). `ResponseInterceptor` bỏ qua `ws`, không
+  thì ack bị bọc vỏ HTTP. Bộ lọc lỗi toàn cục thì KHÔNG gắn cho gateway — nên mọi
+  lỗi trả qua ack, không ném.
+- **`ValidationPipe` toàn cục không chạy cho socket** — `ChatGateway.parse` gọi
+  `class-validator` tay với cùng DTO, cùng `forbidNonWhitelisted`.
+
+**Online qua nhiều bản server:** `rt:presence:<user>` là ZSET (id socket → nhịp
+tim cuối, làm mới theo nhịp tim engine.io, thưa 60 giây). Vào: `ZADD` + `ZCARD`
+= 1 là "vừa online". Rời: `ZREM` + `ZCARD` = 0 là "vừa offline". Bản server chết
+thì điểm cũ quá 3 phút tự rơi khỏi phép đếm.
+
+**Chưa làm:** chỉ chat với BẠN (chờ `circle` — có `TODO(circle)` trong
+`ChatService.open`); thông báo đẩy khi người nhận offline; `revokeSession()` của
+ống mới đá socket trên CHÍNH bản server đó.
+
+Đã đo trên cụm Docker, 1 và 3 bản api (53/53): hai phía mở ra cùng một cuộc,
+ack có `seq`, máy gửi khác nhận tin, gửi lại cùng `clientId` (socket rồi REST)
+ra cùng một tin và không bắn lại, 20 tin song song ra `seq` liền 4..23, 5 lần
+gửi trùng song song ra MỘT tin và không thủng `seq`, người ngoài 403, đọc không
+lùi / không vượt, đang gõ chỉ tới người kia, online/offline theo máy đầu/cuối,
+ảnh chat tải về **khớp sha256 bản gốc**, người thứ ba không xem được ảnh.
+
+## 13. Chạy cả cụm bằng Docker (máy deploy / staging)
+
+`docker/compose.yml` — Postgres 16 · Redis 7 (appendonly) · MinIO + tạo thùng ·
+`migrate` (chạy một lần) · `api` · `proxy` (nginx). Máy dev vẫn dùng
+`compose.dev.yml` + server chạy thẳng.
+
+```bash
+cp backend/docker/.env.example backend/docker/.env   # điền bí mật — để trống là không bật
+npm run stack:up          # build + up -d
+npm run stack:logs        # mã đăng nhập ở đây khi CODE_SENDER=console
+docker compose -f backend/docker/compose.yml up -d --scale api=3
+npm run stack:down        # giữ dữ liệu; `down -v` là xoá sạch
+```
+
+- **Thứ tự bật:** db/redis/minio khoẻ → `minio-init` → `migrate` thoát 0 → `api`
+  khoẻ (`/health` đọc `data.ok`, vì nó trả 200 cả khi hỏng) → `proxy`.
+- **Migration chạy từ CHÍNH image api:** migration đã dịch nằm trong
+  `backend/dist/database/migration/`, `typeorm` là phụ thuộc chạy. Lệnh:
+  `node node_modules/typeorm/cli.js -d backend/dist/database/data-source/data-source.js migration:run`.
+  Một dịch vụ riêng chạy một lần — ba bản api cùng tự chạy là đua nhau sửa bảng.
+- **Nhân bản không cần dính phiên:** gateway chỉ nhận `websocket` (không
+  long-polling — polling là nhiều request rời, phải dính phiên), cầu Redis bắn
+  chéo giữa các bản, online đếm ở Redis. nginx hỏi lại DNS của Docker mỗi 10
+  giây nên `--scale` không phải khởi động lại proxy. Client phải mở socket với
+  `transports: ['websocket']` (app đã làm vậy).
+- **`TRUST_PROXY`** = IP cố định của `proxy` (`172.30.0.10`), không phải `true`.
+- **`STORAGE_ENDPOINT` phải là địa chỉ ĐIỆN THOẠI tới được** (IP LAN / tên miền
+  của máy, cổng `MINIO_PORT`) — chữ ký gắn tên máy, `http://minio:9000` thì chỉ
+  container thấy. Người dùng thật: R2, bỏ `minio` + `minio-init`.
+- **`minio/minio` · `minio/mc` đã rời Docker Hub** (`pull access denied`). Cả hai
+  tệp compose dùng bản dựng cộng đồng `pgsty/minio`, ghim phiên bản, có sẵn `mc`
+  (`MINIO_IMAGE` để đổi).
+- **Bối cảnh build là gốc kho** → tệp bỏ qua là `backend/Dockerfile.dockerignore`.
+- **Cầu Redis của socket phải ĐỢI nối xong.** Kết nối gốc tắt hàng đợi offline,
+  nên `psubscribe` gọi lúc chưa nối là ném và server chết lúc bật — chỉ lộ ra
+  khi Redis ở máy khác (container). Nay `connectToRedis` đợi `connect()`.

@@ -178,7 +178,8 @@ async function resync(): Promise<void> {
       'GET',
       `${apiPath(API.chat.messages, { id: c.id })}?after=${last}`,
     );
-    if (res.ok) for (const m of res.data) useChats.getState().receive(c.id, toMessage(m));
+    // Server trả mới nhất trước — đảo lại để chèn đúng thứ tự.
+    if (res.ok) for (const m of [...res.data].reverse()) useChats.getState().receive(c.id, toMessage(m));
   }
 }
 

@@ -21,9 +21,20 @@ export class RedisIoAdapter extends IoAdapter {
     super(app);
   }
 
-  /** Bên đăng và bên nhận phải là hai kết nối RIÊNG — Redis khoá kết nối đang nghe. */
-  connectToRedis(redis: RedisService): void {
-    this.adapter = createAdapter(redis.duplicate(), redis.duplicate());
+  /**
+   * Bên đăng và bên nhận phải là hai kết nối RIÊNG — Redis khoá kết nối đang nghe.
+   *
+   * Phải ĐỢI nối xong: kết nối gốc tắt hàng đợi offline, nên `psubscribe` gọi
+   * lúc chưa nối là ném "Stream isn't writeable" và server chết lúc bật — đã
+   * xảy ra thật khi Redis nằm ở máy khác (Docker). Hai kết nối này thì BẬT hàng
+   * đợi: Redis chập một nhịp thì tin socket chờ, không làm sập tiến trình.
+   */
+  async connectToRedis(redis: RedisService): Promise<void> {
+    const options = { lazyConnect: true, enableOfflineQueue: true };
+    const pub = redis.duplicate(options);
+    const sub = redis.duplicate(options);
+    await Promise.all([pub.connect(), sub.connect()]);
+    this.adapter = createAdapter(pub, sub);
   }
 
   override createIOServer(port: number, options?: ServerOptions): Server {

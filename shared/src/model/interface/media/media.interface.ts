@@ -38,12 +38,14 @@ export interface ICreateUploadResult {
  *
  *   avatar  người trong góc của chủ ảnh xem được
  *   moment  chỉ những người mà khoảnh khắc đó được gửi tới
+ *   chat    hai người của cuộc chat có tin trỏ tới tấm ảnh
  *
  * Cùng một tấm ảnh gắn vào hai khoảnh khắc khác nhau thì có hai tập người xem
  * khác nhau. Nhét một danh sách quyền vào bảng ảnh là chép lại một sự thật đã
  * nằm ở chỗ khác, và hai bản chép thì sẽ có ngày lệch nhau.
  *
- * Chặng này chưa có góc bạn bè nên luật tạm là: **chỉ chủ ảnh xem được.**
+ * Chặng này chưa có góc bạn bè nên luật tạm là: chủ ảnh, người cùng cuộc chat
+ * với chủ (ảnh đại diện), và người cùng cuộc chat có tin trỏ tới tấm ảnh.
  */
 export interface IMedia {
   id: string;
@@ -55,7 +57,7 @@ export interface IMedia {
   width: number | null;
   height: number | null;
   /**
-   * Đường xem. Là đường của SERVER (`/v1/media/<id>`), không phải đường đã ký
+   * Đường xem BẢN GỐC — đúng từng byte đã tải lên. Là đường của SERVER (`/v1/media/<id>`), không phải đường đã ký
    * của kho — đường đã ký hết hạn sau vài phút, để nó vào một câu trả lời được
    * lưu lại là để một thứ hỏng sẵn.
    */

@@ -9,8 +9,8 @@ import { RedisService } from '../infra/redis/index.js';
  * những ai tình cờ nối đúng bản đang phát. Dựng sẵn từ bây giờ vì thêm sau là
  * phải sửa cả cách khởi động — và lúc đó là lúc đang có người dùng thật.
  */
-export function setupRealtime(app: INestApplication): void {
+export async function setupRealtime(app: INestApplication): Promise<void> {
   const adapter = new RedisIoAdapter(app);
-  adapter.connectToRedis(app.get(RedisService));
+  await adapter.connectToRedis(app.get(RedisService));
   app.useWebSocketAdapter(adapter);
 }

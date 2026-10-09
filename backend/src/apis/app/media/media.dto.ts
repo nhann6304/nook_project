@@ -104,6 +104,10 @@ export const CREATE_UPLOAD_EXAMPLES = {
     summary: 'Khoảnh khắc, HEIC từ iPhone  (nhận thẳng, không phải chuyển)',
     value: { kind: 'moment', contentType: 'image/heic', byteSize: 4_812_233, width: 4032, height: 3024 },
   },
+  chatImage: {
+    summary: 'Ảnh gửi trong chat  (bản gốc, hai người của cuộc xem được)',
+    value: { kind: 'chat', contentType: 'image/jpeg', byteSize: 3_204_551, width: 4032, height: 3024 },
+  },
   tooLarge: {
     summary: 'Quá to  (bị chặn ngay từ lúc xin đường)',
     value: { kind: 'moment', contentType: 'image/jpeg', byteSize: 99_999_999 },

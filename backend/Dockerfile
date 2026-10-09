@@ -1,6 +1,10 @@
 # Bối cảnh build là GỐC KHO, không phải thư mục backend — vì backend cần
 # `shared/` nằm cạnh nó:
 #   docker build -f backend/Dockerfile -t nook-backend .
+# Tệp bỏ qua là `backend/Dockerfile.dockerignore` (cạnh tệp này), không phải
+# `backend/.dockerignore`.
+#
+# Cả cụm (Postgres, Redis, MinIO, migration, API, proxy): backend/docker/compose.yml
 
 # ── Chặng dựng ───────────────────────────────────────────────────────────────
 FROM node:22-bookworm-slim AS build
@@ -36,6 +40,11 @@ COPY --from=build /app/shared/dist       ./shared/dist
 COPY --from=build /app/shared/package.json ./shared/package.json
 COPY --from=build /app/backend/dist      ./backend/dist
 COPY --from=build /app/backend/package.json ./backend/package.json
+
+# Migration chạy bằng CHÍNH image này — migration đã dịch nằm trong
+# `backend/dist/database/migration/`, `typeorm` là phụ thuộc chạy nên còn sau
+# `npm prune`. Dịch vụ `migrate` của compose gọi đúng lệnh này:
+#   node node_modules/typeorm/cli.js -d backend/dist/database/data-source/data-source.js migration:run
 
 USER node
 EXPOSE 4000
