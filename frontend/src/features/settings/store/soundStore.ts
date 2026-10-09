@@ -1,6 +1,6 @@
 /** Công tắc âm thanh cho màn Cài đặt. Nguồn thật nằm ở `src/lib/sound.ts`. */
 import { create } from 'zustand';
-import { setSoundEnabled } from '@/lib/sound';
+import { setSoundEnabled } from '@/lib/device/sound';
 
 type SoundState = {
   on: boolean;

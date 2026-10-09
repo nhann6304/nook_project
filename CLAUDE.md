@@ -33,7 +33,7 @@ trước — nó là bản đồ, và nó chỉ bạn đọc ĐÚNG mục nào t
 - **Tài liệu nằm đúng nơi nó thuộc về.** Cả hai bên cùng cần → `.docs/`.
   Chỉ một bên cần → `frontend/docs/` hoặc `backend/docs/`.
 - **Ranh giới FE ↔ BE:** màn hình không biết server tồn tại. Mọi lệnh gọi mạng
-  nằm trong `frontend/src/features/<tên>/lib/*Api.ts`, đi qua `frontend/src/lib/api.ts`.
+  nằm trong `frontend/src/features/<tên>/api/*Api.ts`, đi qua `frontend/src/lib/http/api.ts`.
   Không có `EXPO_PUBLIC_API_URL` thì chạy hàng giả (mã đúng: `123456`).
 - **Đường dẫn API, mã lỗi, giới hạn: lấy từ `@nook/shared`, đừng gõ lại.** Gõ
   lại là mở đường cho hai bên lệch nhau mà không ai báo. Gói đó phải luôn

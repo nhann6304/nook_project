@@ -4,7 +4,7 @@
  */
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { radius, space, useStyles, type Palette } from '@design';
-import { Tap } from '../primitives/Tap';
+import { Tap } from '../button/Tap';
 
 export function Card({
   children,

@@ -7,9 +7,9 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { Icon } from '../primitives/Icon';
+import { Icon } from '../icon/Icon';
 import { duration, radius, space, useColors, useStyles, type Palette } from '@design';
-import { Txt } from '../primitives/Txt';
+import { Txt } from '../typography/Txt';
 
 export const OfflineBar = memo(function OfflineBar({
   visible,

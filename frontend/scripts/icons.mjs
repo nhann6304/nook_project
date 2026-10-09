@@ -1,4 +1,4 @@
-// Sinh `src/components/primitives/iconPaths.ts` từ bộ MingCute (Apache-2.0,
+// Sinh `src/components/icon/iconPaths.ts` từ bộ MingCute (Apache-2.0,
 // mingcute.com) — gói `@iconify-json/mingcute` chỉ là devDependency.
 // 08/10/2026: theo Locket — icon KHỐI ĐẶC bo tròn, một màu. Mỗi icon có hai
 // kiểu: `fill` (mặc định) và `line` (viền).
@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const out = join(here, '../src/components/primitives/iconPaths.ts');
+const out = join(here, '../src/components/icon/iconPaths.ts');
 const set = JSON.parse(
   readFileSync(join(here, '../node_modules/@iconify-json/mingcute/icons.json'), 'utf8'),
 );
@@ -30,6 +30,7 @@ const NAMES = {
   up: 'up',
   down: 'down',
   check: 'check',
+  checks: 'checks',
   close: 'close',
   add: 'add',
   send: 'arrow-up',

@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import { Share } from 'react-native';
 import { useRouter } from 'expo-router';
-import { CircleScreen } from '@/features/circle/screens/CircleScreen';
+import { CircleScreen } from '@/features/circle/screens/circle/CircleScreen';
 import { relationOf, useCircle } from '@/features/circle/store/circleStore';
-import { useFriendSearch } from '@/features/circle/lib/useFriendSearch';
-import { useInvites } from '@/features/circle/lib/useInvites';
+import { useFriendSearch } from '@/features/circle/hooks/useFriendSearch';
+import { useInvites } from '@/features/circle/hooks/useInvites';
 import { useT } from '@i18n';
-import { INVITE_LINK } from '@/features/circle/lib/inviteLink';
+import { INVITE_LINK } from '@/features/circle/api/inviteLink';
 
 
 export default function Circle() {

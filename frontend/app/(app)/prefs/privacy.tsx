@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { PrivacyScreen } from '@/features/settings/screens/PrivacyScreen';
-import { saveSettings } from '@/features/settings/lib/settingsApi';
+import { PrivacyScreen } from '@/features/settings/screens/privacy/PrivacyScreen';
+import { saveSettings } from '@/features/settings/api/settingsApi';
 import { useProfile } from '@/features/profile/store/profileStore';
-import { setProfileLocked } from '@/features/profile/lib/profileApi';
+import { setProfileLocked } from '@/features/profile/api/profileApi';
 import { useAudience } from '@/features/camera/store/audienceStore';
 import { useCircle } from '@/features/circle/store/circleStore';
 

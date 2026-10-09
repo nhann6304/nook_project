@@ -6,7 +6,7 @@ dữ liệu giả, chưa nối server.
 
 Ranh giới với backend: màn hình nhận vào các hàm như `onSubmit`, `onVerify`, `onSend`
 rồi gọi. Màn hình không tự gọi mạng, không biết server ở đâu — mọi lệnh gọi nằm
-trong `src/features/<tên>/lib/*Api.ts`.
+trong `src/features/<tên>/api/*Api.ts`.
 
 **Cập nhật 01/09/2026:** dự án đã thành một app Expo chạy được. `npm run dev` là
 quét QR xem trên máy thật. Bảng dưới đã chấm lại theo code thật.
@@ -100,7 +100,7 @@ Chi tiết ở [`04-widget.md`](04-widget.md). Cần chuyển dự án sang deve
 | Bàn phím không che nút (iOS đẩy, Android co màn) | V0.1 | xong |
 | Chữ phóng to được, có giới hạn | V0.1 | xong |
 | Vùng chạm tối thiểu 48 | V0.1 | xong |
-| Rung phản hồi đúng năm chỗ | V0.1 | xong — gom ở `src/lib/haptics.ts` |
+| Rung phản hồi đúng năm chỗ | V0.1 | xong — gom ở `src/lib/device/haptics.ts` |
 | Toast báo lỗi mạng, thử lại | V0.1 | chưa |
 | Empty state cho mọi danh sách | V0.1 | một phần — Góc và Khoảnh khắc xong, các màn khác chưa có |
 | Bộ icon dùng chung | V0.1 | xong — Ionicons, không trộn bộ khác |

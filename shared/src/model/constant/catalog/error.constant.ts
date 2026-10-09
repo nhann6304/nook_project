@@ -4,6 +4,7 @@ import { USER_ERR } from '../user/user-error.constant.js';
 import { CIRCLE_ERR } from '../circle/circle-error.constant.js';
 import { MEDIA_ERR } from '../media/media.constant.js';
 import { USERNAME_ERR } from '../user/username.constant.js';
+import { CHAT_ERR } from '../chat/chat.constant.js';
 
 /**
  * Bảng gộp mọi mã lỗi.
@@ -26,6 +27,7 @@ export const ERR = {
   ...CIRCLE_ERR,
   ...MEDIA_ERR,
   ...USERNAME_ERR,
+  ...CHAT_ERR,
 } as const;
 
 /**
@@ -47,6 +49,7 @@ type ErrKeyClash =
   | Extract<keyof typeof USER_ERR, keyof typeof MEDIA_ERR>
   | Extract<keyof typeof CIRCLE_ERR, keyof typeof MEDIA_ERR>
   | Extract<keyof typeof USER_ERR, keyof typeof USERNAME_ERR>
-  | Extract<keyof typeof MEDIA_ERR, keyof typeof USERNAME_ERR>;
+  | Extract<keyof typeof MEDIA_ERR, keyof typeof USERNAME_ERR>
+  | Extract<keyof typeof COMMON_ERR | keyof typeof AUTH_ERR | keyof typeof USER_ERR | keyof typeof CIRCLE_ERR | keyof typeof MEDIA_ERR | keyof typeof USERNAME_ERR, keyof typeof CHAT_ERR>;
 
 export const ERR_KEYS_ARE_UNIQUE: [ErrKeyClash] extends [never] ? true : never = true;

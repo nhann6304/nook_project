@@ -70,8 +70,8 @@ thứ không ai hiểu.
 | `react-native-safe-area-context` | 5.7.0 | Hỏi máy chỗ tai thỏ và thanh điều hướng. Là cách duy nhất để một bản thiết kế vừa cả iPhone SE lẫn Galaxy Fold. | |
 | `react-native-svg` | 15.15.4 | Dấu hiệu "Ôm", khung đứt nét, vòng độ thân. **Bắt buộc**: Android vẽ `borderStyle:'dashed'` + `borderRadius` thành nét **liền**. | |
 | `expo-linear-gradient` | 57.0.2 | Dải cam→hồng của nút chính và nút chụp. | |
-| `expo-haptics` | 57.0.3 | Rung. Gói qua `src/lib/haptics.ts` — không gọi thẳng. | |
-| `expo-audio` | 57.0.5 | Ba tiếng nhỏ: chụp, gửi xong, thả cảm xúc. Gói qua `src/lib/sound.ts` — không gọi thẳng. `mixWithOthers` nên không ngắt nhạc người dùng; iPhone gạt im lặng thì im; tắt được trong Cài đặt. Tệp âm tự tổng hợp, cả ba ~17KB. | Một mã gốc nữa; có sẵn trong Expo Go. |
+| `expo-haptics` | 57.0.3 | Rung. Gói qua `src/lib/device/haptics.ts` — không gọi thẳng. | |
+| `expo-audio` | 57.0.5 | Ba tiếng nhỏ: chụp, gửi xong, thả cảm xúc. Gói qua `src/lib/device/sound.ts` — không gọi thẳng. `mixWithOthers` nên không ngắt nhạc người dùng; iPhone gạt im lặng thì im; tắt được trong Cài đặt. Tệp âm tự tổng hợp, cả ba ~17KB. | Một mã gốc nữa; có sẵn trong Expo Go. |
 | `@expo/vector-icons` | 15.1.1 | Icon. Dùng bộ **Ionicons**, không trộn nhiều bộ. | Kèm ~10 tệp font icon vào gói cài. |
 | `expo-font` | 57.0.4 | Nạp bộ chữ. | |
 | `@expo-google-fonts/plus-jakarta-sans` | 0.4.2 | Bộ chữ duy nhất của app (bảng thiết kế bản 7). Đủ dấu tiếng Việt, nét 400–800. | Năm tệp font trong gói cài. |
@@ -86,7 +86,7 @@ thứ không ai hiểu.
 | `expo-image-manipulator` | 57.0.20 | Cắt ảnh vừa chụp / vừa chọn về đúng khung vuông và "nướng" hướng xoay EXIF vào điểm ảnh (`camera/lib/squarePhoto.ts`). | Có sẵn trong Expo Go. |
 | `expo-location` | 57.0.20 | "Tìm quanh đây": xin quyền vị trí lúc dùng, lấy toạ độ MỘT lần rồi làm tròn ~11 m trước khi rời máy. Không chạy nền. | Có sẵn trong Expo Go. Chỉ xin quyền "khi đang dùng", không bao giờ "luôn luôn".
 | `expo-network` | 57.0.2 | Viên "Đang chờ mạng" (`src/hooks/useOnline.ts`). Chỉ là GỢI Ý — xem `.docs/04-offline-design.md` mục 7. | Có sẵn trong Expo Go. |
-| `expo-secure-store` | 57.0.4 | Cất thẻ dài hạn vào Keychain (iOS) / Keystore (Android) — `src/lib/api.ts`. | |
+| `expo-secure-store` | 57.0.4 | Cất thẻ dài hạn vào Keychain (iOS) / Keystore (Android) — `src/lib/http/api.ts`. | |
 | `react-native-maps` | 1.27.2 | Bản đồ đường phố NỀN của "Tìm quanh đây" — chỉ quanh chỗ của chính mình, không kéo/zoom, Android `liteMode` (ảnh tĩnh). Kiểu bản đồ dựng từ bảng màu (`design/mapStyle.ts`). | Có sẵn trong Expo Go. **Bản build Android thật cần khoá Google Maps** (`android.config.googleMaps.apiKey` trong app.json) — chưa có thì bản đồ trắng. iOS dùng Apple Maps, không cần khoá. |
 | `fflate` | 0.8.3 | Giải nén PNG 16×16 để rút màu chủ đạo của ảnh vừa gửi ("Theo ảnh", `camera/lib/photoColor.ts`). JS thuần, chạy trong Expo Go. | ~8 KB. |
 | `@iconify-json/mingcute` (dev) | 1.2.8 | Nguồn icon (MingCute, Apache-2.0). `node scripts/icons.mjs` chép nét vào `iconPaths.ts`. | Không vào bản app. |
@@ -94,12 +94,14 @@ thứ không ai hiểu.
 | `expo-blur` | 57.0.3 | `<Glass>` — kính mờ thật, CHỈ iOS (Android nền đặc trong mờ). Có sẵn trong Expo Go. | Blur tốn GPU — chỉ dùng cho mặt nhỏ nổi trên trời / ảnh. |
 | `qrcode` | 1.5.4 | Dựng ma trận cho `<QrCode>` (tự vẽ bằng react-native-svg: chấm tròn + logo giữa). JS thuần. | |
 | `@expo-google-fonts/nunito` | 0.4.2 | Chữ chính (thay Poppins 08/10/2026). | Nạp 4 nét: 600 · 700 · 800 · 900. |
+| `socket.io-client` | 4.8.3 | Ống realtime của chat (gửi có ack, nhận tin / đã đọc / đang gõ / online). Chỉ websocket, không long-polling. JS thuần. | Một kết nối mở suốt khi đã đăng nhập. |
+| `@iconify-json/fluent-emoji-flat` (dev) | 1.2.6 | Nguồn sticker chat — `node scripts/stickers.mjs` chép SVG vào `stickers.generated.ts`. | Không vào bản app (chỉ 46 hình đã chọn, ~63 KB). |
 | `react-native-tab-view` | 4.3.3 | Cầu nối `TopTabs` của expo-router với pager-view. JS thuần. | |
 | `expo-video` | 57.0.5 | Phát video ngắn 3 giây (`<Clip>`). Chỉ trang đang xem dựng trình phát. | Có sẵn trong Expo Go. |
 | `expo-video-thumbnails` | 57.0.2 | Ảnh bìa của video — lưới, nhật ký, hiệu ứng bay vẫn dùng ảnh. | Có sẵn trong Expo Go. |
 | `@nook/shared` | `file:../shared` | Hợp đồng với server: `API`, mã lỗi, giới hạn, kiểu. App đọc bản dịch `shared/dist` — `npm run shared` dựng, tự chạy trước `dev`/`typecheck`/sau `install`. `metro.config.js` thêm `../shared` vào `watchFolders`. | Không phụ thuộc gì, nên không làm nặng bản app. |
 | `expo-localization` | 57.0.2 | Đọc ngôn ngữ máy để chọn tiếng Việt hay tiếng Anh lúc mở app lần đầu. | |
-| `@react-native-async-storage/async-storage` | 2.2.0 | Nhớ ngôn ngữ người dùng đã chọn. Một cửa duy nhất ở `src/lib/storage.ts`. **Không để bí mật vào đây** — đó là việc của `expo-secure-store`. | Đọc **bất đồng bộ**, nên lúc khởi động có một nhịp chờ. MMKV đọc đồng bộ và nhanh hơn nhiều nhưng cần development build. |
+| `@react-native-async-storage/async-storage` | 2.2.0 | Nhớ ngôn ngữ người dùng đã chọn. Một cửa duy nhất ở `src/lib/device/storage.ts`. **Không để bí mật vào đây** — đó là việc của `expo-secure-store`. | Đọc **bất đồng bộ**, nên lúc khởi động có một nhịp chờ. MMKV đọc đồng bộ và nhanh hơn nhiều nhưng cần development build. |
 | `zustand` | 5.0.15 | Kho trạng thái. Đọc bằng selector nên đổi một trường không làm cả app vẽ lại — Context thì có. | Thêm một khái niệm cho người mới. |
 
 ## 5 · Công cụ

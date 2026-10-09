@@ -86,7 +86,7 @@ export const layout = {
   /**
    * Rộng / cao = 1 — VUÔNG như Locket (08/10/2026: khung 0.9 "cảm giác to quá").
    * Trước đó 0.9 (07/10) và 1:1 (02/10). Ảnh chụp
-   * được cắt đúng khung này (`squarePhoto`), nên thấy gì gửi nấy. Bề ngang là
+   * KHÔNG bị cắt (09/10/2026 — ảnh gốc 100%): khung chỉ hiển thị phần giữa (`cover`), tệp gửi đi là nguyên bản. Bề ngang là
    * máy trừ 2×`frameInset`; máy ngắn thì chiều cao chặn trước. Camera và
    * khoảnh khắc dùng CHUNG khung, lướt từ camera sang ảnh bạn bè khung đứng yên.
    */

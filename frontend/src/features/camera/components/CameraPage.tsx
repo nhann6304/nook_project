@@ -42,19 +42,18 @@ import {
   type Palette,
 } from '@design';
 import { useT } from '@i18n';
-import * as feel from '@/lib/haptics';
-import * as sound from '@/lib/sound';
-import { CameraPermission } from './CameraPermission';
-import { FlashToggle, type FlashMode } from './FlashToggle';
-import { ZoomChip, type ZoomLevel } from './ZoomChip';
-import { ScreenFlash, WARMUP_MS, type ScreenFlashHandle } from './ScreenFlash';
-import { SendButton } from './SendButton';
-import { Shutter } from './Shutter';
-import { AudiencePicker, type AudiencePerson } from './AudiencePicker';
-import { AudienceSheet } from './AudienceSheet';
-import { photoSeed } from '../lib/photoColor';
-import { squarePhoto } from '../lib/squarePhoto';
-import { TagSuggestions } from './TagSuggestions';
+import * as feel from '@/lib/device/haptics';
+import * as sound from '@/lib/device/sound';
+import { CameraPermission } from './overlay/CameraPermission';
+import { FlashToggle, type FlashMode } from './controls/FlashToggle';
+import { ZoomChip, type ZoomLevel } from './controls/ZoomChip';
+import { ScreenFlash, WARMUP_MS, type ScreenFlashHandle } from './overlay/ScreenFlash';
+import { SendButton } from './controls/SendButton';
+import { Shutter } from './controls/Shutter';
+import { AudiencePicker, type AudiencePerson } from './audience/AudiencePicker';
+import { AudienceSheet } from './audience/AudienceSheet';
+import { photoSeed } from '../utils/photoColor';
+import { TagSuggestions } from './overlay/TagSuggestions';
 import type { Tag } from '@/features/feed/types';
 import {
   insertMention,
@@ -62,7 +61,7 @@ import {
   mentionAtEnd,
   suggestTags,
   tagsIn,
-} from '@/features/feed/lib/tags';
+} from '@/features/feed/utils/tags';
 
 /** `uri` luôn là ẢNH (với video thì là ảnh bìa) — lưới, nhật ký, hiệu ứng bay dùng nó. */
 export type Shot = {
@@ -145,9 +144,6 @@ export function CameraPage({
   const [shot, setShot] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
-  // Cắt vuông chạy NGẦM sau khi ảnh đã hiện — người dùng không bao giờ chờ nó.
-  // Bấm gửi trước khi cắt xong thì `send` chờ nốt (thường đã xong từ lâu).
-  const squaring = useRef<Promise<string> | null>(null);
   const cam = useRef<CameraView>(null);
   const screenFlash = useRef<ScreenFlashHandle>(null);
 
@@ -164,14 +160,6 @@ export function CameraPage({
   const spin = useSharedValue(0);
   const spinStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${spin.value}deg` }] }));
 
-  // Cắt hỏng (hiếm) thì vẫn giữ ảnh gốc — mất ảnh vừa chụp tệ hơn lệch khung.
-  const toSquare = useCallback(async (uri: string) => {
-    try {
-      return await squarePhoto(uri);
-    } catch {
-      return uri;
-    }
-  }, []);
 
   const review = useCallback(
     (uri: string | null) => {
@@ -219,7 +207,6 @@ export function CameraPage({
         sound.capture();
         // Hiện ảnh gốc NGAY (khung cắt bằng `cover` giống hệt), không vòng chờ.
         review(photo.uri);
-        squaring.current = toSquare(photo.uri);
       }
     } catch {
       // Máy từ chối chụp (phiên camera vừa bị ngắt) — rung báo, giữ nguyên khung
@@ -229,24 +216,25 @@ export function CameraPage({
       screenFlash.current?.off();
       setBusy(false);
     }
-  }, [blink, busy, facing, flash, review, toSquare]);
+  }, [blink, busy, facing, flash, review]);
 
   // Huỷ chọn ảnh là một lựa chọn, không phải sự cố — im lặng quay về.
   const pick = useCallback(async () => {
     if (busy) return;
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [9, 10],
+      // ẢNH GỐC 100% (09/10/2026): không cắt, không nén lại — iOS giữ nguyên
+      // tệp HEIC/JPEG trong thư viện. Khung vuông chỉ là cách HIỂN THỊ (`cover`).
+      allowsEditing: false,
       quality: 1,
+      preferredAssetRepresentationMode:
+        ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Current,
     });
     const first = res.assets?.[0];
     if (res.canceled || !first) return;
     feel.select();
-    // Android có thể bỏ qua `aspect`, iOS thì luôn vuông — cắt lại cho chắc (ngầm).
     review(first.uri);
-    squaring.current = toSquare(first.uri);
-  }, [busy, review, toSquare]);
+  }, [busy, review]);
 
   /*
    * Giữ nút = quay. Camera chỉ đổi sang chế độ quay LÚC GIỮ (đổi sẵn thì chụp
@@ -284,7 +272,6 @@ export function CameraPage({
         const poster = await getThumbnailAsync(res.uri, { time: 0 }).catch(() => null);
         setClip(res.uri);
         review(poster?.uri ?? res.uri);
-        if (poster) squaring.current = toSquare(poster.uri);
       } else {
         setMode('picture');
       }
@@ -295,7 +282,7 @@ export function CameraPage({
       setRecording(false);
       setBusy(false);
     }
-  }, [busy, mic, mode, requestMic, review, toSquare]);
+  }, [busy, mic, mode, requestMic, review]);
 
   const holdEnd = useCallback(() => {
     holding.current = false;
@@ -304,7 +291,6 @@ export function CameraPage({
 
   const discard = useCallback(() => {
     review(null);
-    squaring.current = null;
     setClip(null);
     setMode('picture');
     setCaption('');
@@ -313,7 +299,8 @@ export function CameraPage({
   const send = useCallback(async () => {
     if (!shot) return;
     const text = caption.trim();
-    const uri = squaring.current ? await squaring.current : shot;
+    // Gửi ĐÚNG tệp máy ảnh chụp ra — không cắt, không nén lại.
+    const uri = shot;
     onSend({
       uri,
       caption: text,

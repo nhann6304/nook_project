@@ -7,10 +7,10 @@
  */
 import { useCallback, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SignInScreen, type SignInIntent } from '@/features/auth/screens/SignInScreen';
-import { sendCode } from '@/features/auth/lib/authApi';
+import { SignInScreen, type SignInIntent } from '@/features/auth/screens/sign-in/SignInScreen';
+import { sendCode } from '@/features/auth/api/authApi';
 import { useAuth } from '@/features/auth/store/authStore';
-import type { SignInMethod } from '@/features/auth/lib/identity';
+import type { SignInMethod } from '@/features/auth/utils/identity';
 
 export default function SignIn() {
   const router = useRouter();

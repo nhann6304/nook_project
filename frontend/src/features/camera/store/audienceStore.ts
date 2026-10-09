@@ -4,7 +4,7 @@
  * Cài đặt; lúc gửi vẫn chỉnh riêng cho từng tấm.
  */
 import { create } from 'zustand';
-import { readText, writeText } from '@/lib/storage';
+import { readText, writeText } from '@/lib/device/storage';
 
 const KEY = 'audience.hidden';
 

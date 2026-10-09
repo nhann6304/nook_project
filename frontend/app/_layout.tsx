@@ -30,10 +30,10 @@ import {
 import { Caveat_700Bold } from '@expo-google-fonts/caveat';
 import { useColors, useStyles, useThemeReady, type Palette } from '@design';
 import { useI18nReady } from '@i18n';
-import { initSound } from '@/lib/sound';
+import { initSound } from '@/lib/device/sound';
 import { useSound } from '@/features/settings/store/soundStore';
 import { useAuth } from '@/features/auth/store/authStore';
-import { useRainWatch } from '@/features/sky/lib/useRainWatch';
+import { useRainWatch } from '@/features/sky/hooks/useRainWatch';
 import { useAudience } from '@/features/camera/store/audienceStore';
 
 void SplashScreen.preventAutoHideAsync();

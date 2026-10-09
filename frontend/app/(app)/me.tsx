@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { signOut } from '@/features/auth/lib/authApi';
+import { signOut } from '@/features/auth/api/authApi';
 import { useAuth } from '@/features/auth/store/authStore';
-import { SettingsScreen } from '@/features/settings/screens/SettingsScreen';
-import { useThemeNames } from '@/features/settings/lib/useThemeNames';
-import { saveSettings } from '@/features/settings/lib/settingsApi';
+import { SettingsScreen } from '@/features/settings/screens/settings/SettingsScreen';
+import { useThemeNames } from '@/features/settings/hooks/useThemeNames';
+import { saveSettings } from '@/features/settings/api/settingsApi';
 import { useTheme } from '@design';
 import { LOCALE_NAMES, useFollowingSystem, useLocale, useNumber, useT } from '@i18n';
-import { PRO_PLANS, TRIAL_DAYS } from '@/features/pro/lib/proApi';
+import { PRO_PLANS, TRIAL_DAYS } from '@/features/pro/api/proApi';
 import { useCircle } from '@/features/circle/store/circleStore';
 import { ME } from '@/mocks/moments';
 import { useProfile } from '@/features/profile/store/profileStore';

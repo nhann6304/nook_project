@@ -1,9 +1,9 @@
 import { Share } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useT } from '@i18n';
-import { QrScreen } from '@/features/profile/screens/QrScreen';
+import { QrScreen } from '@/features/profile/screens/qr/QrScreen';
 import { useProfile } from '@/features/profile/store/profileStore';
-import { profileLink } from '@/features/circle/lib/inviteLink';
+import { profileLink } from '@/features/circle/api/inviteLink';
 import { ME } from '@/mocks/moments';
 
 export default function Qr() {

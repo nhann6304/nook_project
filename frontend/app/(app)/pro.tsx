@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useNumber, useT } from '@i18n';
-import { ProScreen } from '@/features/pro/screens/ProScreen';
-import { PRO_PLANS, TRIAL_DAYS, startTrial } from '@/features/pro/lib/proApi';
+import { ProScreen } from '@/features/pro/screens/pro/ProScreen';
+import { PRO_PLANS, TRIAL_DAYS, startTrial } from '@/features/pro/api/proApi';
 
 export default function Pro() {
   const router = useRouter();

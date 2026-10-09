@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { listNotices, markAllRead } from '../lib/notifyApi';
+import { listNotices, markAllRead } from '../api/notifyApi';
 import type { Notice } from '../types';
 
 type NotifyState = {

@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { openSettings } from 'expo-linking';
-import { NearbyScreen } from '@/features/nearby/screens/NearbyScreen';
-import { useNearby } from '@/features/nearby/lib/useNearby';
+import { NearbyScreen } from '@/features/nearby/screens/nearby/NearbyScreen';
+import { useNearby } from '@/features/nearby/hooks/useNearby';
 import { relationOf, useCircle } from '@/features/circle/store/circleStore';
-import { useInvites } from '@/features/circle/lib/useInvites';
+import { useInvites } from '@/features/circle/hooks/useInvites';
 import { useProfile } from '@/features/profile/store/profileStore';
 import { ME } from '@/mocks/moments';
 

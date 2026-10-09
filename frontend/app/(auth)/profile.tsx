@@ -3,8 +3,8 @@
  */
 import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ProfileSetupScreen } from '@/features/profile/screens/ProfileSetupScreen';
-import { saveProfile, type ProfileInput } from '@/features/profile/lib/profileApi';
+import { ProfileSetupScreen } from '@/features/profile/screens/profile-setup/ProfileSetupScreen';
+import { saveProfile, type ProfileInput } from '@/features/profile/api/profileApi';
 import { useProfile } from '@/features/profile/store/profileStore';
 import { useAuth } from '@/features/auth/store/authStore';
 

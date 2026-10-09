@@ -12,7 +12,7 @@
  * `raining` do `features/sky` đặt, app không tự đoán thời tiết.
  */
 import { create } from 'zustand';
-import { readText, writeText } from '@/lib/storage';
+import { readText, writeText } from '@/lib/device/storage';
 import {
   DEFAULT_ACCENT,
   isAccentKey,

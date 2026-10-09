@@ -7,3 +7,4 @@ export * from './achievement/achievement.interface.js';
 export * from './moment/moment.interface.js';
 export * from './notification/notification.interface.js';
 export * from './setting/setting.interface.js';
+export * from './chat/chat.interface.js';

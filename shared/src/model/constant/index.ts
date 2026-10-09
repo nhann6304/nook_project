@@ -10,6 +10,7 @@ export * from './circle/circle-error.constant.js';
 export * from './media/media.constant.js';
 export * from './memory/memory.constant.js';
 export * from './achievement/achievement.constant.js';
+export * from './chat/chat.constant.js';
 // catalog dung cuoi: no GOP tu moi mien tren, nen phai chay sau chung.
 export * from './catalog/error.constant.js';
 export * from './catalog/message.constant.js';

@@ -4,7 +4,6 @@ import { TabBar, type TabItem } from '@ui';
 import { useT } from '@i18n';
 import { useHomeNav } from '@/features/home/store/homeNav';
 import { useChats } from '@/features/chat/store/chatStore';
-import { lastMessage } from '@/features/chat/types';
 
 type Key = 'journal' | 'home' | 'chats';
 
@@ -47,7 +46,7 @@ function AppTabBar({ state, navigation }: BarProps) {
   const t = useT();
   const reviewing = useHomeNav((s) => s.reviewing);
   const go = useHomeNav((s) => s.go);
-  const unread = useChats((s) => s.conversations.some((c) => lastMessage(c)?.mine === false));
+  const unread = useChats((s) => s.conversations.some((c) => c.unread > 0));
   const active = (state.routes[state.index]?.name ?? 'home') as Key;
 
   const items = useMemo<TabItem<Key>[]>(

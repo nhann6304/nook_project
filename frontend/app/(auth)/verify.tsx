@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Redirect, useRouter } from 'expo-router';
-import { VerifyCodeScreen } from '@/features/auth/screens/VerifyCodeScreen';
-import { sendCode, verifyCode } from '@/features/auth/lib/authApi';
+import { VerifyCodeScreen } from '@/features/auth/screens/verify-code/VerifyCodeScreen';
+import { sendCode, verifyCode } from '@/features/auth/api/authApi';
 import { useAuth } from '@/features/auth/store/authStore';
 
 export default function Verify() {

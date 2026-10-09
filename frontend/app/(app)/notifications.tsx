@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { NotificationScreen } from '@/features/notify/screens/NotificationScreen';
+import { NotificationScreen } from '@/features/notify/screens/notifications/NotificationScreen';
 import { useNotify } from '@/features/notify/store/notifyStore';
 import { useHomeNav } from '@/features/home/store/homeNav';
 import type { Notice } from '@/features/notify/types';

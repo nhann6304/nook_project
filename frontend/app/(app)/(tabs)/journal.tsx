@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { MemoriesScreen } from '@/features/journal/screens/MemoriesScreen';
+import { MemoriesScreen } from '@/features/journal/screens/memories/MemoriesScreen';
 import { useJournal } from '@/features/journal/store/journalStore';
 import { useProfile } from '@/features/profile/store/profileStore';
 import { ME } from '@/mocks/moments';

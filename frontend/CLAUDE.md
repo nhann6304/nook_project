@@ -60,7 +60,7 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - Màn hình **không biết router tồn tại** — nhận `onX` qua props. File trong
   `app/` là chỗ nối.
 - Màn hình **không biết server tồn tại** — mọi lệnh gọi mạng ở `*Api.ts`, và
-  mọi `*Api.ts` đi qua **`@/lib/api`** (`call`, `LIVE`), không tự `fetch`. Đường
+  mọi `features/<tên>/api/*Api.ts` đi qua **`@/lib/http/api`** (`call`, `LIVE`), không tự `fetch`. Đường
   dẫn / mã lỗi / kiểu lấy từ `@nook/shared`, câu lỗi bằng `translateError(code)`.
   Thẻ: ngắn hạn ở bộ nhớ, dài hạn ở SecureStore, làm mới MỘT lượt cho cả app.
 - Animation: **Reanimated**, không bao giờ `Animated` của react-native.
@@ -82,12 +82,11 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - Chữ trên nút primary là `c.onAccent`: **trắng** ở nền sáng (nút denim đặc),
   **navy** ở nền tối (nút lam nhạt). Nút đặc, không dải màu.
 - Khung ảnh **VUÔNG, bo 60 đường cong liền** như Locket (`layout.cameraFrameRatio`
-  = 1, `radius.viewfinder`, `borderCurve: 'continuous'` — 08/10/2026), CHUNG cho camera và mọi khoảnh khắc. Ảnh chụp / chọn từ máy được CẮT
-  đúng khung (`camera/lib/squarePhoto.ts`) và camera trước để `mirror` — thấy
-  gì gửi nấy. Máy cao thì khung nằm giữa phần dư (`frame.top`).
+  = 1, `radius.viewfinder`, `borderCurve: 'continuous'` — 08/10/2026), CHUNG cho camera và mọi khoảnh khắc. Ảnh gửi đi là **NGUYÊN BẢN 100%** (09/10/2026): không cắt, không nén lại, không thu
+  nhỏ — khung vuông chỉ là cách hiển thị (`cover`). Camera trước để `mirror`. Máy cao thì khung nằm giữa phần dư (`frame.top`).
 - Chuyển cảnh chỉ dùng **transform + opacity**. Lướt trang đi thẳng theo ngón
   tay, không lún/thu nhỏ (bản cũ nhìn như nhảy lên xuống, Android giật khung camera).
-- Chuyển động lấy từ `motion` (`@design`); âm thanh qua `@/lib/sound` — đúng ba tiếng, tắt được trong Cài đặt.
+- Chuyển động lấy từ `motion` (`@design`); âm thanh qua `@/lib/device/sound` — đúng ba tiếng, tắt được trong Cài đặt.
 - **Không nảy.** Thứ hiện ra dùng `FadeIn…duration(...)`, không `.springify()`;
   `spring.*` đã tắt dần tới hạn — đổi số thì giữ `damping ≥ 2·√(stiffness·mass)`.
 - Bàn phím **không co khung** ở màn chính: chú thích tự nhích lên
@@ -101,7 +100,14 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   viên **"Lịch sử"**. **Ký ức** (`MemoriesScreen`): mỗi tháng một thẻ kính, lưới
   ngày có ảnh to, ngày trống là chấm, nét đứt nối các tháng, mở ra ở tháng này.
 - **Mã QR** (`qr`, `<QrCode>`): chấm tròn, logo LOVO giữa (mức sửa lỗi H). Link
-  là hàng giả `circle/lib/inviteLink.ts`. Nút trong thẻ dùng `<Button flat>`.
+  là hàng giả `circle/api/inviteLink.ts`. Nút trong thẻ dùng `<Button flat>`.
+- **Chat kiểu Telegram** (09/10/2026, `features/chat/`): nền riêng từng cuộc
+  (`CHAT_BACKGROUNDS` ở shared, màu ở `design/chatWallpapers.ts`) · thanh trên kính
+  · bong bóng có đuôi, giờ + ✓/✓✓ trong bong bóng, cụm tin · giữ lâu = trả lời ·
+  bảng emoji (9 nhóm) + sticker (Fluent Emoji, `node scripts/stickers.mjs`) thay
+  chỗ bàn phím · "đang gõ…" · online. Gửi LẠC QUAN qua socket có ack
+  (`api/chatApi.ts`), `clientId` chống trùng, nối lại thì hỏi bù bằng REST
+  (`after=seq`). Không có server → hàng giả tự "đã xem" và trả lời.
 - **Zoom** góc phải khung: 1× → 2× → 0.5× (0.5× = ống siêu rộng, chỉ iOS camera sau).
 - **Chụp xong:** hàng avatar dưới ảnh chọn ai KHÔNG được xem (mặc định ai cũng
   xem; mặc định riêng đặt ở Cài đặt → Riêng tư). Gửi đi là `hiddenFromUserIds`.
@@ -115,7 +121,7 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - **Nút KHỐI NỔI** (`<Button>`, 08/10/2026): mặt + gờ đáy đậm hơn, nhấn thì mặt
   lún phủ gờ (luồng UI). Thẻ nổi bật (Pro) đi cùng giọng: gờ `accentDeep`.
 - **"Theo ảnh" là màu mặc định** (08/10/2026): gửi ảnh xong app rút màu chủ đạo
-  (`camera/lib/photoColor.ts`) → `setSeed` → sắc nhấn + cảnh ngả theo màu đó,
+  (`camera/utils/photoColor.ts`) → `setSeed` → sắc nhấn + cảnh ngả theo màu đó,
   tương phản ĐO lúc dựng (`seedSwatch` trong `palettes.ts`). Năm màu locket vẫn chọn được.
 - **Vòng chất liệu thay vòng cấp thân** (`<Avatar level>`): vòng dải màu của chất
   liệu (gỗ → vỏ sò → màu riêng → ngọc → vàng, `design/beads.ts`) + MỘT hạt charm
@@ -124,15 +130,15 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - **Trời phủ CẢ MÀN** (`<SkyWash>`): đỉnh màu cảnh, giữa tan vào nền, đáy ngả
   `skyLow`; mây trên + dưới / mặt trời / sao khắp màn / mưa suốt chiều cao; trăng
   ở khe giữa viên bạn bè và avatar. Chỉ transform + opacity, mỗi lớp một Svg.
-- **Ảnh gốc cho mọi người**: chụp `quality: 1`, cắt khung rồi nén JPEG MỘT lần
-  0.92, KHÔNG thu nhỏ. Không bao giờ đưa chất lượng ảnh vào gói Pro.
+- **Ảnh gốc 100% cho mọi người**: chụp `quality: 1` và gửi NGUYÊN tệp; chọn từ thư
+  viện thì `allowsEditing: false` + giữ định dạng gốc (HEIC). Server cất nguyên
+  bytes, bản nhẹ cho bảng tin là bản sao riêng. Không đưa chất lượng ảnh vào Pro.
 - **Cài đặt = mục lục + trang con** (`app/(app)/prefs/*`): Giao diện · Riêng tư ·
   Ngôn ngữ mở trang riêng giữ BẢN NHÁP, bấm **Lưu** mới áp dụng và gọi
   `settingsApi.saveSettings` MỘT lần (không ghi server mỗi lần chạm). Giao diện
   có hình xem trước vẽ bằng bảng nháp (`previewPalette`). Âm thanh là công tắc
   tại chỗ. Danh sách đông người luôn có ô tìm (`AudienceSheet`, Tìm quanh đây).
-- **Chụp không có vòng chờ:** ảnh gốc hiện ngay, cắt vuông chạy ngầm
-  (`squaring` trong `CameraPage`), tải lên server chạy nền sau khi gửi.
+- **Chụp không có vòng chờ:** ảnh gốc hiện ngay, tải lên server chạy nền sau khi gửi.
 - Chữ: **Nunito** (08/10/2026, thay Poppins — dấu tiếng Việt đẹp hơn, đầu nét tròn): chữ thường 600, tiêu đề 800, `display` 900 + **Caveat** cho lời nhấn viết
   tay (`variant="hand"`, mỗi màn tối đa một chỗ).
 - **Không có linh vật** (bỏ 31/08/2026). Chỗ trống dùng `<GhostFrame>` hoặc
@@ -176,15 +182,15 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - [x] Xin quyền camera: có nhánh "đã từ chối" mở Cài đặt máy + tự đọc lại khi quay về
 - [x] Điều hướng expo-router có kiểu, kho trạng thái Zustand
 - [x] Icon PNG cho store đã xuất; wordmark "nook" vẽ lại bằng SVG
-- [x] Màn **Tên + ảnh** (người mới, sau khi nhập mã): tên hiện, @tên riêng tự gợi ý, ảnh đại diện — hàng giả `profile/lib/profileApi.ts`
+- [x] Màn **Tên + ảnh** (người mới, sau khi nhập mã): tên hiện, @tên riêng tự gợi ý, ảnh đại diện — hàng giả `profile/api/profileApi.ts`
 - [ ] Onboarding — còn 2 màn: Mời người đầu tiên, Xin quyền
-- [x] **Thông báo** (chuông + chấm đỏ, màn `notifications`): mời, nhận lời, tag, cảm xúc, trả lời. Hàng giả `notify/lib/notifyApi.ts` — hợp đồng `INotification` đã ở `@nook/shared`, server chưa có module
+- [x] **Thông báo** (chuông + chấm đỏ, màn `notifications`): mời, nhận lời, tag, cảm xúc, trả lời. Hàng giả `notify/api/notifyApi.ts` — hợp đồng `INotification` đã ở `@nook/shared`, server chưa có module
 - [ ] Cài đặt: còn Vị trí, Thông báo đẩy. Tài khoản mới có Đăng xuất
 - [x] **Video ngắn**: giữ nút chụp quay ≤ 3 giây (vòng đếm), phát lặp trong feed chỉ ở trang đang xem
 - [x] **Nối server**: đăng nhập (xin mã, nộp mã, làm mới thẻ, đăng xuất) và lưu hồ sơ + ảnh đại diện chạy thật khi có `EXPO_PUBLIC_API_URL`. Gửi khoảnh khắc đã gọi đúng hợp đồng `POST /v1/moments` — **server chưa có module `moment`**. Góc bạn bè, trang người khác, khoá trang, tìm quanh đây: vẫn giả vì server chưa có đường
-- [x] **Thêm bạn** (hàng giả `circle/lib/circleApi.ts`): ô tìm — lọc người trong góc theo tên, tìm người trên Nook CHỈ theo @tên; mời · nhận lời · từ chối. Danh sách bạn ở kho `circle/store/circleStore.ts`, mọi màn đọc chung. Còn chờ backend
+- [x] **Thêm bạn** (hàng giả `circle/api/circleApi.ts`): ô tìm — lọc người trong góc theo tên, tìm người trên Nook CHỈ theo @tên; mời · nhận lời · từ chối. Danh sách bạn ở kho `circle/store/circleStore.ts`, mọi màn đọc chung. Còn chờ backend
 - [x] **Tag bạn** trong chú thích (gõ `@`, chỉ bạn trong góc, tối đa 5) → chạm tên mở **trang cá nhân** (`person/[id]`). **Khoá trang** trong Cài đặt: người ngoài góc chỉ thấy tên, ảnh, @tên. Thông báo cho người được tag là việc của server
-- [x] **Tìm quanh đây** (`nearby`, giao diện 07/10/2026: trang bật định vị chọn 100 m · 200 m · 300 m · 1 km · 3 km → RADAR có avatar xếp theo nấc khoảng cách, vòng sóng lan, chạm avatar mở thẻ người + danh sách có ô tìm bên dưới; không bản đồ thật — server không trả toạ độ): người dùng chọn bán kính 100 m – 3 km; chỉ người cũng đang bật thấy nhau, chỉ hiện nấc khoảng cách, tự tắt sau 5 phút. Hàng giả `nearby/lib/nearbyApi.ts` — luật cho server ghi ở đầu tệp đó
+- [x] **Tìm quanh đây** (`nearby`, giao diện 07/10/2026: trang bật định vị chọn 100 m · 200 m · 300 m · 1 km · 3 km → RADAR có avatar xếp theo nấc khoảng cách, vòng sóng lan, chạm avatar mở thẻ người + danh sách có ô tìm bên dưới; không bản đồ thật — server không trả toạ độ): người dùng chọn bán kính 100 m – 3 km; chỉ người cũng đang bật thấy nhau, chỉ hiện nấc khoảng cách, tự tắt sau 5 phút. Hàng giả `nearby/api/nearbyApi.ts` — luật cho server ghi ở đầu tệp đó
 - [ ] "Lưu về máy" ở màn Vừa chụp xong — cần `expo-media-library` + xin quyền ghi
 - [ ] Chưa đo hiệu năng trên máy Android tầm trung
 - [ ] Widget: thiết kế xong, chưa viết mã gốc — **cần development build**

@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { Stack } from 'expo-router';
+import { startChatRealtime } from '@/features/chat/api/chatApi';
 
 /**
  * Gốc của app sau đăng nhập: `(tabs)` là ba nút dưới đáy (Ký ức · Chụp ·
@@ -6,6 +8,8 @@ import { Stack } from 'expo-router';
  * ra" (nhật ký, Pro) trượt từ dưới. Trang cá nhân + cài đặt là `me`.
  */
 export default function AppLayout() {
+  // Ống chat mở suốt lúc đã đăng nhập (chỉ khi có server) — tin tới tức thì.
+  useEffect(() => startChatRealtime(), []);
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />

@@ -8,8 +8,8 @@
  */
 import { StyleSheet, View } from 'react-native';
 import { common, layout, space } from '@design';
-import { Txt } from '../primitives/Txt';
-import { Button } from '../primitives/Button';
+import { Txt } from '../typography/Txt';
+import { Button } from '../button/Button';
 import { GhostFrame } from '../brand/GhostFrame';
 
 export function EmptyState({

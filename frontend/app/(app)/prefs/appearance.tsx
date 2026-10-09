@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { useTheme, type AccentKey, type ThemeMode } from '@design';
-import { AppearanceScreen } from '@/features/settings/screens/AppearanceScreen';
-import { saveSettings } from '@/features/settings/lib/settingsApi';
-import { useThemeNames } from '@/features/settings/lib/useThemeNames';
-import { checkRainNow } from '@/features/sky/lib/useRainWatch';
+import { AppearanceScreen } from '@/features/settings/screens/appearance/AppearanceScreen';
+import { saveSettings } from '@/features/settings/api/settingsApi';
+import { useThemeNames } from '@/features/settings/hooks/useThemeNames';
+import { checkRainNow } from '@/features/sky/hooks/useRainWatch';
 
 export default function Appearance() {
   const router = useRouter();

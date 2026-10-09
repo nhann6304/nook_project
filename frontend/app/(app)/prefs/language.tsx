@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
-import { LanguageScreen, type LocaleChoice } from '@/features/settings/screens/LanguageScreen';
-import { saveSettings } from '@/features/settings/lib/settingsApi';
+import { LanguageScreen, type LocaleChoice } from '@/features/settings/screens/language/LanguageScreen';
+import { saveSettings } from '@/features/settings/api/settingsApi';
 import { useFollowSystem, useFollowingSystem, useLocale, useSetLocale } from '@i18n';
 
 export default function Language() {

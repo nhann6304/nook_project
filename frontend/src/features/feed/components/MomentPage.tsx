@@ -28,10 +28,10 @@ import {
   useStyles,
   type Palette,
 } from '@design';
-import * as feel from '@/lib/haptics';
-import * as sound from '@/lib/sound';
+import * as feel from '@/lib/device/haptics';
+import * as sound from '@/lib/device/sound';
 import type { Moment } from '../types';
-import { splitCaption } from '../lib/tags';
+import { splitCaption } from '../utils/tags';
 
 /** Ba cảm xúc, không hơn. Gửi đi dưới dạng emoji trong cuộc trò chuyện. */
 export const REACTIONS = [

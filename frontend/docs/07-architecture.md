@@ -46,27 +46,35 @@ frontend/
 │   │   ├── core.ts · store.ts · plural.ts · format.ts
 │   │   └── index.ts        cửa '@i18n'
 │   │
-│   ├── components/         BỘ MẢNH. Màn hình lắp từ đây, không tự dựng.
-│   │   ├── primitives/     Txt · Tap · Button · IconButton · Field · CodeInput …
-│   │   ├── layout/         Screen · Row/Col/Spacer/Flex · Card/Pill/Divider · List
-│   │   │                     · Scroll · TopBar · TabBar
-│   │   ├── brand/          Rings · Wordmark · Halo · GhostFrame · Avatar
-│   │   ├── feedback/       EmptyState · Loading
-│   │   └── index.ts        cửa '@ui'
+│   ├── components/         BỘ MẢNH, CHIA THEO LOẠI (09/10/2026) — cửa '@ui'
+│   │   ├── button/         Button · IconButton · Tap (nền của mọi thứ bấm được)
+│   │   ├── input/          Field (ô gõ chung) · CodeInput · CaptionField · ComposerField
+│   │   │                     · HelperText · Toggle · Segmented
+│   │   ├── typography/     Txt
+│   │   ├── icon/           Icon · IconBadge · iconPaths (sinh bằng script)
+│   │   ├── media/          Img · Clip · QrCode
+│   │   ├── avatar/         Avatar · AvatarStack · BeadStrand
+│   │   ├── brand/          Wordmark · Rings · Halo · GhostFrame · SkyWash
+│   │   ├── layout/         Screen · Scroll · List · Stack · Pager · Surface · Glass
+│   │   ├── navigation/     TabBar · TopBar
+│   │   ├── feedback/       EmptyState · Loading · Spinner · Toast · OfflineBar · Shimmer
+│   │   └── index.ts        cửa '@ui' — màn hình CHỈ nhập từ đây
 │   │
-│   ├── features/           THEO TÍNH NĂNG, không theo loại file
-│   │   ├── auth/           screens/ · lib/ (identity, authApi) · store/
-│   │   ├── camera/         screens/ · components/ (Shutter · SendButton · CameraPermission
-│   │   │                     · FlashToggle · ScreenFlash · NookStrip · MomentsPeek)
-│   │   ├── feed/           screens/ · components/ (MomentCard) · store/ · types.ts
-│   │   ├── chat/           screens/ (danh sách + một cuộc) · components/ · store/
-│   │   ├── circle/         screens/
-│   │   └── settings/       screens/ · components/ (PalettePicker)
+│   ├── features/<tính-năng>/   THEO TÍNH NĂNG, mỗi màn MỘT thư mục (kiểu Angular)
+│   │   ├── screens/<tên-màn>/  <Tên>Screen.tsx + components/ chỉ màn đó dùng
+│   │   ├── components/     mảnh dùng ở ≥2 màn của tính năng (nhóm con khi đông:
+│   │   │                     camera/components/{controls, audience, overlay})
+│   │   ├── api/            *Api.ts — CHỖ DUY NHẤT gọi mạng (qua @/lib/http/api)
+│   │   ├── hooks/          use*.ts của tính năng
+│   │   ├── utils/          hàm thuần của tính năng
+│   │   ├── store/          kho zustand
+│   │   └── types.ts
 │   │
-│   ├── hooks/              hook dùng chung: useReduceMotion · useCountdown
-│   ├── lib/                TS thuần, KHÔNG React: haptics · storage
-│   ├── stores/             kho dùng chung nhiều tính năng — tạo khi cần
-│   ├── types/              kiểu dùng chung — tạo khi cần
+│   ├── hooks/              hook dùng chung: useReduceMotion · useCountdown · useOnline
+│   ├── lib/                TS thuần, KHÔNG React:
+│   │   ├── http/api.ts     call · LIVE · thẻ phiên
+│   │   ├── device/         haptics · sound · storage
+│   │   └── text/fold.ts    bỏ dấu để tìm
 │   └── mocks/              dữ liệu giả. Xoá khi có server.
 │
 ├── docs/                   tài liệu frontend
@@ -83,7 +91,7 @@ frontend/
 ### 2.1 Màn hình không biết router tồn tại
 
 ```tsx
-// src/features/auth/screens/WelcomeScreen.tsx
+// src/features/auth/screens/welcome/WelcomeScreen.tsx
 export function WelcomeScreen({ onCreate, onSignIn }: { … }) { … }
 
 // app/(auth)/welcome.tsx  ← chỉ chỗ này biết có router
@@ -98,7 +106,7 @@ cách điều hướng thì chỉ `app/` đổi.
 
 ### 2.2 Màn hình không biết server tồn tại
 
-Mọi lệnh gọi mạng nằm trong `src/features/<tên>/lib/*Api.ts`.
+Mọi lệnh gọi mạng nằm trong `src/features/<tên>/api/*Api.ts`.
 Hiện `authApi.ts` là **hàng giả** — trả kết quả sau 700ms, mã đúng là `123456`.
 Khi backend có thật, chỉ file đó đổi.
 
@@ -127,12 +135,14 @@ Bốn tầng, mỗi tầng biết đúng một việc. Không tầng nào nhảy
 
 | Bạn đang viết | Đặt ở |
 |---|---|
-| Một màn mới | `src/features/<tính-năng>/screens/` + một file mỏng trong `app/` |
-| Mảnh dùng ở ≥2 tính năng | `src/components/` + xuất ở `index.ts` |
-| Mảnh chỉ một tính năng dùng | `src/features/<tính-năng>/components/` |
-| Hàm không cần React | `src/lib/` |
+| Một màn mới | `src/features/<tính-năng>/screens/<tên-màn>/<Tên>Screen.tsx` + một file mỏng trong `app/` |
+| Mảnh chỉ MỘT màn dùng | `src/features/<tính-năng>/screens/<tên-màn>/components/` |
+| Mảnh dùng ở ≥2 tính năng | `src/components/<loại>/` + xuất ở `index.ts` (loại chưa có thì hỏi: nó khác các loại sẵn có ở đâu?) |
+| Mảnh ≥2 màn của MỘT tính năng dùng | `src/features/<tính-năng>/components/` |
+| Hàm không cần React, dùng chung | `src/lib/<nhóm>/` · của một tính năng: `features/<tính-năng>/utils/` |
 | Hook dùng chung | `src/hooks/` |
-| Gọi mạng | `src/features/<tính-năng>/lib/<tên>Api.ts` |
+| Gọi mạng | `src/features/<tính-năng>/api/<tên>Api.ts` |
+| Hook của một tính năng | `src/features/<tính-năng>/hooks/` |
 | Trạng thái một tính năng | `src/features/<tính-năng>/store/` |
 | Trạng thái nhiều tính năng dùng | `src/stores/` |
 | Khoảng cách / bo góc / nhịp mới | `src/design/tokens.ts` **kèm lý do** |
@@ -151,7 +161,7 @@ Khai trong `tsconfig.json`:
 | `@/…` | `src/…` |
 
 Luôn dùng `@ui`, `@design` và `@i18n`, đừng đi thẳng vào đường dẫn con
-(`@/components/primitives/Txt`). Một cửa thì đổi cấu trúc bên trong không phải
+(`@/components/typography/Txt`). Một cửa thì đổi cấu trúc bên trong không phải
 sửa 40 file.
 
 ## 6 · Lệnh

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { PersonScreen, type PersonRelation } from '@/features/profile/screens/PersonScreen';
-import { getPerson, type PersonProfile } from '@/features/profile/lib/profileApi';
+import { PersonScreen, type PersonRelation } from '@/features/profile/screens/person/PersonScreen';
+import { getPerson, type PersonProfile } from '@/features/profile/api/profileApi';
 import { useProfile } from '@/features/profile/store/profileStore';
 import { relationOf, useCircle } from '@/features/circle/store/circleStore';
-import { useInvites } from '@/features/circle/lib/useInvites';
+import { useInvites } from '@/features/circle/hooks/useInvites';
 import { useT } from '@i18n';
 import { ME } from '@/mocks/moments';
 

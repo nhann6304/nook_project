@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useIsFocused, useRouter } from 'expo-router';
-import { HomeScreen } from '@/features/home/screens/HomeScreen';
+import { HomeScreen } from '@/features/home/screens/home/HomeScreen';
 import type { Shot } from '@/features/camera/components/CameraPage';
 import type { Reaction } from '@/features/feed/components/MomentPage';
 import type { Moment } from '@/features/feed/types';
 import { useMoments } from '@/features/feed/store/momentsStore';
-import { sendMoment } from '@/features/feed/lib/momentApi';
+import { sendMoment } from '@/features/feed/api/momentApi';
 import { useAudience } from '@/features/camera/store/audienceStore';
 import { useNotify } from '@/features/notify/store/notifyStore';
 import { useChats } from '@/features/chat/store/chatStore';
+import { sendMessage } from '@/features/chat/api/chatApi';
 import { useJournal } from '@/features/journal/store/journalStore';
 import { useProfile } from '@/features/profile/store/profileStore';
 import { ME } from '@/mocks/moments';
@@ -46,7 +47,6 @@ export default function Home() {
   const addEntry = useJournal((s) => s.add);
   const markReplied = useMoments((s) => s.markReplied);
   const openAbout = useChats((s) => s.openAbout);
-  const sendChat = useChats((s) => s.send);
 
   const send = useCallback(
     (shot: Shot) => {
@@ -72,13 +72,13 @@ export default function Home() {
     (m: Moment, r: Reaction | null) => {
       const id = openAbout(m.author, m.photo, m.caption);
       if (r) {
-        sendChat(id, r.emoji, Date.now());
+        sendMessage(id, { kind: 'text', text: r.emoji });
         markReplied(m.id);
         return;
       }
       router.push({ pathname: '/(app)/chat/[id]', params: { id } });
     },
-    [markReplied, openAbout, router, sendChat],
+    [markReplied, openAbout, router],
   );
 
   return (

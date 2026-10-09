@@ -279,8 +279,8 @@ dự án — gốc chỉ có `docs/`, `frontend/`, `backend/`.
 ```
 app/                    CHỈ điều hướng. Không logic, không style.
 src/design/             token + style chung. Nơi DUY NHẤT được viết hex.
-src/components/         bộ component. Xuất qua src/components/index.ts.
-src/features/<tên>/     theo tính năng: screens/ components/ lib/ store/
+src/components/<loại>/  bộ component CHIA THEO LOẠI (button · input · icon · media · layout …). Xuất qua src/components/index.ts.
+src/features/<tên>/     theo tính năng: screens/<tên-màn>/ (mỗi màn một thư mục) · components/ · api/ · hooks/ · utils/ · store/
 src/i18n/               kho chữ hai thứ tiếng. Cửa duy nhất: '@i18n'.
 src/hooks/  src/lib/    dùng chung. src/lib là TS thuần, không React.
 src/mocks/              dữ liệu giả. Xoá khi có server.
@@ -291,7 +291,7 @@ File trong `app/` là chỗ nối màn hình với router và với kho trạng 
 Nhờ vậy màn hình test được và xem trước được mà không cần dựng cả app.
 
 **Màn hình không được biết server tồn tại.** Mọi lệnh gọi mạng nằm trong
-`src/features/<tên>/lib/*Api.ts`.
+`src/features/<tên>/api/*Api.ts`.
 
 ---
 

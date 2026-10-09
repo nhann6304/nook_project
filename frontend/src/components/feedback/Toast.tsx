@@ -5,7 +5,7 @@
 import { StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
 import { duration, radius, space, useStyles, type Palette } from '@design';
-import { Txt } from '../primitives/Txt';
+import { Txt } from '../typography/Txt';
 
 export function Toast({
   message,

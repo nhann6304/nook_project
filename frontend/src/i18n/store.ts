@@ -15,7 +15,7 @@
  */
 import { getLocales } from 'expo-localization';
 import { create } from 'zustand';
-import { readText, writeText } from '@/lib/storage';
+import { readText, writeText } from '@/lib/device/storage';
 import { makeT, type T } from './core';
 import { isLocale, type Locale } from './locales';
 

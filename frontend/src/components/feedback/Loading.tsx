@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { common, duration, space, useStyles } from '@design';
-import { Txt } from '../primitives/Txt';
+import { Txt } from '../typography/Txt';
 import { Spinner } from './Spinner';
 
 export function Loading({ label, delay = duration.base }: { label?: string; delay?: number }) {

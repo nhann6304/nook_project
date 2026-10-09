@@ -19,6 +19,7 @@ nội dung sang cả hai.
 | [`01-product-system.md`](01-product-system.md) | Hệ thống sản phẩm: đơn vị "ký ức", cấp thân 1–10, chống farm, quyền vị trí, roadmap V0.1→V0.4 | **Cả hai bên.** Backend hiện thực phần lớn luật trong này |
 | [`02-release-checklist.md`](02-release-checklist.md) | Việc phải xong trước khi lên App Store / Play Store | Cả hai bên |
 | [`03-offline.md`](03-offline.md) | **Luật** khi mất mạng: xem được gì, làm được gì, nói với người dùng thế nào | **Cả hai bên.** Ghi trước khi code — chưa có dòng mã nào theo nó |
+| [`05-image-storage.md`](05-image-storage.md) | Chọn kho ảnh khi deploy (R2 / B2 / S3 / MinIO), ảnh gốc 100% | Cả hai bên |
 | [`04-offline-design.md`](04-offline-design.md) | **Cách làm**: bốn kho ở máy, lược đồ SQLite, cửa `GET /v1/sync`, hàng đợi gửi, thứ tự làm | **Cả hai bên.** Đọc trước khi viết đường ghi đầu tiên — có hai thứ nhét vào sau là phải sửa cả hai bên |
 
 **Đọc `01-product-system.md` mục 0 và mục 3 trước tiên** — đó là triết lý gốc

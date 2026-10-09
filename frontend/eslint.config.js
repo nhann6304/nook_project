@@ -115,6 +115,12 @@ module.exports = defineConfig([
     rules: { 'no-restricted-syntax': 'off' },
   },
 
+  /* ---------- Tệp SINH RA (hình sticker SVG): màu là của hình vẽ, không phải màu giao diện ---------- */
+  {
+    files: ['src/**/*.generated.ts'],
+    rules: { 'no-restricted-syntax': 'off' },
+  },
+
   /* ---------- src/design là gốc: nó ĐƯỢC phép viết hex ---------- */
   {
     files: ['src/design/**/*.ts'],

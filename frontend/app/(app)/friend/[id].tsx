@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { FriendScreen } from '@/features/circle/screens/FriendScreen';
+import { FriendScreen } from '@/features/circle/screens/friend/FriendScreen';
 import { useMoments } from '@/features/feed/store/momentsStore';
 import { useChats } from '@/features/chat/store/chatStore';
 import { useT } from '@i18n';

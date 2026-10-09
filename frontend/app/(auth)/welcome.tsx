@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { WelcomeScreen } from '@/features/auth/screens/WelcomeScreen';
+import { WelcomeScreen } from '@/features/auth/screens/welcome/WelcomeScreen';
 
 export default function Welcome() {
   const router = useRouter();

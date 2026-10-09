@@ -10,8 +10,8 @@
  * xem docs/09-frontend-backend-contract.md để biết ai sẽ lắp vào và lắp thế nào.
  */
 import { create } from 'zustand';
-import { LIVE, hasSession, onSessionLost } from '@/lib/api';
-import type { SignInMethod } from '../lib/identity';
+import { LIVE, hasSession, onSessionLost } from '@/lib/http/api';
+import type { SignInMethod } from '../utils/identity';
 
 export type AuthPhase = 'unknown' | 'signed-out' | 'awaiting-code' | 'signed-in';
 

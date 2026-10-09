@@ -58,6 +58,16 @@ export const API = {
     /** GET — thành tích của chính mình, kèm số chỗ trong góc */
     mine: '/v1/me/achievements',
   },
+  chat: {
+    /** GET danh sách cuộc · POST mở cuộc với một người */
+    list: '/v1/chats',
+    /** GET lịch sử (`before` / `after` = seq) · POST gửi tin (dự phòng của socket) */
+    messages: '/v1/chats/:id/messages',
+    /** POST — đã đọc tới `seq` */
+    read: '/v1/chats/:id/read',
+    /** PUT — đổi nền khung chat (chỉ phía mình) */
+    background: '/v1/chats/:id/background',
+  },
 } as const;
 
 /** Dò sống chết. Không nằm trong `/v1`, không cần thẻ. */

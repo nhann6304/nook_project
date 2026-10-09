@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
-import { ChatListScreen } from '@/features/chat/screens/ChatListScreen';
+import { ChatListScreen } from '@/features/chat/screens/chat-list/ChatListScreen';
 import { useChats } from '@/features/chat/store/chatStore';
 
 export default function Chats() {

@@ -4,6 +4,7 @@ import { CIRCLE_LIMITS } from '../circle/circle.constant.js';
 import { MEMORY_LIMITS } from '../memory/memory.constant.js';
 import { MEDIA_LIMITS } from '../media/media.constant.js';
 import { USERNAME_LIMITS } from '../user/username.constant.js';
+import { CHAT_LIMITS } from '../chat/chat.constant.js';
 
 /**
  * Bảng gộp mọi giới hạn.
@@ -18,6 +19,7 @@ export const LIMITS = {
   ...MEMORY_LIMITS,
   ...MEDIA_LIMITS,
   ...USERNAME_LIMITS,
+  ...CHAT_LIMITS,
 } as const;
 
 /**
@@ -43,6 +45,7 @@ type LimitKeyClash =
   | Extract<keyof typeof CIRCLE_LIMITS, keyof typeof USERNAME_LIMITS>
   | Extract<keyof typeof MEMORY_LIMITS, keyof typeof MEDIA_LIMITS>
   | Extract<keyof typeof MEMORY_LIMITS, keyof typeof USERNAME_LIMITS>
-  | Extract<keyof typeof MEDIA_LIMITS, keyof typeof USERNAME_LIMITS>;
+  | Extract<keyof typeof MEDIA_LIMITS, keyof typeof USERNAME_LIMITS>
+  | Extract<keyof typeof AUTH_LIMITS | keyof typeof USER_LIMITS | keyof typeof CIRCLE_LIMITS | keyof typeof MEMORY_LIMITS | keyof typeof MEDIA_LIMITS | keyof typeof USERNAME_LIMITS, keyof typeof CHAT_LIMITS>;
 
 export const LIMIT_KEYS_ARE_UNIQUE: [LimitKeyClash] extends [never] ? true : never = true;
