@@ -6,7 +6,8 @@
   "scripts": {
     "shared": "tsc -p ../shared/tsconfig.json",
     "postinstall": "npm run shared",
-    "predev": "npm run shared",
+    "predev": "node scripts/ensure-env.mjs && npm run shared",
+    "predev:clear": "node scripts/ensure-env.mjs && npm run shared",
     "dev": "expo start",
     "dev:clear": "expo start --clear",
     "dev:tunnel": "expo start --tunnel",

@@ -6,7 +6,7 @@
   "description": "Nook server — NestJS trên Fastify.",
   "scripts": {
     "shared:build": "tsc -p ../shared/tsconfig.json",
-    "predev": "npm run shared:build",
+    "predev": "node scripts/ensure-env.mjs && npm run shared:build",
     "prebuild": "npm run shared:build",
     "pretypecheck": "npm run shared:build",
     "pretest": "npm run shared:build",
@@ -26,7 +26,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typeorm": "typeorm -d dist/database/data-source/data-source.js",
-    "migration:run": "npm run build && npm run typeorm -- migration:run",
+    "migration:run": "node scripts/ensure-env.mjs && npm run build && npm run typeorm -- migration:run",
     "migration:revert": "npm run build && npm run typeorm -- migration:revert",
     "migration:show": "npm run build && npm run typeorm -- migration:show"
   },

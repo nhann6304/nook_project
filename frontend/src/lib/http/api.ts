@@ -5,6 +5,8 @@
  * Có `EXPO_PUBLIC_API_URL` (xem `frontend/.env.example`) → gọi server thật.
  * Không có → `LIVE = false`, mọi `*Api.ts` chạy hàng giả như cũ. Màn hình
  * không biết mình đang ở chế độ nào.
+ * `auto` → server cổng 4000 trên CHÍNH máy đang chạy Metro (IP lấy từ Expo),
+ * nên điện thoại thật qua Expo Go nối được mà không ai phải gõ IP LAN.
  *
  * ── Thẻ ─────────────────────────────────────────────────────────────────
  * Thẻ ngắn hạn chỉ ở bộ nhớ; thẻ dài hạn ở SecureStore (Keychain / Keystore),
@@ -14,11 +16,22 @@
  * và huỷ cả phiên (backend/README.md mục 1).
  */
 import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
 import { API, COMMON_ERR, HTTP_STATUS } from '@nook/shared/common/constant';
 import type { IApiEnvelope, IApiError } from '@nook/shared/common/interface';
 import type { IAuthTokens } from '@nook/shared/model/interface';
 
-const BASE = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
+/** Cổng `npm run dev:be` (PORT trong backend/.env). */
+const DEV_API_PORT = 4000;
+
+/** `hostUri` = "192.168.1.20:8081" — máy chạy Metro, cũng là máy chạy server lúc dev. */
+function autoBase(): string {
+  const host = Constants.expoConfig?.hostUri?.split(':')[0] ?? 'localhost';
+  return `http://${host}:${DEV_API_PORT}`;
+}
+
+const RAW = (process.env.EXPO_PUBLIC_API_URL ?? '').trim();
+const BASE = (RAW === 'auto' ? autoBase() : RAW).replace(/\/+$/, '');
 
 /** Đã khai địa chỉ server chưa. `false` = chạy hàng giả. */
 export const LIVE = BASE !== '';

@@ -7,8 +7,9 @@ Mọi lệnh trong file này chạy từ thư mục `frontend/`.
 
 **Stack:** Expo SDK **57** + React Native 0.86.3 + TypeScript 6.0.
 
-**Nối server:** chép `.env.example` thành `.env`, điền `EXPO_PUBLIC_API_URL`.
-Bỏ trống thì mọi `*Api.ts` chạy hàng giả (mã đăng nhập `123456`).
+**Nối server:** `npm run dev` tự dựng `.env` với `EXPO_PUBLIC_API_URL=auto` nếu
+chưa có — app gọi server cổng 4000 trên chính máy chạy Metro. Để trống thì mọi
+`*Api.ts` chạy hàng giả (mã đăng nhập `123456`).
 
 ---
 
