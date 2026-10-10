@@ -89,20 +89,20 @@ chuẩn bị sẵn một ngày chúng nó nói hai điều khác nhau. Không ch
 | Thứ | Ở đâu | Cổng | Vì sao |
 |---|---|---|---|
 | Server | trên máy | 4000 | 3000 đã có thứ khác |
-| Postgres | **trên máy** (Homebrew) | 5432 | dùng bản có sẵn thì `psql` gõ thẳng được, và dữ liệu không bay khi ai đó lỡ `down -v` |
+| Postgres | **Docker** (`npm run up`) | 5433 | mặc định từ 10/10/2026; máy có Postgres sẵn muốn dùng thì đổi `DB_PORT=5432` |
 | Redis | Docker | **6380** | 6379 đã có Redis của dự án khác |
 | MinIO | Docker | 9000 / 9001 | chưa bật — xem dưới |
 
 Kho tên `nook`, vai `nook`. `install` tự dựng nếu chưa có.
 
-**Máy không có Postgres cài sẵn** (Windows chẳng hạn): đổi đúng một dòng trong
-`backend/.env` thành `DB_PORT=5433`. Script thấy 5433 là tự kéo container
-Postgres lên, không phải gõ thêm lệnh nào.
+**Muốn dùng Postgres cài sẵn trên máy** thay cho Docker: đổi `DB_PORT=5432`
+trong `backend/.env`; `install` tự dựng vai và kho `nook` nếu chưa có.
 
 ## Vài lệnh hay cần
 
 ```bash
-npm run up          # chỉ bật Redis
+npm run up          # Postgres 5433 + Redis 6380 + MinIO 9000/9001
+npm run up:search   # thêm Elasticsearch 9200
 npm run down        # tắt
 npm run logs        # xem log của cụm
 npm run reset:db    # XOÁ SẠCH dữ liệu Docker rồi dựng lại — không hỏi lại lần hai

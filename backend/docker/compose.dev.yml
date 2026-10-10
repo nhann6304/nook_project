@@ -1,26 +1,22 @@
-# Cụm dịch vụ cho máy dev. Backend KHÔNG nằm trong này — nó chạy thẳng trên máy
-# để `nest start --watch` nạp lại tức thì.
+# Cụm dịch vụ cho máy dev: Postgres + Redis + MinIO (+ Elasticsearch khi cần).
+# Server KHÔNG nằm trong này — bạn tự chạy `npm run dev:be` trên máy để
+# `nest start --watch` nạp lại tức thì.
 #
-#   docker compose -f backend/docker/compose.dev.yml up -d        # chỉ Redis
+#   npm run up              Postgres 5433 · Redis 6380 · MinIO 9000/9001
+#   npm run up:search       thêm Elasticsearch 9200 (ăn ~1 GB RAM)
+#   npm run down            tắt, GIỮ dữ liệu
+#   npm run reset:db        XOÁ SẠCH dữ liệu rồi dựng lại
 #
-# **Postgres mặc định KHÔNG chạy ở đây.** Máy này đã có Postgres 15 cài bằng
-# Homebrew, và dùng bản đó thì đỡ một tầng: `psql` gõ thẳng được, dữ liệu không
-# biến mất khi ai đó lỡ `down -v`, và không phải nhớ hai cổng.
+# Postgres trong Docker là MẶC ĐỊNH từ 10/10/2026 (`DB_PORT=5433` trong
+# backend/.env). Máy đã có Postgres cài sẵn muốn dùng bản đó thì đổi về 5432.
 #
-# Cần Postgres trong Docker (máy khác, máy mới, hoặc muốn xoá sạch làm lại):
-#
-#   docker compose -f backend/docker/compose.dev.yml --profile db up -d
-#   rồi đổi DB_PORT trong backend/.env thành 5433.
-#
-# Cổng Redis là 6380 chứ không phải 6379: 6379 đã có Redis của dự án khác.
+# Cổng lệch chuẩn có chủ ý: 5433 / 6380 để không đụng Postgres / Redis có sẵn.
 name: nook-dev
 
 services:
-  # Chỉ lên khi gọi tên: --profile db
   db:
     image: postgres:16-alpine
     container_name: nook-db
-    profiles: ['db']
     restart: unless-stopped
     environment:
       POSTGRES_USER: nook
