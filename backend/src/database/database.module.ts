@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Env } from '../config/env/index.js';
+import { Env, NodeEnv } from '../config/env/index.js';
 import { ENTITIES } from './entity/index.js';
 import { TransactionService } from '../core/transaction/index.js';
 import { RepositoryManager } from '../core/repository/index.js';
@@ -14,9 +14,10 @@ import { RepositoryManager } from '../core/repository/index.js';
  * `synchronize: false` — luôn luôn. Bảng chỉ đổi qua migration viết tay. Bật
  * cái này lên ở bản thật là một cách mất dữ liệu rất nhanh và rất im lặng.
  *
- * `migrationsRun: false` — server không tự chạy migration lúc bật. Chạy
- * migration là một việc riêng, có người bấm, biết trước sẽ đổi gì. Hai bản
- * server cùng bật một lúc mà cùng tự chạy migration thì đua nhau.
+ * `migrationsRun` — CHỈ khi `NODE_ENV=development` (10/10/2026): máy dev bật
+ * `docker compose up` + `npm run dev:be` là xong, không phải nhớ chạy migration.
+ * Bản thật vẫn TẮT: migration là việc riêng (dịch vụ `migrate` trong
+ * compose.yml), vì nhiều bản server cùng bật mà cùng tự chạy thì đua nhau.
  */
 @Global()
 @Module({
@@ -32,7 +33,8 @@ import { RepositoryManager } from '../core/repository/index.js';
         database: config.get('DB_NAME', { infer: true }),
         entities: ENTITIES,
         synchronize: false,
-        migrationsRun: false,
+        migrations: [`${import.meta.dirname}/migration/*.{ts,js}`],
+        migrationsRun: config.get('NODE_ENV', { infer: true }) === NodeEnv.development,
         logging: config.get('DB_LOGGING', { infer: true }) ? ('all' as const) : false,
         // Chết sớm còn hơn treo: mạng hỏng thì báo ngay chứ đừng chờ mãi.
         connectTimeoutMS: 5_000,
