@@ -36,6 +36,9 @@ const BASE = (RAW === 'auto' ? autoBase() : RAW).replace(/\/+$/, '');
 /** Đã khai địa chỉ server chưa. `false` = chạy hàng giả. */
 export const LIVE = BASE !== '';
 
+// In ra cửa sổ Expo để biết app đang gọi đâu — "mạng chậm" thường là gọi sai máy.
+if (__DEV__) console.log(`[api] ${LIVE ? `server ${BASE}` : 'mock mode (no EXPO_PUBLIC_API_URL)'}`);
+
 /** Mã chỉ APP sinh ra, server không bao giờ trả. Câu chữ ở `errors.app.*`. */
 export const APP_ERR = { OFFLINE: 'app.offline', TIMEOUT: 'app.timeout' } as const;
 
