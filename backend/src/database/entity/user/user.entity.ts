@@ -63,4 +63,14 @@ export class User extends SoftDeleteEntity {
   @Column({ name: 'last_seen_at', type: 'timestamptz', nullable: true })
   lastSeenAt!: Date | null;
 
+  /**
+   * Dấu vân argon2 của mật khẩu. `null` = chưa đặt (tài khoản mở bằng mã).
+   *
+   * `select: false`: đọc người dùng ở đâu cũng KHÔNG kéo cột này lên — chỉ
+   * `UserRepository.findPasswordHash` hỏi đích danh. Không thì một cửa quên đi
+   * qua bộ nắn là trả luôn dấu vân ra ngoài.
+   */
+  @Column({ name: 'password_hash', type: 'text', nullable: true, select: false })
+  passwordHash!: string | null;
+
 }

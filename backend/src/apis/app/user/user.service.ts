@@ -114,11 +114,40 @@ export class UserService {
    * này sinh ra để tránh. Đã xoá thì coi như CHƯA CÓ, mở lại từ đầu.
    */
   async hasIdentity(kind: TSignInMethod, value: string): Promise<boolean> {
+    return (await this.findByIdentity(kind, value)) !== null;
+  }
+
+  /** Người (còn sống) đứng sau email/số này. Đã tự xoá thì coi như không có. */
+  async findByIdentity(kind: TSignInMethod, value: string): Promise<User | null> {
     const identity = await this.identities.findByTarget(kind, value);
-    if (!identity) return false;
+    if (!identity) return null;
 
     const user = await this.users.findById(identity.userId, { withDeleted: true });
-    return user !== null && user.deletedAt === null;
+    return user !== null && user.deletedAt === null ? user : null;
+  }
+
+  /**
+   * Mở tài khoản MỚI kèm mật khẩu (cửa `/auth/signup`). Khác `findOrCreate…`:
+   * đã có người giữ đích này thì KHÔNG nhận vào — `auth.account_exists`, và giao
+   * dịch cuộn lại nên dòng `users` vừa tạo biến mất theo.
+   */
+  @Transactional()
+  async createWithPassword(
+    kind: TSignInMethod,
+    value: string,
+    passwordHash: string,
+  ): Promise<User> {
+    const user = await this.insertAccount(kind, value, passwordHash);
+    if (!user) throw new AppException(ERR.ACCOUNT_EXISTS, HttpStatus.CONFLICT);
+    return user;
+  }
+
+  passwordHashOf(userId: string): Promise<string | null> {
+    return this.users.findPasswordHash(userId);
+  }
+
+  async setPasswordHash(userId: string, passwordHash: string): Promise<void> {
+    await this.users.setPasswordHash(userId, passwordHash);
   }
 
   async findOrCreateByIdentity(
@@ -157,13 +186,23 @@ export class UserService {
       return { user, isNew: false };
     }
 
-    const user = await this.users.create({});
+    const user = await this.insertAccount(kind, value, null);
+    if (user === null) throw new IdentityRaceLost();
+
+    return { user, isNew: true };
+  }
+
+  /** Dòng `users` + `user_stats` + đích. `null` = đích đã có người giữ (phải chạy trong giao dịch). */
+  private async insertAccount(
+    kind: TSignInMethod,
+    value: string,
+    passwordHash: string | null,
+  ): Promise<User | null> {
+    const user = await this.users.create({ passwordHash });
     await this.stats.create({ userId: user.id });
 
     const identity = await this.identities.insertIfAbsent(user.id, kind, value);
-    if (identity === null) throw new IdentityRaceLost();
-
-    return { user, isNew: true };
+    return identity === null ? null : user;
   }
 
   private async mustFind(userId: string): Promise<User> {

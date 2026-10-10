@@ -29,11 +29,13 @@ export const en: Mirror<typeof vi> = {
     start: "Let's go",
     pages: 'Page {index} of {total}',
     s1Title: 'Snap once, your close friends see it',
-    s1Body: 'Photos land right on your friends\' phones — exactly as you took them, never cropped or compressed.',
+    s1Body:
+      "Photos land right on your friends' phones — exactly as you took them, never cropped or compressed.",
     s2Title: 'Just your ten closest',
     s2Body: 'No strangers, no likes. A small corner for the friends who really matter.',
     s3Title: 'Every back-and-forth becomes a memory',
-    s3Body: 'Photos sent, replies received — all gathered into a calendar that belongs to just the two of you.',
+    s3Body:
+      'Photos sent, replies received — all gathered into a calendar that belongs to just the two of you.',
   },
 
   tour: {
@@ -46,7 +48,7 @@ export const en: Mirror<typeof vi> = {
     friendsTitle: 'Your friends',
     friendsBody: 'Invite, accept and see who is in your corner — up to ten people.',
     historyTitle: 'Photos from friends',
-    historyBody: 'Tap here or swipe up to see everyone\'s latest photos.',
+    historyBody: "Tap here or swipe up to see everyone's latest photos.",
     bellTitle: 'Notifications',
     bellBody: 'Friend invites, mentions and reactions all show up here.',
     meTitle: 'Your page',
@@ -54,7 +56,8 @@ export const en: Mirror<typeof vi> = {
     memoriesTitle: 'Memories',
     memoriesBody: 'A photo calendar, month by month. Swipe right to get there too.',
     chatsTitle: 'Messages',
-    chatsBody: 'Private chats with each friend, each with its own background. Swipe left to get there too.',
+    chatsBody:
+      'Private chats with each friend, each with its own background. Swipe left to get there too.',
   },
 
   welcome: {
@@ -68,11 +71,12 @@ export const en: Mirror<typeof vi> = {
 
   signIn: {
     signupTitle: 'Make your circle',
-    signupSub: 'We’ll send you a six-digit code so we know it’s really you.',
+    signupSub:
+      'Set a password for your account. We’ll send a six-digit code to make sure this email is yours.',
     signupCta: 'Continue',
     signinTitle: 'Welcome back',
-    signinSub: 'Use the same email or phone number as last time.',
-    signinCta: 'Send me a code',
+    signinSub: 'Enter your email or phone number and your password.',
+    signinCta: 'Sign in',
 
     methodLabel: 'How to get the code',
     email: 'Email',
@@ -83,6 +87,20 @@ export const en: Mirror<typeof vi> = {
     badEmail: 'That email doesn’t look right. Mind checking it?',
     badPhone: 'That number doesn’t look right. Vietnamese mobiles have 10 digits.',
     terms: 'Tapping “Continue” means you agree to LOVO’s Terms of Service and Privacy Policy.',
+    password: 'Password',
+    passwordNew: 'Create a password',
+    passwordReset: 'New password',
+    passwordRule: 'At least 8 characters.',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    forgot: 'Forgot password?',
+    haveAccount: 'Have an account? Sign in',
+    noAccount: 'No account yet? Create one',
+    backToSignin: 'Remembered it? Sign in',
+    resetTitle: 'Reset your password',
+    resetSub:
+      'Enter your email or phone and a new password. We will send a six-digit code to confirm.',
+    resetCta: 'Send reset code',
   },
 
   profile: {
@@ -605,12 +623,18 @@ export const en: Mirror<typeof vi> = {
       target_not_allowed: 'That email can’t get LOVO’s mail. Use another one.',
       send_failed: 'Couldn’t send the code. Try again in a few minutes.',
       method_unavailable: 'That isn’t open yet. Use email instead.',
-      account_not_found: "No account yet — we switched to sign up, just tap continue.",
-      account_exists: "You already have an account — we switched to sign in, just tap continue.",
+      account_not_found: 'No account yet — we switched to sign up, just tap continue.',
+      account_exists: 'You already have an account — we switched to sign in, just tap continue.',
       session_expired: 'It’s been a while. Sign in again.',
       session_revoked: 'You were signed out on this phone. Sign in again.',
       unauthorized: 'Please sign in again.',
       forbidden: 'You can’t open this.',
+      wrong_credentials: 'Email or password is not right. Please try again.',
+      password_not_set:
+        'This account has no password yet — we switched to setting one, just tap continue.',
+      password_weak: 'Your password needs at least 8 characters.',
+      login_locked: 'Too many wrong tries. Try again in 15 minutes, or tap Forgot password.',
+      login_too_many_here: 'Too many sign-ins from this device. Try again in an hour.',
     },
     user: {
       not_found: 'Couldn’t find this person.',

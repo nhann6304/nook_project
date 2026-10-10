@@ -10,26 +10,12 @@ import {
 import { UserProfileDto } from '../../../core/dto/index.js';
 import { AuthTokensDto } from './auth-tokens.dto.js';
 
-export class VerifyCodeDto implements IVerifyCodeBody {
-  @ApiProperty({ enum: ['email', 'phone'], example: 'email' })
-  @IsIn(['email', 'phone'])
-  method!: TSignInMethod;
-
-  @ApiProperty({ example: 'nam@gmail.com' })
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
-  @IsString()
-  @MaxLength(320)
-  target!: string;
-
-  @ApiProperty({ example: '123456', minLength: LIMITS.codeLength, maxLength: LIMITS.codeLength })
-  @IsString()
-  @Length(LIMITS.codeLength, LIMITS.codeLength)
-  @Matches(/^\d+$/)
-  code!: string;
-
-  // Ba trường dưới đây KHÔNG nằm trong `IVerifyCodeBody` của @nook/shared, và
-  // đó là chủ ý: chúng chỉ để ghi vào sổ phiên cho người dùng biết máy nào đang
-  // đăng nhập. App có gửi thì tốt, không gửi cũng chạy.
+/**
+ * Ba trường KHÔNG nằm trong hợp đồng bên @nook/shared, và đó là chủ ý: chúng
+ * chỉ để ghi vào sổ phiên cho người dùng biết máy nào đang đăng nhập. App có
+ * gửi thì tốt, không gửi cũng chạy. Mọi cửa phát thẻ đều nhận chúng.
+ */
+export abstract class DeviceFieldsDto {
   @ApiProperty({ required: false, example: 'iPhone của Nam' })
   @IsOptional()
   @IsString()
@@ -46,6 +32,24 @@ export class VerifyCodeDto implements IVerifyCodeBody {
   @IsString()
   @MaxLength(24)
   appVersion?: string;
+}
+
+export class VerifyCodeDto extends DeviceFieldsDto implements IVerifyCodeBody {
+  @ApiProperty({ enum: ['email', 'phone'], example: 'email' })
+  @IsIn(['email', 'phone'])
+  method!: TSignInMethod;
+
+  @ApiProperty({ example: 'nam@gmail.com' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @MaxLength(320)
+  target!: string;
+
+  @ApiProperty({ example: '123456', minLength: LIMITS.codeLength, maxLength: LIMITS.codeLength })
+  @IsString()
+  @Length(LIMITS.codeLength, LIMITS.codeLength)
+  @Matches(/^\d+$/)
+  code!: string;
 }
 
 export class VerifyCodeResultDto extends AuthTokensDto implements IVerifyCodeResult {

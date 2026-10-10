@@ -1,4 +1,4 @@
-import { SIGNIN_METHODS_ENABLED } from '../../constant/index.js';
+import { AUTH_LIMITS, SIGNIN_METHODS_ENABLED } from '../../constant/index.js';
 import type { TEnabledSignInMethod, TSignInMethod } from '../../type/index.js';
 
 export function isSignInMethodEnabled(method: TSignInMethod): method is TEnabledSignInMethod {
@@ -36,4 +36,12 @@ export function looksLikePhone(value: string): boolean {
 export function stripPhone(value: string): string {
   const s = value.trim().replace(/[^\d+]/g, '');
   return s.startsWith('+') ? `+${s.slice(1).replace(/\+/g, '')}` : s.replace(/\+/g, '');
+}
+
+/**
+ * Mật khẩu đủ dài chưa — app sáng nút theo nó. Server GỌI LẠI hàm này (luật độ
+ * dài phải giống hệt hai bên), rồi mới băm.
+ */
+export function isPasswordLongEnough(value: string): boolean {
+  return value.length >= AUTH_LIMITS.passwordMin && value.length <= AUTH_LIMITS.passwordMax;
 }

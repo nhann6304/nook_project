@@ -51,6 +51,36 @@ export interface IVerifyCodeResult extends IAuthTokens {
   user: IUserProfile;
 }
 
+// ── Mật khẩu (10/10/2026) ───────────────────────────────────────────────────
+
+/** POST /v1/auth/signup — mã 6 số chứng minh hộp thư/số là của mình, kèm mật khẩu. */
+export interface ISignupBody {
+  method: TSignInMethod;
+  target: string;
+  code: string;
+  password: string;
+}
+
+/** POST /v1/auth/login */
+export interface ILoginBody {
+  method: TSignInMethod;
+  target: string;
+  password: string;
+}
+
+/**
+ * POST /v1/auth/password/reset — đặt mật khẩu mới bằng mã (intent 'reset').
+ * Thành công thì mọi phiên cũ của tài khoản bị thu hồi, máy này nhận thẻ mới.
+ */
+export interface IResetPasswordBody {
+  method: TSignInMethod;
+  target: string;
+  code: string;
+  password: string;
+}
+
+// Cả ba cửa trên trả `IVerifyCodeResult` như `/verify` — app đi chung một nhánh.
+
 // ── POST /v1/auth/refresh · /logout ─────────────────────────────────────────
 
 export interface IRefreshBody {

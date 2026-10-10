@@ -187,6 +187,11 @@ export class SessionService {
     await this.sessions.revoke(claims.sid);
   }
 
+  /** Đăng xuất MỌI máy của một người (đặt lại mật khẩu). */
+  async closeAll(userId: string): Promise<void> {
+    await this.sessions.revokeAllOf(userId);
+  }
+
   /**
    * Phiên còn sống không. Cổng thẻ gọi hàm này ở MỖI request.
    *

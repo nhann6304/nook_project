@@ -1,47 +1,87 @@
 /**
- * Nối màn Đăng nhập với kho trạng thái và với cửa gọi server.
+ * Nối màn Tạo tài khoản / Đăng nhập / Quên mật khẩu với kho trạng thái và cửa
+ * gọi server (10/10/2026: có mật khẩu).
  *
- * Màn hình (src/features/auth/screens/SignInScreen) không biết gì về router,
- * cũng không biết gì về server — nó nhận `onSubmit` rồi gọi. Nhờ vậy nó test
- * được và xem trước được mà không cần dựng cả app.
+ *   signin  → `login` thẳng, không mã. Chưa đặt tên thì vào màn Tên + ảnh.
+ *   signup  → xin mã (intent 'signup') → màn Nhập mã gửi mã + mật khẩu.
+ *   reset   → xin mã (intent 'reset')  → màn Nhập mã gửi mã + mật khẩu mới.
+ *
+ * Nhầm cửa thì đổi cửa TẠI CHỖ, giữ nguyên email + mật khẩu đã gõ.
  */
 import { useCallback, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SignInScreen, type SignInIntent } from '@/features/auth/screens/sign-in/SignInScreen';
-import { sendCode } from '@/features/auth/api/authApi';
-import { useAuth } from '@/features/auth/store/authStore';
 import { AUTH_ERR } from '@nook/shared/model/constant';
+import { SignInScreen, type SignInIntent } from '@/features/auth/screens/sign-in/SignInScreen';
+import { login, sendCode } from '@/features/auth/api/authApi';
+import { useAuth } from '@/features/auth/store/authStore';
 import type { SignInMethod } from '@/features/auth/utils/identity';
+
+/** Server nói đứng nhầm cửa → cửa đúng. */
+const RIGHT_DOOR: Record<string, SignInIntent> = {
+  [AUTH_ERR.ACCOUNT_NOT_FOUND]: 'signup',
+  [AUTH_ERR.ACCOUNT_EXISTS]: 'signin',
+  [AUTH_ERR.PASSWORD_NOT_SET]: 'reset',
+};
 
 export default function SignIn() {
   const router = useRouter();
   const params = useLocalSearchParams<{ intent?: SignInIntent }>();
-  // Cửa đang đứng — đổi tại chỗ khi server nói đứng nhầm, email đã gõ giữ nguyên.
   const [intent, setIntent] = useState<SignInIntent>(params.intent ?? 'signup');
   const beginCode = useAuth((s) => s.beginCode);
+  const codeAccepted = useAuth((s) => s.codeAccepted);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const submit = useCallback(
-    async (method: SignInMethod, target: string) => {
+    async (method: SignInMethod, target: string, password: string) => {
       setBusy(true);
       setError(null);
+
+      if (intent === 'signin') {
+        const res = await login(method, target, password);
+        setBusy(false);
+        if (!res.ok) {
+          const door = RIGHT_DOOR[res.code];
+          if (door) setIntent(door);
+          setError(res.message);
+          return;
+        }
+        if (res.isNew) {
+          router.replace('/(auth)/profile');
+          return;
+        }
+        codeAccepted();
+        router.replace('/(app)/(tabs)/home');
+        return;
+      }
+
       const res = await sendCode(method, target, intent);
       setBusy(false);
       if (!res.ok) {
-        // Nhầm cửa: chuyển sang cửa đúng, bấm tiếp một lần là xong — không bắt
-        // người ta quay ra màn Chào rồi gõ lại email.
-        if (res.code === AUTH_ERR.ACCOUNT_NOT_FOUND) setIntent('signup');
-        if (res.code === AUTH_ERR.ACCOUNT_EXISTS) setIntent('signin');
+        const door = RIGHT_DOOR[res.code];
+        if (door) setIntent(door);
         setError(res.message);
         return;
       }
-      beginCode({ method, target, intent });
+      beginCode({ method, target, intent, password });
       router.push('/(auth)/verify');
     },
-    [beginCode, intent, router],
+    [beginCode, codeAccepted, intent, router],
   );
 
-  return <SignInScreen intent={intent} busy={busy} error={error} onSubmit={submit} />;
+  const switchTo = useCallback((next: SignInIntent) => {
+    setError(null);
+    setIntent(next);
+  }, []);
+
+  return (
+    <SignInScreen
+      intent={intent}
+      busy={busy}
+      error={error}
+      onSubmit={(m, tg, pw) => void submit(m, tg, pw)}
+      onSwitch={switchTo}
+    />
+  );
 }

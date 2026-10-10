@@ -6,8 +6,11 @@
 
 export type SignInMethod = 'email' | 'phone';
 
-/** Cửa vào ở màn Chào: tạo mới hay đã có tài khoản. Server soi trước khi gửi mã. */
-export type SignInIntent = 'signup' | 'signin';
+/**
+ * Màn nào: tạo tài khoản · đăng nhập (mật khẩu) · quên mật khẩu. Server soi
+ * trước khi gửi mã — nhầm cửa thì app tự chuyển (10/10/2026: có mật khẩu).
+ */
+export type SignInIntent = 'signup' | 'signin' | 'reset';
 
 /** Đủ chặt để chặn lỗi gõ, không chặt tới mức loại nhầm email hợp lệ. */
 const EMAIL = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
@@ -54,3 +57,6 @@ export function displayTarget(method: SignInMethod, value: string): string {
 export function isValidTarget(method: SignInMethod, value: string): boolean {
   return method === 'email' ? isEmail(value) : isVnPhone(value);
 }
+
+/** Mật khẩu đủ dài chưa — cùng luật với server (`@nook/shared`). */
+export { isPasswordLongEnough } from '@nook/shared/model/util';

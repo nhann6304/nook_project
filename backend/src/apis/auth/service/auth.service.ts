@@ -13,13 +13,25 @@ import {
   type IVerifyCodeResult,
 } from '@nook/shared';
 import { AppException } from '../../../core/error/index.js';
+import { Transactional } from '../../../core/transaction/index.js';
+import type { User } from '../../../database/entity/index.js';
 import { UserService } from '../../app/user/user.service.js';
 import { UserMapper } from '../../app/user/user.mapper.js';
 import { CodeSenderService } from '../../../infra/notify/service/index.js';
 import { CodeService } from './code.service.js';
 import { EmailGuardService } from './email-guard.service.js';
+import { PasswordService } from './password.service.js';
 import { SessionService } from './session.service.js';
-import type { SendCodeDto, VerifyCodeDto, LogoutDto, RefreshDto } from '../dto/index.js';
+import type {
+  DeviceFieldsDto,
+  LoginDto,
+  LogoutDto,
+  RefreshDto,
+  ResetPasswordDto,
+  SendCodeDto,
+  SignupDto,
+  VerifyCodeDto,
+} from '../dto/index.js';
 
 /**
  * Người dùng gõ số điện thoại không kèm mã nước thì hiểu là số Việt Nam.
@@ -54,6 +66,7 @@ export class AuthService {
     private readonly users: UserService,
     private readonly userMapper: UserMapper,
     private readonly sender: CodeSenderService,
+    private readonly passwords: PasswordService,
   ) {}
 
   /**
@@ -121,7 +134,8 @@ export class AuthService {
   ): Promise<void> {
     const exists = await this.users.hasIdentity(method, target);
 
-    if (intent === 'signin' && !exists) {
+    // 'reset' soi như 'signin': quên mật khẩu của tài khoản chưa có thì không gửi thư.
+    if ((intent === 'signin' || intent === 'reset') && !exists) {
       throw new AppException(ERR.ACCOUNT_NOT_FOUND, HttpStatus.CONFLICT);
     }
     if (intent === 'signup' && exists) {
@@ -147,10 +161,103 @@ export class AuthService {
     // cái đã cuộn, và đường thử lại chết.
 
     const { user, isNew } = await this.users.findOrCreateByIdentity(dto.method, target);
+    return this.signIn(user, isNew, dto, ip);
+  }
+
+  /**
+   * Tạo tài khoản bằng mã (intent 'signup') + mật khẩu.
+   *
+   * Mọi thứ từ chối được thì từ chối TRƯỚC `consume`: mật khẩu ngắn hay đích đã
+   * có chủ mà vẫn đốt mã thì người ta phải xin mã lại chỉ vì gõ lỡ một ô.
+   */
+  async signup(dto: SignupDto, ip: string | null): Promise<IVerifyCodeResult> {
+    const target = this.normalize(dto.method, dto.target);
+    await this.codes.guardVerifyCaller(ip);
+    this.passwords.assertStrong(dto.password);
+
+    if (await this.users.hasIdentity(dto.method, target)) {
+      throw new AppException(ERR.ACCOUNT_EXISTS, HttpStatus.CONFLICT);
+    }
+
+    await this.codes.consume(dto.method, target, dto.code);
+
+    // Băm NGOÀI giao dịch: argon2 mất vài chục ms, đừng giữ kết nối DB chờ nó.
+    const hash = await this.passwords.hash(dto.password);
+    const user = await this.users.createWithPassword(dto.method, target, hash);
+    return this.signIn(user, true, dto, ip);
+  }
+
+  /**
+   * Đăng nhập bằng mật khẩu.
+   *
+   * Không có tài khoản và sai mật khẩu trả CÙNG một mã, cùng một độ trễ (băm
+   * giả). `password_not_set` thì lộ là tài khoản có thật — chấp nhận, vì
+   * `/auth/code` với intent đã nói điều đó, và cùng trần theo máy gọi.
+   */
+  async login(dto: LoginDto, ip: string | null): Promise<IVerifyCodeResult> {
+    const target = this.normalize(dto.method, dto.target);
+    await this.passwords.guardCaller(ip);
+    await this.passwords.assertNotLocked(dto.method, target);
+
+    const user = await this.users.findByIdentity(dto.method, target);
+    if (!user) {
+      await this.passwords.verifyDummy(dto.password);
+      await this.passwords.recordFailure(dto.method, target);
+      throw new AppException(ERR.WRONG_CREDENTIALS, HttpStatus.UNAUTHORIZED);
+    }
+
+    const hash = await this.users.passwordHashOf(user.id);
+    if (!hash) throw new AppException(ERR.PASSWORD_NOT_SET, HttpStatus.CONFLICT);
+
+    if (!(await this.passwords.verify(hash, dto.password))) {
+      await this.passwords.recordFailure(dto.method, target);
+      throw new AppException(ERR.WRONG_CREDENTIALS, HttpStatus.UNAUTHORIZED);
+    }
+
+    await this.passwords.clearFailures(dto.method, target);
+    return this.signIn(user, user.onboardedAt === null, dto, ip);
+  }
+
+  /**
+   * Quên mật khẩu: mã (intent 'reset') + mật khẩu mới.
+   *
+   * Thu hồi MỌI phiên cũ — người quên mật khẩu có thể đang đặt lại vì bị chiếm
+   * tài khoản, và phiên của kẻ chiếm phải chết theo. Máy này nhận phiên mới.
+   */
+  async resetPassword(dto: ResetPasswordDto, ip: string | null): Promise<IVerifyCodeResult> {
+    const target = this.normalize(dto.method, dto.target);
+    await this.codes.guardVerifyCaller(ip);
+    this.passwords.assertStrong(dto.password);
+
+    const user = await this.users.findByIdentity(dto.method, target);
+    if (!user) throw new AppException(ERR.ACCOUNT_NOT_FOUND, HttpStatus.CONFLICT);
+
+    await this.codes.consume(dto.method, target, dto.code);
+
+    const hash = await this.passwords.hash(dto.password);
+    await this.replacePassword(user.id, hash);
+    await this.passwords.clearFailures(dto.method, target);
+    return this.signIn(user, user.onboardedAt === null, dto, ip);
+  }
+
+  /** Đổi mật khẩu và thu phiên cũ: xong cả hai hoặc không cái nào. */
+  @Transactional()
+  private async replacePassword(userId: string, hash: string): Promise<void> {
+    await this.users.setPasswordHash(userId, hash);
+    await this.sessions.closeAll(userId);
+  }
+
+  /** Mở phiên cho máy này và gói câu trả lời chung của mọi cửa phát thẻ. */
+  private async signIn(
+    user: User,
+    isNew: boolean,
+    device: DeviceFieldsDto,
+    ip: string | null,
+  ): Promise<IVerifyCodeResult> {
     const tokens = await this.sessions.open(user.id, {
-      deviceName: dto.deviceName ?? null,
-      platform: dto.platform ?? null,
-      appVersion: dto.appVersion ?? null,
+      deviceName: device.deviceName ?? null,
+      platform: device.platform ?? null,
+      appVersion: device.appVersion ?? null,
       ip,
     });
 

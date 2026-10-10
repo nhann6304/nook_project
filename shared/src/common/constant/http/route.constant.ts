@@ -11,8 +11,14 @@ export const API = {
   auth: {
     /** POST — xin mã 6 số về email hoặc số điện thoại */
     code: '/v1/auth/code',
-    /** POST — nộp mã, đổi lấy thẻ phiên */
+    /** POST — nộp mã, đổi lấy thẻ phiên (đăng nhập bằng mã — đường cũ, vẫn giữ) */
     verify: '/v1/auth/verify',
+    /** POST — tạo tài khoản: mã đã gửi (intent 'signup') + mật khẩu → thẻ phiên */
+    signup: '/v1/auth/signup',
+    /** POST — đăng nhập bằng email/số + mật khẩu → thẻ phiên */
+    login: '/v1/auth/login',
+    /** POST — quên mật khẩu: mã đã gửi (intent 'reset') + mật khẩu mới → thẻ phiên */
+    resetPassword: '/v1/auth/password/reset',
     /** POST — đổi thẻ dài hạn lấy thẻ ngắn hạn mới */
     refresh: '/v1/auth/refresh',
     /** POST — thu hồi thẻ dài hạn của chính phiên này */

@@ -1,7 +1,11 @@
+/**
+ * Màn Nhập mã: mã + mật khẩu đã gõ ở màn trước → tạo tài khoản hoặc đổi mật
+ * khẩu. Người mới (chưa đặt tên) sang màn Tên + ảnh, người cũ vào thẳng app.
+ */
 import { useCallback, useState } from 'react';
 import { Redirect, useRouter } from 'expo-router';
 import { VerifyCodeScreen } from '@/features/auth/screens/verify-code/VerifyCodeScreen';
-import { sendCode, verifyCode } from '@/features/auth/api/authApi';
+import { resetPassword, sendCode, signup, verifyCode } from '@/features/auth/api/authApi';
 import { useAuth } from '@/features/auth/store/authStore';
 
 export default function Verify() {
@@ -17,7 +21,15 @@ export default function Verify() {
       if (!pending) return false;
       setBusy(true);
       setError(null);
-      const res = await verifyCode(pending.method, pending.target, code, pending.intent);
+      // Có mật khẩu đi kèm (10/10/2026): tạo tài khoản / đặt lại mật khẩu bằng
+      // mã. Không có thì đường cũ — đăng nhập bằng mã.
+      const { method, target, intent, password } = pending;
+      const res =
+        password && intent === 'signup'
+          ? await signup(method, target, code, password)
+          : password && intent === 'reset'
+            ? await resetPassword(method, target, code, password)
+            : await verifyCode(method, target, code, intent);
       setBusy(false);
       if (!res.ok) {
         setError(res.message);

@@ -63,6 +63,12 @@ export async function saveSession(tokens: IAuthTokens): Promise<void> {
   await SecureStore.setItemAsync(REFRESH_KEY, tokens.refreshToken);
 }
 
+/** Thẻ giả cho chế độ hàng giả — để tắt app mở lại vẫn còn đăng nhập như bản thật. */
+const MOCK_TOKEN = 'mock-session';
+export async function saveMockSession(): Promise<void> {
+  await SecureStore.setItemAsync(REFRESH_KEY, MOCK_TOKEN);
+}
+
 export async function hasSession(): Promise<boolean> {
   return (await SecureStore.getItemAsync(REFRESH_KEY)) !== null;
 }
@@ -72,7 +78,9 @@ export async function clearSession(): Promise<void> {
   const refreshToken = await SecureStore.getItemAsync(REFRESH_KEY);
   access = null;
   await SecureStore.deleteItemAsync(REFRESH_KEY);
-  if (LIVE && refreshToken) void send('POST', API.auth.logout, { refreshToken }, null);
+  if (LIVE && refreshToken && refreshToken !== MOCK_TOKEN) {
+    void send('POST', API.auth.logout, { refreshToken }, null);
+  }
 }
 
 function fail(code: string, status = 0): IApiError {

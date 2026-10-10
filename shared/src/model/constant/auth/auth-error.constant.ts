@@ -33,6 +33,21 @@ export const AUTH_ERR = {
   /** Vào từ cửa "tạo tài khoản", nhưng email này đã có tài khoản rồi */
   ACCOUNT_EXISTS: 'auth.account_exists',
 
+  // — mật khẩu (10/10/2026) —
+  /**
+   * Email/số hoặc mật khẩu sai. CỐ Ý một mã cho cả hai — không nói cái nào sai,
+   * kẻ dò không biết được tài khoản có tồn tại qua cửa này.
+   */
+  WRONG_CREDENTIALS: 'auth.wrong_credentials',
+  /** Tài khoản chưa đặt mật khẩu (mở bằng mã từ trước) — app mời "Quên mật khẩu" để đặt. */
+  PASSWORD_NOT_SET: 'auth.password_not_set',
+  /** Mật khẩu quá ngắn / quá dài (xem AUTH_LIMITS.passwordMin/Max) */
+  PASSWORD_WEAK: 'auth.password_weak',
+  /** Sai mật khẩu quá nhiều lần, tài khoản tạm khoá — `detail.retryAfterSeconds` */
+  LOGIN_LOCKED: 'auth.login_locked',
+  /** Đăng nhập quá nhiều trong một giờ, tính theo máy gọi */
+  LOGIN_TOO_MANY_HERE: 'auth.login_too_many_here',
+
   // — phiên —
   /** Thẻ hết hạn */
   SESSION_EXPIRED: 'auth.session_expired',

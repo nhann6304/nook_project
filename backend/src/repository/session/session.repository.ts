@@ -43,7 +43,8 @@ export class SessionRepository extends BaseRepository<Session> {
    * Thu HẾT phiên của một người.
    *
    * Dùng khi thấy thẻ dài hạn bị dùng lại — dấu hiệu thẻ đã bị chép đi. Lúc đó
-   * không biết máy nào là của chủ, nên đá hết rồi để họ đăng nhập lại.
+   * không biết máy nào là của chủ, nên đá hết rồi để họ đăng nhập lại. Và khi
+   * đặt lại mật khẩu: ai đang cầm phiên nhờ mật khẩu cũ thì mất phiên.
    */
   revokeAllOf(userId: string): Promise<number> {
     return this.update({ userId, revokedAt: IsNull() }, { revokedAt: new Date() });

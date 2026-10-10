@@ -57,7 +57,8 @@ export const vi = {
     memoriesTitle: 'Ký ức',
     memoriesBody: 'Lịch ảnh theo từng tháng. Vuốt sang phải cũng tới.',
     chatsTitle: 'Tin nhắn',
-    chatsBody: 'Trò chuyện riêng với từng người, đổi được nền cho mỗi cuộc. Vuốt sang trái cũng tới.',
+    chatsBody:
+      'Trò chuyện riêng với từng người, đổi được nền cho mỗi cuộc. Vuốt sang trái cũng tới.',
   },
 
   /* ---------- Màn 1 — Chào mừng ---------- */
@@ -73,11 +74,11 @@ export const vi = {
   /* ---------- Màn 2 — Đăng nhập / Tạo tài khoản ---------- */
   signIn: {
     signupTitle: 'Tạo góc của bạn',
-    signupSub: 'Chúng mình gửi bạn một mã sáu số để xác nhận đây đúng là bạn.',
+    signupSub: 'Đặt mật khẩu cho tài khoản. Mình gửi một mã sáu số để chắc email này là của bạn.',
     signupCta: 'Tiếp tục',
     signinTitle: 'Chào bạn quay lại',
-    signinSub: 'Nhập lại email hoặc số điện thoại bạn đã dùng lần trước.',
-    signinCta: 'Gửi mã cho mình',
+    signinSub: 'Nhập email hoặc số điện thoại và mật khẩu của bạn.',
+    signinCta: 'Đăng nhập',
 
     methodLabel: 'Cách nhận mã',
     email: 'Email',
@@ -88,6 +89,19 @@ export const vi = {
     badEmail: 'Email này trông chưa đúng. Bạn xem lại giúp mình nhé.',
     badPhone: 'Số này chưa đúng. Số di động Việt Nam có 10 chữ số.',
     terms: 'Chạm “Tiếp tục” là bạn đồng ý với Điều khoản dịch vụ và Chính sách riêng tư của LOVO.',
+    password: 'Mật khẩu',
+    passwordNew: 'Tạo mật khẩu',
+    passwordReset: 'Mật khẩu mới',
+    passwordRule: 'Ít nhất 8 ký tự.',
+    showPassword: 'Hiện mật khẩu',
+    hidePassword: 'Ẩn mật khẩu',
+    forgot: 'Quên mật khẩu?',
+    haveAccount: 'Đã có tài khoản? Đăng nhập',
+    noAccount: 'Chưa có tài khoản? Tạo mới',
+    backToSignin: 'Nhớ ra rồi? Đăng nhập',
+    resetTitle: 'Đặt lại mật khẩu',
+    resetSub: 'Nhập email hoặc số của bạn và mật khẩu mới. Mình gửi một mã sáu số để đổi.',
+    resetCta: 'Gửi mã đổi mật khẩu',
   },
 
   /* ---------- Màn 3 — Nhập mã ---------- */
@@ -615,12 +629,19 @@ export const vi = {
       target_not_allowed: 'Email này không nhận được thư của LOVO. Bạn dùng email khác nhé.',
       send_failed: 'Chưa gửi được mã. Thử lại sau ít phút nhé.',
       method_unavailable: 'Cách này chưa mở. Bạn dùng email nhé.',
-      account_not_found: 'Chưa có tài khoản nào như vậy — mình chuyển sang tạo mới, bạn bấm tiếp nhé.',
+      account_not_found:
+        'Chưa có tài khoản nào như vậy — mình chuyển sang tạo mới, bạn bấm tiếp nhé.',
       account_exists: 'Bạn đã có tài khoản rồi — mình chuyển sang đăng nhập, bạn bấm tiếp nhé.',
       session_expired: 'Lâu rồi bạn chưa vào. Đăng nhập lại nhé.',
       session_revoked: 'Bạn đã đăng xuất trên máy này. Đăng nhập lại nhé.',
       unauthorized: 'Bạn cần đăng nhập lại nhé.',
       forbidden: 'Bạn không mở được phần này.',
+      wrong_credentials: 'Email hoặc mật khẩu chưa đúng. Bạn thử lại nhé.',
+      password_not_set:
+        'Tài khoản này chưa có mật khẩu — mình chuyển sang đặt mật khẩu, bạn bấm tiếp nhé.',
+      password_weak: 'Mật khẩu cần ít nhất 8 ký tự.',
+      login_locked: 'Bạn nhập sai nhiều lần quá. Thử lại sau 15 phút, hoặc bấm Quên mật khẩu nhé.',
+      login_too_many_here: 'Máy này đăng nhập nhiều quá. Thử lại sau một giờ nhé.',
     },
     user: {
       not_found: 'Không tìm thấy người này.',

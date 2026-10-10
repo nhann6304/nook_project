@@ -11,7 +11,7 @@
  */
 import { create } from 'zustand';
 import { LIVE, hasSession, onSessionLost } from '@/lib/http/api';
-import type { SignInMethod } from '../utils/identity';
+import type { SignInIntent, SignInMethod } from '../utils/identity';
 
 export type AuthPhase = 'unknown' | 'signed-out' | 'awaiting-code' | 'signed-in';
 
@@ -19,8 +19,13 @@ type Pending = {
   method: SignInMethod;
   /** Chuỗi người dùng đã gõ, chưa chuẩn hoá — dùng để hiện lại cho họ soi. */
   target: string;
-  /** 'signup' hay 'signin' — quyết định chữ trên màn, không quyết định luồng. */
-  intent: 'signup' | 'signin';
+  /** Tạo mới / đặt lại mật khẩu — màn Nhập mã gọi đúng cửa theo chữ này. */
+  intent: SignInIntent;
+  /**
+   * Mật khẩu vừa gõ, chờ mã để gửi kèm. CHỈ ở bộ nhớ, không ghi xuống máy;
+   * `codeAccepted` / `signOut` xoá cùng `pending`.
+   */
+  password?: string;
 };
 
 type AuthState = {
@@ -52,7 +57,13 @@ export const useAuth = create<AuthState>((set) => ({
   clearError: () => set({ error: null }),
   signOut: () => set({ phase: 'signed-out', pending: null, error: null, busy: false }),
   hydrate: async () => {
-    const signedIn = LIVE && (await hasSession());
+    // Cả hàng giả lẫn thật đều cất thẻ trong SecureStore — tắt app mở lại vẫn vào thẳng.
+    // Thẻ giả mà giờ đã nối server thật: lần gọi đầu bị 401 → `onSessionLost` → về màn Chào.
+    const signedIn = await hasSession();
+    if (__DEV__)
+      console.log(
+        `[auth] ${signedIn ? 'session found' : 'no session'} (${LIVE ? 'server' : 'mock'})`,
+      );
     set({ phase: signedIn ? 'signed-in' : 'signed-out' });
   },
 }));

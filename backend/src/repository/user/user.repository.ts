@@ -26,6 +26,19 @@ export class UserRepository extends BaseRepository<User> {
     return this.exists({ usernameKey });
   }
 
+  /**
+   * Dấu vân mật khẩu — chỗ DUY NHẤT đọc cột này (entity khai `select: false`).
+   * `null`: chưa đặt mật khẩu, hoặc không có người này.
+   */
+  async findPasswordHash(id: string): Promise<string | null> {
+    const row = await this.findOne({ id }, { select: { id: true, passwordHash: true } });
+    return row?.passwordHash ?? null;
+  }
+
+  setPasswordHash(id: string, passwordHash: string): Promise<number> {
+    return this.update({ id }, { passwordHash });
+  }
+
   /** Chấm giờ ghé thăm. Dùng `update` vì chỉ đụng một cột, không cần đọc lên. */
   touchLastSeen(id: string): Promise<number> {
     return this.update({ id }, { lastSeenAt: new Date() });

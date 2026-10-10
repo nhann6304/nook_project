@@ -48,6 +48,7 @@ const NAMES = {
   fire: 'fire',
   flash: 'flash',
   flashOff: 'flashlight',
+  eye: 'eye-2',
   eyeOff: 'eye-close',
   timer: 'stopwatch',
   contrast: 'brightness',

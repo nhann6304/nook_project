@@ -27,7 +27,9 @@ export const SIGNIN_METHODS_ENABLED = ['email', 'phone'] as const;
  * Bỏ trống cũng được: khi đó server không soi, gửi mã cho cả hai trường hợp —
  * dành cho màn một-ô-duy-nhất nếu sau này gộp lại.
  */
-export const SIGNIN_INTENTS = ['signin', 'signup'] as const;
+export const SIGNIN_INTENTS = ['signin', 'signup', 'reset'] as const;
+// 'reset' (10/10/2026): xin mã để đặt lại mật khẩu — server soi như 'signin'
+// (chưa có tài khoản thì trả `auth.account_not_found`, không gửi thư).
 
 /** Luật của mã 6 số. App chặn trước cho đỡ phí một vòng mạng; server chặn thật. */
 export const AUTH_LIMITS = {
@@ -60,4 +62,16 @@ export const AUTH_LIMITS = {
    * mã vì người thật gõ sai mã là bình thường.
    */
   verifyPerHourPerIp: 60,
+
+  // — mật khẩu (10/10/2026) —
+  /** Ngắn nhất. App sáng nút theo số này; server kiểm lại. */
+  passwordMin: 8,
+  /** Dài nhất — chặn chuỗi khổng lồ gửi vào để băm cho tốn CPU. */
+  passwordMax: 128,
+  /** Sai mật khẩu tối đa mấy lần cho MỘT tài khoản trước khi tạm khoá. */
+  passwordMaxFails: 10,
+  /** Tạm khoá bao lâu (giây) sau khi sai quá số lần trên. */
+  passwordLockSeconds: 900,
+  /** Trần số lần đăng nhập bằng mật khẩu trong một giờ, theo máy gọi. */
+  loginPerHourPerIp: 60,
 } as const;
