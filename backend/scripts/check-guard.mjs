@@ -18,6 +18,9 @@ const UUID = '00000000-0000-4000-8000-000000000000';
 const PUBLIC = new Set([
   'POST /v1/auth/code',
   'POST /v1/auth/verify',
+  'POST /v1/auth/signup',
+  'POST /v1/auth/login',
+  'POST /v1/auth/password/reset',
   'POST /v1/auth/refresh',
   'POST /v1/auth/logout',
   'GET /health',

@@ -26,7 +26,7 @@ soi — đó là lý do file này tồn tại.
 
 | Muốn biết | Mục |
 |---|---|
-| Đăng nhập không mật khẩu · thẻ · phiên · hai cửa signin/signup | 1 |
+| Đăng nhập bằng mã và mật khẩu · thẻ · phiên · hai cửa signin/signup | 1 |
 | Đặt tệp ở đâu · luật tầng · vì sao chia theo khán giả | 2 |
 | **Bốn lớp gốc · giao dịch · mapper · vì sao không quan hệ ORM** | **3 — đọc trước khi viết module thứ ba** |
 | Ảnh: xin đường ký, bản nhẹ, ai được xem, chọn kho | 4 |
@@ -178,7 +178,7 @@ Cần: **Postgres trên máy cổng 5432** · **Redis Docker cổng 6380** · Mi
 Năm bài smoke gõ vào server đang chạy, mỗi bài kết bằng một dòng ĐẠT/HỎNG:
 
 ```bash
-backend/scripts/smoke-auth.sh          29 bước — xin mã, xoay thẻ, thẻ bị chép, hai cửa, SMS (27 khi SMS_SENDER=off)
+backend/scripts/smoke-auth.sh          46 bước — xin mã, xoay thẻ, thẻ bị chép, hai cửa, SMS, mật khẩu (44 khi SMS_SENDER=off)
 backend/scripts/smoke-antibot.sh       14 bước — IP giả, gộp hộp thư, mail rác, dấu vân, trần nộp
 backend/scripts/smoke-username.sh      15 bước — có cả cuộc đua hai người cùng chọn
 backend/scripts/smoke-media.sh         20 bước — bằng ảnh THẬT, so sha256

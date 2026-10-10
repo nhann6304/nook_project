@@ -12,7 +12,7 @@ Cả cụm chạy bằng Docker được: mục 13.
 ```bash
 ./setup/mac/run.sh be             # cửa sổ 1 — server  (windows: setup/win/run.bat be)
 npm run migration:run             # LẦN ĐẦU — bảng không tự dựng
-./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 27 bước của luồng đăng nhập
+./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 46 bước của luồng đăng nhập
 ./backend/scripts/smoke-antibot.sh   #        14 bước của phần chống bot
 ./backend/scripts/smoke-username.sh  #        15 bước của tên riêng, có cả cuộc đua
 ./backend/scripts/smoke-media.sh  #           20 bước của đường ảnh, bằng ảnh THẬT
@@ -21,8 +21,9 @@ npm run migration:run             # LẦN ĐẦU — bảng không tự dựng
 
 Cần: **Postgres trên máy** (cổng 5432) và **Docker** cho Redis.
 
-`smoke-auth.sh` đi hết 27 bước — xin mã, chặn xin dồn, mã sai, mã đúng, mã dùng
-một lần, xoay thẻ, thẻ bị chép, hạn phiên đẩy ra xa, hai cửa signin/signup, cổng
+`smoke-auth.sh` đi hết 46 bước (44 khi `SMS_SENDER=off`) — xin mã, chặn xin dồn,
+mã sai, mã đúng, mã dùng một lần, xoay thẻ, thẻ bị chép, hạn phiên đẩy ra xa, hai
+cửa signin/signup, mật khẩu (tạo, đăng nhập, quên, khoá sau 10 lần sai), cổng
 thẻ — rồi kết bằng một dòng ĐẠT/HỎNG. Nó đọc mã 6 số từ
 `backend/.logs/server.log`, tệp mà `run.sh` ghi ra; log ở chỗ khác thì đặt
 `NOOK_LOG=<đường dẫn>`, server ở cổng khác thì `BASE=http://localhost:<cổng>`.
@@ -51,12 +52,15 @@ cứng trong script thì sớm muộn lệch với `.env` của máy thật.
 
 ## 1. Đã có gì, chưa có gì
 
-Mười bốn đường, **tất cả đã chạy được** (thêm sáu đường chat — mục 12):
+Mười bảy đường, **tất cả đã chạy được** (thêm sáu đường chat — mục 12):
 
 | | Đường | |
 |---|---|---|
-| `POST` | `/v1/auth/code` | xin mã 6 số |
+| `POST` | `/v1/auth/code` | xin mã 6 số (`intent`: `signin` · `signup` · `reset`) |
 | `POST` | `/v1/auth/verify` | nộp mã, nhận thẻ, chưa có tài khoản thì mở luôn |
+| `POST` | `/v1/auth/signup` | mã + mật khẩu → tài khoản mới + thẻ |
+| `POST` | `/v1/auth/login` | email/số + mật khẩu → thẻ |
+| `POST` | `/v1/auth/password/reset` | mã + mật khẩu mới → thu MỌI phiên cũ, thẻ mới |
 | `POST` | `/v1/auth/refresh` | xoay thẻ |
 | `POST` | `/v1/auth/logout` | thu thẻ |
 | `GET` | `/v1/me` | hồ sơ của mình |
@@ -68,18 +72,38 @@ Mười bốn đường, **tất cả đã chạy được** (thêm sáu đườ
 | `POST` | `/v1/chats/:id/read` | đã đọc tới `seq` |
 | `PUT` | `/v1/chats/:id/background` | nền khung chat, chỉ phía mình |
 
-### Đăng nhập KHÔNG có mật khẩu
+### Đăng nhập bằng mã, và (từ 10/10/2026) bằng mật khẩu
 
-Không có `POST /auth/login` với email + mật khẩu, và sẽ không có. Hai bước:
+Đường gốc vẫn là mã — hai bước, và vẫn chạy:
 
 ```
 POST /v1/auth/code     { method:'email', target:'nam@gmail.com' }  -> mã 6 số về hộp thư
 POST /v1/auth/verify   { method:'email', target:..., code:'123456' } -> thẻ phiên
 ```
 
-Không mật khẩu thì không có mật khẩu để quên, để dùng lại từ trang khác, để lộ
-khi cơ sở dữ liệu bị đọc trộm. Ai chiếm được hộp thư thì chiếm được tài khoản —
-nhưng với mật khẩu cũng vậy, vì nút "quên mật khẩu" cũng gửi về hộp thư đó.
+Mật khẩu đi chồng lên, KHÔNG thay mã: mã vẫn là thứ chứng minh hộp thư/số là
+của mình, nên tạo tài khoản và quên mật khẩu đều cần mã.
+
+```
+/code intent:'signup'  -> /signup { method, target, code, password }
+/login { method, target, password }
+/code intent:'reset'   -> /password/reset { method, target, code, password }
+```
+
+- Cột `users.password_hash` (argon2, `select: false`), `NULL` = chưa đặt — tài
+  khoản mở bằng mã thì `/login` trả `auth.password_not_set`, app mời "Quên mật khẩu".
+- Độ dài: `isPasswordLongEnough` bên `@nook/shared`, server GỌI LẠI →
+  `auth.password_weak`. Kiểm và soi "đã có chủ" TRƯỚC khi đốt mã.
+- Sai mật khẩu và không có tài khoản cùng một mã `auth.wrong_credentials` (401),
+  cùng độ trễ (băm giả). Hai trần ở Redis: 60 lần/giờ theo máy gọi
+  (`auth.login_too_many_here`), và 10 lần sai/15 phút theo đích →
+  `auth.login_locked` + `detail.retryAfterSeconds`. Trần sau đếm CẢ đích không
+  có tài khoản — không thì nó thành máy dò.
+- Đặt lại mật khẩu thu hồi MỌI phiên cũ (cùng giao dịch với việc ghi mật khẩu)
+  và gỡ khoá đăng nhập; máy vừa đặt lại nhận phiên mới.
+- Mã không gắn với mục đích: một mã xin bằng `signup` dùng được ở `/verify`.
+  Chấp nhận — cửa nào cũng chỉ hỏi "có giữ hộp thư không", và mỗi cửa tự soi
+  tài khoản có/chưa có.
 
 **Một HỘP THƯ = một tài khoản** — hộp thư, không phải chuỗi email. `UNIQUE(kind,
 value_key)` trên `user_identities`, trong đó `value_key` là email đã rút về dạng
@@ -870,8 +894,9 @@ npm run migration:show
    (bẻ khoá ngoại tuyến) không phải mối lo ở đây; còn cái nó gây ra thì có
    thật: 64 MB và một chỗ trong hàng đợi bốn luồng của libuv, cho MỖI lần xin
    mã. Khoá ký là `AUTH_CODE_SECRET`, riêng, không dùng lại khoá thẻ phiên.
-2. Con đếm chống gọi quá dày — theo đích, theo máy gọi ở cửa xin mã, và theo
-   máy gọi ở cửa **nộp** mã (`auth:verify:ip:*`)
+2. Con đếm chống gọi quá dày — theo đích, theo máy gọi ở cửa xin mã, theo
+   máy gọi ở cửa **nộp** mã (`auth:verify:ip:*`), ở cửa mật khẩu
+   (`auth:login:ip:*`), và số lần sai mật khẩu theo đích (`auth:pwfail:*`)
 3. Nhớ kết quả tra MX của tên miền email (`auth:mx:*`), 24 giờ nếu nhận thư
    được, 1 giờ nếu không — để không hỏi DNS lại mỗi lần có người đăng nhập
 4. Hàng đợi việc nền (BullMQ)
@@ -1115,7 +1140,7 @@ viết ra đã có cổng; `@Public()` là cách duy nhất mở ra. Làm ngư�
 rồi nhớ mà đóng — thì cái quên đầu tiên là một lỗ hổng, chứ không phải một lỗi
 401 dễ thấy.
 
-Đúng **5 cửa mở**, và cả 5 đều có lý do: bốn cửa đăng nhập (chưa có thẻ thì lấy
+Đúng **8 cửa mở**, và cả 8 đều có lý do: bảy cửa đăng nhập (chưa có thẻ thì lấy
 đâu ra thẻ) và `/health` (bộ cân bằng tải gõ, không cầm thẻ).
 
 Hai lớp soi, vì hai chuyện khác nhau:
@@ -1133,7 +1158,7 @@ thật vào **từng cửa một** không cầm thẻ, và đòi đúng `401 aut
 bịa đều phải bị cắt.
 
 ```
-DAT - 22/22   (20 cửa HTTP + 2 lối vào socket)
+DAT - 25/25   (23 cửa HTTP + 2 lối vào socket)
 ```
 
 ## 11. Ranh giới với frontend

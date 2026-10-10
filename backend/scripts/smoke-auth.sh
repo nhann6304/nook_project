@@ -38,13 +38,17 @@ read_code() { grep -o 'code: [0-9]\{6\}' "$LOGFILE" 2>/dev/null | tail -1 | awk 
 # Trần "xin mã theo MÁY GỌI" là 30/giờ, mà chính script này gọi mấy chục lần.
 # Không dọn thì chạy hai lượt trong một giờ là lượt sau hỏng oan. Đây là script
 # ở máy dev nên xoá thẳng khoá trong Redis; server không có đường nào tự nới.
+# Trần đăng nhập bằng mật khẩu (`auth:login:ip:*`, 60/giờ) cũng vậy.
 clear_ip_budget() {
-  docker exec nook-redis sh -c \
-    "redis-cli --scan --pattern 'auth:hour:ip:*' | xargs -r redis-cli DEL" >/dev/null 2>&1 && return
-  # Không có container `nook-redis` (Redis chạy thẳng trên máy) thì hỏi REDIS_URL.
-  local url; url="$(env_of REDIS_URL)"
-  command -v redis-cli >/dev/null && [ -n "$url" ] && \
-    redis-cli -u "$url" --scan --pattern 'auth:hour:ip:*' | xargs -r redis-cli -u "$url" DEL >/dev/null 2>&1 || true
+  local p
+  for p in 'auth:hour:ip:*' 'auth:login:ip:*'; do
+    docker exec nook-redis sh -c \
+      "redis-cli --scan --pattern '$p' | xargs -r redis-cli DEL" >/dev/null 2>&1 && continue
+    # Không có container `nook-redis` (Redis chạy thẳng trên máy) thì hỏi REDIS_URL.
+    local url; url="$(env_of REDIS_URL)"
+    command -v redis-cli >/dev/null && [ -n "$url" ] && \
+      redis-cli -u "$url" --scan --pattern "$p" | xargs -r redis-cli -u "$url" DEL >/dev/null 2>&1 || true
+  done
 }
 clear_ip_budget
 
@@ -219,6 +223,65 @@ else
         -d "{\"method\":\"phone\",\"target\":\"+84${PHONE:1}\",\"code\":\"$(read_code)\"}")
   check "nộp mã số điện thoại thì vào được" "auth.signed_in" "$(echo "$R" | code_of)"
 fi
+
+# ── 12b. Mật khẩu: tạo · đăng nhập · quên ──────────────────────────────────
+#
+# `post` tự dựng thân JSON từ cặp khoá=giá trị — cùng lý do với `send` ở trên.
+post() { # post <đường> khoá=giá_trị ...
+  local path="$1"; shift
+  local body
+  body=$(node -e 'const o={};for(const a of process.argv.slice(1)){const i=a.indexOf("=");o[a.slice(0,i)]=a.slice(i+1)}console.log(JSON.stringify(o))' "$@")
+  curl -s -X POST "$BASE$path" -H 'content-type: application/json' -d "$body"
+}
+status_of() { json "d.status ?? ''"; }
+login() { post /v1/auth/login method=email target="$1" password="$2"; }
+
+PMAIL="pass$RANDOM@nook.test"; PW1="mat-khau-cu-$RANDOM"; PW2="mat-khau-moi-$RANDOM"
+
+send "$PMAIL" signup >/dev/null
+PCODE="$(read_code)"
+R=$(post /v1/auth/signup method=email target="$PMAIL" code="$PCODE" password=ngan)
+check "mật khẩu quá ngắn: password_weak" "auth.password_weak" "$(echo "$R" | code_of)"
+# Từ chối TRƯỚC khi đốt mã — cùng mã đó vẫn dùng được ngay sau.
+R=$(post /v1/auth/signup method=email target="$PMAIL" code="$PCODE" password="$PW1")
+check "tạo tài khoản bằng mã + mật khẩu" "auth.signed_in" "$(echo "$R" | code_of)"
+check "tạo tài khoản: isNew" "true" "$(echo "$R" | field "['isNew']")"
+PA=$(echo "$R" | field "['accessToken']")
+check "signup lần hai vào cùng email: account_exists" "auth.account_exists" \
+  "$(post /v1/auth/signup method=email target="$PMAIL" code=000000 password="$PW1" | code_of)"
+
+# Sửa hồ sơ ghi lại cả dòng `users` — không được xoá mất cột mật khẩu (`select: false`).
+curl -s -X PATCH "$BASE/v1/me" -H "authorization: Bearer $PA" -H 'content-type: application/json' \
+  -d '{"displayName":"Smoke"}' >/dev/null
+R=$(login "$PMAIL" "$PW1")
+check "đăng nhập bằng mật khẩu (sau khi sửa hồ sơ)" "auth.signed_in" "$(echo "$R" | code_of)"
+check "hồ sơ không lộ dấu vân mật khẩu" "0" "$(echo "$R" | grep -c -i 'password')"
+PR1=$(echo "$R" | field "['refreshToken']")
+
+R=$(login "$PMAIL" "sai-mat-khau-$RANDOM")
+check "sai mật khẩu: wrong_credentials" "auth.wrong_credentials" "$(echo "$R" | code_of)"
+check "sai mật khẩu: 401" "401" "$(echo "$R" | status_of)"
+check "email không có tài khoản: CÙNG mã đó" "auth.wrong_credentials" \
+  "$(login "khongco$RANDOM@nook.test" "$PW1" | code_of)"
+check "tài khoản mở bằng mã: password_not_set" "auth.password_not_set" "$(login "$MAIL" "$PW1" | code_of)"
+
+# Quên mật khẩu: xin mã (intent reset) -> mã + mật khẩu mới.
+check "quên mật khẩu, email chưa có: account_not_found" "auth.account_not_found" \
+  "$(send_code "khongco$RANDOM@nook.test" reset)"
+check "quên mật khẩu: xin mã" "auth.code_sent" "$(send_code "$PMAIL" reset)"
+R=$(post /v1/auth/password/reset method=email target="$PMAIL" code="$(read_code)" password="$PW2")
+check "đặt lại mật khẩu bằng mã" "auth.signed_in" "$(echo "$R" | code_of)"
+check "thẻ dài hạn cũ chết sau khi đặt lại" "auth.session_revoked" \
+  "$(curl -s -X POST "$BASE/v1/auth/refresh" -H 'content-type: application/json' -d "{\"refreshToken\":\"$PR1\"}" | code_of)"
+check "mật khẩu cũ hết dùng được" "auth.wrong_credentials" "$(login "$PMAIL" "$PW1" | code_of)"
+check "mật khẩu mới vào được" "auth.signed_in" "$(login "$PMAIL" "$PW2" | code_of)"
+
+# Khoá sau N lần sai — đo trên email KHÔNG có tài khoản: khoá phải giống hệt,
+# không thì `login_locked` thành cách dò ai có tài khoản.
+LOCKMAIL="khoa$RANDOM@nook.test"
+for i in $(seq 1 10); do login "$LOCKMAIL" "sai-$i-mat-khau" >/dev/null; done
+check "sai 10 lần thì tạm khoá" "auth.login_locked" "$(login "$LOCKMAIL" "sai-mat-khau" | code_of)"
+clear_ip_budget
 
 # ── 13. Cổng thẻ ────────────────────────────────────────────────────────────
 check "không thẻ thì không vào" "auth.unauthorized" "$(curl -s "$BASE/v1/me" | code_of)"

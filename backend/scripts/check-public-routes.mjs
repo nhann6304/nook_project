@@ -26,7 +26,7 @@ const SRC = fileURLToPath(new URL('../src/', import.meta.url));
  * Neu khong chac thi dung them.
  */
 const ALLOWED = new Map([
-  ['apis/auth/auth.controller.ts', 4],   // 4 cua dang nhap: chua co the thi lay dau ra the
+  ['apis/auth/auth.controller.ts', 7],   // 7 cua dang nhap (ma, mat khau, lam moi, thoat): chua co the thi lay dau ra the
   ['apis/health/health.controller.ts', 1], // do song chet cho bo can bang tai
 ]);
 

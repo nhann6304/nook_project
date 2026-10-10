@@ -5,9 +5,15 @@ import { API, MSG } from '@nook/shared';
 import { Public, Message, ApiErrors, ApiNoData, ApiResult } from '../../core/decorator/index.js';
 import { AuthService } from './service/auth.service.js';
 import {
+  LOGIN_EXAMPLES,
+  RESET_PASSWORD_EXAMPLES,
   SEND_CODE_EXAMPLES,
+  SIGNUP_EXAMPLES,
   VERIFY_CODE_EXAMPLES,
+  LoginDto,
+  ResetPasswordDto,
   SendCodeDto,
+  SignupDto,
   SendCodeResultDto,
   VerifyCodeDto,
   VerifyCodeResultDto,
@@ -17,9 +23,9 @@ import {
 } from './dto/index.js';
 
 /**
- * Bốn cửa của việc đăng nhập.
+ * Bảy cửa của việc đăng nhập.
  *
- * Cả bốn đều `@Public()` — người chưa đăng nhập thì làm gì có thẻ để qua cổng.
+ * Cả bảy đều `@Public()` — người chưa đăng nhập thì làm gì có thẻ để qua cổng.
  * Kể cả `logout`: thẻ dài hạn nộp lên đã tự nói nó là phiên nào, và bắt phải có
  * thẻ ngắn hạn còn hạn mới cho đăng xuất là bắt người ta kẹt lại.
  *
@@ -56,6 +62,45 @@ export class AuthController {
   @ApiErrors(400, 410, 429)
   verify(@Body() dto: VerifyCodeDto, @Req() req: FastifyRequest): Promise<VerifyCodeResultDto> {
     return this.auth.verifyCode(dto, req.ip ?? null);
+  }
+
+  @Public()
+  @Post(API.auth.signup)
+  @HttpCode(HttpStatus.OK)
+  @Message(MSG.SIGNED_IN)
+  @ApiOperation({ summary: 'Tạo tài khoản bằng mã + mật khẩu' })
+  @ApiBody({ type: SignupDto, examples: SIGNUP_EXAMPLES })
+  @ApiResult(VerifyCodeResultDto)
+  @ApiErrors(400, 409, 410, 429)
+  signup(@Body() dto: SignupDto, @Req() req: FastifyRequest): Promise<VerifyCodeResultDto> {
+    return this.auth.signup(dto, req.ip ?? null);
+  }
+
+  @Public()
+  @Post(API.auth.login)
+  @HttpCode(HttpStatus.OK)
+  @Message(MSG.SIGNED_IN)
+  @ApiOperation({ summary: 'Đăng nhập bằng mật khẩu' })
+  @ApiBody({ type: LoginDto, examples: LOGIN_EXAMPLES })
+  @ApiResult(VerifyCodeResultDto)
+  @ApiErrors(400, 401, 409, 429)
+  login(@Body() dto: LoginDto, @Req() req: FastifyRequest): Promise<VerifyCodeResultDto> {
+    return this.auth.login(dto, req.ip ?? null);
+  }
+
+  @Public()
+  @Post(API.auth.resetPassword)
+  @HttpCode(HttpStatus.OK)
+  @Message(MSG.SIGNED_IN)
+  @ApiOperation({ summary: 'Đặt lại mật khẩu bằng mã' })
+  @ApiBody({ type: ResetPasswordDto, examples: RESET_PASSWORD_EXAMPLES })
+  @ApiResult(VerifyCodeResultDto)
+  @ApiErrors(400, 409, 410, 429)
+  resetPassword(
+    @Body() dto: ResetPasswordDto,
+    @Req() req: FastifyRequest,
+  ): Promise<VerifyCodeResultDto> {
+    return this.auth.resetPassword(dto, req.ip ?? null);
   }
 
   @Public()

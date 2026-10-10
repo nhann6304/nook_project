@@ -89,7 +89,12 @@ export class LoginDto extends DeviceFieldsDto implements ILoginBody {
 export const SIGNUP_EXAMPLES = {
   email: {
     summary: 'Tạo tài khoản  (mã xin bằng intent "signup")',
-    value: { method: 'email', target: 'nam@gmail.com', code: '123456', password: 'mat-khau-cua-nam' },
+    value: {
+      method: 'email',
+      target: 'nam@gmail.com',
+      code: '123456',
+      password: 'mat-khau-cua-nam',
+    },
   },
   weak: {
     summary: 'Mật khẩu quá ngắn  (-> auth.password_weak)',
@@ -111,6 +116,11 @@ export const LOGIN_EXAMPLES = {
 export const RESET_PASSWORD_EXAMPLES = {
   email: {
     summary: 'Đặt lại  (mã xin bằng intent "reset"; mọi máy khác bị đăng xuất)',
-    value: { method: 'email', target: 'nam@gmail.com', code: '123456', password: 'mat-khau-moi-cua-nam' },
+    value: {
+      method: 'email',
+      target: 'nam@gmail.com',
+      code: '123456',
+      password: 'mat-khau-moi-cua-nam',
+    },
   },
 } as const;
