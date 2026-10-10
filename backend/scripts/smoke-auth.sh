@@ -40,7 +40,11 @@ read_code() { grep -o 'code: [0-9]\{6\}' "$LOGFILE" 2>/dev/null | tail -1 | awk 
 # ở máy dev nên xoá thẳng khoá trong Redis; server không có đường nào tự nới.
 clear_ip_budget() {
   docker exec nook-redis sh -c \
-    "redis-cli --scan --pattern 'auth:hour:ip:*' | xargs -r redis-cli DEL" >/dev/null 2>&1 || true
+    "redis-cli --scan --pattern 'auth:hour:ip:*' | xargs -r redis-cli DEL" >/dev/null 2>&1 && return
+  # Không có container `nook-redis` (Redis chạy thẳng trên máy) thì hỏi REDIS_URL.
+  local url; url="$(env_of REDIS_URL)"
+  command -v redis-cli >/dev/null && [ -n "$url" ] && \
+    redis-cli -u "$url" --scan --pattern 'auth:hour:ip:*' | xargs -r redis-cli -u "$url" DEL >/dev/null 2>&1 || true
 }
 clear_ip_budget
 
@@ -195,10 +199,26 @@ check "quét nhiều email liên tiếp thì bị chặn" "chặn" "$([ -n "$HIT
 [ -n "$HIT" ] && printf '%s     chặn ở email thứ %s%s\n' "$DIM" "$HIT" "$OFF"
 clear_ip_budget
 
-# ── 12. Đường chưa mở ───────────────────────────────────────────────────────
-R=$(curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \
-      -d '{"method":"phone","target":"0901234567"}')
-check "số điện thoại báo chưa mở" "auth.method_unavailable" "$(echo "$R" | code_of)"
+# ── 12. Số điện thoại ───────────────────────────────────────────────────────
+# Đọc SMS_SENDER từ .env — nhớ là server chỉ nạp .env lúc bật.
+if [ "$(env_of SMS_SENDER)" = "off" ] || [ -z "$(env_of SMS_SENDER)" ]; then
+  R=$(curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \
+        -d '{"method":"phone","target":"0901234567"}')
+  check "SMS_SENDER=off: số điện thoại báo chưa mở" "auth.method_unavailable" "$(echo "$R" | code_of)"
+else
+  R=$(curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \
+        -d '{"method":"phone","target":"+14155552671"}')
+  check "số nước ngoài bị từ chối (chống SMS pumping)" "auth.target_invalid" "$(echo "$R" | code_of)"
+
+  PHONE="090$(printf '%07d' $(( (RANDOM * 32768 + RANDOM) % 10000000 )))"
+  R=$(curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \
+        -d "{\"method\":\"phone\",\"target\":\"$PHONE\",\"intent\":\"signup\"}")
+  check "xin mã qua số di động VN" "auth.code_sent" "$(echo "$R" | code_of)"
+  # Gõ kiểu E.164 lúc nộp — phải về cùng một đích với kiểu 09xx lúc xin.
+  R=$(curl -s -X POST "$BASE/v1/auth/verify" -H 'content-type: application/json' \
+        -d "{\"method\":\"phone\",\"target\":\"+84${PHONE:1}\",\"code\":\"$(read_code)\"}")
+  check "nộp mã số điện thoại thì vào được" "auth.signed_in" "$(echo "$R" | code_of)"
+fi
 
 # ── 13. Cổng thẻ ────────────────────────────────────────────────────────────
 check "không thẻ thì không vào" "auth.unauthorized" "$(curl -s "$BASE/v1/me" | code_of)"

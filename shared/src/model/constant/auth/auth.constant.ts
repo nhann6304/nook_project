@@ -11,8 +11,11 @@
  */
 export const SIGNIN_METHODS = ['email', 'phone'] as const;
 
-/** Số điện thoại còn chờ chọn nhà mạng gửi SMS. */
-export const SIGNIN_METHODS_ENABLED = ['email'] as const;
+/**
+ * Số điện thoại mở ở đây nhưng server vẫn có thể đóng: `SMS_SENDER=off` thì
+ * `phone` trả `auth.method_unavailable` (chỉ số Việt Nam, xem backend README).
+ */
+export const SIGNIN_METHODS_ENABLED = ['email', 'phone'] as const;
 
 /**
  * Người dùng bấm vào từ màn nào.

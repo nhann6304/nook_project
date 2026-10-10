@@ -31,6 +31,21 @@ export enum CodeSenderKind {
   smtp = 'smtp',
 }
 
+/**
+ * Mã đăng nhập qua SỐ ĐIỆN THOẠI đi bằng đường nào. Tách khỏi `CODE_SENDER`
+ * vì email và SMS là hai nhà cung cấp, hai hoá đơn, bật tắt độc lập.
+ */
+export enum SmsSenderKind {
+  /** Đóng đường số điện thoại: xin mã trả `auth.method_unavailable`. */
+  off = 'off',
+  /** In ra log. Chỉ dùng khi dev — bản thật không chịu bật. */
+  console = 'console',
+  /** eSMS.vn — brandname, rẻ cho số Việt Nam. */
+  esms = 'esms',
+  /** Twilio Programmable Messaging. */
+  twilio = 'twilio',
+}
+
 const toBool = ({ value }: { value: unknown }): boolean =>
   value === true || value === 'true' || value === '1';
 
@@ -105,6 +120,17 @@ export class Env {
   @IsOptional() @IsString() SMTP_URL?: string;
   @IsOptional() @IsString() SMTP_FROM?: string;
 
+  @IsEnum(SmsSenderKind) SMS_SENDER: SmsSenderKind = SmsSenderKind.off;
+  @IsOptional() @IsString() ESMS_API_KEY?: string;
+  @IsOptional() @IsString() ESMS_SECRET_KEY?: string;
+  /** Brandname đã đăng ký với eSMS. Nội dung tin phải khớp mẫu đã duyệt. */
+  @IsOptional() @IsString() ESMS_BRANDNAME?: string;
+  @IsOptional() @IsString() TWILIO_ACCOUNT_SID?: string;
+  @IsOptional() @IsString() TWILIO_AUTH_TOKEN?: string;
+  /** Khai MỘT trong hai: số gửi, hoặc Messaging Service (ưu tiên nếu có cả hai). */
+  @IsOptional() @IsString() TWILIO_FROM?: string;
+  @IsOptional() @IsString() TWILIO_MESSAGING_SERVICE_SID?: string;
+
   /**
    * Khoá ký mã 6 số trước khi cất vào Redis.
    *
@@ -174,6 +200,22 @@ export function validateEnv(raw: Record<string, unknown>): Env {
   }
   if (env.CODE_SENDER === CodeSenderKind.smtp && !env.SMTP_URL) {
     throw new Error('CODE_SENDER=smtp requires SMTP_URL.');
+  }
+  if (env.SMS_SENDER === SmsSenderKind.esms) {
+    const missing = (['ESMS_API_KEY', 'ESMS_SECRET_KEY', 'ESMS_BRANDNAME'] as const).filter((k) => !env[k]);
+    if (missing.length > 0) throw new Error(`SMS_SENDER=esms requires ${missing.join(', ')}.`);
+  }
+  if (env.SMS_SENDER === SmsSenderKind.twilio) {
+    if (!env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN) {
+      throw new Error('SMS_SENDER=twilio requires TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN.');
+    }
+    if (!env.TWILIO_FROM && !env.TWILIO_MESSAGING_SERVICE_SID) {
+      throw new Error('SMS_SENDER=twilio requires TWILIO_FROM or TWILIO_MESSAGING_SERVICE_SID.');
+    }
+  }
+  // Mã in ra log ở bản thật = ai đọc được log là đăng nhập thay được mọi số.
+  if (env.NODE_ENV === NodeEnv.production && env.SMS_SENDER === SmsSenderKind.console) {
+    throw new Error('SMS_SENDER=console is for development only. Use esms, twilio or off in production.');
   }
   if (env.NODE_ENV === NodeEnv.production && env.SWAGGER_ENABLED) {
     throw new Error('Swagger must be off in production. Set SWAGGER_ENABLED=false.');

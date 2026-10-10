@@ -1,6 +1,8 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { isEmail } from 'class-validator';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+// Bản `max`: bản mặc định (`min`) không có dữ liệu loại số, `getType()` trả
+// `undefined` cho mọi số Việt Nam.
+import { parsePhoneNumberFromString, type NumberType } from 'libphonenumber-js/max';
 import {
   ERR,
   isSignInMethodEnabled,
@@ -28,15 +30,20 @@ import type { SendCodeDto, VerifyCodeDto, LogoutDto, RefreshDto } from '../dto/i
 const DEFAULT_REGION = 'VN';
 
 /**
+ * Chỉ gửi SMS tới số DI ĐỘNG Việt Nam. Chặn "SMS pumping": kẻ gian bắn mã tới
+ * dải số quốc tế đắt tiền mà chúng ăn chia với nhà mạng, ta trả tiền tin.
+ */
+const SMS_NUMBER_TYPES: ReadonlySet<NumberType> = new Set(['MOBILE', 'FIXED_LINE_OR_MOBILE']);
+
+/**
  * Điều phối luồng đăng nhập.
  *
  * Bản thân nó không tự làm gì nhiều: mã ở `CodeService`, thẻ ở `SessionService`,
  * tài khoản ở `UserService`, gửi đi ở `CodeSenderService`. Chỗ này chỉ xếp thứ
  * tự và quyết định khi nào thì lùi lại.
  *
- * **Hiện chỉ mở đường EMAIL.** Số điện thoại còn chờ chọn nhà mạng gửi SMS —
- * xem `SIGNIN_METHODS_ENABLED` bên `@nook/shared`. App đọc chính danh sách đó
- * để biết vẽ mấy cái nút, nên mở thêm SMS là sửa một chỗ.
+ * Số điện thoại mở khi `SMS_SENDER` khác `off` (eSMS/Twilio; `console` khi
+ * dev) và chỉ nhận số di động Việt Nam — xem `normalizePhone`.
  */
 @Injectable()
 export class AuthService {
@@ -187,6 +194,11 @@ export class AuthService {
       // Không phải "sai" — là "chưa mở". App cần phân biệt để nói cho đúng.
       throw new AppException(ERR.METHOD_UNAVAILABLE, HttpStatus.BAD_REQUEST);
     }
+    // Shared mở `phone` cho app vẽ nút, nhưng máy này có thể chưa cắm nhà mạng
+    // SMS (`SMS_SENDER=off`). Chặn ở đây — trước mọi trần và mọi mã được cấp.
+    if (!this.sender.isOpen(method)) {
+      throw new AppException(ERR.METHOD_UNAVAILABLE, HttpStatus.BAD_REQUEST);
+    }
 
     if (method === 'email') {
       const value = raw.trim().toLowerCase();
@@ -203,14 +215,16 @@ export class AuthService {
    * Số điện thoại về E.164: "0901234567", "+84901234567" và "090 123 4567" đều
    * thành `+84901234567`. Một dạng duy nhất cho mọi cách người ta gõ.
    *
-   * **Chưa ai gọi tới hàm này** — cổng ở `normalize` chặn đường số điện thoại
-   * từ trước. Để sẵn ở đây vì phần khó của SMS không phải chuẩn hoá số, mà là
-   * chọn nhà mạng; ngày mở SMS thì chỉ cần thêm `'phone'` vào
-   * `SIGNIN_METHODS_ENABLED` và viết một `SmsSender`.
+   * Chỉ số di động Việt Nam — số nước ngoài, số bàn đều `auth.target_invalid`.
+   * Mở sang nước khác là quyết định về TIỀN, không chỉ về mã.
    */
   private normalizePhone(raw: string): string {
     const phone = parsePhoneNumberFromString(raw, DEFAULT_REGION);
-    if (!phone?.isValid()) {
+    if (
+      !phone?.isValid() ||
+      phone.country !== DEFAULT_REGION ||
+      !SMS_NUMBER_TYPES.has(phone.getType() as NumberType)
+    ) {
       throw new AppException(ERR.TARGET_INVALID, HttpStatus.BAD_REQUEST);
     }
     return phone.number;

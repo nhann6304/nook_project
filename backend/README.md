@@ -154,26 +154,56 @@ mạng chập chờn, **không phải giấy phép bắn song song**:
 
 Cả hai đã đo, và có bài kiểm khoá lại (`smoke-auth.sh` bước 8 và 9).
 
-### Chỉ mở đường EMAIL
+### Mã qua SMS — chỉ số di động Việt Nam
 
-Số điện thoại còn chờ chọn nhà mạng gửi SMS. Xin mã qua số điện thoại thì bị
-từ chối bằng `auth.method_unavailable` — **không phải** một lỗi chung chung, để
-app nói được cho đúng.
+`SIGNIN_METHODS_ENABLED` bên `@nook/shared` có cả `phone` (app vẽ tab số điện
+thoại), nhưng server chỉ mở khi `SMS_SENDER` khác `off`. Đường đi y như email:
+`POST /v1/auth/code { method:'phone', target:'0901234567' }` → mã 6 số → `verify`.
+Số được rút về E.164 (`+84901234567`) nên `0901234567`, `+84 90 123 4567` là
+một tài khoản.
 
-Ngày mở SMS: thêm `'phone'` vào `SIGNIN_METHODS_ENABLED` bên `@nook/shared`, rồi
-viết một `SmsSender`. App đọc chính danh sách đó để biết vẽ mấy cái nút, nên
-không phải sửa màn hình.
+| `SMS_SENDER` | | Biến cần |
+|---|---|---|
+| `off` (mặc định) | xin mã qua số trả `auth.method_unavailable` (400) — chặn trước mọi trần | — |
+| `console` | in mã ra log, như `CODE_SENDER=console`. **Bản thật không chịu bật** | — |
+| `esms` | eSMS.vn, brandname | `ESMS_API_KEY` `ESMS_SECRET_KEY` `ESMS_BRANDNAME` |
+| `twilio` | Twilio Programmable Messaging | `TWILIO_ACCOUNT_SID` `TWILIO_AUTH_TOKEN` + `TWILIO_FROM` hoặc `TWILIO_MESSAGING_SERVICE_SID` |
+
+Thiếu biến thì `validateEnv` dừng server lúc bật. Cả hai nhà cung cấp gọi REST
+bằng `fetch` (hết giờ sau 8 giây), không thêm thư viện. Gửi hỏng → huỷ mã, trả
+`auth.send_failed` (502). Log chỉ ghi số đã che (`+849*****567`), không ghi mã.
+
+**Chống SMS pumping.** Kẻ gian bắn mã tới dải số quốc tế đắt tiền mà chúng ăn
+chia với nhà mạng — ta trả tiền tin. Nên `normalizePhone` chỉ nhận số **di
+động Việt Nam** (`getType()` là `MOBILE`/`FIXED_LINE_OR_MOBILE`, cần bản
+`libphonenumber-js/max`); số nước ngoài, số bàn → `auth.target_invalid`. Trần
+cũ vẫn đứng nguyên: 60 giây/đích, 5 mã/giờ/đích, 30 mã/giờ/máy gọi.
+
+Nội dung tin là ASCII không dấu (`493817 la ma dang nhap LOVO. Ma het han sau 5
+phut...`) — tin có dấu đi kiểu Unicode, 70 ký tự một tin, trả gấp đôi.
+
+Chọn nhà cung cấp:
+
+- **eSMS** — rẻ nhất cho số VN, nhưng phải **đăng ký brandname** (vài ngày làm
+  việc) và **mẫu nội dung** với từng nhà mạng. Tin lệch mẫu một chữ thì eSMS
+  vẫn nhận (`CodeResult=100`) mà nhà mạng chặn — đổi câu trong `sms.util.ts`
+  là phải đăng ký lại mẫu.
+- **Twilio** — bật trong mười phút, nhưng giá tới VN cao hơn nhiều và nhà mạng
+  VN có thể chặn tên gửi chưa đăng ký. Hợp để chạy thử.
+- **Firebase Phone Auth** — không chọn: cần module native, tức là phải bỏ Expo
+  Go sang development build.
 
 ### Mã đăng nhập đi đâu khi dev
 
 `CODE_SENDER=console` — mã **in ra log server**, không gửi đi đâu cả:
 
 ```
-WARN [Mã đăng nhập] [CHỈ DÙNG KHI DEV] email → nam@gmail.com — mã: 193167
+WARN [AuthCode] [DEV ONLY] email nam@gmail.com - code: 193167
 ```
 
-Muốn gửi email thật thì đổi `CODE_SENDER=smtp` và điền `SMTP_URL`.
-`validateEnv` chặn không cho `console` đi cùng bản thật.
+Muốn gửi email thật thì đổi `CODE_SENDER=smtp` và điền `SMTP_URL`. Số điện
+thoại thì `SMS_SENDER=console` (mục trên). `validateEnv` chặn `SMS_SENDER=console`
+ở bản thật; `CODE_SENDER=console` thì còn cho, vì cụm Docker staging dùng nó.
 
 ### Ảnh
 

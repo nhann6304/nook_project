@@ -25,11 +25,8 @@ export class SmtpSender implements ICodeSender {
   }
 
   async send(method: TSignInMethod, target: string, code: string): Promise<void> {
-    if (method !== 'email') {
-      // TODO(chặng sau): chọn nhà mạng gửi SMS rồi tách ra `sms.sender.ts`.
-      // Chưa chọn thì thà hỏng to còn hơn im lặng không gửi gì.
-      throw new Error('No SMS transport configured');
-    }
+    // `CodeSenderService` chỉ đưa email tới đây; SMS đi đường `SMS_SENDER`.
+    if (method !== 'email') throw new Error('SMTP only sends to email addresses');
 
     const minutes = Math.round(LIMITS.codeTtlSeconds / 60);
     await this.transporter().sendMail({

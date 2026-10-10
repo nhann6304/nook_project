@@ -72,7 +72,7 @@ export const SEND_CODE_EXAMPLES = {
     value: { method: 'email', target: 'nam@gmail.com' },
   },
   phone: {
-    summary: 'Bằng số điện thoại  (chưa mở — trả auth.method_unavailable)',
-    value: { method: 'phone', target: '0901234567' },
+    summary: 'Bằng số điện thoại  (chỉ di động VN; SMS_SENDER=off -> auth.method_unavailable)',
+    value: { method: 'phone', target: '0901234567', intent: 'signup' },
   },
 } as const;

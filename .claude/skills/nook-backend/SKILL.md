@@ -178,7 +178,7 @@ Cần: **Postgres trên máy cổng 5432** · **Redis Docker cổng 6380** · Mi
 Năm bài smoke gõ vào server đang chạy, mỗi bài kết bằng một dòng ĐẠT/HỎNG:
 
 ```bash
-backend/scripts/smoke-auth.sh          27 bước — xin mã, xoay thẻ, thẻ bị chép, hai cửa
+backend/scripts/smoke-auth.sh          29 bước — xin mã, xoay thẻ, thẻ bị chép, hai cửa, SMS (27 khi SMS_SENDER=off)
 backend/scripts/smoke-antibot.sh       14 bước — IP giả, gộp hộp thư, mail rác, dấu vân, trần nộp
 backend/scripts/smoke-username.sh      15 bước — có cả cuộc đua hai người cùng chọn
 backend/scripts/smoke-media.sh         20 bước — bằng ảnh THẬT, so sha256

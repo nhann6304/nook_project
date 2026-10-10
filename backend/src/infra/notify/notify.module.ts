@@ -1,10 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 import { CodeSenderService } from './service/index.js';
-import { ConsoleSender, SmtpSender } from './sender/index.js';
+import { ConsoleSender, EsmsSender, SmtpSender, TwilioSender } from './sender/index.js';
 
 @Global()
 @Module({
-  providers: [ConsoleSender, SmtpSender, CodeSenderService],
+  providers: [ConsoleSender, SmtpSender, EsmsSender, TwilioSender, CodeSenderService],
   exports: [CodeSenderService],
 })
 export class NotifyModule {}
