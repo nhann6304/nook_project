@@ -4,16 +4,17 @@
  * GestureHandlerRootView phải nằm NGOÀI CÙNG, nếu không mọi cử chỉ vuốt đều
  * câm trên Android — và câm không báo lỗi, chỉ là không có gì xảy ra.
  *
- * Splash được giữ tới khi BỐN thứ xong: bộ chữ, ngôn ngữ, bảng màu đã chọn, và
- * phiên đăng nhập cất trên máy. Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Nunito;
+ * Splash được giữ tới khi NĂM thứ xong: bộ chữ, ngôn ngữ, bảng màu đã chọn,
+ * phiên đăng nhập cất trên máy, và cờ "đã xem giới thiệu". Thả sớm vì chữ thì thấy một nhịp Roboto rồi nhảy sang Nunito;
  * thả sớm vì ngôn ngữ thì thấy màn đầu sai tiếng; thả sớm vì bảng màu thì cả
  * app nháy một cái đổi màu. Mỗi cái chỉ khoảng 30ms, nhưng là 30ms đầu tiên
- * người dùng nhìn thấy.
+ * người dùng nhìn thấy. Xong thì `<SplashOverlay>` nối tiếp: logo nháy mắt rồi
+ * phóng to tan vào app.
  *
  * Ba nút điều hướng của Android theo userInterfaceStyle 'automatic' trong app.json. (expo-navigation-bar SDK 57 đã bỏ
  * setButtonStyleAsync — đừng gọi lại hàm đó.)
  */
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -28,6 +29,7 @@ import {
   Nunito_900Black,
 } from '@expo-google-fonts/nunito';
 import { Caveat_700Bold } from '@expo-google-fonts/caveat';
+import { SplashOverlay } from '@ui';
 import { useColors, useStyles, useThemeReady, type Palette } from '@design';
 import { useI18nReady } from '@i18n';
 import { initSound } from '@/lib/device/sound';
@@ -35,6 +37,7 @@ import { useSound } from '@/features/settings/store/soundStore';
 import { useAuth } from '@/features/auth/store/authStore';
 import { useRainWatch } from '@/features/sky/hooks/useRainWatch';
 import { useAudience } from '@/features/camera/store/audienceStore';
+import { useOnboarding } from '@/features/onboarding/store/onboardingStore';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -53,10 +56,17 @@ export default function RootLayout() {
 
   useRainWatch();
   const authReady = useAuth((s) => s.phase !== 'unknown');
-  const ready = (fontsReady || error !== null) && localeReady && themeReady && authReady;
+  const introReady = useOnboarding((s) => s.ready);
+  const ready =
+    (fontsReady || error !== null) && localeReady && themeReady && authReady && introReady;
+  // Splash động chạy một lần mỗi lần mở nguội, đè lên app đã dựng sẵn bên dưới.
+  const [splash, setSplash] = useState(true);
+  const splashDone = useCallback(() => setSplash(false), []);
+  const splashShown = useCallback(() => void SplashScreen.hideAsync(), []);
 
   useEffect(() => {
     void useAuth.getState().hydrate();
+    void useOnboarding.getState().hydrate();
     void useAudience.getState().hydrate();
   }, []);
 
@@ -66,11 +76,9 @@ export default function RootLayout() {
     void initSound().then(useSound.getState().hydrate);
   }, []);
 
-  useEffect(() => {
-    // Thả splash cả khi nạp chữ HỎNG. Không có nhánh này thì một lỗi font
-    // biến thành màn hình splash đứng vĩnh viễn — lỗi tệ nhất có thể có.
-    if (ready) void SplashScreen.hideAsync();
-  }, [ready]);
+  // Thả splash cả khi nạp chữ HỎNG — `ready` không chờ font thành công. Không
+  // có nhánh đó thì một lỗi font biến thành splash đứng vĩnh viễn. Splash gốc
+  // được thả khi lớp splash động đã lên màn (`splashShown`), không sớm hơn.
 
   if (!ready) return null;
 
@@ -93,6 +101,7 @@ export default function RootLayout() {
               trước" nào để quay lại. */}
           <Stack.Screen name="(app)" options={{ animation: 'fade' }} />
         </Stack>
+        {splash ? <SplashOverlay onShown={splashShown} onDone={splashDone} /> : null}
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

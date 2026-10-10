@@ -6,10 +6,13 @@
  */
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/features/auth/store/authStore';
+import { useOnboarding } from '@/features/onboarding/store/onboardingStore';
 
 export default function Entry() {
   const phase = useAuth((s) => s.phase);
+  const introSeen = useOnboarding((s) => s.introSeen);
   if (phase === 'unknown') return null;
   if (phase === 'signed-in') return <Redirect href="/(app)/(tabs)/home" />;
-  return <Redirect href="/(auth)/welcome" />;
+  // Lần mở đầu tiên: ba trang giới thiệu trước màn Chào mừng.
+  return <Redirect href={introSeen ? '/(auth)/welcome' : '/(auth)/intro'} />;
 }

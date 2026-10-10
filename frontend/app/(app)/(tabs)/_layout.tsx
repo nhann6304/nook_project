@@ -4,6 +4,7 @@ import { TabBar, type TabItem } from '@ui';
 import { useT } from '@i18n';
 import { useHomeNav } from '@/features/home/store/homeNav';
 import { useChats } from '@/features/chat/store/chatStore';
+import { useTourTarget } from '@/features/onboarding/hooks/useTourTarget';
 
 type Key = 'journal' | 'home' | 'chats';
 
@@ -48,6 +49,8 @@ function AppTabBar({ state, navigation }: BarProps) {
   const go = useHomeNav((s) => s.go);
   const unread = useChats((s) => s.conversations.some((c) => c.unread > 0));
   const active = (state.routes[state.index]?.name ?? 'home') as Key;
+  const memoriesRef = useTourTarget('memories');
+  const chatsRef = useTourTarget('chats');
 
   const items = useMemo<TabItem<Key>[]>(
     () => [
@@ -56,6 +59,11 @@ function AppTabBar({ state, navigation }: BarProps) {
       { key: 'chats', label: t('tabs.chats'), icon: 'chat', badge: unread },
     ],
     [t, unread],
+  );
+
+  const targets = useMemo(
+    () => ({ journal: memoriesRef, chats: chatsRef }),
+    [chatsRef, memoriesRef],
   );
 
   const press = useCallback(
@@ -73,6 +81,7 @@ function AppTabBar({ state, navigation }: BarProps) {
       onPress={press}
       dimmed={reviewing && active === 'home'}
       label={t('tabs.label')}
+      targetRefs={targets}
     />
   );
 }

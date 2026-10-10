@@ -12,7 +12,7 @@
  * Đang bận thì mờ đi chứ không gỡ; Android bàn phím bật thì gỡ hẳn, nếu không
  * thanh bị đẩy lên trên phím.
  */
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState, type Ref } from 'react';
 import { Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { layout, radius, space, useColors, useStyles, type Palette } from '@design';
@@ -37,6 +37,7 @@ function TabBarInner<K extends string>({
   onPress,
   dimmed,
   label,
+  targetRefs,
 }: {
   items: readonly TabItem<K>[];
   active: K;
@@ -45,6 +46,8 @@ function TabBarInner<K extends string>({
   dimmed?: boolean;
   /** Chữ cho trình đọc màn hình của cả thanh. */
   label: string;
+  /** Cho tour chỉ nút đo vị trí từng nút. Tách khỏi `items`: ref nằm trong object là React Compiler không cho đọc object đó lúc vẽ. */
+  targetRefs?: Partial<Record<K, Ref<View>>>;
 }) {
   const s = useStyles(make);
   const insets = useSafeAreaInsets();
@@ -61,7 +64,13 @@ function TabBarInner<K extends string>({
     >
       <Glass radius={radius.full} style={s.pill}>
         {items.map((it) => (
-          <Item key={it.key} item={it} selected={it.key === active} onPress={onPress} />
+          <Item
+            key={it.key}
+            item={it}
+            selected={it.key === active}
+            onPress={onPress}
+            targetRef={targetRefs?.[it.key]}
+          />
         ))}
       </Glass>
     </View>
@@ -74,10 +83,12 @@ const Item = memo(function Item<K extends string>({
   item,
   selected,
   onPress,
+  targetRef,
 }: {
   item: TabItem<K>;
   selected: boolean;
   onPress: (key: K) => void;
+  targetRef?: Ref<View>;
 }) {
   const s = useStyles(make);
   const c = useColors();
@@ -91,6 +102,7 @@ const Item = memo(function Item<K extends string>({
       scaleTo={0.9}
       style={[s.item, selected && s.itemOn]}
     >
+      <View ref={targetRef} collapsable={false} style={s.target} pointerEvents="none" />
       <Icon name={item.icon} size={22} color={selected ? c.text : c.textMuted} />
       {item.badge ? <View style={s.badge} /> : null}
     </Tap>
@@ -99,6 +111,7 @@ const Item = memo(function Item<K extends string>({
   item: TabItem<K>;
   selected: boolean;
   onPress: (key: K) => void;
+  targetRef?: Ref<View>;
 }) => React.ReactElement;
 
 /** Khoảng đáy mỗi tab phải chừa cho thanh nổi. */
@@ -146,6 +159,7 @@ const make = (c: Palette) =>
       justifyContent: 'center',
     },
     itemOn: { backgroundColor: c.glassEdge },
+    target: { ...StyleSheet.absoluteFill },
     badge: {
       position: 'absolute',
       top: 10,

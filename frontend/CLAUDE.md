@@ -143,7 +143,7 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
   tay (`variant="hand"`, mỗi màn tối đa một chỗ).
 - **Không có linh vật** (bỏ 31/08/2026). Chỗ trống dùng `<GhostFrame>` hoặc
   lưới mười chỗ.
-- Wordmark **chỉ** ở màn Chào mừng; dấu hiệu `<Rings>` thì dùng trong app.
+- Wordmark **chỉ** ở màn Chào mừng, Giới thiệu và splash; dấu hiệu `<Rings>` thì dùng trong app.
 - Vùng chạm tối thiểu `layout.minTouch` (48).
 - `c.textDisabled` **không phải màu chữ đọc được** (~2.1:1 ở mọi bảng).
 - Không hiện số like/lượt xem công khai, không bảng xếp hạng giữa bạn bè.
@@ -151,6 +151,8 @@ ESLint chặn cứng cả bốn. Thấy mình đang tìm cách lách nó là đa
 - Ba từ **cấm** trong chữ hiện cho người dùng: *điểm*, *hạng*, *nhiệm vụ*
   (tiếng Anh: *points*, *rank*, *quest*). Không chữ kỹ thuật ("OTP", "xác thực",
   "hợp lệ", "verify", "valid").
+- **Mở app** (10/10/2026): splash gốc (ảnh tĩnh, `app.json`) → `<SplashOverlay>` vẽ đè đúng ảnh đó rồi mới thả splash gốc, mặt cười **nháy mắt**, logo phóng to tan vào app (~1.3 s, chỉ lần mở nguội). Màu splash cố định ở `brand` (`tokens.ts`), không theo bảng màu. `<Wordmark blink="wink"|"loop">` cho mắt chớp — màn Chào mừng, Giới thiệu.
+- **Làm quen** (`features/onboarding/`): lần mở ĐẦU TIÊN có 3 trang **Giới thiệu** vuốt ngang (`<Slides>`, nút Bỏ qua) trước màn Chào mừng; lần đầu vào màn Chụp có **tour chỉ nút** (đốm sáng khoét đúng nút, thẻ có mũi nhọn, Bỏ qua / Tiếp; chạm đâu cũng sang bước). Đánh dấu nút bằng `<TourTarget id>` / `useTourTarget(id)`, thứ tự ở `utils/tourSteps.ts`; nút vắng mặt tự nhảy qua. Xem lại: Cài đặt → "Xem lại hướng dẫn". Cờ "đã xem" ghi trên máy.
 - **Tên app: LOVO** (đổi 07/10/2026). Logo theo mẫu: chữ phồng nét dày, chữ O
   đầu là trái tim KÍNH phát sáng, chữ "o" cuối là MẶT CƯỜI; icon nền navy.
   Trong app phát sáng bằng nét chồng, không dùng bộ lọc blur (Android giật). Icon app + splash dựng bằng

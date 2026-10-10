@@ -70,6 +70,7 @@ import { MomentGrid, type Rect } from '@/features/feed/components/MomentGrid';
 import { Shutter } from '@/features/camera/components/controls/Shutter';
 import type { AudiencePerson } from '@/features/camera/components/audience/AudiencePicker';
 import type { Moment, Tag } from '@/features/feed/types';
+import { TourTarget } from '@/features/onboarding/components/tour/TourTarget';
 import { HistoryPill } from './components/HistoryPill';
 
 const BAR = 52;
@@ -401,11 +402,13 @@ export function HomeScreen({
               style={[s.side, reviewing && s.hidden]}
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
-              <Glass radius={radius.full} style={s.round}>
-                <IconButton label={t('notify.open')} onPress={onOpenNotices} style={s.round}>
-                  <Icon name="bell" size={22} color={c.text} />
-                </IconButton>
-              </Glass>
+              <TourTarget id="bell" style={s.round}>
+                <Glass radius={radius.full} style={s.round}>
+                  <IconButton label={t('notify.open')} onPress={onOpenNotices} style={s.round}>
+                    <Icon name="bell" size={22} color={c.text} />
+                  </IconButton>
+                </Glass>
+              </TourTarget>
               {noticeUnread ? <View style={s.dot} pointerEvents="none" /> : null}
             </Animated.View>
             {/* Lúc xem lại ảnh: người nhận chọn ở hàng avatar dưới ảnh, trên này để trống. */}
@@ -419,23 +422,25 @@ export function HomeScreen({
                 accessibilityLabel={onCamera ? t('home.openFriends') : t('home.grid')}
               >
                 <Animated.View style={[s.layer, camPill]} pointerEvents="none">
-                  {count === 0 ? (
-                    <View style={[s.pill, s.pillAccent]}>
-                      <Icon name="add" size={20} color={c.onAccent} />
-                      <Txt variant="label" tone="onAccent" style={s.pillText}>
-                        {t('home.inviteFirst')}
-                      </Txt>
-                    </View>
-                  ) : (
-                    // Theo Locket: icon người + số bạn chữ đậm. Chấm avatar tí hon
-                    // trước đó bị chê "nhỏ, xấu".
-                    <Glass radius={radius.full} style={s.pill}>
-                      <Icon name="people" size={20} color={c.text} />
-                      <Txt variant="label" style={s.pillText}>
-                        {t('home.friendsPill', { count })}
-                      </Txt>
-                    </Glass>
-                  )}
+                  <TourTarget id="friends">
+                    {count === 0 ? (
+                      <View style={[s.pill, s.pillAccent]}>
+                        <Icon name="add" size={20} color={c.onAccent} />
+                        <Txt variant="label" tone="onAccent" style={s.pillText}>
+                          {t('home.inviteFirst')}
+                        </Txt>
+                      </View>
+                    ) : (
+                      // Theo Locket: icon người + số bạn chữ đậm. Chấm avatar tí hon
+                      // trước đó bị chê "nhỏ, xấu".
+                      <Glass radius={radius.full} style={s.pill}>
+                        <Icon name="people" size={20} color={c.text} />
+                        <Txt variant="label" style={s.pillText}>
+                          {t('home.friendsPill', { count })}
+                        </Txt>
+                      </Glass>
+                    )}
+                  </TourTarget>
                 </Animated.View>
                 <Animated.View style={[s.layer, feedPill]} pointerEvents="none">
                   <Glass radius={radius.full} style={s.pill}>
@@ -452,13 +457,15 @@ export function HomeScreen({
               style={[s.side, reviewing && s.hidden]}
               pointerEvents={reviewing ? 'none' : 'auto'}
             >
-              <Avatar
-                name={myName}
-                uri={myPhoto}
-                size={44}
-                onPress={onOpenMe}
-                label={t('home.openMe')}
-              />
+              <TourTarget id="me" style={s.round}>
+                <Avatar
+                  name={myName}
+                  uri={myPhoto}
+                  size={44}
+                  onPress={onOpenMe}
+                  label={t('home.openMe')}
+                />
+              </TourTarget>
             </Animated.View>
           </View>
 

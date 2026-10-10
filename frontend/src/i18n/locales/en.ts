@@ -23,6 +23,40 @@ export const en: Mirror<typeof vi> = {
     openSettings: 'Open phone settings',
   },
 
+  intro: {
+    skip: 'Skip',
+    next: 'Next',
+    start: "Let's go",
+    pages: 'Page {index} of {total}',
+    s1Title: 'Snap once, your close friends see it',
+    s1Body: 'Photos land right on your friends\' phones — exactly as you took them, never cropped or compressed.',
+    s2Title: 'Just your ten closest',
+    s2Body: 'No strangers, no likes. A small corner for the friends who really matter.',
+    s3Title: 'Every back-and-forth becomes a memory',
+    s3Body: 'Photos sent, replies received — all gathered into a calendar that belongs to just the two of you.',
+  },
+
+  tour: {
+    skip: 'Skip',
+    next: 'Next',
+    done: 'Got it',
+    step: '{index}/{total}',
+    shutterTitle: 'Shutter',
+    shutterBody: 'Tap to snap, hold to record a short clip. It goes straight to your friends.',
+    friendsTitle: 'Your friends',
+    friendsBody: 'Invite, accept and see who is in your corner — up to ten people.',
+    historyTitle: 'Photos from friends',
+    historyBody: 'Tap here or swipe up to see everyone\'s latest photos.',
+    bellTitle: 'Notifications',
+    bellBody: 'Friend invites, mentions and reactions all show up here.',
+    meTitle: 'Your page',
+    meBody: 'Your photo, a QR code for friends to scan, and all settings.',
+    memoriesTitle: 'Memories',
+    memoriesBody: 'A photo calendar, month by month. Swipe right to get there too.',
+    chatsTitle: 'Messages',
+    chatsBody: 'Private chats with each friend, each with its own background. Swipe left to get there too.',
+  },
+
   welcome: {
     headline: 'Live photos from your little circle',
     sub: 'Ten close friends. No likes, no strangers.',
@@ -504,6 +538,7 @@ export const en: Mirror<typeof vi> = {
   },
 
   settings: {
+    replayTour: 'Replay the walkthrough',
     appearance: 'Appearance',
     privacy: 'Privacy',
     language: 'Language',

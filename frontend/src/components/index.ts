@@ -34,13 +34,15 @@ export { List, type ListProps } from './layout/List';
 export { Scroll, type ScrollHandle } from './layout/Scroll';
 export { TopBar, type TopBarProps } from './navigation/TopBar';
 export { Pager, type PagerHandle, type PagerProps } from './layout/Pager';
+export { Slides, type SlidesHandle } from './layout/Slides';
 export { TabBar, TAB_BAR_HEIGHT, useTabBarSpace, TabBarSpacer, type TabItem } from './navigation/TabBar';
 export { Glass } from './layout/Glass';
 
 /* — Thương hiệu — */
 export { Rings, type RingsProps } from './brand/Rings';
 export { SkyWash } from './brand/SkyWash';
-export { Wordmark, Lockup } from './brand/Wordmark';
+export { Wordmark, Lockup, type WordmarkProps } from './brand/Wordmark';
+export { SplashOverlay } from './brand/SplashOverlay';
 export { Halo } from './brand/Halo';
 export { GhostFrame } from './brand/GhostFrame';
 export { Avatar, type AvatarProps } from './avatar/Avatar';

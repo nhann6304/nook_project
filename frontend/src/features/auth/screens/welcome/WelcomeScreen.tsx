@@ -45,7 +45,7 @@ export function WelcomeScreen({
 
       <Screen clear>
         <View style={s.top}>
-          <Wordmark size={40} onPhoto />
+          <Wordmark size={40} onPhoto blink="loop" blinkDelay={duration.scene + 300} />
         </View>
 
         <Animated.View

@@ -6,6 +6,7 @@
 import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon, Tap, Txt } from '@ui';
+import { TourTarget } from '@/features/onboarding/components/tour/TourTarget';
 import { font, radius, space, useColors, useStyles, type Palette } from '@design';
 
 export const HistoryPill = memo(function HistoryPill({
@@ -21,17 +22,19 @@ export const HistoryPill = memo(function HistoryPill({
   const c = useColors();
   return (
     <View style={s.root}>
-      <Tap onPress={onPress} scaleTo={0.95} style={s.pill} accessibilityLabel={label}>
-        {count > 0 ? (
-          <View style={s.count}>
-            <Txt variant="label" tone="onAccent" style={s.countText}>
-              {count > 99 ? '99+' : String(count)}
-            </Txt>
-          </View>
-        ) : null}
-        <Txt variant="label">{label}</Txt>
-        <Icon name="down" size={16} color={c.textMuted} />
-      </Tap>
+      <TourTarget id="history">
+        <Tap onPress={onPress} scaleTo={0.95} style={s.pill} accessibilityLabel={label}>
+          {count > 0 ? (
+            <View style={s.count}>
+              <Txt variant="label" tone="onAccent" style={s.countText}>
+                {count > 99 ? '99+' : String(count)}
+              </Txt>
+            </View>
+          ) : null}
+          <Txt variant="label">{label}</Txt>
+          <Icon name="down" size={16} color={c.textMuted} />
+        </Tap>
+      </TourTarget>
     </View>
   );
 });

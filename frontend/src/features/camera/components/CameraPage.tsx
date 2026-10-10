@@ -62,6 +62,7 @@ import {
   suggestTags,
   tagsIn,
 } from '@/features/feed/utils/tags';
+import { TourTarget } from '@/features/onboarding/components/tour/TourTarget';
 
 /** `uri` luôn là ẢNH (với video thì là ảnh bìa) — lưới, nhật ký, hiệu ứng bay dùng nó. */
 export type Shot = {
@@ -159,7 +160,6 @@ export function CameraPage({
   }));
   const spin = useSharedValue(0);
   const spinStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${spin.value}deg` }] }));
-
 
   const review = useCallback(
     (uri: string | null) => {
@@ -487,15 +487,17 @@ export function CameraPage({
               </IconButton>
             </Animated.View>
             <Animated.View key="shutter" entering={FadeIn.duration(duration.base)}>
-              <Shutter
-                onPress={() => void capture()}
-                onHoldStart={() => void holdStart()}
-                onHoldEnd={holdEnd}
-                recording={recording}
-                maxMs={MAX_VIDEO_MS}
-                busy={busy}
-                label={t('camera.shutter')}
-              />
+              <TourTarget id="shutter">
+                <Shutter
+                  onPress={() => void capture()}
+                  onHoldStart={() => void holdStart()}
+                  onHoldEnd={holdEnd}
+                  recording={recording}
+                  maxMs={MAX_VIDEO_MS}
+                  busy={busy}
+                  label={t('camera.shutter')}
+                />
+              </TourTarget>
             </Animated.View>
             <Animated.View key="flip" entering={FadeIn.duration(duration.base)}>
               <IconButton label={t('camera.flip')} onPress={flip} style={s.round}>

@@ -16,6 +16,10 @@ import { ME } from '@/mocks/moments';
 import { useCircle } from '@/features/circle/store/circleStore';
 import { useOnline } from '@/hooks/useOnline';
 import { useHomeNav } from '@/features/home/store/homeNav';
+import { useOnboarding } from '@/features/onboarding/store/onboardingStore';
+
+/** Cho camera + viên bạn bè dựng xong rồi mới bật tour lần đầu. */
+const TOUR_AFTER_MS = 900;
 
 export default function Home() {
   const router = useRouter();
@@ -47,6 +51,15 @@ export default function Home() {
   const addEntry = useJournal((s) => s.add);
   const markReplied = useMoments((s) => s.markReplied);
   const openAbout = useChats((s) => s.openAbout);
+
+  // Lần đầu vào màn Chụp: tour chỉ từng nút. Bỏ qua được, xem lại ở trang cá nhân.
+  const tourSeen = useOnboarding((s) => s.tourSeen);
+  const startTour = useOnboarding((s) => s.startTour);
+  useEffect(() => {
+    if (!focused || tourSeen) return;
+    const timer = setTimeout(startTour, TOUR_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, [focused, startTour, tourSeen]);
 
   const send = useCallback(
     (shot: Shot) => {

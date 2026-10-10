@@ -15,6 +15,7 @@ import { useSound } from '@/features/settings/store/soundStore';
 import { useAudience } from '@/features/camera/store/audienceStore';
 import { useJournal } from '@/features/journal/store/journalStore';
 import { postedWithin } from '@/features/journal/types';
+import { useOnboarding } from '@/features/onboarding/store/onboardingStore';
 
 export default function Me() {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function Me() {
   const locale = useLocale();
   const following = useFollowingSystem();
   const num = useNumber();
+  const startTour = useOnboarding((s) => s.startTour);
   const monthly = PRO_PLANS.find((p) => p.id === 'month')?.price ?? 0;
 
   const modeName = t(`theme.${mode}`);
@@ -66,6 +68,11 @@ export default function Me() {
       onOpenLanguage={() => router.push('/(app)/prefs/language')}
       onOpenPro={() => router.push('/(app)/pro')}
       onOpenQr={() => router.push('/(app)/qr')}
+      onReplayTour={() => {
+        // Về màn Chụp trước; tour tự chờ màn trượt xong rồi mới đo nút.
+        router.dismissTo('/(app)/(tabs)/home');
+        startTour();
+      }}
       proTitle={t('pro.card')}
       proSub={t('pro.cardSub', {
         price: t('pro.vnd', { amount: num(monthly) }),

@@ -5,7 +5,20 @@
  * ngay tại chỗ — mở trang chỉ để bật/tắt một thứ là thừa.
  */
 import { StyleSheet, View } from 'react-native';
-import { Avatar, Card, Divider, Icon, IconBadge, Row, Screen, Scroll, Tap, Toggle, TopBar, Txt } from '@ui';
+import {
+  Avatar,
+  Card,
+  Divider,
+  Icon,
+  IconBadge,
+  Row,
+  Screen,
+  Scroll,
+  Tap,
+  Toggle,
+  TopBar,
+  Txt,
+} from '@ui';
 import { layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import { NavRow } from '../../components/Pref';
@@ -26,6 +39,7 @@ export function SettingsScreen({
   onOpenLanguage,
   onOpenPro,
   onOpenQr,
+  onReplayTour,
   proTitle,
   proSub,
   onSignOut,
@@ -48,6 +62,8 @@ export function SettingsScreen({
   onOpenLanguage: () => void;
   onOpenPro: () => void;
   onOpenQr: () => void;
+  /** Xem lại tour chỉ nút ở màn Chụp. */
+  onReplayTour: () => void;
   proTitle: string;
   proSub: string;
   onSignOut: () => void;
@@ -117,6 +133,10 @@ export function SettingsScreen({
                 />
               </View>
             </View>
+          </Card>
+
+          <Card style={s.list}>
+            <NavRow icon="sparkle" title={t('settings.replayTour')} onPress={onReplayTour} />
           </Card>
 
           <Card style={s.list}>

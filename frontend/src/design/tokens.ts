@@ -71,11 +71,35 @@ export const font = {
  * ≈ 1.4× cỡ chữ — thấp hơn là dấu tiếng Việt (ỗ, ẫ) bị cắt trên Android.
  */
 export const type = {
-  display: { fontSize: 36, lineHeight: 48, fontFamily: font.heavy, letterSpacing: -0.6, maxScale: 1.25 },
-  title: { fontSize: 26, lineHeight: 36, fontFamily: font.bodyBold, letterSpacing: -0.3, maxScale: 1.4 },
-  section: { fontSize: 19, lineHeight: 27, fontFamily: font.bodyBold, letterSpacing: -0.1, maxScale: 1.4 },
+  display: {
+    fontSize: 36,
+    lineHeight: 48,
+    fontFamily: font.heavy,
+    letterSpacing: -0.6,
+    maxScale: 1.25,
+  },
+  title: {
+    fontSize: 26,
+    lineHeight: 36,
+    fontFamily: font.bodyBold,
+    letterSpacing: -0.3,
+    maxScale: 1.4,
+  },
+  section: {
+    fontSize: 19,
+    lineHeight: 27,
+    fontFamily: font.bodyBold,
+    letterSpacing: -0.1,
+    maxScale: 1.4,
+  },
   body: { fontSize: 17, lineHeight: 24, fontFamily: font.body, letterSpacing: 0, maxScale: 1.5 },
-  label: { fontSize: 16, lineHeight: 22, fontFamily: font.bodySemi, letterSpacing: 0, maxScale: 1.5 },
+  label: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontFamily: font.bodySemi,
+    letterSpacing: 0,
+    maxScale: 1.5,
+  },
   faint: { fontSize: 14, lineHeight: 20, fontFamily: font.body, letterSpacing: 0, maxScale: 1.5 },
   hand: { fontSize: 26, lineHeight: 32, fontFamily: font.hand, letterSpacing: 0, maxScale: 1.3 },
 } as const;
@@ -146,7 +170,6 @@ export const spring = {
   gentle: { damping: 26, stiffness: 90, mass: 1 },
 } as const;
 
-
 /** Cường độ rung. Gom một chỗ để không màn nào tự chọn kiểu rung riêng. */
 export const haptic = {
   tap: 'light',
@@ -157,3 +180,19 @@ export const haptic = {
 } as const;
 
 export type HapticKind = (typeof haptic)[keyof typeof haptic];
+
+/* ══════════════ THƯƠNG HIỆU (không theo bảng màu) ══════════════ */
+
+/**
+ * Màu của icon app + splash gốc (`scripts/brand-icons.mjs`, `app.json`). Cố
+ * định vì splash gốc vẽ TRƯỚC khi app biết người dùng chọn bảng nào — lớp
+ * splash động trong app phải khớp từng điểm ảnh với nó, nếu không là thấy nháy.
+ */
+export const brand = {
+  navy: '#1D2740',
+  puff: '#FFFFFF',
+  puffShade: '#DCE3EE',
+  glass: '#3B4A6B',
+  glow: '#BFD3FF',
+  rim: '#F2F6FF',
+} as const;

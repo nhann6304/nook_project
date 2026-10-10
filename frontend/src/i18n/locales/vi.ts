@@ -24,6 +24,42 @@ export const vi = {
     openSettings: 'Mở Cài đặt máy',
   },
 
+  /* ---------- Màn 0 — Giới thiệu (lần mở đầu tiên) ---------- */
+  intro: {
+    skip: 'Bỏ qua',
+    next: 'Tiếp',
+    start: 'Bắt đầu thôi',
+    pages: 'Trang {index} trên {total}',
+    s1Title: 'Chụp một tấm, bạn thân thấy ngay',
+    s1Body: 'Ảnh hiện thẳng trên máy bạn bè — nguyên vẹn như lúc bạn chụp, không cắt, không nén.',
+    s2Title: 'Chỉ mười người thân nhất',
+    s2Body: 'Không người lạ, không lượt thích. Góc nhỏ chỉ dành cho những người bạn thật sự quý.',
+    s3Title: 'Mỗi lần qua lại là một ký ức',
+    s3Body: 'Ảnh gửi đi, lời đáp lại — tất cả xếp thành cuốn lịch của riêng hai người.',
+  },
+
+  /* ---------- Tour chỉ nút — lần đầu vào màn Chụp ---------- */
+  tour: {
+    skip: 'Bỏ qua',
+    next: 'Tiếp',
+    done: 'Mình hiểu rồi',
+    step: '{index}/{total}',
+    shutterTitle: 'Nút chụp',
+    shutterBody: 'Chạm để chụp, giữ để quay một đoạn ngắn. Chụp xong là gửi thẳng tới bạn bè.',
+    friendsTitle: 'Bạn bè của bạn',
+    friendsBody: 'Mời, nhận lời và xem ai đang trong góc của bạn — tối đa mười người.',
+    historyTitle: 'Ảnh bạn bè gửi',
+    historyBody: 'Chạm vào đây hoặc vuốt lên để xem ảnh mới nhất của mọi người.',
+    bellTitle: 'Thông báo',
+    bellBody: 'Lời mời kết bạn, ai vừa nhắc tới bạn, ai thả cảm xúc — đều ở đây.',
+    meTitle: 'Trang của bạn',
+    meBody: 'Ảnh đại diện, mã QR để bạn bè quét, và toàn bộ cài đặt.',
+    memoriesTitle: 'Ký ức',
+    memoriesBody: 'Lịch ảnh theo từng tháng. Vuốt sang phải cũng tới.',
+    chatsTitle: 'Tin nhắn',
+    chatsBody: 'Trò chuyện riêng với từng người, đổi được nền cho mỗi cuộc. Vuốt sang trái cũng tới.',
+  },
+
   /* ---------- Màn 1 — Chào mừng ---------- */
   welcome: {
     headline: 'Ảnh trực tiếp từ góc nhỏ của mình',
@@ -510,6 +546,7 @@ export const vi = {
   },
 
   settings: {
+    replayTour: 'Xem lại hướng dẫn',
     appearance: 'Giao diện',
     privacy: 'Riêng tư',
     language: 'Ngôn ngữ',
