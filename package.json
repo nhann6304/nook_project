@@ -10,6 +10,7 @@
   "scripts": {
     "install:all": "npm install && npm --prefix frontend install",
     "build:shared": "npm run build -w @nook/shared",
+    "dev": "node setup/dev.mjs",
     "dev:shared": "npm run dev -w @nook/shared",
     "dev:be": "npm run dev -w @nook/backend",
     "dev:fe": "npm --prefix frontend run dev",

@@ -1,5 +1,15 @@
 # setup — ba việc, hai hệ điều hành
 
+## Nhanh nhất: MỘT lệnh, Mac lẫn Windows
+
+```bash
+npm run dev       # cửa sổ 1: Docker (Postgres+Redis+MinIO) → .env → migration → server
+npm run dev:fe    # cửa sổ 2: app, quét QR bằng Expo Go
+```
+
+Chỉ cần Node 22/24 và Docker Desktop đang mở. Hỏng bước nào thì `setup/dev.mjs`
+dừng ở đó và in cách sửa.
+
 | Việc | macOS | Windows |
 |---|---|---|
 | Cài đặt | `./setup/mac/install.sh` | `setup\win\install.bat` |
