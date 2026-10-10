@@ -887,6 +887,12 @@ npm run migration:show
 
 Việc gì cần **nhớ lâu** thì đi Postgres. Redis là chỗ của thứ được phép quên.
 
+**`maxmemory-policy noeviction`** (cả hai tệp compose). Bảy việc trên dùng
+CHUNG một Redis, trong đó có hàng đợi BullMQ — chính sách đuổi khoá (`*-lru`)
+sẽ lặng lẽ xoá việc nền khi đầy. `noeviction` thì đầy là lệnh ghi hỏng to, thấy
+ngay trên log. Cần bộ đệm thật thì dựng Redis THỨ HAI với `allkeys-lru`, đừng
+đổi chính sách của cái này.
+
 ## 8. Socket là đường tắt, không phải lời hứa giao hàng
 
 App bị đẩy ra nền là ống đứt, và nó đứt thường xuyên hơn nhiều so với cảm giác
@@ -1214,8 +1220,10 @@ lùi / không vượt, đang gõ chỉ tới người kia, online/offline theo m
 
 ## 13. Chạy cả cụm bằng Docker (máy deploy / staging)
 
-`docker/compose.yml` — Postgres 16 · Redis 7 (appendonly) · MinIO + tạo thùng ·
-`migrate` (chạy một lần) · `api` · `proxy` (nginx). Máy dev vẫn dùng
+`docker/compose.yml` — Postgres 16 · PgBouncer · Redis 7 (appendonly,
+noeviction) · Elasticsearch 8 · MinIO + tạo thùng · `migrate` (chạy một lần) ·
+`api` · `proxy` (nginx). Thư viện nào, vì sao, lớn lên thêm gì:
+[`.docs/06-backend-stack.md`](../.docs/06-backend-stack.md). Máy dev vẫn dùng
 `compose.dev.yml` + server chạy thẳng.
 
 ```bash
@@ -1248,3 +1256,30 @@ npm run stack:down        # giữ dữ liệu; `down -v` là xoá sạch
 - **Cầu Redis của socket phải ĐỢI nối xong.** Kết nối gốc tắt hàng đợi offline,
   nên `psubscribe` gọi lúc chưa nối là ném và server chết lúc bật — chỉ lộ ra
   khi Redis ở máy khác (container). Nay `connectToRedis` đợi `connect()`.
+- **Image** (`npm run docker:build` → `nook-api:local`): hai chặng, `npm ci` cả
+  workspace rồi `npm prune --omit=dev`, không apt (argon2 và sharp có bản dựng
+  sẵn), chạy bằng `node`, có `HEALTHCHECK`. Sau proxy công ty mở TLS thì
+  `--secret id=npm_ca,src=<ca.pem>` — không nằm lại trong image.
+- **Dừng gọn:** `node` là tiến trình chính, nhận SIGTERM, `enableShutdownHooks`
+  đóng Fastify, Postgres, Redis, worker BullMQ (đo: ~0,3 giây). Thoát mã 143 là
+  BÌNH THƯỜNG — Nest đóng xong rồi tự gửi lại tín hiệu. `stop_grace_period: 20s`.
+- **PgBouncer** chế độ `transaction`: `api` đi qua nó (`DB_HOST=pgbouncer`),
+  `migrate` thì đi thẳng `db` — migration cần khoá theo phiên. Cái giá: không
+  dùng được thứ gắn PHIÊN (`SET` không `LOCAL`, khoá advisory theo phiên,
+  `LISTEN/NOTIFY`); hiện mã không dùng cái nào. `pg` của TypeORM gửi prepared
+  statement KHÔNG tên nên chạy được; `MAX_PREPARED_STATEMENTS=200` để dành cho
+  ngày có câu có tên. Tổng kết nối thật = `PGBOUNCER_POOL_SIZE`, giữ dưới
+  `max_connections` của Postgres.
+- **Elasticsearch** (`SEARCH_ENABLED`): bản sao để tìm người theo tên, Postgres
+  vẫn là nguồn thật. Sửa hồ sơ → việc `search.index-user` (BullMQ, thử lại 3
+  lần) → đọc lại từ Postgres rồi ghi. Chỉ mục chỉ có `username`, `displayName`,
+  `avatarMediaId` — không email, không số, không cấp thân. ES tắt/hỏng thì
+  `UserSearchService.find` lùi về Postgres. Mất dữ liệu hay đổi mapping:
+  `node backend/dist/cli/search-reindex.js [--recreate]` (máy dev:
+  `npm run search:reindex -w @nook/backend`). Chưa có đường API tìm kiếm —
+  `@nook/shared` chưa khai, nên chưa mở.
+- **`/metrics`** (Prometheus): route thô của Fastify, ngoài vỏ JSON. nginx trả
+  404; api cũng chỉ trả lời kết nối từ mạng trong mà KHÔNG mang
+  `X-Forwarded-For`. Nhãn là MẪU đường (`/v1/chats/:id`), không phải đường thật.
+- **Bẫy ES trên máy thật:** `vm.max_map_count=262144`; đĩa quá 90% thì ES không
+  đặt chỉ mục (`no_shard_available_action_exception`).

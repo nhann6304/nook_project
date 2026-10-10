@@ -1,4 +1,5 @@
-# Cả cụm cho máy deploy / staging: Postgres · Redis · MinIO · migration · API · proxy.
+# Cả cụm cho máy deploy / staging: Postgres · PgBouncer · Redis · Elasticsearch ·
+# MinIO · migration · API · proxy.
 # (Máy dev thì dùng compose.dev.yml — server chạy thẳng trên máy để watch.)
 #
 #   cp backend/docker/.env.example backend/docker/.env     # rồi điền bí mật
@@ -7,7 +8,7 @@
 #   npm run stack:down                                      # giữ dữ liệu; thêm -v là XOÁ SẠCH
 #
 # Thứ tự bật: db, redis, minio khoẻ → minio-init tạo thùng → migrate chạy xong
-# → api → proxy. Migration là MỘT lần chạy riêng, không phải mỗi bản api tự
+# (THẲNG vào db, không qua PgBouncer) → pgbouncer → api → proxy. Migration là MỘT lần chạy riêng, không phải mỗi bản api tự
 # chạy: ba bản api cùng tự chạy migration là đua nhau sửa bảng.
 #
 # Nhân bản api KHÔNG cần dính phiên ở proxy: ống socket chỉ nhận websocket (một
@@ -19,7 +20,7 @@ x-api-image: &api-image
   build:
     context: ../..
     dockerfile: backend/Dockerfile
-  image: nook-backend:${NOOK_TAG:-local}
+  image: nook-api:${NOOK_TAG:-local}
 
 services:
   db:
@@ -42,7 +43,17 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
     # appendonly: mã đăng nhập, hàng đợi việc nền không bay khi khởi động lại.
-    command: ['redis-server', '--appendonly', 'yes']
+    # noeviction: MỘT Redis chở cả hàng đợi BullMQ — đuổi khoá khi đầy là mất
+    # việc nền lặng lẽ. Đầy thì lệnh ghi hỏng to, thấy ngay. Thêm bộ đệm sau
+    # này thì tách Redis thứ hai với allkeys-lru (backend/README mục 7).
+    command:
+      - redis-server
+      - --appendonly
+      - 'yes'
+      - --maxmemory
+      - ${REDIS_MAXMEMORY:-512mb}
+      - --maxmemory-policy
+      - noeviction
     volumes:
       - redis-data:/data
     healthcheck:
@@ -50,6 +61,64 @@ services:
       interval: 5s
       timeout: 3s
       retries: 30
+
+  # Gom kết nối: N bản api × poolSize 10 kết nối chạm trần `max_connections`
+  # của Postgres rất nhanh. Chế độ TRANSACTION — mỗi giao dịch mượn một kết nối
+  # thật rồi trả. Đổi lại: không dùng được thứ gắn với PHIÊN (SET không LOCAL,
+  # khoá advisory theo phiên, LISTEN/NOTIFY). `pg` của TypeORM dùng prepared
+  # statement KHÔNG tên nên chạy được; có tên thì cần MAX_PREPARED_STATEMENTS.
+  # Migration không đi qua đây (khoá bảng theo phiên) — xem `migrate`.
+  pgbouncer:
+    image: edoburu/pgbouncer:v1.24.1-p1
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: '5432'
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      AUTH_TYPE: scram-sha-256
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: '2000'
+      DEFAULT_POOL_SIZE: ${PGBOUNCER_POOL_SIZE:-20}
+      MAX_PREPARED_STATEMENTS: '200'
+      IGNORE_STARTUP_PARAMETERS: extra_float_digits,statement_timeout
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-h', '127.0.0.1', '-p', '5432']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # Tìm kiếm. Bản sao của Postgres, không phải nguồn thật — mất thì
+  # `search:reindex` dựng lại. Một nút; lớn thì tách cụm (.docs/06-backend-stack.md).
+  elasticsearch:
+    image: elasticsearch:8.19.20
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: 'true'
+      # Chỉ api trong mạng của cụm gọi tới, không mở cổng ra ngoài — TLS để cho
+      # tầng phía trước nếu sau này phải mở.
+      xpack.security.http.ssl.enabled: 'false'
+      xpack.security.transport.ssl.enabled: 'false'
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in backend/docker/.env}
+      ES_JAVA_OPTS: -Xms${ES_HEAP:-1g} -Xmx${ES_HEAP:-1g}
+    mem_limit: ${ES_MEM_LIMIT:-2g}
+    ulimits:
+      nofile: { soft: 65536, hard: 65536 }
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fsS -u "elastic:$${ELASTIC_PASSWORD}" "http://127.0.0.1:9200/_cluster/health?wait_for_status=yellow&timeout=5s" >/dev/null
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
 
   # Kho ảnh. Bản cho người dùng thật thì dùng R2 (backend/README mục 4) — khi đó
   # bỏ minio + minio-init và trỏ STORAGE_* sang R2.
@@ -96,6 +165,7 @@ services:
   migrate:
     <<: *api-image
     restart: 'no'
+    init: true
     env_file: .env
     depends_on:
       db:
@@ -112,12 +182,16 @@ services:
     restart: unless-stopped
     init: true
     env_file: .env
+    # Đi qua PgBouncer; `migrate` thì vẫn thẳng vào db.
+    environment:
+      DB_HOST: pgbouncer
+      DB_PORT: '5432'
     # Không mở cổng ra máy chủ: nhân bản thì nhiều bản không giành được một
     # cổng. Mọi đường vào đi qua `proxy`.
     expose:
       - '4000'
     depends_on:
-      db:
+      pgbouncer:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -165,3 +239,4 @@ volumes:
   db-data:
   redis-data:
   minio-data:
+  es-data:

@@ -5,6 +5,9 @@ import { HEALTH_PATH } from '@nook/shared/common/constant';
 import { Env, NodeEnv } from '../env/index.js';
 import { NookLogger } from './nook-logger.js';
 
+/** Prometheus đọc số liệu ở đây (`bootstrap/metrics.setup.ts`). */
+export const METRICS_PATH = '/metrics';
+
 /** Đường nào chậm hơn ngần này thì nâng mức lên cho nó nổi. */
 const SLOW_MS = 500;
 
@@ -67,9 +70,9 @@ export function registerHttpLog(instance: FastifyInstance): void {
   const log = new Logger('HTTP');
 
   instance.addHook('onResponse', (req: FastifyRequest, reply: FastifyReply, done: () => void) => {
-    // Bộ dò sống chết gõ cửa mỗi vài giây. Ghi lại là tự lấp đầy log bằng thứ
-    // không nói lên điều gì.
-    if (req.url === HEALTH_PATH) return done();
+    // Bộ dò sống chết và Prometheus gõ cửa mỗi vài giây. Ghi lại là tự lấp đầy
+    // log bằng thứ không nói lên điều gì.
+    if (req.url === HEALTH_PATH || req.url === METRICS_PATH) return done();
 
     const ms = Math.round(reply.elapsedTime);
     const why = (req.raw as { nookErrCode?: string }).nookErrCode;

@@ -21,6 +21,7 @@ nội dung sang cả hai.
 | [`03-offline.md`](03-offline.md) | **Luật** khi mất mạng: xem được gì, làm được gì, nói với người dùng thế nào | **Cả hai bên.** Ghi trước khi code — chưa có dòng mã nào theo nó |
 | [`05-image-storage.md`](05-image-storage.md) | Chọn kho ảnh khi deploy (R2 / B2 / S3 / MinIO), ảnh gốc 100% | Cả hai bên |
 | [`04-offline-design.md`](04-offline-design.md) | **Cách làm**: bốn kho ở máy, lược đồ SQLite, cửa `GET /v1/sync`, hàng đợi gửi, thứ tự làm | **Cả hai bên.** Đọc trước khi viết đường ghi đầu tiên — có hai thứ nhét vào sau là phải sửa cả hai bên |
+| [`06-backend-stack.md`](06-backend-stack.md) | Bộ máy backend: thư viện nào, vì sao; lớn lên thì thêm gì ở mốc người dùng nào; chạy và dựng image | Cả hai bên — ai deploy thì bắt buộc |
 
 **Đọc `01-product-system.md` mục 0 và mục 3 trước tiên** — đó là triết lý gốc
 quyết định mọi thứ khác.

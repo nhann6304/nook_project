@@ -43,7 +43,8 @@ services:
     container_name: nook-redis
     restart: unless-stopped
     # appendonly để mã đăng nhập không bay mất khi khởi động lại giữa chừng.
-    command: ['redis-server', '--appendonly', 'yes']
+    # noeviction: chung Redis với BullMQ, đuổi khoá là mất việc nền.
+    command: ['redis-server', '--appendonly', 'yes', '--maxmemory', '256mb', '--maxmemory-policy', 'noeviction']
     ports:
       - '6380:6379'
     volumes:
@@ -53,6 +54,30 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+
+  # Chỉ lên khi gọi tên: --profile search. Mật khẩu khớp backend/.env.example.
+  elasticsearch:
+    image: elasticsearch:8.19.20
+    container_name: nook-es
+    profiles: ['search']
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: 'true'
+      xpack.security.http.ssl.enabled: 'false'
+      xpack.security.transport.ssl.enabled: 'false'
+      ELASTIC_PASSWORD: nook-elastic-dev
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    mem_limit: 1g
+    ports:
+      - '127.0.0.1:9200:9200'
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS -u elastic:nook-elastic-dev "http://127.0.0.1:9200/_cluster/health?wait_for_status=yellow&timeout=5s" >/dev/null']
+      interval: 10s
+      timeout: 10s
+      retries: 30
 
   # Kho ảnh của máy dev. Nói cùng thứ tiếng với Cloudflare R2 (giao thức S3),
   # nên đường tải lên ở máy dev là ĐƯỜNG THẬT — không phải một bản giả rồi lên
@@ -97,3 +122,4 @@ volumes:
   db-data:
   redis-data:
   minio-data:
+  es-data:

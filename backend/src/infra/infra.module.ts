@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { RedisModule } from './redis/index.js';
 import { NotifyModule } from './notify/index.js';
 import { StorageModule } from './storage/index.js';
+import { SearchModule } from './search/index.js';
 
 /**
  * Thế giới bên ngoài: Redis, đường gửi thư, và sau này là kho ảnh (R2/MinIO)
@@ -11,7 +12,7 @@ import { StorageModule } from './storage/index.js';
  * gọi nó là "utils" — ba tháng nữa không ai biết cái gì phụ thuộc vào cái gì.
  */
 @Module({
-  imports: [RedisModule, NotifyModule, StorageModule],
-  exports: [RedisModule, NotifyModule, StorageModule],
+  imports: [RedisModule, NotifyModule, StorageModule, SearchModule],
+  exports: [RedisModule, NotifyModule, StorageModule, SearchModule],
 })
 export class InfraModule {}

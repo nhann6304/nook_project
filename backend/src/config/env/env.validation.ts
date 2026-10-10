@@ -149,6 +149,16 @@ export class Env {
    */
   @Transform(toBool) @IsBoolean() EMAIL_MX_CHECK: boolean = false;
 
+  // ── Tìm kiếm (Elasticsearch) ──────────────────────────────────────────────
+  /**
+   * Tắt mặc định. Postgres vẫn là nguồn thật; ES chỉ là bản sao để tìm nhanh,
+   * hỏng hay tắt thì tìm kiếm lùi về Postgres.
+   */
+  @Transform(toBool) @IsBoolean() SEARCH_ENABLED: boolean = false;
+  @IsOptional() @IsString() ELASTIC_URL?: string;
+  @IsString() ELASTIC_USERNAME: string = 'elastic';
+  @IsOptional() @IsString() ELASTIC_PASSWORD?: string;
+
   // ── Kho ảnh ────────────────────────────────────────────────────────────────
   @IsString() STORAGE_ENDPOINT!: string;
   @IsString() STORAGE_REGION: string = 'auto';
@@ -212,6 +222,9 @@ export function validateEnv(raw: Record<string, unknown>): Env {
     if (!env.TWILIO_FROM && !env.TWILIO_MESSAGING_SERVICE_SID) {
       throw new Error('SMS_SENDER=twilio requires TWILIO_FROM or TWILIO_MESSAGING_SERVICE_SID.');
     }
+  }
+  if (env.SEARCH_ENABLED && (!env.ELASTIC_URL || !env.ELASTIC_PASSWORD)) {
+    throw new Error('SEARCH_ENABLED=true requires ELASTIC_URL and ELASTIC_PASSWORD.');
   }
   // Mã in ra log ở bản thật = ai đọc được log là đăng nhập thay được mọi số.
   if (env.NODE_ENV === NodeEnv.production && env.SMS_SENDER === SmsSenderKind.console) {

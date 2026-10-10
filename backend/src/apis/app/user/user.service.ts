@@ -8,6 +8,7 @@ import { UserRepository, UserIdentityRepository, UserStatRepository } from '../.
 import { UserMapper } from './user.mapper.js';
 import { UsernameService } from './username.service.js';
 import { MediaService } from '../media/media.service.js';
+import { UserSearchService } from '../../../infra/search/index.js';
 import type { UpdateMeDto } from './user.dto.js';
 
 /** Ném ra khi thua cuộc đua mở tài khoản. Không rời khỏi file này. */
@@ -29,6 +30,7 @@ export class UserService {
     private readonly mapper: UserMapper,
     private readonly media: MediaService,
     private readonly usernames: UsernameService,
+    private readonly search: UserSearchService,
   ) {}
 
   /** Hồ sơ của chính mình. */
@@ -43,8 +45,16 @@ export class UserService {
    * biết còn phải đưa người ta qua màn Tên + ảnh nữa không — chứ không dựa vào
    * `displayName != null`, vì sau này cho đổi tên về rỗng là cờ kia sai ngay.
    */
-  @Transactional()
   async updateMe(userId: string, dto: UpdateMeDto): Promise<UserProfileDto> {
+    const profile = await this.applyUpdate(userId, dto);
+    // SAU khi giao dịch đã chốt: việc nền chạy nhanh hơn COMMIT thì đọc phải
+    // bản cũ và chỉ mục lệch mãi. Tạo tài khoản thì không cần — chưa có tên.
+    await this.search.enqueue(userId);
+    return profile;
+  }
+
+  @Transactional()
+  private async applyUpdate(userId: string, dto: UpdateMeDto): Promise<UserProfileDto> {
     const user = await this.mustFind(userId);
 
     if (dto.displayName !== undefined) {

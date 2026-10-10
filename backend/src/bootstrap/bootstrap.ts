@@ -9,6 +9,7 @@ import { buildLogger } from '../config/logger/index.js';
 import { setupSwagger } from '../config/swagger/index.js';
 import { setupHttp } from './http.setup.js';
 import { setupRealtime } from './realtime.setup.js';
+import { setupMetrics } from './metrics.setup.js';
 
 /**
  * Đọc thẳng `process.env`, không qua `ConfigService`: adapter Fastify phải
@@ -83,6 +84,7 @@ export async function bootstrap(): Promise<void> {
   app.useLogger(buildLogger(config));
 
   await setupHttp(app, config);
+  setupMetrics(app);
   await setupRealtime(app);
   if (config.get('SWAGGER_ENABLED', { infer: true })) setupSwagger(app);
 
