@@ -45,6 +45,10 @@ export const API = {
     stats: '/v1/admin/stats',
     /** GET — danh sách người dùng, lật trang bằng con trỏ */
     users: '/v1/admin/users',
+    /** GET — các máy từng đăng nhập vào một tài khoản */
+    userDevices: '/v1/admin/users/:id/devices',
+    /** GET — sổ đăng nhập của một tài khoản, mới nhất trước, lật bằng con trỏ */
+    userAuthEvents: '/v1/admin/users/:id/auth-events',
   },
   moment: {
     /** POST — gửi một khoảnh khắc cho cả góc (CHƯA có bên server) */

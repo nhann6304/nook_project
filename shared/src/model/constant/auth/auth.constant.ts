@@ -75,3 +75,21 @@ export const AUTH_LIMITS = {
   /** Trần số lần đăng nhập bằng mật khẩu trong một giờ, theo máy gọi. */
   loginPerHourPerIp: 60,
 } as const;
+
+/**
+ * Sổ đăng nhập (12/10/2026) — loại việc ghi vào `auth_events`. Web quản trị
+ * đọc để hiện lịch sử; app không dùng.
+ */
+export const AUTH_EVENT_KINDS = [
+  'signup',
+  'login',
+  'login_failed',
+  'code_login',
+  'password_reset',
+] as const;
+
+/**
+ * Dấu hiệu bất thường gắn lên một lần đăng nhập. Chỉ để soi và báo thư —
+ * CHƯA chặn ai (xem backend README mục 1, "Máy và dấu hiệu bất thường").
+ */
+export const RISK_FLAGS = ['new_device', 'new_country', 'impossible_travel', 'many_failures'] as const;

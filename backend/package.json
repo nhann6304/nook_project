@@ -55,6 +55,7 @@
     "dotenv": "^17.4.2",
     "ioredis": "^5.11.1",
     "libphonenumber-js": "^1.13.12",
+    "mmdb-lib": "3.0.3",
     "nodemailer": "^9.1.0",
     "pg": "^8.23.0",
     "prom-client": "15.1.3",

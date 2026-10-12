@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { TSignInMethod } from '@nook/shared';
+import type { TSignInIntent, TSignInMethod } from '@nook/shared';
 import { CodeSenderKind, Env, SmsSenderKind } from '../../../config/env/index.js';
 import type { ICodeSender } from '../sender/index.js';
 import { ConsoleSender, EsmsSender, SmtpSender, TwilioSender } from '../sender/index.js';
@@ -44,9 +44,9 @@ export class CodeSenderService {
     return method === 'email' || this.sms !== null;
   }
 
-  send(method: TSignInMethod, target: string, code: string): Promise<void> {
+  send(method: TSignInMethod, target: string, code: string, intent?: TSignInIntent): Promise<void> {
     const sender = method === 'email' ? this.email : this.sms;
     if (!sender) return Promise.reject(new Error('SMS_SENDER=off: no transport for phone'));
-    return sender.send(method, target, code);
+    return sender.send(method, target, code, intent);
   }
 }

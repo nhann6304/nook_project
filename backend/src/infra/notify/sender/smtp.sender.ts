@@ -1,12 +1,15 @@
 import { Injectable, Logger, type OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
-import { LIMITS, type TSignInMethod } from '@nook/shared';
+import { LIMITS, type TSignInIntent, type TSignInMethod } from '@nook/shared';
 import { CodeSenderKind, Env } from '../../../config/env/index.js';
 import type { ICodeSender } from './code-sender.interface.js';
+import { codeMail, LOGO_CID } from './code-mail.js';
+import { mailLogo } from './mail-logo.js';
 
 /**
- * Gửi mã qua email thật.
+ * Gửi mã qua email thật. Giao diện thư ở `code-mail.ts`, logo nháy mắt ở
+ * `mail-logo.ts`.
  *
  * Chữ trong thư nằm ở đây chứ không lấy từ kho chữ của app — thư đi ra ngoài
  * hệ thống, người nhận có khi chưa cài app. Đây là ngoại lệ DUY NHẤT của luật
@@ -30,18 +33,29 @@ export class SmtpSender implements ICodeSender, OnApplicationBootstrap {
     this.from = this.config.get('SMTP_FROM', { infer: true }) ?? 'Nook <no-reply@nook.app>';
   }
 
-  async send(method: TSignInMethod, target: string, code: string): Promise<void> {
+  async send(
+    method: TSignInMethod,
+    target: string,
+    code: string,
+    intent?: TSignInIntent,
+  ): Promise<void> {
     // `CodeSenderService` chỉ đưa email tới đây; SMS đi đường `SMS_SENDER`.
     if (method !== 'email') throw new Error('SMTP only sends to email addresses');
 
     const minutes = Math.round(LIMITS.codeTtlSeconds / 60);
     const started = Date.now();
+    const logo = await mailLogo();
+    const mail = codeMail(code, intent, minutes, logo !== null);
     try {
       await this.transporter().sendMail({
         from: this.from,
         to: target,
-        subject: `Mã đăng nhập LOVO: ${code}`,
-        text: `Mã của bạn là ${code}. Mã sống trong ${minutes} phút.\n\nKhông phải bạn xin mã này? Bỏ qua thư này là xong.`,
+        ...mail,
+        // Ảnh đính kèm nội tuyến (cid): Gmail chặn ảnh data: và hỏi trước khi
+        // tải ảnh từ link ngoài; ảnh cid thì hiện ngay.
+        attachments: logo
+          ? [{ filename: 'lovo.gif', content: logo, cid: LOGO_CID, contentType: 'image/gif' }]
+          : [],
       });
     } catch (e) {
       this.log.error(`send failed after ${Date.now() - started}ms: ${describe(e)}`);

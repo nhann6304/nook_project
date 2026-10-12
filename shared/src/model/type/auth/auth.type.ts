@@ -1,5 +1,11 @@
 import type { IAuthTokens } from '../../interface/index.js';
-import type { SIGNIN_INTENTS, SIGNIN_METHODS, SIGNIN_METHODS_ENABLED } from '../../constant/index.js';
+import type {
+  AUTH_EVENT_KINDS,
+  RISK_FLAGS,
+  SIGNIN_INTENTS,
+  SIGNIN_METHODS,
+  SIGNIN_METHODS_ENABLED,
+} from '../../constant/index.js';
 
 /** Người dùng chọn đăng nhập bằng gì. Suy ra từ danh sách, không gõ lại. */
 export type TSignInMethod = (typeof SIGNIN_METHODS)[number];
@@ -12,3 +18,9 @@ export type TSignInIntent = (typeof SIGNIN_INTENTS)[number];
 
 /** Làm mới thẻ trả về đúng bằng lúc phát thẻ. Đặt tên riêng cho Swagger dễ đọc. */
 export type TRefreshResult = IAuthTokens;
+
+/** Một dòng của sổ đăng nhập là việc gì. */
+export type TAuthEventKind = (typeof AUTH_EVENT_KINDS)[number];
+
+/** Một dấu hiệu bất thường. */
+export type TRiskFlag = (typeof RISK_FLAGS)[number];

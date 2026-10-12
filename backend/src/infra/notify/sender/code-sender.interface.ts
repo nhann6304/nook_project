@@ -1,4 +1,4 @@
-import type { TSignInMethod } from '@nook/shared';
+import type { TSignInIntent, TSignInMethod } from '@nook/shared';
 
 /**
  * Một cách mang mã 6 số tới tay người dùng.
@@ -9,5 +9,6 @@ import type { TSignInMethod } from '@nook/shared';
 export interface ICodeSender {
   /** Tên để ghi log. */
   readonly kind: string;
-  send(method: TSignInMethod, target: string, code: string): Promise<void>;
+  /** `intent` chỉ để chọn chữ trong thư; SMS bỏ qua nó. */
+  send(method: TSignInMethod, target: string, code: string, intent?: TSignInIntent): Promise<void>;
 }

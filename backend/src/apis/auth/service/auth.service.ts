@@ -104,7 +104,7 @@ export class AuthService {
     const code = await this.codes.issue(dto.method, target);
 
     try {
-      await this.sender.send(dto.method, target, code);
+      await this.sender.send(dto.method, target, code, dto.intent);
     } catch {
       // Gửi hỏng thì phải huỷ mã. Không huỷ là người dùng bị chốt 60 giây để
       // chờ một mã không bao giờ tới nơi — và họ sẽ bấm lại, rồi lại bị chặn.

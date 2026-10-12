@@ -1,4 +1,5 @@
 export * from './auth/auth.interface.js';
+export * from './auth/auth-event.interface.js';
 export * from './user/user.interface.js';
 export * from './user/username.interface.js';
 export * from './circle/circle.interface.js';
