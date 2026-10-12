@@ -20,6 +20,7 @@ import Constants from 'expo-constants';
 import { API, COMMON_ERR, HTTP_STATUS } from '@nook/shared/common/constant';
 import type { IApiEnvelope, IApiError } from '@nook/shared/common/interface';
 import type { IAuthTokens } from '@nook/shared/model/interface';
+import { deviceHeaders } from '@/lib/device/identity';
 
 /** Cổng `npm run dev:be` (PORT trong backend/.env). */
 const DEV_API_PORT = 4000;
@@ -106,6 +107,7 @@ async function send<T>(
       method,
       signal: ctrl.signal,
       headers: {
+        ...(await deviceHeaders()),
         Accept: 'application/json',
         ...(body !== undefined ? { 'Content-Type': 'application/json' } : null),
         ...(token ? { Authorization: `Bearer ${token}` } : null),

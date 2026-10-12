@@ -32,6 +32,8 @@ export default function SignIn() {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Đếm số lần bị từ chối — logo lắc đầu mỗi lần. */
+  const [shake, setShake] = useState(0);
 
   const submit = useCallback(
     async (method: SignInMethod, target: string, password: string) => {
@@ -44,6 +46,7 @@ export default function SignIn() {
         if (!res.ok) {
           const door = RIGHT_DOOR[res.code];
           if (door) setIntent(door);
+          else setShake((n) => n + 1);
           setError(res.message);
           return;
         }
@@ -61,6 +64,7 @@ export default function SignIn() {
       if (!res.ok) {
         const door = RIGHT_DOOR[res.code];
         if (door) setIntent(door);
+        else setShake((n) => n + 1);
         setError(res.message);
         return;
       }
@@ -82,6 +86,7 @@ export default function SignIn() {
       error={error}
       onSubmit={(m, tg, pw) => void submit(m, tg, pw)}
       onSwitch={switchTo}
+      shake={shake}
     />
   );
 }

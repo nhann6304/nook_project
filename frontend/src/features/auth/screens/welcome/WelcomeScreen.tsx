@@ -6,10 +6,11 @@
  * Bỏ vầng sáng và chồng khung đứt nét của bản trước: chúng làm màn trông như
  * minh hoạ, không giống app chụp ảnh.
  */
+import { useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
-import { Button, Img, Screen, Txt, Wordmark } from '@ui';
+import { Button, Img, Screen, Tap, Txt, Wordmark } from '@ui';
 import { duration, layout, radius, space, useColors, useStyles, type Palette } from '@design';
 import { useT } from '@i18n';
 import { SEED_MOMENTS } from '@/mocks/moments';
@@ -29,6 +30,8 @@ export function WelcomeScreen({
   const t = useT();
   const { height } = useWindowDimensions();
   const heroH = Math.round(height * 0.66);
+  // Quả trứng phục sinh: chạm logo là nó nhún lên, cười híp mắt, tim sáng bừng.
+  const [cheer, setCheer] = useState(0);
 
   const rise = (i: number) => FadeInDown.delay(duration.slow + i * STAGGER).duration(duration.slow);
 
@@ -45,7 +48,15 @@ export function WelcomeScreen({
 
       <Screen clear>
         <View style={s.top}>
-          <Wordmark size={40} onPhoto blink="loop" blinkDelay={duration.scene + 300} />
+          <Tap onPress={() => setCheer((n) => n + 1)} scaleTo={1} accessible={false}>
+            <Wordmark
+              size={40}
+              onPhoto
+              blink="loop"
+              blinkDelay={duration.scene + 300}
+              cheer={cheer}
+            />
+          </Tap>
         </View>
 
         <Animated.View

@@ -87,6 +87,8 @@ thứ không ai hiểu.
 | `expo-location` | 57.0.20 | "Tìm quanh đây": xin quyền vị trí lúc dùng, lấy toạ độ MỘT lần rồi làm tròn ~11 m trước khi rời máy. Không chạy nền. | Có sẵn trong Expo Go. Chỉ xin quyền "khi đang dùng", không bao giờ "luôn luôn".
 | `expo-network` | 57.0.2 | Viên "Đang chờ mạng" (`src/hooks/useOnline.ts`). Chỉ là GỢI Ý — xem `.docs/04-offline-design.md` mục 7. | Có sẵn trong Expo Go. |
 | `expo-secure-store` | 57.0.4 | Cất thẻ dài hạn vào Keychain (iOS) / Keystore (Android) — `src/lib/http/api.ts`. | |
+| `expo-device` | 57.0.2 | Tên mẫu máy + bản hệ điều hành gửi kèm header `x-device-*` (`src/lib/device/identity.ts`) để server nhận ra đăng nhập từ máy lạ. | |
+| `expo-crypto` | 57.0.3 | Sinh mã máy (UUID) một lần, cất SecureStore — `src/lib/device/identity.ts`. | Hermes chưa chắc có `crypto.randomUUID`. |
 | `react-native-maps` | 1.27.2 | Bản đồ đường phố NỀN của "Tìm quanh đây" — chỉ quanh chỗ của chính mình, không kéo/zoom, Android `liteMode` (ảnh tĩnh). Kiểu bản đồ dựng từ bảng màu (`design/mapStyle.ts`). | Có sẵn trong Expo Go. **Bản build Android thật cần khoá Google Maps** (`android.config.googleMaps.apiKey` trong app.json) — chưa có thì bản đồ trắng. iOS dùng Apple Maps, không cần khoá. |
 | `fflate` | 0.8.3 | Giải nén PNG 16×16 để rút màu chủ đạo của ảnh vừa gửi ("Theo ảnh", `camera/lib/photoColor.ts`). JS thuần, chạy trong Expo Go. | ~8 KB. |
 | `@iconify-json/mingcute` (dev) | 1.2.8 | Nguồn icon (MingCute, Apache-2.0). `node scripts/icons.mjs` chép nét vào `iconPaths.ts`. | Không vào bản app. |

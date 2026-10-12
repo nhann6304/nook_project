@@ -25,11 +25,29 @@ export function useTourTarget(id: TourTargetId): RefObject<View | null> {
   return ref;
 }
 
-/** Toạ độ trên màn của nút; `null` khi nút không có mặt hoặc rộng 0. */
-export function measureTourTarget(id: TourTargetId): Promise<TourRect | null> {
+/** Đo mà không có hồi âm sau chừng này thì coi như nút vắng mặt. */
+const MEASURE_TIMEOUT_MS = 300;
+
+/** Toạ độ trên màn của nút; `null` khi nút không có mặt, rộng 0 hoặc nằm ngoài màn. */
+export function measureTourTarget(
+  id: TourTargetId,
+  screen: { width: number; height: number },
+): Promise<TourRect | null> {
   const view = targets.get(id)?.current;
   if (!view) return Promise.resolve(null);
   return new Promise((resolve) => {
-    view.measureInWindow((x, y, w, h) => resolve(w > 0 && h > 0 ? { x, y, w, h } : null));
+    // View vừa gỡ khỏi cây thì `measureInWindow` có thể không bao giờ gọi lại.
+    const timer = setTimeout(() => resolve(null), MEASURE_TIMEOUT_MS);
+    view.measureInWindow((x, y, w, h) => {
+      clearTimeout(timer);
+      // Nút ở trang bên cạnh (đang lướt ngang) đo ra toạ độ ngoài màn — bỏ.
+      const onScreen = x + w > 0 && y + h > 0 && x < screen.width && y < screen.height;
+      resolve(w > 0 && h > 0 && onScreen ? { x, y, w, h } : null);
+    });
   });
+}
+
+/** Mã các nút đang đăng ký — để in log khi tour không tìm ra nút nào. */
+export function registeredTourTargets(): readonly TourTargetId[] {
+  return [...targets.keys()];
 }

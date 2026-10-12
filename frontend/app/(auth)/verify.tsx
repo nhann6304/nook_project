@@ -4,6 +4,7 @@
  */
 import { useCallback, useState } from 'react';
 import { Redirect, useRouter } from 'expo-router';
+import { WORDMARK_CHEER_MS } from '@ui';
 import { VerifyCodeScreen } from '@/features/auth/screens/verify-code/VerifyCodeScreen';
 import { resetPassword, sendCode, signup, verifyCode } from '@/features/auth/api/authApi';
 import { useAuth } from '@/features/auth/store/authStore';
@@ -15,6 +16,7 @@ export default function Verify() {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cheer, setCheer] = useState(0);
 
   const verify = useCallback(
     async (code: string): Promise<boolean> => {
@@ -35,6 +37,9 @@ export default function Verify() {
         setError(res.message);
         return false;
       }
+      // Logo nhún một nhịp cho người ta thấy là xong, rồi mới rời màn.
+      setCheer((n) => n + 1);
+      await new Promise((done) => setTimeout(done, WORDMARK_CHEER_MS));
       // Người mới đặt tên + ảnh trước; người cũ vào thẳng camera. `isNew` lấy
       // từ `onboarded` của server, không từ cửa họ đã chọn ở màn Chào mừng.
       if (res.isNew) {
@@ -65,6 +70,7 @@ export default function Verify() {
       onVerify={verify}
       onResend={resend}
       onChangeTarget={() => router.back()}
+      cheer={cheer}
     />
   );
 }

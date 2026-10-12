@@ -24,7 +24,7 @@ import { duration, ease, radius, space, useColors, useStyles, type Palette } fro
 import { useT } from '@i18n';
 import * as feel from '@/lib/device/haptics';
 import { useOnboarding } from '../../store/onboardingStore';
-import { measureTourTarget, type TourRect } from '../../hooks/useTourTarget';
+import { measureTourTarget, registeredTourTargets, type TourRect } from '../../hooks/useTourTarget';
 import { TOUR_COPY, TOUR_TARGETS, type TourTargetId } from '../../utils/tourSteps';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -34,6 +34,9 @@ const ARROW = 14;
 const CARD_MAX = 340;
 /** Chờ màn trượt xong (vừa đóng trang cá nhân, vừa vào app) rồi mới đo. */
 const SETTLE_MS = 450;
+/** Màn dựng chậm (máy yếu, đang xin quyền camera) thì đo lại vài lượt. */
+const MEASURE_TRIES = 5;
+const RETRY_MS = 400;
 const OUT = Easing.bezier(...ease.out);
 
 type Step = { id: TourTargetId; rect: TourRect };
@@ -50,27 +53,48 @@ function Tour() {
   const t = useT();
   const { width: W, height: H } = useWindowDimensions();
   const finishTour = useOnboarding((st) => st.finishTour);
+  const cancelTour = useOnboarding((st) => st.cancelTour);
   const [steps, setSteps] = useState<readonly Step[] | null>(null);
   const [index, setIndex] = useState(0);
 
-  // Đo MỘT lượt mọi nút sau khi màn đứng yên; nút vắng mặt bị loại.
+  // Đo mọi nút sau khi màn đứng yên; nút vắng mặt bị loại. Không ra nút nào
+  // thì đo lại vài lượt; vẫn không có thì tắt MÀ KHÔNG ghi "đã xem" — trước
+  // đây chỗ này ghi luôn, nên tour hỏng một lần là không bao giờ hiện nữa.
   useEffect(() => {
     let alive = true;
-    const timer = setTimeout(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const attempt = (n: number) => {
       void Promise.all(
-        TOUR_TARGETS.map(async (id) => ({ id, rect: await measureTourTarget(id) })),
+        TOUR_TARGETS.map(async (id) => ({
+          id,
+          rect: await measureTourTarget(id, { width: W, height: H }),
+        })),
       ).then((all) => {
         if (!alive) return;
         const found = all.filter((x): x is Step => x.rect !== null);
-        if (found.length === 0) finishTour();
-        else setSteps(found);
+        if (found.length > 0) {
+          if (__DEV__) console.log(`[tour] steps: ${found.map((f) => f.id).join(', ')}`);
+          setSteps(found);
+        } else if (n + 1 < MEASURE_TRIES) {
+          timer = setTimeout(() => attempt(n + 1), RETRY_MS);
+        } else {
+          if (__DEV__) {
+            console.log(
+              `[tour] nothing to point at (registered: ${registeredTourTargets().join(', ') || 'none'})`,
+            );
+          }
+          cancelTour();
+        }
       });
-    }, SETTLE_MS);
+    };
+    timer = setTimeout(() => attempt(0), SETTLE_MS);
     return () => {
       alive = false;
       clearTimeout(timer);
     };
-  }, [finishTour]);
+    // Đo một lần khi tour bật; xoay màn giữa chừng thì đốm lệch — chấp nhận.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cancelTour]);
 
   /* ── Đốm sáng: năm số trượt cùng nhau ── */
   const hx = useSharedValue(W / 2);

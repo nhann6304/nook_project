@@ -13,10 +13,13 @@
  * rình biến `error`. Rình bằng effect thì hai lần sai liên tiếp với cùng một
  * câu lỗi sẽ không kích hoạt lại — ô không được dọn, người dùng gõ tiếp vào
  * sáu số cũ.
+ *
+ * Logo nhìn xuống sáu ô, mắt trượt theo từng số; sai thì lắc đầu, đúng thì
+ * nhún lên (`cheer` do màn cha tăng rồi chờ `WORDMARK_CHEER_MS` mới chuyển màn).
  */
 import { useCallback, useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
-import { Button, CodeInput, Col, Flex, HelperText, Screen, Txt } from '@ui';
+import { StyleSheet, View } from 'react-native';
+import { Button, CodeInput, Col, Flex, HelperText, Screen, Txt, Wordmark } from '@ui';
 import { layout, space } from '@design';
 import { useT } from '@i18n';
 import { useCountdown } from '@/hooks/useCountdown';
@@ -34,7 +37,10 @@ export function VerifyCodeScreen({
   onVerify,
   onResend,
   onChangeTarget,
+  cheer = 0,
 }: {
+  /** Tăng số khi mã đúng — logo nhún lên trước khi rời màn. */
+  cheer?: number;
   method: SignInMethod;
   target: string;
   busy?: boolean;
@@ -46,6 +52,7 @@ export function VerifyCodeScreen({
 }) {
   const t = useT();
   const [code, setCode] = useState('');
+  const [shake, setShake] = useState(0);
   const { left, running, start } = useCountdown(RESEND_SECONDS);
 
   useEffect(start, [start]);
@@ -60,6 +67,7 @@ export function VerifyCodeScreen({
 
       // Sai mã: rung một nhịp từ chối rồi dọn ô cho người ta gõ lại ngay.
       feel.reject();
+      setShake((n) => n + 1);
       setCode('');
     },
     [onVerify],
@@ -74,6 +82,16 @@ export function VerifyCodeScreen({
   return (
     <Screen keyboard>
       <Col gap="sm" style={s.head}>
+        <View style={s.logo}>
+          <Wordmark
+            size={LOGO}
+            blink="loop"
+            lookX={(code.length / CODE_LENGTH) * 2 - 1}
+            lookY={1}
+            shake={shake}
+            cheer={cheer}
+          />
+        </View>
         <Txt variant="title">{t('verify.title')}</Txt>
         <Txt variant="body" tone="muted">
           {t('verify.sub', { target: displayTarget(method, target) })}
@@ -115,7 +133,10 @@ export function VerifyCodeScreen({
   );
 }
 
+const LOGO = 34;
+
 const s = StyleSheet.create({
-  head: { paddingTop: space.xxl, maxWidth: layout.maxTextWidth },
+  head: { paddingTop: space.xl, maxWidth: layout.maxTextWidth },
+  logo: { alignSelf: 'flex-start', marginBottom: space.md },
   form: { marginTop: space.xxxl, maxWidth: layout.maxTextWidth, width: '100%' },
 });

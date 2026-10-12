@@ -10,7 +10,8 @@ import { readText, writeText } from '@/lib/device/storage';
 
 /** Đổi hậu tố khi nội dung tour đổi hẳn — người cũ được xem bản mới một lần. */
 const INTRO_KEY = 'onboarding.intro.v1';
-const TOUR_KEY = 'onboarding.tour.v1';
+// v2 (12/10/2026): bản cũ ghi "đã xem" cả khi không đo được nút nào — ai dính thì được xem lại.
+const TOUR_KEY = 'onboarding.tour.v2';
 
 type OnboardingState = {
   ready: boolean;
@@ -22,6 +23,8 @@ type OnboardingState = {
   finishIntro: () => void;
   startTour: () => void;
   finishTour: () => void;
+  /** Tắt mà KHÔNG ghi "đã xem" — màn chưa có nút nào để chỉ, lần sau thử lại. */
+  cancelTour: () => void;
 };
 
 export const useOnboarding = create<OnboardingState>((set) => ({
@@ -37,7 +40,11 @@ export const useOnboarding = create<OnboardingState>((set) => ({
     void writeText(INTRO_KEY, '1');
     set({ introSeen: true });
   },
-  startTour: () => set({ touring: true }),
+  startTour: () => {
+    if (__DEV__) console.log('[tour] start');
+    set({ touring: true });
+  },
+  cancelTour: () => set({ touring: false }),
   finishTour: () => {
     void writeText(TOUR_KEY, '1');
     set({ tourSeen: true, touring: false });
