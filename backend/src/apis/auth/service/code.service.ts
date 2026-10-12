@@ -1,16 +1,26 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHmac,
+  hkdfSync,
+  randomBytes,
+  randomInt,
+  timingSafeEqual,
+} from 'node:crypto';
 import { ERR, LIMITS, type TSignInMethod } from '@nook/shared';
 import { AppException } from '../../../core/error/index.js';
 import { Env } from '../../../config/env/index.js';
 import { RedisService } from '../../../infra/redis/service/index.js';
+import { maskTarget } from '../../../infra/notify/sender/index.js';
+import type { IIssuedCode } from '../auth.interface.js';
 
 /**
  * Sổ khoá Redis của phần mã đăng nhập. Để ngoài lớp cho dễ đối chiếu khi phải
  * cầm `redis-cli` soi lúc nửa đêm.
  *
- *   auth:code:<kind>:<target>     băm { hash, tries, sentAt }   TTL 300s
+ *   auth:code:<kind>:<target>     băm { hash, box, tries, sentAt }  TTL 300s
  *   auth:resend:<kind>:<target>   chốt chặn gửi lại              TTL  60s
  *   auth:hour:<kind>:<target>     con đếm số mã trong một giờ    TTL 3600s
  *   auth:hour:ip:<ip>             con đếm số mã theo máy gọi     TTL 3600s
@@ -25,6 +35,17 @@ const KEY = {
 } as const;
 
 const HOUR_SECONDS = 3_600;
+
+/**
+ * Xin lại mà mã cũ còn sống ÍT NHẤT ngần này giây thì gửi lại đúng mã cũ; ít
+ * hơn thì cấp mã mới — đừng đưa người ta một mã sắp chết trên đường tới hộp thư.
+ */
+const REUSE_MIN_TTL_SECONDS = 60;
+
+/** Nhãn HKDF: khoá hộp mã khác hẳn khoá HMAC dù cùng sinh từ `AUTH_CODE_SECRET`. */
+const BOX_KEY_INFO = 'nook/auth-code-box/v1';
+const BOX_IV_BYTES = 12;
+const BOX_TAG_BYTES = 16;
 
 /**
  * Mã 6 số: sinh, cất, đối chiếu.
@@ -57,6 +78,14 @@ const HOUR_SECONDS = 3_600;
  * vẫn không suy ngược ra mã vì họ không có khoá — đúng mức an toàn cần cho bài
  * toán này. Dấu vân buộc luôn vào `method:target` để một dấu vân không dùng
  * lại được cho đích khác.
+ *
+ * ── Xin lại trong 5 phút thì gửi lại ĐÚNG mã cũ (12/10/2026) ───────────────
+ *
+ * Như Facebook: bấm "gửi lại" không đẻ mã mới, nên thư đến trễ vẫn dùng được.
+ * Vì thế cạnh dấu vân có thêm `box` — mã mã hoá AES-256-GCM (khoá HKDF từ
+ * `AUTH_CODE_SECRET`, buộc vào `method:target`). Gửi lại KHÔNG đặt lại `tries`
+ * và KHÔNG gia hạn: mã không bao giờ sống quá 5 phút kể từ lúc sinh. Chốt 60
+ * giây và trần theo giờ đứng nguyên — gửi lại vẫn là một lá thư.
  */
 @Injectable()
 export class CodeService {
@@ -72,12 +101,15 @@ export class CodeService {
   } as const;
 
   private readonly secret: string;
+  private readonly boxKey: Buffer;
+  private readonly log = new Logger('AuthCode');
 
   constructor(
     private readonly redis: RedisService,
     config: ConfigService<Env, true>,
   ) {
     this.secret = config.get('AUTH_CODE_SECRET', { infer: true });
+    this.boxKey = Buffer.from(hkdfSync('sha256', this.secret, '', BOX_KEY_INFO, 32));
   }
 
   /**
@@ -127,10 +159,10 @@ export class CodeService {
   }
 
   /**
-   * Sinh mã mới và cất. Trả về mã ở dạng THÔ để bên gửi mang đi — đây là chỗ
-   * duy nhất trong cả server nhìn thấy mã chưa băm.
+   * Cấp mã để gửi đi: mã cũ còn sống đủ lâu thì trả lại đúng nó, không thì
+   * sinh mới. Đây là chỗ duy nhất trong cả server nhìn thấy mã ở dạng thô.
    */
-  async issue(method: TSignInMethod, target: string): Promise<string> {
+  async issue(method: TSignInMethod, target: string): Promise<IIssuedCode> {
     const resendKey = KEY.resend(method, target);
 
     // Chốt gửi lại. `SET … NX EX` là MỘT lệnh: kiểm và đặt không tách rời nhau,
@@ -156,19 +188,47 @@ export class CodeService {
       });
     }
 
+    const codeKey = KEY.code(method, target);
+    const live = await this.reusable(method, target, codeKey);
+    if (live) {
+      this.log.log(`code reused for ${maskTarget(method, target)} (ttl ${live.ttlSeconds}s)`);
+      return { ...live, reused: true };
+    }
+
     // `randomInt` của node:crypto, KHÔNG phải `Math.random`. Math.random đoán
     // được: biết vài giá trị trước là suy ra giá trị sau.
     const code = String(randomInt(0, 10 ** this.limits.length)).padStart(this.limits.length, '0');
 
-    const codeKey = KEY.code(method, target);
     await this.redis.client.hset(codeKey, {
       hash: this.sign(method, target, code),
+      box: this.seal(method, target, code),
       tries: 0,
       sentAt: Date.now(),
     });
     await this.redis.client.expire(codeKey, this.limits.ttlSeconds);
 
-    return code;
+    this.log.log(`code issued for ${maskTarget(method, target)} (ttl ${this.limits.ttlSeconds}s)`);
+    return { code, ttlSeconds: this.limits.ttlSeconds, reused: false };
+  }
+
+  /**
+   * Mã đang treo, nếu còn sống ≥ `REUSE_MIN_TTL_SECONDS` và mở hộp được. Hộp
+   * hỏng, khoá đổi, hay mã treo từ bản cũ chưa có `box` → `null`, cấp mã mới.
+   */
+  private async reusable(
+    method: TSignInMethod,
+    target: string,
+    codeKey: string,
+  ): Promise<{ code: string; ttlSeconds: number } | null> {
+    const [row, ttl] = await Promise.all([
+      this.redis.client.hgetall(codeKey),
+      this.redis.ttl(codeKey),
+    ]);
+    if (!row.hash || !row.box || ttl < REUSE_MIN_TTL_SECONDS) return null;
+
+    const code = this.open(method, target, row.box);
+    if (!code || !this.matches(row.hash, this.sign(method, target, code))) return null;
+    return { code, ttlSeconds: ttl };
   }
 
   /** Đối chiếu mã người dùng gõ. Đúng thì huỷ mã luôn — mỗi mã dùng một lần. */
@@ -201,10 +261,13 @@ export class CodeService {
    * Huỷ mã đang treo và mở chốt gửi lại.
    *
    * Dùng khi GỬI HỎNG: người dùng không được ngồi chờ 60 giây cho một mã không
-   * bao giờ tới nơi.
+   * bao giờ tới nơi. `keepCode`: lần gửi hỏng là lần gửi LẠI mã cũ — lá thư đầu
+   * có thể đã tới, đừng giết mã trong đó, chỉ mở chốt.
    */
-  async drop(method: TSignInMethod, target: string): Promise<void> {
-    await this.redis.del(KEY.code(method, target), KEY.resend(method, target));
+  async drop(method: TSignInMethod, target: string, keepCode = false): Promise<void> {
+    const keys = [KEY.resend(method, target)];
+    if (!keepCode) keys.push(KEY.code(method, target));
+    await this.redis.del(...keys);
   }
 
   /** Còn bao nhiêu giây nữa mới xin được mã lần sau. 0 nghĩa là xin được ngay. */
@@ -216,6 +279,30 @@ export class CodeService {
   /** Dấu vân của mã. Buộc vào đích luôn — một dấu vân không xài cho đích khác. */
   private sign(method: TSignInMethod, target: string, code: string): string {
     return createHmac('sha256', this.secret).update(`${method}:${target}:${code}`).digest('hex');
+  }
+
+  /** Hộp mã: `iv.tag.ciphertext` base64url, AAD = `method:target`. */
+  private seal(method: TSignInMethod, target: string, code: string): string {
+    const iv = randomBytes(BOX_IV_BYTES);
+    const cipher = createCipheriv('aes-256-gcm', this.boxKey, iv);
+    cipher.setAAD(Buffer.from(`${method}:${target}`));
+    const body = Buffer.concat([cipher.update(code, 'utf8'), cipher.final()]);
+    return [iv, cipher.getAuthTag(), body].map((b) => b.toString('base64url')).join('.');
+  }
+
+  private open(method: TSignInMethod, target: string, box: string): string | null {
+    try {
+      const [iv, tag, body] = box.split('.').map((p) => Buffer.from(p, 'base64url'));
+      if (!iv || !tag || !body || iv.length !== BOX_IV_BYTES || tag.length !== BOX_TAG_BYTES) {
+        return null;
+      }
+      const decipher = createDecipheriv('aes-256-gcm', this.boxKey, iv);
+      decipher.setAAD(Buffer.from(`${method}:${target}`));
+      decipher.setAuthTag(tag);
+      return Buffer.concat([decipher.update(body), decipher.final()]).toString('utf8');
+    } catch {
+      return null;
+    }
   }
 
   /**

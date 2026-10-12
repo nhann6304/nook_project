@@ -5,6 +5,12 @@ import {
   AdminUserMapper,
   AdminUserService,
 } from './user/index.js';
+import {
+  AdminSecurityController,
+  AdminSecurityService,
+  AuthEventMapper,
+  UserDeviceMapper,
+} from './security/index.js';
 import { RootAdminService } from './root-admin.service.js';
 
 /**
@@ -22,7 +28,15 @@ import { RootAdminService } from './root-admin.service.js';
  * Chặng sau thêm vào đây: phong/hạ admin, khoá tài khoản, soi báo cáo vi phạm.
  */
 @Module({
-  controllers: [AdminStatsController, AdminUserController],
-  providers: [AdminStatsService, AdminUserService, AdminUserMapper, RootAdminService],
+  controllers: [AdminStatsController, AdminUserController, AdminSecurityController],
+  providers: [
+    AdminStatsService,
+    AdminUserService,
+    AdminUserMapper,
+    AdminSecurityService,
+    UserDeviceMapper,
+    AuthEventMapper,
+    RootAdminService,
+  ],
 })
 export class AdminModule {}

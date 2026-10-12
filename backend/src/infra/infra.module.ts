@@ -3,6 +3,7 @@ import { RedisModule } from './redis/index.js';
 import { NotifyModule } from './notify/index.js';
 import { StorageModule } from './storage/index.js';
 import { SearchModule } from './search/index.js';
+import { GeoModule } from './geo/index.js';
 
 /**
  * Thế giới bên ngoài: Redis, đường gửi thư, và sau này là kho ảnh (R2/MinIO)
@@ -12,7 +13,7 @@ import { SearchModule } from './search/index.js';
  * gọi nó là "utils" — ba tháng nữa không ai biết cái gì phụ thuộc vào cái gì.
  */
 @Module({
-  imports: [RedisModule, NotifyModule, StorageModule, SearchModule],
-  exports: [RedisModule, NotifyModule, StorageModule, SearchModule],
+  imports: [RedisModule, NotifyModule, StorageModule, SearchModule, GeoModule],
+  exports: [RedisModule, NotifyModule, StorageModule, SearchModule, GeoModule],
 })
 export class InfraModule {}

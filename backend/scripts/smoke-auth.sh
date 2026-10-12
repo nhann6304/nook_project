@@ -52,7 +52,15 @@ clear_ip_budget() {
 }
 clear_ip_budget
 
+# Gõ thẳng một lệnh vào Redis của server (container `nook-redis`, không có thì REDIS_URL).
+rcli() {
+  docker exec nook-redis redis-cli "$@" 2>/dev/null && return
+  redis-cli -u "$(env_of REDIS_URL)" "$@" 2>/dev/null
+}
+
 MAIL="smoke$RANDOM@nook.test"
+send_plain() { curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \
+  -d "{\"method\":\"email\",\"target\":\"$1\"}"; }
 printf '%s▸%s Đích thử: %s\n' "$BOLD" "$OFF" "$MAIL"
 
 # ── 1. Xin mã ───────────────────────────────────────────────────────────────
@@ -72,6 +80,31 @@ fi
 R=$(curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \
       -d "{\"method\":\"email\",\"target\":\"$MAIL\"}")
 check "xin lại ngay thì bị chặn" "auth.code_too_soon" "$(echo "$R" | code_of)"
+
+# ── 2b. Gửi lại trong 5 phút thì gửi ĐÚNG mã cũ ────────────────────────────
+#
+# Như Facebook: thư đến trễ vẫn dùng được, server không đẻ mã mới. Gỡ chốt
+# 60 giây bằng tay (thay cho `sleep 60`) và lùi TTL về 200 giây — giả cảnh
+# người ta chờ một lúc rồi bấm "gửi lại".
+CKEY="auth:code:email:$MAIL"
+rcli DEL "auth:resend:email:$MAIL" >/dev/null
+rcli EXPIRE "$CKEY" 200 >/dev/null
+R=$(curl -s -X POST "$BASE/v1/auth/code" -H 'content-type: application/json' \
+      -d "{\"method\":\"email\",\"target\":\"$MAIL\"}")
+check "gửi lại trong 5 phút: vẫn gửi được" "auth.code_sent" "$(echo "$R" | code_of)"
+check "gửi lại trong 5 phút: ĐÚNG mã cũ" "$CODE" "$(read_code)"
+LEFT="$(echo "$R" | field "['expiresInSeconds']")"
+check "gửi lại: báo thời gian sống THẬT, không gia hạn" "khong gia han" \
+  "$([ -n "$LEFT" ] && [ "$LEFT" -le 200 ] && [ "$(rcli TTL "$CKEY")" -le 200 ] && echo "khong gia han" || echo "ttl=$LEFT")"
+
+# Mã chỉ còn dưới 60 giây thì cấp mã MỚI — đừng gửi một mã sắp chết.
+rcli DEL "auth:resend:email:$MAIL" >/dev/null
+rcli EXPIRE "$CKEY" 30 >/dev/null
+check "mã sắp chết: gửi lại thì cấp mã mới" "auth.code_sent" "$(send_plain "$MAIL" | code_of)"
+NEWCODE="$(read_code)"
+check "mã sắp chết: mã mới KHÁC mã cũ, sống đủ 5 phút" "khac" \
+  "$([ "$NEWCODE" != "$CODE" ] && [ "$(rcli TTL "$CKEY")" -gt 200 ] && echo khac || echo "giong ($NEWCODE)")"
+CODE="$NEWCODE"
 
 # ── 3. Mã sai ───────────────────────────────────────────────────────────────
 R=$(curl -s -X POST "$BASE/v1/auth/verify" -H 'content-type: application/json' \
@@ -281,6 +314,63 @@ check "mật khẩu mới vào được" "auth.signed_in" "$(login "$PMAIL" "$PW
 LOCKMAIL="khoa$RANDOM@nook.test"
 for i in $(seq 1 10); do login "$LOCKMAIL" "sai-$i-mat-khau" >/dev/null; done
 check "sai 10 lần thì tạm khoá" "auth.login_locked" "$(login "$LOCKMAIL" "sai-mat-khau" | code_of)"
+clear_ip_budget
+
+# ── 12c. Máy và sổ đăng nhập ───────────────────────────────────────────────
+#
+# App gửi `x-device-*` ở MỌI lệnh gọi. Tạo tài khoản bằng mã trên máy 1 → máy
+# 1 thành tin cậy. Đăng nhập bằng mật khẩu từ máy 2 → `new_device`, máy 2 vẫn
+# chưa tin cậy, và chủ tài khoản nhận thư báo (qua hàng đợi, không chờ).
+uuid() { node -e 'console.log(require("crypto").randomUUID())'; }
+DEV1="$(uuid)"; DEV2="$(uuid)"
+DMAIL="may$RANDOM@nook.test"; DPW="mat-khau-may-$RANDOM"
+dpost() { # dpost <máy> <đường> khoá=giá_trị ...
+  local dev="$1" path="$2"; shift 2
+  local body
+  body=$(node -e 'const o={};for(const a of process.argv.slice(1)){const i=a.indexOf("=");o[a.slice(0,i)]=a.slice(i+1)}console.log(JSON.stringify(o))' "$@")
+  curl -s -X POST "$BASE$path" -H 'content-type: application/json' \
+    -H "x-device-id: $dev" -H 'x-device-model: Pixel 8' -H 'x-device-os: android 15' \
+    -H 'x-app-version: 0.4.0' -d "$body"
+}
+send "$DMAIL" signup >/dev/null
+R=$(dpost "$DEV1" /v1/auth/signup method=email target="$DMAIL" code="$(read_code)" password="$DPW")
+check "tạo tài khoản kèm máy" "auth.signed_in" "$(echo "$R" | code_of)"
+DUID="$(db_one "SELECT user_id FROM user_identities WHERE value = '$DMAIL'")"
+check "máy tạo tài khoản: tin cậy" "true" \
+  "$(db_one "SELECT trusted_at IS NOT NULL FROM user_devices WHERE user_id = '$DUID' AND device_id = '$DEV1'")"
+check "sổ ghi signup" "signup" \
+  "$(db_one "SELECT kind FROM auth_events WHERE user_id = '$DUID' ORDER BY created_at DESC LIMIT 1")"
+check "phiên lấy tên máy từ header" "Pixel 8|android" \
+  "$(db_one "SELECT device_name || '|' || platform FROM sessions WHERE user_id = '$DUID' ORDER BY created_at DESC LIMIT 1")"
+
+check "đăng nhập từ máy quen" "auth.signed_in" \
+  "$(dpost "$DEV1" /v1/auth/login method=email target="$DMAIL" password="$DPW" | code_of)"
+check "máy quen: không dấu hiệu nào" "{}" \
+  "$(db_one "SELECT risk::text FROM auth_events WHERE user_id = '$DUID' ORDER BY created_at DESC LIMIT 1")"
+
+ALERTS_BEFORE=$(grep -c "login alert to $DMAIL" "$LOGFILE" 2>/dev/null || true)
+check "đăng nhập từ máy LẠ" "auth.signed_in" \
+  "$(dpost "$DEV2" /v1/auth/login method=email target="$DMAIL" password="$DPW" | code_of)"
+check "máy lạ: sổ ghi new_device" "{new_device}" \
+  "$(db_one "SELECT risk::text FROM auth_events WHERE user_id = '$DUID' ORDER BY created_at DESC LIMIT 1")"
+check "chỉ mật khẩu thì máy lạ CHƯA tin cậy" "false" \
+  "$(db_one "SELECT trusted_at IS NOT NULL FROM user_devices WHERE user_id = '$DUID' AND device_id = '$DEV2'")"
+ALERTED=""
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+  [ "$(grep -c "login alert to $DMAIL" "$LOGFILE" 2>/dev/null || true)" -gt "${ALERTS_BEFORE:-0}" ] && ALERTED=1 && break
+  sleep 0.5
+done
+check "máy lạ: gửi thư báo cho chủ tài khoản" "1" "${ALERTED:-0}"
+
+check "sai mật khẩu từ máy lạ" "auth.wrong_credentials" \
+  "$(dpost "$DEV2" /v1/auth/login method=email target="$DMAIL" password="sai-$RANDOM-x" | code_of)"
+# Sổ ghi lần sai KHÔNG chờ (không thì lộ khe thời gian) — đợi nó một nhịp.
+FAILED=0
+for _ in 1 2 3 4 5 6; do
+  FAILED="$(db_one "SELECT count(*) FROM auth_events WHERE user_id = '$DUID' AND kind = 'login_failed'")"
+  [ "$FAILED" = "1" ] && break; sleep 0.3
+done
+check "sổ ghi login_failed" "1" "$FAILED"
 clear_ip_budget
 
 # ── 13. Cổng thẻ ────────────────────────────────────────────────────────────

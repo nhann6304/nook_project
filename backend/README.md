@@ -12,19 +12,19 @@ Cả cụm chạy bằng Docker được: mục 13.
 ```bash
 ./setup/mac/run.sh be             # cửa sổ 1 — server  (windows: setup/win/run.bat be)
 npm run migration:run             # LẦN ĐẦU — bảng không tự dựng
-./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 46 bước của luồng đăng nhập
+./backend/scripts/smoke-auth.sh   # cửa sổ 2 — 63 bước của luồng đăng nhập
 ./backend/scripts/smoke-antibot.sh   #        14 bước của phần chống bot
 ./backend/scripts/smoke-username.sh  #        15 bước của tên riêng, có cả cuộc đua
 ./backend/scripts/smoke-media.sh  #           20 bước của đường ảnh, bằng ảnh THẬT
-./backend/scripts/smoke-admin.sh  #            9 bước của đường quản trị
+./backend/scripts/smoke-admin.sh  #           14 bước của đường quản trị
 ```
 
 Cần: **Postgres trên máy** (cổng 5432) và **Docker** cho Redis.
 
-`smoke-auth.sh` đi hết 46 bước (44 khi `SMS_SENDER=off`) — xin mã, chặn xin dồn,
-mã sai, mã đúng, mã dùng một lần, xoay thẻ, thẻ bị chép, hạn phiên đẩy ra xa, hai
+`smoke-auth.sh` đi hết 63 bước (61 khi `SMS_SENDER=off`) — xin mã, chặn xin dồn,
+gửi lại ra đúng mã cũ, mã sai, mã đúng, mã dùng một lần, xoay thẻ, thẻ bị chép, hạn phiên đẩy ra xa, hai
 cửa signin/signup, mật khẩu (tạo, đăng nhập, quên, khoá sau 10 lần sai), cổng
-thẻ — rồi kết bằng một dòng ĐẠT/HỎNG. Nó đọc mã 6 số từ
+thẻ, máy lạ và sổ đăng nhập — rồi kết bằng một dòng ĐẠT/HỎNG. Nó đọc mã 6 số từ
 `backend/.logs/server.log`, tệp mà `run.sh` ghi ra; log ở chỗ khác thì đặt
 `NOOK_LOG=<đường dẫn>`, server ở cổng khác thì `BASE=http://localhost:<cổng>`.
 
@@ -52,7 +52,7 @@ cứng trong script thì sớm muộn lệch với `.env` của máy thật.
 
 ## 1. Đã có gì, chưa có gì
 
-Mười bảy đường, **tất cả đã chạy được** (thêm sáu đường chat — mục 12):
+Mười chín đường, **tất cả đã chạy được** (thêm sáu đường chat — mục 12):
 
 | | Đường | |
 |---|---|---|
@@ -247,6 +247,8 @@ Xem mục 8.
 |---|---|---|
 | `GET` | `/v1/admin/stats` | `admin` `root` |
 | `GET` | `/v1/admin/users` | `admin` `root` |
+| `GET` | `/v1/admin/users/:id/devices` | `admin` `root` |
+| `GET` | `/v1/admin/users/:id/auth-events` | `admin` `root` |
 
 Hai cổng, đúng thứ tự: cổng thẻ hỏi *"anh có phải là ai đó không"* (401), cổng
 vai hỏi *"người đó vào được đây không"* (403). Gộp làm một thì app không phân
@@ -290,6 +292,73 @@ UPDATE users SET deleted_at = now() WHERE role='root';
 Chặn ở tầng mã thì chỉ chặn được đường đi qua mã — còn `psql`, còn lệnh dọn dữ
 liệu, còn một migration viết vội lúc nửa đêm. Hạ vai thì KHÔNG chặn: phải có
 đường bàn giao. Lỡ hạ hết thì lần bật server sau `ROOT_ADMIN_EMAIL` dựng lại.
+
+### Gửi lại mã trong 5 phút = gửi lại ĐÚNG mã cũ (12/10/2026)
+
+Như Facebook: bấm "gửi lại" khi mã cũ còn sống thì server gửi lại chính nó,
+không sinh mã mới — thư đến trễ vẫn dùng được, và đỡ một lượt sinh/băm. Để làm
+được vậy, cạnh dấu vân HMAC trong `auth:code:*` có thêm `box`: mã mã hoá
+AES-256-GCM, khoá HKDF từ `AUTH_CODE_SECRET` với nhãn riêng (khác khoá HMAC),
+buộc vào `method:target`. Ai đọc được Redis vẫn không có mã.
+
+- Gửi lại KHÔNG đặt lại số lần sai và KHÔNG gia hạn: mã không sống quá 5 phút
+  tính từ lúc sinh. Thư và `expiresInSeconds` nói đúng phần CÒN LẠI (làm tròn
+  lên theo phút). SMS thì vẫn ghi "5 phut" — câu tin phải khớp mẫu brandname.
+- Còn dưới 60 giây (`REUSE_MIN_TTL_SECONDS`) thì cấp mã mới, đủ 5 phút.
+- Chốt 60 giây và trần theo giờ đứng nguyên: gửi lại vẫn là một lá thư.
+- Mở hộp hỏng (đổi khoá, mã treo từ bản cũ) → cấp mã mới, không báo lỗi.
+- Gửi lại mà gửi hỏng thì chỉ mở chốt, KHÔNG huỷ mã — lá thư đầu có thể đã tới.
+
+### Máy, nước, và dấu hiệu bất thường (12/10/2026)
+
+App gắn bốn header ở MỌI lệnh gọi (`HEADER` bên `@nook/shared`): `x-device-id`
+(UUID sinh một lần, cất SecureStore), `x-device-model`, `x-device-os`,
+`x-app-version`. `@ClientDevice()` (`core/`) đọc chúng cùng `req.ip`: gỡ ký tự
+điều khiển, cắt ở 64 ký tự, mã máy không phải UUID thì `null`. **Không bao giờ
+dùng để cấp quyền** — header thì ai cũng gõ được.
+
+Hai bảng (thư mục `security/` ở `entity/` và `repository/`):
+
+| | |
+|---|---|
+| `user_devices` | một dòng mỗi `(user, máy)` đã vào ĐƯỢC: model/os, IP + nước lần đầu và lần cuối, `trusted_at` |
+| `auth_events` | sổ chỉ-ghi-thêm: `signup` · `login` · `code_login` · `password_reset` · `login_failed`, kèm máy, IP, nước, `risk[]`. Xoá sau **180 ngày** — việc định kỳ BullMQ (`QUEUE.sweep`, 03:17 UTC, job scheduler nên nhiều bản server vẫn chạy một lần) |
+
+Bốn dấu hiệu, chấm ở `AuthAuditService` (`assessRisk` là hàm thuần):
+
+| | khi nào |
+|---|---|
+| `new_device` | máy chưa có trong `user_devices` của người này, hoặc app không gửi mã máy |
+| `new_country` | biết nước, và nó không nằm trong các nước đã thấy (máy + sổ). Chưa biết nước nào thì im |
+| `impossible_travel` | khác nước với lần vào được gần nhất, trong vòng 6 giờ |
+| `many_failures` | ≥ 5 lần `login_failed` trong giờ qua |
+
+- **Máy tin cậy** = đã nhập đúng MÃ trên máy đó (tạo tài khoản, đặt lại mật
+  khẩu, đăng nhập bằng mã). Chỉ mật khẩu thì máy lạ vẫn chưa tin cậy.
+- `login_failed` chỉ ghi cho tài khoản CÓ THẬT, ghi **không chờ** (chờ là lộ
+  khe thời gian "email này có tài khoản" mà băm giả vừa bịt), và **không** ghi
+  máy vào `user_devices` — không thì máy kẻ dò thành "máy quen".
+- Vào được với `new_device`/`new_country` khi tài khoản ĐÃ có máy trước đó →
+  dòng `WARN risky login user=… flags=… country=US->VN` và thư "Có đăng nhập
+  mới vào LOVO" qua hàng đợi `mail` (không làm chậm đăng nhập). Chỉ email; tài
+  khoản chỉ có số thì chưa báo (SMS tốn tiền mỗi tin).
+- Sổ hỏng (Postgres chập) thì chỉ một dòng WARN — đăng nhập không bao giờ ngã vì nó.
+- Phiên (`sessions.device_name/platform/app_version`) lấy từ header khi thân
+  request không khai.
+
+**Nước từ IP** (`infra/geo/`): IP nội bộ/loopback → không có nước. Có
+`TRUST_PROXY` thì tin `cf-ipcountry` của proxy biên — proxy đó phải là
+Cloudflare hoặc tự GHI ĐÈ header này, không thì client tự khai được nước (chỉ
+làm im dấu hiệu theo nước; `new_device` vẫn chạy). Không thì tra tệp `.mmdb`
+ở `GEOIP_DB` bằng `mmdb-lib` (MIT, 34 KB, không phụ thuộc): DB-IP "IP to
+Country Lite" (CC BY 4.0 — ghi nguồn, tải tự do hằng tháng, không cần khoá)
+hoặc MaxMind GeoLite2-Country. Chạy Docker thì gắn tệp vào container rồi trỏ
+`GEOIP_DB`. Không đóng gói dữ liệu sẵn: `geoip-country` đã ngừng bảo trì và
+đi theo giấy phép GeoLite2 (8 MB), `ip-location-api` tự tải dữ liệu lúc chạy.
+
+**Chưa làm — bước tiếp theo có thể:** xác minh thêm khi rủi ro cao (đăng nhập
+mật khẩu có `impossible_travel`/`new_country` thì đòi thêm mã gửi về hộp thư).
+Hiện các dấu hiệu chỉ để soi và báo thư, **chưa chặn ai**.
 
 ### Chưa có
 
@@ -861,6 +930,9 @@ Mười bảng. Bốn nhóm (chat — `chats` · `chat_members` · `chat_message
   và chuỗi ngày liền nhau tính theo ngày mà **người dùng** đang sống, không phải
   ngày của máy chủ.
 
+**Máy và sổ đăng nhập** — `user_devices` · `auth_events` (mục 1, "Máy, nước,
+và dấu hiệu bất thường"). Sổ chỉ ghi thêm và tự dọn sau 180 ngày.
+
 **Thành tích** — `achievements` · `user_achievements` · `user_stats`
 
 Một luật cho mọi thành tích: *con đếm chạm ngưỡng thì mở, và mở thì cộng thêm
@@ -889,8 +961,9 @@ npm run migration:show
 
 ## 7. Redis làm bảy việc
 
-1. Mã đăng nhập 6 số, tự chết sau 5 phút — cất **dấu vân HMAC-SHA256**, không
-   phải argon2. Mã sống 300 giây và sai 5 lần là chết, nên cái argon2 chống
+1. Mã đăng nhập 6 số, tự chết sau 5 phút — cất **dấu vân HMAC-SHA256** (để
+   đối chiếu) và **hộp AES-GCM** (để gửi lại đúng mã cũ, mục 1), không phải
+   argon2. Mã sống 300 giây và sai 5 lần là chết, nên cái argon2 chống
    (bẻ khoá ngoại tuyến) không phải mối lo ở đây; còn cái nó gây ra thì có
    thật: 64 MB và một chỗ trong hàng đợi bốn luồng của libuv, cho MỖI lần xin
    mã. Khoá ký là `AUTH_CODE_SECRET`, riêng, không dùng lại khoá thẻ phiên.
@@ -1158,7 +1231,7 @@ thật vào **từng cửa một** không cầm thẻ, và đòi đúng `401 aut
 bịa đều phải bị cắt.
 
 ```
-DAT - 25/25   (23 cửa HTTP + 2 lối vào socket)
+DAT - 27/27   (25 cửa HTTP + 2 lối vào socket)
 ```
 
 ## 11. Ranh giới với frontend

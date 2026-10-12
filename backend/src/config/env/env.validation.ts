@@ -149,6 +149,13 @@ export class Env {
    */
   @Transform(toBool) @IsBoolean() EMAIL_MX_CHECK: boolean = false;
 
+  /**
+   * Đường tới tệp `.mmdb` tra IP → nước (DB-IP Country Lite hoặc GeoLite2).
+   * Bỏ trống thì chỉ biết nước khi có proxy biên gắn `cf-ipcountry` — dấu hiệu
+   * `new_country` / `impossible_travel` khi đó im. Xem README mục 1.
+   */
+  @IsOptional() @IsString() GEOIP_DB?: string;
+
   // ── Tìm kiếm (Elasticsearch) ──────────────────────────────────────────────
   /**
    * Tắt mặc định. Postgres vẫn là nguồn thật; ES chỉ là bản sao để tìm nhanh,

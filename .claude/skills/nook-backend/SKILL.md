@@ -127,6 +127,7 @@ xong* (xoá tài khoản). Dùng nhầm chiều là có việc làm được m�
 | Đường dẫn API | `API` bên `@nook/shared` | gõ lại chuỗi |
 | Mã lỗi · giới hạn | `ERR`, `LIMITS` bên `@nook/shared` | tự chế |
 | Người đang gọi | `@CurrentUser(): IAuthUser` | móc `req` thủ công |
+| Máy đang gọi (header `x-device-*` + IP) | `@ClientDevice(): IClientDevice` | đọc `req.headers` tay — và **không bao giờ** dùng nó để cấp quyền |
 | Mở cửa cho người chưa đăng nhập | `@Public()` **và** khai vào `scripts/check-public-routes.mjs` | chỉ `@Public()` — `npm run check` đỏ |
 | Chặn theo vai | `@Roles(ROLE.admin, ROLE.root)` | tự đọc vai trong service |
 | Trỏ sang bảng khác | cột `uuid` + hỏi kho bằng id | `@ManyToOne` `@OneToMany` `@OneToOne` `@JoinColumn` — **CẤM** |
@@ -178,11 +179,11 @@ Cần: **Postgres trên máy cổng 5432** · **Redis Docker cổng 6380** · Mi
 Năm bài smoke gõ vào server đang chạy, mỗi bài kết bằng một dòng ĐẠT/HỎNG:
 
 ```bash
-backend/scripts/smoke-auth.sh          46 bước — xin mã, xoay thẻ, thẻ bị chép, hai cửa, SMS, mật khẩu (44 khi SMS_SENDER=off)
+backend/scripts/smoke-auth.sh          63 bước — xin mã, gửi lại mã cũ, xoay thẻ, thẻ bị chép, hai cửa, SMS, mật khẩu, máy lạ (61 khi SMS_SENDER=off)
 backend/scripts/smoke-antibot.sh       14 bước — IP giả, gộp hộp thư, mail rác, dấu vân, trần nộp
 backend/scripts/smoke-username.sh      15 bước — có cả cuộc đua hai người cùng chọn
 backend/scripts/smoke-media.sh         20 bước — bằng ảnh THẬT, so sha256
-backend/scripts/smoke-admin.sh          9 bước — cổng vai
+backend/scripts/smoke-admin.sh         14 bước — cổng vai, máy + sổ đăng nhập
 node backend/scripts/check-guard.mjs   16 cửa — gõ thật, không cầm thẻ
 ```
 
@@ -208,8 +209,10 @@ không chạy gì cả nên mọi khẳng định nhận chuỗi rỗng. `smoke-
    như server sống. Dò bằng `intent: 'signin'`, đường đó có hỏi bảng.
 2. **`.env` chỉ nạp lúc bật server.** `nest start --watch` không nạp lại. Sửa
    `.env` xong phải tắt bật.
-3. **Mã 6 số bị BĂM trong Redis** — không đọc ngược được. Muốn lấy mã thì đọc
-   log server (`CODE_SENDER=console`), không có đường nào khác.
+3. **Mã 6 số trong Redis là dấu vân + hộp mã hoá** — không có khoá thì không
+   đọc ra được. Muốn lấy mã thì đọc log server (`CODE_SENDER=console`). Và
+   **xin lại trong 5 phút ra ĐÚNG mã cũ**: bài kiểm nào chờ một mã MỚI sau khi
+   gửi lại thì phải lùi TTL của mã cũ dưới 60 giây trước (xem `smoke-auth.sh` 2b).
 4. **Hai bản server dùng chung Redis thì giành việc của nhau.** Bật bản thứ hai
    để thử thì việc nền có thể bị bản kia nẫng, và log nằm ở tiến trình kia.
 5. **Windows không có `psql` và `python3`.** Bài smoke hỏi bảng qua

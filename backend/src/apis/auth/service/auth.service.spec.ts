@@ -16,7 +16,7 @@ import { TransactionService } from '../../../core/transaction/transaction.servic
 function build(smsOpen: boolean) {
   const codes = {
     guardCaller: vi.fn(async () => undefined),
-    issue: vi.fn(async () => '123456'),
+    issue: vi.fn(async () => ({ code: '123456', ttlSeconds: 300, reused: false })),
     drop: vi.fn(async () => undefined),
     limits: { resendSeconds: 60, ttlSeconds: 300, length: 6 },
   };
@@ -34,6 +34,7 @@ function build(smsOpen: boolean) {
     any(users),
     any({}),
     any(sender),
+    any({}),
     any({}),
   );
   return { service, codes, sender };
@@ -63,7 +64,10 @@ describe('AuthService — đường số điện thoại', () => {
     for (const raw of ['0901234567', '+84901234567', '090 123 4567', '84901234567']) {
       const { service, sender } = build(true);
       await service.sendCode({ method: 'phone', target: raw }, null);
-      expect(sender.send).toHaveBeenCalledWith('phone', '+84901234567', '123456');
+      expect(sender.send).toHaveBeenCalledWith('phone', '+84901234567', '123456', {
+        intent: undefined,
+        ttlSeconds: 300,
+      });
     }
   });
 
@@ -87,12 +91,51 @@ describe('AuthService — đường số điện thoại', () => {
   it('SMS tắt không làm hỏng đường email', async () => {
     const { service, sender } = build(false);
     await service.sendCode({ method: 'email', target: 'Nam@Gmail.com' }, null);
-    expect(sender.send).toHaveBeenCalledWith('email', 'nam@gmail.com', '123456');
+    expect(sender.send).toHaveBeenCalledWith('email', 'nam@gmail.com', '123456', {
+      intent: undefined,
+      ttlSeconds: 300,
+    });
+  });
+});
+
+describe('AuthService — gửi lại mã cũ', () => {
+  it('thư và câu trả lời mang thời gian sống THẬT của mã cũ', async () => {
+    const { service, codes, sender } = build(false);
+    codes.issue.mockResolvedValueOnce({ code: '654321', ttlSeconds: 212, reused: true });
+    const out = await service.sendCode(
+      { method: 'email', target: 'nam@gmail.com', intent: 'signup' },
+      null,
+    );
+    expect(sender.send).toHaveBeenCalledWith('email', 'nam@gmail.com', '654321', {
+      intent: 'signup',
+      ttlSeconds: 212,
+    });
+    expect(out.expiresInSeconds).toBe(212);
+  });
+
+  it('gửi lại hỏng: chỉ mở chốt, KHÔNG giết mã cũ (lá thư đầu có thể đã tới)', async () => {
+    const { service, codes, sender } = build(false);
+    codes.issue.mockResolvedValueOnce({ code: '654321', ttlSeconds: 212, reused: true });
+    sender.send.mockRejectedValueOnce(new Error('smtp down'));
+    expect(
+      await errorOf(service.sendCode({ method: 'email', target: 'nam@gmail.com' }, null)),
+    ).toEqual([ERR.SEND_FAILED, HttpStatus.BAD_GATEWAY]);
+    expect(codes.drop).toHaveBeenCalledWith('email', 'nam@gmail.com', true);
   });
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const any = (x: unknown) => x as any;
+
+/** Máy đang gọi, như `@ClientDevice()` đọc ra từ header. */
+const CLIENT = {
+  deviceId: '6f1c2a54-8a4e-4c2b-9b1e-3c7d2f0a9e11',
+  model: 'iPhone 15 Pro',
+  os: 'iOS 18.2',
+  appVersion: '0.4.0',
+  ip: null,
+  edgeCountry: null,
+} as const;
 
 /** Redis trong bộ nhớ — đủ mấy lệnh `PasswordService` dùng. */
 function fakeRedis() {
@@ -144,6 +187,10 @@ async function buildPw(opts: { hash: string | null }) {
     open: vi.fn(async () => ({ accessToken: 'a', refreshToken: 'r', expiresInSeconds: 900 })),
     closeAll: vi.fn(async () => undefined),
   };
+  const audit = {
+    success: vi.fn(async () => undefined),
+    failure: vi.fn(async () => undefined),
+  };
   const passwords = new PasswordService(any(fakeRedis()));
   const service = new AuthService(
     any(codes),
@@ -153,8 +200,9 @@ async function buildPw(opts: { hash: string | null }) {
     any({ toDto: (u: unknown) => u }),
     any({ isOpen: () => true }),
     passwords,
+    any(audit),
   );
-  return { service, codes, users, sessions };
+  return { service, codes, users, sessions, audit };
 }
 describe('AuthService — mật khẩu', () => {
   beforeAll(() => {
@@ -171,11 +219,11 @@ describe('AuthService — mật khẩu', () => {
   it('mật khẩu ngắn/dài -> auth.password_weak, mã CHƯA bị đốt', async () => {
     const { service, codes } = await buildPw({ hash: null });
     for (const pw of ['a'.repeat(LIMITS.passwordMin - 1), 'a'.repeat(LIMITS.passwordMax + 1)]) {
-      expect(await errorOf(service.signup(withCode(pw, 'moi@gmail.com'), null))).toEqual([
+      expect(await errorOf(service.signup(withCode(pw, 'moi@gmail.com'), CLIENT))).toEqual([
         ERR.PASSWORD_WEAK,
         HttpStatus.BAD_REQUEST,
       ]);
-      expect(await errorOf(service.resetPassword(withCode(pw), null))).toEqual([
+      expect(await errorOf(service.resetPassword(withCode(pw), CLIENT))).toEqual([
         ERR.PASSWORD_WEAK,
         HttpStatus.BAD_REQUEST,
       ]);
@@ -185,7 +233,7 @@ describe('AuthService — mật khẩu', () => {
 
   it('signup vào đích đã có chủ -> auth.account_exists, mã chưa bị đốt', async () => {
     const { service, codes } = await buildPw({ hash: null });
-    expect(await errorOf(service.signup(withCode('mat-khau-dai'), null))).toEqual([
+    expect(await errorOf(service.signup(withCode('mat-khau-dai'), CLIENT))).toEqual([
       ERR.ACCOUNT_EXISTS,
       HttpStatus.CONFLICT,
     ]);
@@ -194,22 +242,22 @@ describe('AuthService — mật khẩu', () => {
 
   it('sai mật khẩu và không có tài khoản -> CÙNG auth.wrong_credentials', async () => {
     const { service } = await buildPw({ hash: await argon2.hash('mat-khau-dung') });
-    expect(await errorOf(service.login(login('mat-khau-sai'), null))).toEqual([
+    expect(await errorOf(service.login(login('mat-khau-sai'), CLIENT))).toEqual([
       ERR.WRONG_CREDENTIALS,
       HttpStatus.UNAUTHORIZED,
     ]);
-    expect(await errorOf(service.login(login('mat-khau-dung', 'ai@gmail.com'), null))).toEqual([
+    expect(await errorOf(service.login(login('mat-khau-dung', 'ai@gmail.com'), CLIENT))).toEqual([
       ERR.WRONG_CREDENTIALS,
       HttpStatus.UNAUTHORIZED,
     ]);
-    const ok = await service.login(login('mat-khau-dung'), null);
+    const ok = await service.login(login('mat-khau-dung'), CLIENT);
     expect(ok.refreshToken).toBe('r');
     expect(ok.isNew).toBe(true); // chưa qua màn Tên + ảnh
   });
 
   it('chưa đặt mật khẩu -> auth.password_not_set', async () => {
     const { service } = await buildPw({ hash: null });
-    expect(await errorOf(service.login(login('mat-khau-gi-do'), null))).toEqual([
+    expect(await errorOf(service.login(login('mat-khau-gi-do'), CLIENT))).toEqual([
       ERR.PASSWORD_NOT_SET,
       HttpStatus.CONFLICT,
     ]);
@@ -218,11 +266,11 @@ describe('AuthService — mật khẩu', () => {
   it(`sai ${LIMITS.passwordMaxFails} lần -> auth.login_locked, kể cả khi gõ đúng`, async () => {
     const { service, sessions } = await buildPw({ hash: await argon2.hash('mat-khau-dung') });
     for (let i = 0; i < LIMITS.passwordMaxFails; i += 1) {
-      expect((await errorOf(service.login(login('mat-khau-sai'), null)))[0]).toBe(
+      expect((await errorOf(service.login(login('mat-khau-sai'), CLIENT)))[0]).toBe(
         ERR.WRONG_CREDENTIALS,
       );
     }
-    const locked = service.login(login('mat-khau-dung'), null);
+    const locked = service.login(login('mat-khau-dung'), CLIENT);
     await expect(locked).rejects.toMatchObject({
       code: ERR.LOGIN_LOCKED,
       detail: { retryAfterSeconds: LIMITS.passwordLockSeconds },
@@ -233,9 +281,9 @@ describe('AuthService — mật khẩu', () => {
   it('đích chưa có tài khoản cũng bị khoá — không thì `login_locked` lộ ai có tài khoản', async () => {
     const { service } = await buildPw({ hash: null });
     for (let i = 0; i < LIMITS.passwordMaxFails; i += 1) {
-      await errorOf(service.login(login('x'.repeat(8), 'ai@gmail.com'), null));
+      await errorOf(service.login(login('x'.repeat(8), 'ai@gmail.com'), CLIENT));
     }
-    expect((await errorOf(service.login(login('x'.repeat(8), 'ai@gmail.com'), null)))[0]).toBe(
+    expect((await errorOf(service.login(login('x'.repeat(8), 'ai@gmail.com'), CLIENT)))[0]).toBe(
       ERR.LOGIN_LOCKED,
     );
   }, 20_000);
@@ -245,10 +293,10 @@ describe('AuthService — mật khẩu', () => {
       hash: await argon2.hash('mat-khau-cu'),
     });
     for (let i = 0; i < LIMITS.passwordMaxFails; i += 1) {
-      await errorOf(service.login(login('mat-khau-sai'), null));
+      await errorOf(service.login(login('mat-khau-sai'), CLIENT));
     }
 
-    await service.resetPassword(withCode('mat-khau-moi-dai'), null);
+    await service.resetPassword(withCode('mat-khau-moi-dai'), CLIENT);
     expect(codes.consume).toHaveBeenCalledOnce();
     expect(users.setPasswordHash).toHaveBeenCalledWith('u1', expect.stringMatching(/^\$argon2/));
     expect(sessions.closeAll).toHaveBeenCalledWith('u1');
@@ -257,7 +305,7 @@ describe('AuthService — mật khẩu', () => {
     );
 
     // Khoá đã gỡ: lần này tới được bước đối chiếu (hash trong kho giả vẫn là cũ).
-    expect((await errorOf(service.login(login('mat-khau-moi-dai'), null)))[0]).toBe(
+    expect((await errorOf(service.login(login('mat-khau-moi-dai'), CLIENT)))[0]).toBe(
       ERR.WRONG_CREDENTIALS,
     );
   }, 20_000);
@@ -265,8 +313,59 @@ describe('AuthService — mật khẩu', () => {
   it('đặt lại cho đích chưa có tài khoản -> auth.account_not_found', async () => {
     const { service, codes } = await buildPw({ hash: null });
     expect(
-      await errorOf(service.resetPassword(withCode('mat-khau-dai', 'ai@gmail.com'), null)),
+      await errorOf(service.resetPassword(withCode('mat-khau-dai', 'ai@gmail.com'), CLIENT)),
     ).toEqual([ERR.ACCOUNT_NOT_FOUND, HttpStatus.CONFLICT]);
     expect(codes.consume).not.toHaveBeenCalled();
+  });
+});
+
+describe('AuthService — sổ đăng nhập', () => {
+  beforeAll(() => {
+    const fake = { transaction: (work: (m: unknown) => Promise<unknown>) => work({}) };
+    new TransactionService(fake as unknown as DataSource);
+  });
+
+  it('mật khẩu đúng: ghi `login`, KHÔNG làm máy thành tin cậy; phiên lấy máy từ header', async () => {
+    const { service, audit, sessions } = await buildPw({
+      hash: await argon2.hash('mat-khau-dung'),
+    });
+    await service.login(
+      { method: 'email', target: 'nam@gmail.com', password: 'mat-khau-dung' },
+      CLIENT,
+    );
+    expect(audit.success).toHaveBeenCalledWith('u1', 'login', CLIENT, false);
+    expect(sessions.open).toHaveBeenCalledWith('u1', {
+      deviceName: 'iPhone 15 Pro',
+      platform: 'ios',
+      appVersion: '0.4.0',
+      ip: null,
+    });
+  });
+
+  it('sai mật khẩu vào tài khoản có thật: ghi `login_failed`; email lạ thì không', async () => {
+    const { service, audit } = await buildPw({ hash: await argon2.hash('mat-khau-dung') });
+    await errorOf(
+      service.login({ method: 'email', target: 'nam@gmail.com', password: 'sai-sai-sai' }, CLIENT),
+    );
+    expect(audit.failure).toHaveBeenCalledWith('u1', CLIENT);
+    await errorOf(
+      service.login({ method: 'email', target: 'ai@gmail.com', password: 'sai-sai-sai' }, CLIENT),
+    );
+    expect(audit.failure).toHaveBeenCalledOnce();
+    expect(audit.success).not.toHaveBeenCalled();
+  });
+
+  it('có nhập đúng MÃ (tạo tài khoản, đặt lại mật khẩu) thì máy thành tin cậy', async () => {
+    const { service, audit } = await buildPw({ hash: null });
+    await service.signup(
+      { method: 'email', target: 'moi@gmail.com', code: '123456', password: 'mat-khau-dai' },
+      CLIENT,
+    );
+    expect(audit.success).toHaveBeenLastCalledWith('u1', 'signup', CLIENT, true);
+    await service.resetPassword(
+      { method: 'email', target: 'nam@gmail.com', code: '123456', password: 'mat-khau-dai' },
+      CLIENT,
+    );
+    expect(audit.success).toHaveBeenLastCalledWith('u1', 'password_reset', CLIENT, true);
   });
 });

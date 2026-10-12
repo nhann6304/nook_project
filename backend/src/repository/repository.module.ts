@@ -8,6 +8,7 @@ import { SessionRepository } from './session/index.js';
 import { AchievementRepository, UserAchievementRepository } from './achievement/index.js';
 import { MediaRepository, MediaVariantRepository } from './media/index.js';
 import { ChatMemberRepository, ChatMessageRepository, ChatRepository } from './chat/index.js';
+import { AuthEventRepository, UserDeviceRepository } from './security/index.js';
 
 const REPOSITORIES = [
   UserRepository,
@@ -21,6 +22,8 @@ const REPOSITORIES = [
   ChatRepository,
   ChatMemberRepository,
   ChatMessageRepository,
+  UserDeviceRepository,
+  AuthEventRepository,
 ];
 
 /**

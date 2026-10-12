@@ -13,11 +13,13 @@ import {
   type IVerifyCodeResult,
 } from '@nook/shared';
 import { AppException } from '../../../core/error/index.js';
+import type { IClientDevice } from '../../../core/interface/index.js';
 import { Transactional } from '../../../core/transaction/index.js';
 import type { User } from '../../../database/entity/index.js';
 import { UserService } from '../../app/user/user.service.js';
 import { UserMapper } from '../../app/user/user.mapper.js';
 import { CodeSenderService } from '../../../infra/notify/service/index.js';
+import { AuthAuditService } from './auth-audit.service.js';
 import { CodeService } from './code.service.js';
 import { EmailGuardService } from './email-guard.service.js';
 import { PasswordService } from './password.service.js';
@@ -47,6 +49,11 @@ const DEFAULT_REGION = 'VN';
  */
 const SMS_NUMBER_TYPES: ReadonlySet<NumberType> = new Set(['MOBILE', 'FIXED_LINE_OR_MOBILE']);
 
+/** `sessions.platform` chỉ nhận ba giá trị; đọc chữ đầu của header `x-device-os`. */
+const PLATFORMS: ReadonlySet<string> = new Set(['ios', 'android', 'web']);
+/** Độ dài cột `sessions.app_version`. */
+const SESSION_APP_VERSION_MAX = 24;
+
 /**
  * Điều phối luồng đăng nhập.
  *
@@ -67,6 +74,7 @@ export class AuthService {
     private readonly userMapper: UserMapper,
     private readonly sender: CodeSenderService,
     private readonly passwords: PasswordService,
+    private readonly audit: AuthAuditService,
   ) {}
 
   /**
@@ -101,20 +109,25 @@ export class AuthService {
     // người ta cho một mã ta sắp từ chối gửi.
     if (dto.intent) await this.guardIntent(dto.intent, dto.method, target);
 
-    const code = await this.codes.issue(dto.method, target);
+    const issued = await this.codes.issue(dto.method, target);
 
     try {
-      await this.sender.send(dto.method, target, code, dto.intent);
+      await this.sender.send(dto.method, target, issued.code, {
+        intent: dto.intent,
+        ttlSeconds: issued.ttlSeconds,
+      });
     } catch {
       // Gửi hỏng thì phải huỷ mã. Không huỷ là người dùng bị chốt 60 giây để
       // chờ một mã không bao giờ tới nơi — và họ sẽ bấm lại, rồi lại bị chặn.
-      await this.codes.drop(dto.method, target);
+      // Mã GỬI LẠI thì giữ: lá thư đầu có thể đã tới.
+      await this.codes.drop(dto.method, target, issued.reused);
       throw new AppException(ERR.SEND_FAILED, HttpStatus.BAD_GATEWAY);
     }
 
     return {
       retryAfterSeconds: this.codes.limits.resendSeconds,
-      expiresInSeconds: this.codes.limits.ttlSeconds,
+      // Thời gian sống THẬT: gửi lại mã cũ thì ít hơn 300 giây.
+      expiresInSeconds: issued.ttlSeconds,
       codeLength: this.codes.limits.length,
     } satisfies ISendCodeResult;
   }
@@ -144,12 +157,12 @@ export class AuthService {
   }
 
   /** Nộp mã, đổi lấy thẻ phiên. Chưa có tài khoản thì mở luôn tại đây. */
-  async verifyCode(dto: VerifyCodeDto, ip: string | null): Promise<IVerifyCodeResult> {
+  async verifyCode(dto: VerifyCodeDto, client: IClientDevice): Promise<IVerifyCodeResult> {
     const target = this.normalize(dto.method, dto.target);
 
     // Trần theo máy gọi ở CẢ cửa này, không chỉ cửa xin mã. Thiếu nó thì
     // `/auth/verify` là cửa duy nhất bắn được bao nhiêu tuỳ thích.
-    await this.codes.guardVerifyCaller(ip);
+    await this.codes.guardVerifyCaller(client.ip);
 
     // Mã đúng TRƯỚC, mở tài khoản SAU. Đảo thứ tự là ai gõ đại một email cũng
     // đẻ ra được một tài khoản rỗng trong bảng.
@@ -161,7 +174,7 @@ export class AuthService {
     // cái đã cuộn, và đường thử lại chết.
 
     const { user, isNew } = await this.users.findOrCreateByIdentity(dto.method, target);
-    return this.signIn(user, isNew, dto, ip);
+    return this.signIn(user, isNew, dto, client, isNew ? 'signup' : 'code_login');
   }
 
   /**
@@ -170,9 +183,9 @@ export class AuthService {
    * Mọi thứ từ chối được thì từ chối TRƯỚC `consume`: mật khẩu ngắn hay đích đã
    * có chủ mà vẫn đốt mã thì người ta phải xin mã lại chỉ vì gõ lỡ một ô.
    */
-  async signup(dto: SignupDto, ip: string | null): Promise<IVerifyCodeResult> {
+  async signup(dto: SignupDto, client: IClientDevice): Promise<IVerifyCodeResult> {
     const target = this.normalize(dto.method, dto.target);
-    await this.codes.guardVerifyCaller(ip);
+    await this.codes.guardVerifyCaller(client.ip);
     this.passwords.assertStrong(dto.password);
 
     if (await this.users.hasIdentity(dto.method, target)) {
@@ -184,7 +197,7 @@ export class AuthService {
     // Băm NGOÀI giao dịch: argon2 mất vài chục ms, đừng giữ kết nối DB chờ nó.
     const hash = await this.passwords.hash(dto.password);
     const user = await this.users.createWithPassword(dto.method, target, hash);
-    return this.signIn(user, true, dto, ip);
+    return this.signIn(user, true, dto, client, 'signup');
   }
 
   /**
@@ -194,9 +207,9 @@ export class AuthService {
    * giả). `password_not_set` thì lộ là tài khoản có thật — chấp nhận, vì
    * `/auth/code` với intent đã nói điều đó, và cùng trần theo máy gọi.
    */
-  async login(dto: LoginDto, ip: string | null): Promise<IVerifyCodeResult> {
+  async login(dto: LoginDto, client: IClientDevice): Promise<IVerifyCodeResult> {
     const target = this.normalize(dto.method, dto.target);
-    await this.passwords.guardCaller(ip);
+    await this.passwords.guardCaller(client.ip);
     await this.passwords.assertNotLocked(dto.method, target);
 
     const user = await this.users.findByIdentity(dto.method, target);
@@ -211,11 +224,14 @@ export class AuthService {
 
     if (!(await this.passwords.verify(hash, dto.password))) {
       await this.passwords.recordFailure(dto.method, target);
+      // KHÔNG chờ: ghi sổ chỉ có ở nhánh tài khoản có thật — chờ nó là mở lại
+      // đúng cái khe đo thời gian mà `verifyDummy` vừa bịt. `failure` tự nuốt lỗi.
+      void this.audit.failure(user.id, client);
       throw new AppException(ERR.WRONG_CREDENTIALS, HttpStatus.UNAUTHORIZED);
     }
 
     await this.passwords.clearFailures(dto.method, target);
-    return this.signIn(user, user.onboardedAt === null, dto, ip);
+    return this.signIn(user, user.onboardedAt === null, dto, client, 'login');
   }
 
   /**
@@ -224,9 +240,9 @@ export class AuthService {
    * Thu hồi MỌI phiên cũ — người quên mật khẩu có thể đang đặt lại vì bị chiếm
    * tài khoản, và phiên của kẻ chiếm phải chết theo. Máy này nhận phiên mới.
    */
-  async resetPassword(dto: ResetPasswordDto, ip: string | null): Promise<IVerifyCodeResult> {
+  async resetPassword(dto: ResetPasswordDto, client: IClientDevice): Promise<IVerifyCodeResult> {
     const target = this.normalize(dto.method, dto.target);
-    await this.codes.guardVerifyCaller(ip);
+    await this.codes.guardVerifyCaller(client.ip);
     this.passwords.assertStrong(dto.password);
 
     const user = await this.users.findByIdentity(dto.method, target);
@@ -237,7 +253,7 @@ export class AuthService {
     const hash = await this.passwords.hash(dto.password);
     await this.replacePassword(user.id, hash);
     await this.passwords.clearFailures(dto.method, target);
-    return this.signIn(user, user.onboardedAt === null, dto, ip);
+    return this.signIn(user, user.onboardedAt === null, dto, client, 'password_reset');
   }
 
   /** Đổi mật khẩu và thu phiên cũ: xong cả hai hoặc không cái nào. */
@@ -247,19 +263,28 @@ export class AuthService {
     await this.sessions.closeAll(userId);
   }
 
-  /** Mở phiên cho máy này và gói câu trả lời chung của mọi cửa phát thẻ. */
+  /**
+   * Mở phiên cho máy này, ghi sổ đăng nhập, và gói câu trả lời chung của mọi
+   * cửa phát thẻ. Thân request khai máy thì dùng; không thì lấy từ header.
+   *
+   * Mọi cửa đi qua đây trừ `login` đều vừa nhập đúng MÃ — máy thành tin cậy.
+   */
   private async signIn(
     user: User,
     isNew: boolean,
-    device: DeviceFieldsDto,
-    ip: string | null,
+    body: DeviceFieldsDto,
+    client: IClientDevice,
+    kind: 'signup' | 'login' | 'code_login' | 'password_reset',
   ): Promise<IVerifyCodeResult> {
+    const os = client.os?.split(/\s+/)[0]?.toLowerCase() ?? null;
     const tokens = await this.sessions.open(user.id, {
-      deviceName: device.deviceName ?? null,
-      platform: device.platform ?? null,
-      appVersion: device.appVersion ?? null,
-      ip,
+      deviceName: body.deviceName ?? client.model,
+      platform: body.platform ?? (os && PLATFORMS.has(os) ? os : null),
+      appVersion: body.appVersion ?? client.appVersion?.slice(0, SESSION_APP_VERSION_MAX) ?? null,
+      ip: client.ip,
     });
+
+    await this.audit.success(user.id, kind, client, kind !== 'login');
 
     return {
       ...tokens,

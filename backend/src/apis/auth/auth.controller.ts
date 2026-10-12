@@ -2,7 +2,15 @@ import { Body, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/commo
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 import { API, MSG } from '@nook/shared';
-import { Public, Message, ApiErrors, ApiNoData, ApiResult } from '../../core/decorator/index.js';
+import {
+  ClientDevice,
+  Public,
+  Message,
+  ApiErrors,
+  ApiNoData,
+  ApiResult,
+} from '../../core/decorator/index.js';
+import type { IClientDevice } from '../../core/interface/index.js';
 import { AuthService } from './service/auth.service.js';
 import {
   LOGIN_EXAMPLES,
@@ -60,8 +68,11 @@ export class AuthController {
   @ApiBody({ type: VerifyCodeDto, examples: VERIFY_CODE_EXAMPLES })
   @ApiResult(VerifyCodeResultDto)
   @ApiErrors(400, 410, 429)
-  verify(@Body() dto: VerifyCodeDto, @Req() req: FastifyRequest): Promise<VerifyCodeResultDto> {
-    return this.auth.verifyCode(dto, req.ip ?? null);
+  verify(
+    @Body() dto: VerifyCodeDto,
+    @ClientDevice() device: IClientDevice,
+  ): Promise<VerifyCodeResultDto> {
+    return this.auth.verifyCode(dto, device);
   }
 
   @Public()
@@ -72,8 +83,11 @@ export class AuthController {
   @ApiBody({ type: SignupDto, examples: SIGNUP_EXAMPLES })
   @ApiResult(VerifyCodeResultDto)
   @ApiErrors(400, 409, 410, 429)
-  signup(@Body() dto: SignupDto, @Req() req: FastifyRequest): Promise<VerifyCodeResultDto> {
-    return this.auth.signup(dto, req.ip ?? null);
+  signup(
+    @Body() dto: SignupDto,
+    @ClientDevice() device: IClientDevice,
+  ): Promise<VerifyCodeResultDto> {
+    return this.auth.signup(dto, device);
   }
 
   @Public()
@@ -84,8 +98,11 @@ export class AuthController {
   @ApiBody({ type: LoginDto, examples: LOGIN_EXAMPLES })
   @ApiResult(VerifyCodeResultDto)
   @ApiErrors(400, 401, 409, 429)
-  login(@Body() dto: LoginDto, @Req() req: FastifyRequest): Promise<VerifyCodeResultDto> {
-    return this.auth.login(dto, req.ip ?? null);
+  login(
+    @Body() dto: LoginDto,
+    @ClientDevice() device: IClientDevice,
+  ): Promise<VerifyCodeResultDto> {
+    return this.auth.login(dto, device);
   }
 
   @Public()
@@ -98,9 +115,9 @@ export class AuthController {
   @ApiErrors(400, 409, 410, 429)
   resetPassword(
     @Body() dto: ResetPasswordDto,
-    @Req() req: FastifyRequest,
+    @ClientDevice() device: IClientDevice,
   ): Promise<VerifyCodeResultDto> {
-    return this.auth.resetPassword(dto, req.ip ?? null);
+    return this.auth.resetPassword(dto, device);
   }
 
   @Public()

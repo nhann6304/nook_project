@@ -4,3 +4,4 @@ export * from './api-errors.decorator.js';
 export * from './api-result.decorator.js';
 export * from './message.decorator.js';
 export * from './roles.decorator.js';
+export * from './client-device.decorator.js';

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { TSignInIntent, TSignInMethod } from '@nook/shared';
+import type { TSignInMethod } from '@nook/shared';
 import { CodeSenderKind, Env, SmsSenderKind } from '../../../config/env/index.js';
-import type { ICodeSender } from '../sender/index.js';
+import type { ICodeSendMeta, ICodeSender, ILoginAlert } from '../sender/index.js';
 import { ConsoleSender, EsmsSender, SmtpSender, TwilioSender } from '../sender/index.js';
 
 /**
@@ -14,7 +14,7 @@ import { ConsoleSender, EsmsSender, SmtpSender, TwilioSender } from '../sender/i
  */
 @Injectable()
 export class CodeSenderService {
-  private readonly email: ICodeSender;
+  private readonly email: ConsoleSender | SmtpSender;
   /** `null` = `SMS_SENDER=off`. */
   private readonly sms: ICodeSender | null;
 
@@ -44,9 +44,17 @@ export class CodeSenderService {
     return method === 'email' || this.sms !== null;
   }
 
-  send(method: TSignInMethod, target: string, code: string, intent?: TSignInIntent): Promise<void> {
+  send(method: TSignInMethod, target: string, code: string, meta?: ICodeSendMeta): Promise<void> {
     const sender = method === 'email' ? this.email : this.sms;
     if (!sender) return Promise.reject(new Error('SMS_SENDER=off: no transport for phone'));
-    return sender.send(method, target, code, intent);
+    return sender.send(method, target, code, meta);
+  }
+
+  /**
+   * Thư báo đăng nhập lạ — đi cùng đường với thư mã (`CODE_SENDER`). Chỉ email:
+   * SMS tốn tiền mỗi tin, và tài khoản chỉ có số thì chưa báo (xem README mục 1).
+   */
+  sendLoginAlert(to: string, alert: ILoginAlert): Promise<void> {
+    return this.email.sendLoginAlert(to, alert);
   }
 }

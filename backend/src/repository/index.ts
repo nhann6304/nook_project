@@ -14,4 +14,5 @@ export * from './session/index.js';
 export * from './achievement/index.js';
 export * from './media/index.js';
 export * from './chat/index.js';
+export * from './security/index.js';
 export * from './repository.module.js';

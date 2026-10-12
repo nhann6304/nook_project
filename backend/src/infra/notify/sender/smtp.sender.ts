@@ -1,15 +1,18 @@
 import { Injectable, Logger, type OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
-import { LIMITS, type TSignInIntent, type TSignInMethod } from '@nook/shared';
+import { LIMITS, type TSignInMethod } from '@nook/shared';
 import { CodeSenderKind, Env } from '../../../config/env/index.js';
-import type { ICodeSender } from './code-sender.interface.js';
-import { codeMail, LOGO_CID } from './code-mail.js';
+import type { ICodeSendMeta, ICodeSender } from './code-sender.interface.js';
+import { codeMail } from './code-mail.js';
+import { loginAlertMail, type ILoginAlert } from './login-alert-mail.js';
+import { LOGO_CID, type IMail } from './mail-layout.js';
 import { mailLogo } from './mail-logo.js';
+import { maskEmail } from './mask.util.js';
 
 /**
- * Gửi mã qua email thật. Giao diện thư ở `code-mail.ts`, logo nháy mắt ở
- * `mail-logo.ts`.
+ * Gửi thư thật: mã 6 số (`code-mail.ts`) và thư báo đăng nhập lạ
+ * (`login-alert-mail.ts`). Khung chung ở `mail-layout.ts`, logo ở `mail-logo.ts`.
  *
  * Chữ trong thư nằm ở đây chứ không lấy từ kho chữ của app — thư đi ra ngoài
  * hệ thống, người nhận có khi chưa cài app. Đây là ngoại lệ DUY NHẤT của luật
@@ -37,19 +40,27 @@ export class SmtpSender implements ICodeSender, OnApplicationBootstrap {
     method: TSignInMethod,
     target: string,
     code: string,
-    intent?: TSignInIntent,
+    meta?: ICodeSendMeta,
   ): Promise<void> {
     // `CodeSenderService` chỉ đưa email tới đây; SMS đi đường `SMS_SENDER`.
     if (method !== 'email') throw new Error('SMTP only sends to email addresses');
 
-    const minutes = Math.round(LIMITS.codeTtlSeconds / 60);
-    const started = Date.now();
+    const ttl = meta?.ttlSeconds ?? LIMITS.codeTtlSeconds;
     const logo = await mailLogo();
-    const mail = codeMail(code, intent, minutes, logo !== null);
+    await this.deliver(target, codeMail(code, meta?.intent, ttl, logo !== null), logo, 'code');
+  }
+
+  async sendLoginAlert(to: string, alert: ILoginAlert): Promise<void> {
+    const logo = await mailLogo();
+    await this.deliver(to, loginAlertMail(alert, logo !== null), logo, 'login alert');
+  }
+
+  private async deliver(to: string, mail: IMail, logo: Buffer | null, what: string): Promise<void> {
+    const started = Date.now();
     try {
       await this.transporter().sendMail({
         from: this.from,
-        to: target,
+        to,
         ...mail,
         // Ảnh đính kèm nội tuyến (cid): Gmail chặn ảnh data: và hỏi trước khi
         // tải ảnh từ link ngoài; ảnh cid thì hiện ngay.
@@ -58,10 +69,10 @@ export class SmtpSender implements ICodeSender, OnApplicationBootstrap {
           : [],
       });
     } catch (e) {
-      this.log.error(`send failed after ${Date.now() - started}ms: ${describe(e)}`);
+      this.log.error(`${what} send failed after ${Date.now() - started}ms: ${describe(e)}`);
       throw e;
     }
-    this.log.log(`code sent to ${mask(target)} in ${Date.now() - started}ms`);
+    this.log.log(`${what} sent to ${maskEmail(to)} in ${Date.now() - started}ms`);
   }
 
   /** Thử nối SMTP một lần lúc bật — sai mật khẩu / cổng bị chặn thì biết NGAY. */
@@ -95,9 +106,4 @@ function describe(e: unknown): string {
         ? ' (SMTP port blocked - try port 587: smtp://...@smtp.gmail.com:587)'
         : '';
   return `${code ?? 'ERR'} ${e.message}${hint}`;
-}
-
-function mask(email: string): string {
-  const [name = '', domain = ''] = email.split('@');
-  return `${name.slice(0, 2)}***@${domain}`;
 }

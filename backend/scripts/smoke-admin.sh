@@ -66,6 +66,18 @@ raw = sys.stdin.read().lower()
 print(','.join(w for w in ('level','friendship','memory','circle') if w in raw) or 'khong')" 2>/dev/null)"
 check "danh sách quản trị không lộ chuyện riêng" "khong" "$LEAK"
 
+# ── máy và sổ đăng nhập của một tài khoản ────────────────────────────────────
+ROOT_ID="$(curl -s "$BASE/v1/me" -H "authorization: Bearer $A_ROOT" | field "['id']")"
+check "người thường bị chặn ở sổ đăng nhập" "auth.forbidden" \
+      "$(curl -s "$BASE/v1/admin/users/$ROOT_ID/auth-events" -H "authorization: Bearer $A_MEMBER" | code_of)"
+EVENTS="$(curl -s "$BASE/v1/admin/users/$ROOT_ID/auth-events?limit=1" -H "authorization: Bearer $A_ROOT")"
+check "gốc xem được sổ đăng nhập" "ok" "$(echo "$EVENTS" | code_of)"
+check "sổ: lần gần nhất là đăng nhập bằng mã" "code_login" "$(echo "$EVENTS" | field "[0]['kind']")"
+check "gốc xem được các máy" "ok" \
+      "$(curl -s "$BASE/v1/admin/users/$ROOT_ID/devices" -H "authorization: Bearer $A_ROOT" | code_of)"
+check "người không có thật: user.not_found" "user.not_found" \
+      "$(curl -s "$BASE/v1/admin/users/00000000-0000-4000-8000-000000000000/devices" -H "authorization: Bearer $A_ROOT" | code_of)"
+
 echo
 if [ "$FAIL" -eq 0 ]; then printf '%s%sĐẠT — %d/%d%s\n' "$BOLD" "$GREEN" "$PASS" "$((PASS+FAIL))" "$OFF"; exit 0
 else printf '%s%sHỎNG — %d/%d%s\n' "$BOLD" "$RED" "$PASS" "$((PASS+FAIL))" "$OFF"; exit 1; fi

@@ -11,3 +11,11 @@ export interface IDeviceInfo {
   appVersion?: string | null;
   ip?: string | null;
 }
+
+/** Mã vừa cấp để gửi đi. `reused`: gửi lại mã cũ còn sống, không sinh mới. */
+export interface IIssuedCode {
+  code: string;
+  /** Mã còn sống bao nhiêu giây — thư hiện đúng số phút này. */
+  ttlSeconds: number;
+  reused: boolean;
+}
